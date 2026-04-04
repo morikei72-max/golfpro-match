@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GolfPro Match</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root {
@@ -371,6 +371,17 @@ const SUPABASE_ANON_KEY = 'sb_publishable_ogb1-176cUPPO1KaJ7J0vA_m5jWzJiQ';
 <div class="toast" id="toast"></div>
 
 <script>
+window.addEventListener('DOMContentLoaded', function() {
+  // Supabase再初期化確認
+  if(!db && window.supabase) {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+  }
+  buildSliders();
+  loadDashboard();
+});
+
 // 写真プレビュー
 function previewPhoto(input) {
   if(input.files && input.files[0]) {
@@ -386,8 +397,15 @@ function previewPhoto(input) {
 }
 
 // Supabase初期化
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let db;
+try {
+  const _supabase = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
+  if(_supabase) {
+    db = _supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+  }
+} catch(e) { console.error('Supabase init error:', e); }
 
 const radarLabels = ['共感力','忍耐力','励ます力','誠実さ','信頼感','柔軟性'];
 const scoreKeys = ['empathy_score','patience_score','cheer_score','sincerity_score','trust_score','flexibility_score'];
@@ -799,12 +817,13 @@ async function registerInstructor() {
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   if(!name || !email) {
-    document.getElementById('reg-alert').innerHTML = '<div class="alert alert-error">氏名とメールアドレスは必須です</div>';
+    const alertEl = document.getElementById('reg-alert'); if(alertEl) alertEl.innerHTML = '<div class="alert alert-error">氏名とメールアドレスは必須です</div>';
     return;
   }
   const scores = {};
+  const sliders = document.querySelectorAll('#score-sliders input[type=range]');
   scoreKeys.forEach((k,i) => {
-    scores[k] = parseInt(document.querySelector(`#score-sliders input[type=range]:nth-of-type(${i+1})`).value);
+    scores[k] = sliders[i] ? parseInt(sliders[i].value) : 80;
   });
   const {error} = await db.from('instructors').insert({
     name, email,
@@ -834,7 +853,7 @@ async function registerInstructor() {
       document.querySelector('.time-start-'+document.querySelector('.studio-main-check:checked').dataset.id)?.value || null : null,
     lesson_time_end: document.querySelector('.studio-main-check:checked') ?
       document.querySelector('.time-end-'+document.querySelector('.studio-main-check:checked').dataset.id)?.value || null : null,
-    photo_url: document.getElementById('photo-img').style.display !== 'none' ? document.getElementById('photo-img').src : null,
+    photo_url: (document.getElementById('photo-img').style.display !== 'none' && document.getElementById('photo-img').src && !document.getElementById('photo-img').src.startsWith('file:')) ? document.getElementById('photo-img').src : null,
     qualification: document.getElementById('reg-qualification').value,
 
     bio: document.getElementById('reg-bio').value,
@@ -863,9 +882,7 @@ async function registerInstructor() {
   }, 1500);
 }
 
-// ── 初期化 ──
-buildSliders();
-loadDashboard();
+// ── 初期化はDOMContentLoadedで実施 ──
 </script>
 </body>
 </html>
