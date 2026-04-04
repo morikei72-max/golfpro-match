@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GolfPro Match</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --green: #0F6E56;
+  --green-light: #E1F5EE;
+  --green-mid: #1D9E75;
+  --green-dark: #085041;
+  --gray-bg: #F7F6F2;
+  --white: #ffffff;
+  --border: rgba(0,0,0,0.08);
+  --text: #1a1a1a;
+  --text-2: #6b6b6b;
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Hiragino Sans','Noto Sans JP',sans-serif;background:var(--gray-bg);color:var(--text);font-size:14px;}
+input,select,textarea,button{font-family:inherit;}
+
+/* Layout */
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:220px;background:var(--white);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;}
+.main{flex:1;overflow-y:auto;}
+
+/* Sidebar */
+.sidebar-logo{padding:20px 16px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.logo-icon{width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;}
+.logo-text{font-size:13px;font-weight:700;color:var(--green);line-height:1.2;}
+.logo-sub{font-size:10px;color:var(--text-2);}
+.sidebar-nav{padding:8px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;color:var(--text-2);font-size:13px;transition:.15s;margin-bottom:2px;}
+.nav-item:hover{background:var(--gray-bg);}
+.nav-item.active{background:var(--green-light);color:var(--green);font-weight:500;}
+.nav-icon{width:18px;height:18px;flex-shrink:0;}
+
+/* Sections */
+.section{padding:24px;display:none;}
+.section.active{display:block;}
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px;}
+.page-sub{font-size:12px;color:var(--text-2);margin-bottom:20px;}
+
+/* Cards */
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;margin-bottom:14px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+
+/* Stat cards */
+.stat-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:16px;}
+.stat-label{font-size:11px;color:var(--text-2);margin-bottom:4px;}
+.stat-value{font-size:26px;font-weight:700;}
+
+/* Buttons */
+.btn{padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text);transition:.15s;}
+.btn:hover{background:var(--gray-bg);}
+.btn-primary{background:var(--green);color:#fff;border-color:var(--green);}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-sm{padding:5px 12px;font-size:12px;}
+.btn-danger{background:#fee2e2;color:#dc2626;border-color:#fca5a5;}
+
+/* Form */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;color:var(--text-2);margin-bottom:5px;display:block;font-weight:500;}
+.form-input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;background:var(--white);color:var(--text);outline:none;transition:.15s;}
+.form-input:focus{border-color:var(--green);}
+textarea.form-input{resize:none;height:72px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500;}
+.badge-green{background:var(--green-light);color:var(--green);}
+.badge-amber{background:#fef3c7;color:#92400e;}
+.badge-blue{background:#eff6ff;color:#1d4ed8;}
+.badge-red{background:#fee2e2;color:#dc2626;}
+
+/* Table */
+table{width:100%;border-collapse:collapse;}
+th{font-size:11px;color:var(--text-2);font-weight:500;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+
+/* Avatar */
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:12px;flex-shrink:0;}
+.av-green{background:var(--green-light);color:var(--green);}
+.av-purple{background:#ede9fe;color:#7c3aed;}
+.av-coral{background:#fee2e2;color:#dc2626;}
+.av-blue{background:#eff6ff;color:#1d4ed8;}
+
+/* Alert */
+.alert{border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;margin-bottom:12px;}
+.alert-success{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;}
+.alert-error{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;}
+.alert-info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+
+/* Radar */
+.radar-wrap{position:relative;width:100%;height:260px;}
+
+/* Score bar */
+.score-bar-wrap{margin-top:8px;}
+.score-bar{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin-top:3px;}
+.score-fill{height:100%;border-radius:3px;background:var(--green-mid);}
+
+/* Tag */
+.tag{background:var(--gray-bg);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--text-2);display:inline-block;margin:2px;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:1000;display:none;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--white);border-radius:var(--radius);padding:24px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;display:none;z-index:2000;}
+
+/* Loading */
+.loading{text-align:center;padding:40px;color:var(--text-2);}
+
+/* Slider */
+.slider-group{margin-bottom:10px;}
+.slider-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:4px;}
+input[type=range]{width:100%;accent-color:var(--green);}
+
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .grid-2,.grid-4{grid-template-columns:1fr;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ★★★ ここを自分の情報に書き換えてください ★★★ -->
+<script>
+const SUPABASE_URL = 'https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ogb1-176cUPPO1KaJ7J0vA_m5jWzJiQ';
+</script>
+<!-- ★★★ ここまで ★★★ -->
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">⛳</div>
+      <div>
+        <div class="logo-text">GolfPro Match</div>
+        <div class="logo-sub">レッスンプロ派遣管理</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="6" height="6" rx="1"/><rect x="11" y="3" width="6" height="6" rx="1"/><rect x="3" y="11" width="6" height="6" rx="1"/><rect x="11" y="11" width="6" height="6" rx="1"/></svg>
+        ダッシュボード
+      </div>
+      <div class="nav-item" onclick="showSection('instructors')">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="7" r="3"/><path d="M2 17c0-3.3 2.7-5 6-5s6 1.7 6 5"/><circle cx="15" cy="7" r="2.5"/><path d="M18 17c0-2.2-1.3-4-3-4"/></svg>
+        インストラクター
+      </div>
+      <div class="nav-item" onclick="showSection('studios')">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="16" height="11" rx="1"/><path d="M5 7V5a5 5 0 0110 0v2"/></svg>
+        店舗管理
+      </div>
+      <div class="nav-item" onclick="showSection('dispatch')">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10l14-7-7 14-2-5-5-2z"/></svg>
+        派遣手配
+      </div>
+      <div class="nav-item" onclick="showSection('ranking')">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="10" width="3" height="7" rx="1"/><rect x="8.5" y="6" width="3" height="11" rx="1"/><rect x="14" y="2" width="3" height="15" rx="1"/></svg>
+        ランキング
+      </div>
+      <div class="nav-item" onclick="showSection('register')">
+        <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 7v6M7 10h6"/></svg>
+        新規登録
+      </div>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Dashboard -->
+    <div id="sec-dashboard" class="section active">
+      <div class="page-title">ダッシュボード</div>
+      <div class="page-sub">GolfPro Match 管理画面</div>
+      <div class="grid-4" style="margin-bottom:16px;" id="dash-stats">
+        <div class="stat-card"><div class="stat-label">登録インストラクター</div><div class="stat-value" style="color:var(--green)" id="stat-instructors">-</div></div>
+        <div class="stat-card"><div class="stat-label">登録店舗数</div><div class="stat-value" style="color:#1d4ed8" id="stat-studios">-</div></div>
+        <div class="stat-card"><div class="stat-label">総派遣件数</div><div class="stat-value" style="color:#7c3aed" id="stat-dispatches">-</div></div>
+        <div class="stat-card"><div class="stat-label">承認待ち</div><div class="stat-value" style="color:#d97706" id="stat-pending">-</div></div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px;">最近の派遣履歴</div>
+        <div id="recent-dispatches"><div class="loading">読み込み中...</div></div>
+      </div>
+    </div>
+
+    <!-- Instructors -->
+    <div id="sec-instructors" class="section">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="page-title">インストラクター一覧</div>
+          <div class="page-sub">登録されているレッスンプロの管理</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="showSection('register')">＋ 新規登録</button>
+      </div>
+      <div id="instructor-list"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- Studios -->
+    <div id="sec-studios" class="section">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="page-title">店舗管理</div>
+          <div class="page-sub">提携ゴルフスタジオの管理</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openStudioModal()">＋ 店舗登録</button>
+      </div>
+      <div id="studio-list"><div class="loading">読み込み中...</div></div>
+    </div>
+
+    <!-- Dispatch -->
+    <div id="sec-dispatch" class="section">
+      <div class="page-title">派遣手配</div>
+      <div class="page-sub">インストラクターを店舗へ派遣する</div>
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:12px;">① インストラクター選択</div>
+            <select class="form-input" id="disp-instructor">
+              <option value="">選択してください</option>
+            </select>
+          </div>
+          <div class="card">
+            <div style="font-size:13px;font-weight:600;margin-bottom:12px;">② 店舗・日程選択</div>
+            <div class="form-group">
+              <label class="form-label">派遣先店舗</label>
+              <select class="form-input" id="disp-studio">
+                <option value="">選択してください</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">開始日</label>
+                <input type="date" class="form-input" id="disp-start">
+              </div>
+              <div class="form-group">
+                <label class="form-label">終了日</label>
+                <input type="date" class="form-input" id="disp-end">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">メモ</label>
+              <textarea class="form-input" id="disp-memo" placeholder="担当クラス・注意事項など"></textarea>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="createDispatch()">派遣手配を登録する</button>
+          </div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;">派遣履歴</div>
+          <div id="dispatch-history"><div class="loading">読み込み中...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ranking -->
+    <div id="sec-ranking" class="section">
+      <div class="page-title">人気ランキング</div>
+      <div class="page-sub">人間性スコアによる評価ランキング</div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:14px;">総合ランキング</div>
+          <div id="ranking-list"><div class="loading">読み込み中...</div></div>
+        </div>
+        <div class="card" id="radar-card" style="display:none;">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;" id="radar-name"></div>
+          <div class="radar-wrap"><canvas id="radarChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Register -->
+    <div id="sec-register" class="section">
+      <div class="page-title">新規インストラクター登録</div>
+      <div class="page-sub">カルテを作成します</div>
+      <div id="reg-alert"></div>
+      <div class="grid-2">
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:14px;">基本情報</div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">氏名 *</label><input type="text" class="form-input" id="reg-name" placeholder="山田 花子"></div>
+            <div class="form-group"><label class="form-label">メールアドレス *</label><input type="email" class="form-input" id="reg-email" placeholder="hanako@example.com"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">電話番号</label><input type="text" class="form-input" id="reg-phone" placeholder="090-0000-0000"></div>
+            <div class="form-group"><label class="form-label">ハンディキャップ</label><input type="text" class="form-input" id="reg-handicap" placeholder="+2"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">資格・レベル</label>
+              <select class="form-input" id="reg-qualification">
+                <option>JGA 準プロ</option>
+                <option>JLPGA 目指し中</option>
+                <option>USGTF資格保持</option>
+                <option>アマチュア上位（HC5以下）</option>
+                <option>一般アマチュア</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ベストスコア</label>
+              <input type="number" class="form-input" id="reg-best-score" placeholder="例）68" min="50" max="150">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">レッスン可能店舗・曜日・時間</label>
+            <div id="studio-schedule-list" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px;background:var(--white);">
+              <div style="color:var(--text-2);font-size:12px;">読み込み中...</div>
+            </div>
+            <div style="font-size:11px;color:var(--text-2);margin-top:4px;">店舗にチェックを入れると曜日・時間を設定できます</div>
+          </div>
+          <div class="form-group"><label class="form-label">自己PR</label><textarea class="form-input" id="reg-bio" placeholder="得意な指導スタイル・経験など"></textarea></div>
+        </div>
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;">人間性スコア設定</div>
+          <div style="font-size:11px;color:var(--text-2);margin-bottom:12px;">各項目を0〜100で設定してください</div>
+          <div id="score-sliders"></div>
+          <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="registerInstructor()">カルテを登録する</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Instructor Detail Modal -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="modal-title" id="modal-name"></div>
+      <button class="btn btn-sm" onclick="closeModal('detail-modal')">✕ 閉じる</button>
+    </div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- Studio Modal -->
+<div class="modal-overlay" id="studio-modal">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div class="modal-title">店舗登録</div>
+      <button class="btn btn-sm" onclick="closeModal('studio-modal')">✕ 閉じる</button>
+    </div>
+    <div id="studio-alert"></div>
+    <div class="form-group"><label class="form-label">店舗名 *</label><input type="text" class="form-input" id="st-name" placeholder="○○ゴルフスタジオ"></div>
+    <div class="form-group"><label class="form-label">メールアドレス *</label><input type="email" class="form-input" id="st-email" placeholder="studio@example.com"></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">都市 *</label><input type="text" class="form-input" id="st-city" placeholder="東京都渋谷区"></div>
+      <div class="form-group"><label class="form-label">電話番号</label><input type="text" class="form-input" id="st-phone" placeholder="03-0000-0000"></div>
+    </div>
+    <div class="form-group"><label class="form-label">住所</label><input type="text" class="form-input" id="st-address" placeholder="渋谷区○○1-2-3"></div>
+    <div class="form-group"><label class="form-label">担当者名</label><input type="text" class="form-input" id="st-contact" placeholder="田中 太郎"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="registerStudio()">店舗を登録する</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  // Supabase再初期化確認
+  if(!db && window.supabase) {
+    db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+  }
+  buildSliders();
+  loadDashboard();
+});
+
+// 写真プレビュー
+function previewPhoto(input) {
+  if(input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('photo-icon').style.display = 'none';
+      const img = document.getElementById('photo-img');
+      img.src = e.target.result;
+      img.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// Supabase初期化
+let db;
+try {
+  const _supabase = window.supabase || (typeof supabase !== 'undefined' ? supabase : null);
+  if(_supabase) {
+    db = _supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+  }
+} catch(e) { console.error('Supabase init error:', e); }
+
+const radarLabels = ['共感力','忍耐力','励ます力','誠実さ','信頼感','柔軟性'];
+const scoreKeys = ['empathy_score','patience_score','cheer_score','sincerity_score','trust_score','flexibility_score'];
+let radarChart = null;
+let allInstructors = [];
+let allStudios = [];
+
+// ── ナビゲーション ──
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  const idx = ['dashboard','instructors','studios','dispatch','ranking','register'];
+  document.querySelectorAll('.nav-item')[idx.indexOf(name)]?.classList.add('active');
+  if(name === 'dashboard') loadDashboard();
+  if(name === 'instructors') loadInstructors();
+  if(name === 'studios') loadStudios();
+  if(name === 'dispatch') loadDispatch();
+  if(name === 'ranking') loadRanking();
+  if(name === 'register') { buildSliders(); loadStudioCheckboxes(); }
+}
+
+// ── トースト ──
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? '#dc2626' : '#1a1a1a';
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+
+// ── モーダル ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function openStudioModal() { document.getElementById('studio-modal').classList.add('open'); }
+
+// ── ダッシュボード ──
+async function loadDashboard() {
+  const [ins, stu, disp, pend] = await Promise.all([
+    db.from('instructors').select('id', {count:'exact'}),
+    db.from('studios').select('id', {count:'exact'}),
+    db.from('dispatches').select('id', {count:'exact'}),
+    db.from('dispatches').select('id', {count:'exact'}).eq('status','pending')
+  ]);
+  document.getElementById('stat-instructors').textContent = ins.count ?? 0;
+  document.getElementById('stat-studios').textContent = stu.count ?? 0;
+  document.getElementById('stat-dispatches').textContent = disp.count ?? 0;
+  document.getElementById('stat-pending').textContent = pend.count ?? 0;
+
+  const {data: recent} = await db.from('dispatches')
+    .select('*, instructors(name), studios(name, city)')
+    .order('created_at', {ascending: false}).limit(10);
+
+  const el = document.getElementById('recent-dispatches');
+  if(!recent || recent.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-2);padding:24px;">まだ派遣履歴がありません</div>';
+    return;
+  }
+  el.innerHTML = `<table>
+    <thead><tr><th>インストラクター</th><th>店舗</th><th>都市</th><th>期間</th><th>ステータス</th></tr></thead>
+    <tbody>${recent.map(d => `
+      <tr>
+        <td>${d.instructors?.name || '-'}</td>
+        <td>${d.studios?.name || '-'}</td>
+        <td>${d.studios?.city || '-'}</td>
+        <td>${d.start_date} 〜 ${d.end_date}</td>
+        <td>${statusBadge(d.status)}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+}
+
+function statusBadge(s) {
+  const map = {pending:'承認待ち',approved:'承認済み',rejected:'お断り',completed:'完了'};
+  const cls = {pending:'badge-amber',approved:'badge-green',rejected:'badge-red',completed:'badge-blue'};
+  return `<span class="badge ${cls[s]||'badge-blue'}">${map[s]||s}</span>`;
+}
+
+// ── インストラクター一覧 ──
+async function loadInstructors() {
+  const {data} = await db.from('instructors').select('*').order('created_at', {ascending:false});
+  allInstructors = data || [];
+  const el = document.getElementById('instructor-list');
+  if(allInstructors.length === 0) {
+    el.innerHTML = '<div class="card" style="text-align:center;color:var(--text-2);padding:40px;">まだ登録されていません。「新規登録」から追加してください。</div>';
+    return;
+  }
+  el.innerHTML = `<div class="grid-2">${allInstructors.map(ins => `
+    <div class="card" style="cursor:pointer;" onclick="openDetail('${ins.id}')">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="av av-green" style="overflow:hidden;">
+          ${ins.photo_url ? '<img src="'+ins.photo_url+'" style="width:100%;height:100%;object-fit:cover;">' : ins.name?.charAt(0)||'?'}
+        </div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px;">${ins.name}</div>
+          <div style="font-size:11px;color:var(--text-2);">${ins.qualification || ''}</div>
+        </div>
+        <span class="badge ${ins.status==='active'?'badge-green':'badge-amber'}">${ins.status==='active'?'稼働中':'調整中'}</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);">
+          <span>人間性スコア</span>
+          <span style="font-weight:600;color:var(--green)">${totalScore(ins)}</span>
+        </div>
+        <div class="score-bar"><div class="score-fill" style="width:${totalScore(ins)}%"></div></div>
+      </div>
+      <div style="margin-top:8px;">
+
+        <span class="tag">派遣${ins.dispatch_count||0}回</span>
+        ${ins.rating > 0 ? `<span class="tag">★${ins.rating}</span>` : ''}
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function totalScore(ins) {
+  const scores = scoreKeys.map(k => ins[k] || 0);
+  return Math.round(scores.reduce((a,b) => a+b, 0) / scores.length);
+}
+
+// ── インストラクター詳細 ──
+async function openDetail(id) {
+  const ins = allInstructors.find(i => i.id === id);
+  if(!ins) return;
+  document.getElementById('modal-name').textContent = ins.name;
+  document.getElementById('modal-content').innerHTML = `
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;">
+      <div class="av av-green" style="width:48px;height:48px;font-size:16px;overflow:hidden;">
+        ${ins.photo_url ? '<img src="'+ins.photo_url+'" style="width:100%;height:100%;object-fit:cover;">' : ins.name?.charAt(0)}
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:700;">${ins.name}</div>
+        <div style="font-size:12px;color:var(--text-2);">${ins.qualification || ''}</div>
+        <span class="badge badge-green" style="margin-top:4px;">人間性スコア ${totalScore(ins)}</span>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:16px;">
+      ${row('メール', ins.email)}
+      ${row('電話', ins.phone || '-')}
+      ${row('ハンディ', ins.handicap || '-')}
+      ${ins.best_score ? row('ベストスコア', ins.best_score + 'スコア') : ''}
+      ${ins.available_studios ? row('レッスン可能店舗・曜日・時間', ins.available_studios) : ''}
+      ${ins.lesson_days ? row('レッスン可能曜日', ins.lesson_days) : ''}
+      ${ins.lesson_time_start && ins.lesson_time_end ? row('レッスン可能時間', ins.lesson_time_start + ' 〜 ' + ins.lesson_time_end) : ''}
+
+      ${row('派遣回数', ins.dispatch_count + '回')}
+    </div>
+    ${ins.bio ? `<div style="font-size:13px;color:var(--text-2);margin-bottom:16px;">${ins.bio}</div>` : ''}
+    <div style="position:relative;width:100%;height:240px;margin-bottom:16px;">
+      <canvas id="modal-radar"></canvas>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-danger btn-sm" onclick="deleteInstructor('${ins.id}')">削除</button>
+    </div>`;
+  document.getElementById('detail-modal').classList.add('open');
+  setTimeout(() => {
+    const ctx = document.getElementById('modal-radar').getContext('2d');
+    if(radarChart) radarChart.destroy();
+    radarChart = new Chart(ctx, {
+      type:'radar',
+      data:{labels:radarLabels, datasets:[{
+        label:ins.name, data: scoreKeys.map(k => ins[k]||0),
+        backgroundColor:'rgba(29,158,117,0.15)', borderColor:'#1D9E75', borderWidth:2,
+        pointBackgroundColor:'#1D9E75', pointRadius:4
+      }]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{r:{min:0,max:100,ticks:{stepSize:25,display:false},
+          grid:{color:'rgba(0,0,0,0.08)'},angleLines:{color:'rgba(0,0,0,0.1)'},
+          pointLabels:{font:{size:11}}}}}
+    });
+  }, 100);
+}
+
+function row(label, value) {
+  return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;">
+    <span style="color:var(--text-2)">${label}</span><span>${value}</span></div>`;
+}
+
+async function deleteInstructor(id) {
+  if(!confirm('このインストラクターを削除しますか？')) return;
+  const {error} = await db.from('instructors').delete().eq('id', id);
+  if(error) { showToast('削除に失敗しました', true); return; }
+  showToast('削除しました');
+  closeModal('detail-modal');
+  loadInstructors();
+  loadDashboard();
+}
+
+// ── 店舗管理 ──
+async function loadStudios() {
+  const {data} = await db.from('studios').select('*').order('created_at', {ascending:false});
+  allStudios = data || [];
+  const el = document.getElementById('studio-list');
+  if(allStudios.length === 0) {
+    el.innerHTML = '<div class="card" style="text-align:center;color:var(--text-2);padding:40px;">まだ店舗が登録されていません。「＋ 店舗登録」から追加してください。</div>';
+    return;
+  }
+  el.innerHTML = `<div class="grid-2">${allStudios.map(s => `
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <div class="av av-blue">${s.name?.charAt(0)||'?'}</div>
+        <div>
+          <div style="font-weight:600;font-size:14px;">${s.name}</div>
+          <div style="font-size:11px;color:var(--text-2);">${s.city}</div>
+        </div>
+      </div>
+      ${row('メール', s.email)}
+      ${s.phone ? row('電話', s.phone) : ''}
+      ${s.contact_person ? row('担当者', s.contact_person) : ''}
+    </div>`).join('')}</div>`;
+}
+
+async function registerStudio() {
+  const name = document.getElementById('st-name').value.trim();
+  const email = document.getElementById('st-email').value.trim();
+  const city = document.getElementById('st-city').value.trim();
+  if(!name || !email || !city) {
+    document.getElementById('studio-alert').innerHTML = '<div class="alert alert-error">店舗名・メール・都市は必須です</div>';
+    return;
+  }
+  const {error} = await db.from('studios').insert({
+    name, email, city,
+    phone: document.getElementById('st-phone').value,
+    address: document.getElementById('st-address').value,
+    contact_person: document.getElementById('st-contact').value
+  });
+  if(error) { document.getElementById('studio-alert').innerHTML = `<div class="alert alert-error">${error.message}</div>`; return; }
+  showToast('店舗を登録しました');
+  closeModal('studio-modal');
+  ['st-name','st-email','st-city','st-phone','st-address','st-contact'].forEach(id => document.getElementById(id).value = '');
+  loadStudios();
+  loadDashboard();
+}
+
+// ── 派遣手配 ──
+async function loadDispatch() {
+  const [ins, stu, hist] = await Promise.all([
+    db.from('instructors').select('id,name').eq('status','active'),
+    db.from('studios').select('id,name,city'),
+    db.from('dispatches').select('*, instructors(name), studios(name)').order('created_at',{ascending:false}).limit(20)
+  ]);
+
+  const iSel = document.getElementById('disp-instructor');
+  iSel.innerHTML = '<option value="">選択してください</option>' +
+    (ins.data||[]).map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+
+  const sSel = document.getElementById('disp-studio');
+  sSel.innerHTML = '<option value="">選択してください</option>' +
+    (stu.data||[]).map(s => `<option value="${s.id}">${s.name}（${s.city}）</option>`).join('');
+
+  const el = document.getElementById('dispatch-history');
+  const data = hist.data || [];
+  if(data.length === 0) {
+    el.innerHTML = '<div style="text-align:center;color:var(--text-2);padding:24px;">まだ派遣履歴がありません</div>';
+    return;
+  }
+  el.innerHTML = data.map(d => `
+    <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:13px;font-weight:500;">${d.instructors?.name||'-'} → ${d.studios?.name||'-'}</div>
+          <div style="font-size:11px;color:var(--text-2);">${d.start_date} 〜 ${d.end_date}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          ${statusBadge(d.status)}
+          ${d.status==='pending' ? `<button class="btn btn-sm" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0;" onclick="updateDispatch('${d.id}','approved')">承認</button>` : ''}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function createDispatch() {
+  const instructor_id = document.getElementById('disp-instructor').value;
+  const studio_id = document.getElementById('disp-studio').value;
+  const start_date = document.getElementById('disp-start').value;
+  const end_date = document.getElementById('disp-end').value;
+  if(!instructor_id || !studio_id || !start_date || !end_date) {
+    showToast('すべての項目を入力してください', true); return;
+  }
+  const {error} = await db.from('dispatches').insert({
+    instructor_id, studio_id, start_date, end_date,
+    memo: document.getElementById('disp-memo').value,
+    status: 'pending'
+  });
+  if(error) { showToast('登録に失敗しました: ' + error.message, true); return; }
+  showToast('派遣手配を登録しました');
+  document.getElementById('disp-memo').value = '';
+  loadDispatch();
+  loadDashboard();
+}
+
+async function updateDispatch(id, status) {
+  await db.from('dispatches').update({status}).eq('id', id);
+  showToast(status === 'approved' ? '承認しました' : '更新しました');
+  loadDispatch();
+  loadDashboard();
+}
+
+// ── ランキング ──
+async function loadRanking() {
+  const {data} = await db.from('instructors').select('*');
+  if(!data || data.length === 0) {
+    document.getElementById('ranking-list').innerHTML = '<div style="text-align:center;color:var(--text-2);padding:24px;">まだ登録されていません</div>';
+    return;
+  }
+  const sorted = [...data].sort((a,b) => totalScore(b) - totalScore(a));
+  const colors = ['#BA7517','#888780','#993C1D'];
+  document.getElementById('ranking-list').innerHTML = sorted.map((ins,i) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="showRadar(${JSON.stringify(ins).replace(/"/g,'&quot;')})">
+      <div style="width:24px;font-size:14px;font-weight:700;text-align:center;color:${colors[i]||'#888'}">${i+1}</div>
+      <div class="av av-green">${ins.name?.charAt(0)}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;">${ins.name}</div>
+        <div style="font-size:10px;color:var(--text-2)">${ins.qualification||''} / 派遣${ins.dispatch_count||0}回</div>
+        <div class="score-bar" style="margin-top:4px;"><div class="score-fill" style="width:${totalScore(ins)}%;background:${i===0?'#1D9E75':i===1?'#378ADD':'#D4537E'}"></div></div>
+      </div>
+      <div style="font-size:18px;font-weight:700;color:var(--green)">${totalScore(ins)}</div>
+    </div>`).join('');
+}
+
+function showRadar(ins) {
+  document.getElementById('radar-card').style.display = 'block';
+  document.getElementById('radar-name').textContent = ins.name + ' の人間性レーダー';
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  if(radarChart) radarChart.destroy();
+  radarChart = new Chart(ctx, {
+    type:'radar',
+    data:{labels:radarLabels, datasets:[{
+      label:ins.name, data: scoreKeys.map(k => ins[k]||0),
+      backgroundColor:'rgba(29,158,117,0.15)', borderColor:'#1D9E75', borderWidth:2,
+      pointBackgroundColor:'#1D9E75', pointRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{r:{min:0,max:100,ticks:{stepSize:25,display:false},
+        grid:{color:'rgba(0,0,0,0.08)'},angleLines:{color:'rgba(0,0,0,0.1)'},
+        pointLabels:{font:{size:12}}}}}
+  });
+}
+
+// ── 新規登録 ──
+async function loadStudioCheckboxes() {
+  const {data} = await db.from('studios').select('id,name').order('name');
+  const el = document.getElementById('studio-schedule-list');
+  if(!el) return;
+  if(!data || data.length === 0) {
+    el.innerHTML = '<div style="color:var(--text-2);font-size:12px;">先に「店舗管理」で店舗を登録すると選択できます</div>';
+    return;
+  }
+  const days = ['月','火','水','木','金','土','日','祝'];
+  const times = ['6:00','7:00','8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00','21:00','22:00','23:00'];
+  el.innerHTML = data.map(s => `
+    <div class="studio-schedule-item" style="margin-bottom:8px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;">
+      <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;background:var(--gray-bg);">
+        <input type="checkbox" class="studio-main-check" data-id="${s.id}" data-name="${s.name}"
+          style="accent-color:var(--green);" onchange="toggleSchedule(this,'${s.id}')">
+        <span style="font-size:13px;font-weight:500;">${s.name}</span>
+      </label>
+      <div id="schedule-detail-${s.id}" style="display:none;padding:10px 12px;border-top:1px solid var(--border);">
+        <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;font-weight:500;">レッスン可能曜日</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+          ${days.map(d => `
+            <label style="display:flex;align-items:center;gap:3px;font-size:12px;cursor:pointer;
+              background:var(--white);border:1px solid var(--border);border-radius:6px;padding:3px 8px;">
+              <input type="checkbox" class="day-check-${s.id}" value="${d}" style="accent-color:var(--green);"
+                onchange="updateDayLabel('${s.id}')"> ${d}
+            </label>`).join('')}
+        </div>
+        <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;font-weight:500;">レッスン可能時間</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <select class="form-input time-start-${s.id}" style="width:110px;">
+            <option value="">開始</option>
+            ${times.slice(0,-1).map(t => `<option>${t}</option>`).join('')}
+          </select>
+          <span style="color:var(--text-2);font-size:13px;">〜</span>
+          <select class="form-input time-end-${s.id}" style="width:110px;">
+            <option value="">終了</option>
+            ${times.slice(1).map(t => `<option>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div id="summary-${s.id}" style="font-size:11px;color:var(--green);margin-top:6px;font-weight:500;"></div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleSchedule(cb, studioId) {
+  const detail = document.getElementById('schedule-detail-' + studioId);
+  detail.style.display = cb.checked ? 'block' : 'none';
+}
+
+function updateDayLabel(studioId) {
+  const checked = Array.from(document.querySelectorAll('.day-check-' + studioId + ':checked')).map(c => c.value);
+  const start = document.querySelector('.time-start-' + studioId)?.value || '';
+  const end = document.querySelector('.time-end-' + studioId)?.value || '';
+  const el = document.getElementById('summary-' + studioId);
+  if(el) el.textContent = (checked.length ? '曜日：' + checked.join('・') : '') + (start && end ? '　時間：' + start + '〜' + end : '');
+}
+
+function buildSliders() {
+  const labels = ['共感力','忍耐力','励ます力','誠実さ','信頼感','柔軟性'];
+  const descs = ['生徒の気持ちを受け止める力','根気よく寄り添う姿勢','前向きにさせる言葉かけ','約束を守る誠実な人柄','長期的に信頼される存在感','相手に合わせる適応力'];
+  document.getElementById('score-sliders').innerHTML = labels.map((l,i) => `
+    <div class="slider-group">
+      <div class="slider-label">
+        <span>${l}<span style="font-size:10px;color:var(--text-2);margin-left:6px;">${descs[i]}</span></span>
+        <span style="font-weight:500;" id="sv-${i}">80</span>
+      </div>
+      <input type="range" min="0" max="100" value="80" step="1" oninput="document.getElementById('sv-${i}').textContent=this.value">
+    </div>`).join('');
+}
+
+async function registerInstructor() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  if(!name || !email) {
+    const alertEl = document.getElementById('reg-alert'); if(alertEl) alertEl.innerHTML = '<div class="alert alert-error">氏名とメールアドレスは必須です</div>';
+    return;
+  }
+  const scores = {};
+  const sliders = document.querySelectorAll('#score-sliders input[type=range]');
+  scoreKeys.forEach((k,i) => {
+    scores[k] = sliders[i] ? parseInt(sliders[i].value) : 80;
+  });
+  const {error} = await db.from('instructors').insert({
+    name, email,
+    phone: document.getElementById('reg-phone').value,
+    handicap: document.getElementById('reg-handicap').value,
+    best_score: document.getElementById('reg-best-score').value ? parseInt(document.getElementById('reg-best-score').value) : null,
+    available_studios: (() => {
+      const checked = Array.from(document.querySelectorAll('.studio-main-check:checked'));
+      return checked.map(cb => {
+        const id = cb.dataset.id;
+        const name = cb.dataset.name;
+        const days = Array.from(document.querySelectorAll('.day-check-'+id+':checked')).map(c=>c.value).join('・');
+        const ts = document.querySelector('.time-start-'+id)?.value || '';
+        const te = document.querySelector('.time-end-'+id)?.value || '';
+        return name + (days ? '【'+days+'】' : '') + (ts&&te ? '('+ts+'〜'+te+')' : '');
+      }).join('／') || null;
+    })(),
+    lesson_days: (() => {
+      const checked = Array.from(document.querySelectorAll('.studio-main-check:checked'));
+      const allDays = new Set();
+      checked.forEach(cb => {
+        Array.from(document.querySelectorAll('.day-check-'+cb.dataset.id+':checked')).forEach(c => allDays.add(c.value));
+      });
+      return allDays.size ? Array.from(allDays).join('・') : null;
+    })(),
+    lesson_time_start: document.querySelector('.studio-main-check:checked') ?
+      document.querySelector('.time-start-'+document.querySelector('.studio-main-check:checked').dataset.id)?.value || null : null,
+    lesson_time_end: document.querySelector('.studio-main-check:checked') ?
+      document.querySelector('.time-end-'+document.querySelector('.studio-main-check:checked').dataset.id)?.value || null : null,
+    photo_url: (() => {
+      const img = document.getElementById('photo-img');
+      if(!img || img.style.display === 'none' || !img.src || img.src.startsWith('file:') || img.src === window.location.href) return null;
+      return img.src;
+    })(),
+    qualification: document.getElementById('reg-qualification').value,
+
+    bio: document.getElementById('reg-bio').value,
+    status: 'active',
+    ...scores
+  });
+  if(error) {
+    document.getElementById('reg-alert').innerHTML = `<div class="alert alert-error">${error.message}</div>`;
+    return;
+  }
+  document.getElementById('reg-alert').innerHTML = '<div class="alert alert-success">登録が完了しました！</div>';
+  showToast('インストラクターを登録しました');
+  ['reg-name','reg-email','reg-phone','reg-handicap','reg-bio','reg-best-score','reg-time-start','reg-time-end'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('.studio-main-check, [class^="day-check-"]').forEach(cb => { cb.checked = false; });
+  document.querySelectorAll('[id^="schedule-detail-"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('[id^="summary-"]').forEach(el => el.textContent = '');
+  document.querySelectorAll('[class^="time-start-"], [class^="time-end-"]').forEach(sel => sel.value = '');
+  document.getElementById('photo-icon').style.display = '';
+  document.getElementById('photo-img').style.display = 'none';
+  document.getElementById('photo-img').src = '';
+  document.getElementById('reg-photo').value = '';
+  buildSliders();
+  setTimeout(() => {
+    document.getElementById('reg-alert').innerHTML = '';
+    showSection('instructors');
+  }, 1500);
+}
+
+// ── 初期化はDOMContentLoadedで実施 ──
+</script>
+</body>
+</html>
