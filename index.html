@@ -853,7 +853,7 @@ async function registerInstructor() {
       document.querySelector('.time-start-'+document.querySelector('.studio-main-check:checked').dataset.id)?.value || null : null,
     lesson_time_end: document.querySelector('.studio-main-check:checked') ?
       document.querySelector('.time-end-'+document.querySelector('.studio-main-check:checked').dataset.id)?.value || null : null,
-    photo_url: (document.getElementById('photo-img').style.display !== 'none' && document.getElementById('photo-img').src && !document.getElementById('photo-img').src.startsWith('file:')) ? document.getElementById('photo-img').src : null,
+   null,
     qualification: document.getElementById('reg-qualification').value,
 
     bio: document.getElementById('reg-bio').value,
