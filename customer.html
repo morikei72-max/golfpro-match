@@ -333,6 +333,7 @@ sb.auth.getSession().then(function(res){
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
+  fetchAvailDates();
 });
 
 // タブ切替
@@ -368,32 +369,68 @@ function selType(card,type){
   }
 }
 
-// ========== サンプル空き日データ ==========
-function getAvailDates(type){
-  var today=new Date();
-  var result={};
-  // インドア：今後14日間の平日に時間スロットあり
-  if(type==='indoor'){
+// ========== 空き日データ（Supabaseから取得）==========
+var availCache={};
+
+async function fetchAvailDates(){
+  try{
+    var{data,error}=await sb.from('coach_schedules').select('*').gte('date',fmt(new Date()));
+    if(!error&&data){
+      availCache={};
+      data.forEach(function(row){
+        if(!availCache[row.date]) availCache[row.date]={};
+        if(!availCache[row.date][row.lesson_type]) availCache[row.date][row.lesson_type]={times:[],coaches:[]};
+        if(row.times&&row.times.length>0){
+          row.times.forEach(function(t){
+            if(availCache[row.date][row.lesson_type].times.indexOf(t)<0){
+              availCache[row.date][row.lesson_type].times.push(t);
+            }
+          });
+        }
+        availCache[row.date][row.lesson_type].coaches.push(row.coach_id);
+      });
+    }
+  }catch(e){}
+  // データがなければサンプルデータを使用
+  if(Object.keys(availCache).length===0){
+    var today=new Date();
     for(var i=1;i<=21;i++){
       var d=new Date(today);d.setDate(d.getDate()+i);
       var dow=d.getDay();
+      var ds=fmt(d);
+      if(!availCache[ds]) availCache[ds]={};
       if(dow>=1&&dow<=5){
-        result[fmt(d)]=['10:00','11:00','13:00','14:00','15:00','16:00'];
-      }else if(dow===6){
-        result[fmt(d)]=['09:00','10:00','11:00','13:00'];
-      }
-    }
-  }else{
-    // ラウンド系：今後2ヶ月の土日に空きあり
-    for(var i=1;i<=60;i++){
-      var d=new Date(today);d.setDate(d.getDate()+i);
-      var dow=d.getDay();
-      if(dow===0||dow===6){
-        result[fmt(d)]=true;
+        availCache[ds].indoor={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample']};
+      }else if(dow===6||dow===0){
+        availCache[ds].round={times:[],coaches:['sample']};
+        availCache[ds].accompany={times:[],coaches:['sample']};
+        availCache[ds].comp={times:[],coaches:['sample']};
       }
     }
   }
+  renderWeekCal();
+  renderMonthCal();
+}
+
+function getAvailDates(type){
+  var result={};
+  Object.keys(availCache).forEach(function(ds){
+    if(availCache[ds][type]){
+      if(type==='indoor'){
+        result[ds]=availCache[ds][type].times;
+      }else{
+        result[ds]=true;
+      }
+    }
+  });
   return result;
+}
+
+function getCoachesForDate(ds,type){
+  if(availCache[ds]&&availCache[ds][type]){
+    return availCache[ds][type].coaches;
+  }
+  return [];
 }
 
 function fmt(d){
@@ -629,8 +666,6 @@ async function saveMyProfile(){
   else{alert('プロフィールを保存しました！');}
 }
 
-// 初期表示
-renderWeekCal();
 </script>
 </body>
 </html>

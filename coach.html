@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GolfCoach — コーチ画面</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--gold-l:#FAEEDA;--red:#E24B4A;--border:#e0e0e0;}
+.header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--gd);}
+.logout-btn{font-size:12px;color:var(--g);background:none;border:1px solid var(--g);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;}
+.content{padding:16px;max-width:480px;margin:0 auto;}
+.snav{display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;}
+.snb{font-size:12px;padding:6px 14px;border-radius:20px;border:0.5px solid var(--border);background:#fff;font-family:inherit;cursor:pointer;color:#666;white-space:nowrap;flex-shrink:0;}
+.snb.on{background:var(--gd);color:#fff;border-color:var(--gd);}
+.screen{display:none;}.screen.on{display:block;}
+.card{background:#fff;border-radius:12px;border:0.5px solid var(--border);padding:14px;margin-bottom:12px;}
+.card-title{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;}
+
+/* カレンダー */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.cal-nav{background:none;border:none;font-size:24px;cursor:pointer;color:var(--g);padding:4px 10px;}
+.cal-title{font-size:15px;font-weight:700;color:var(--gd);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-label{text-align:center;font-size:11px;color:#999;padding:4px 0;}
+.cal-day{text-align:center;padding:8px 2px;border-radius:8px;cursor:pointer;min-height:40px;position:relative;}
+.cal-day .dn{font-size:14px;font-weight:500;color:#bbb;}
+.cal-day.active .dn{color:var(--gd);font-weight:700;}
+.cal-day.active{background:var(--gl);}
+.cal-day.selected{background:var(--g)!important;}
+.cal-day.selected .dn{color:#fff!important;}
+.cal-day.today .dn{text-decoration:underline;}
+.cal-day.other .dn{color:#ddd;}
+.reg-dot{width:6px;height:6px;border-radius:50%;background:var(--g);margin:2px auto 0;}
+.cal-day.selected .reg-dot{background:#fff;}
+
+/* 時間選択 */
+.type-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.type-tab{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;cursor:pointer;color:#666;}
+.type-tab.on{background:var(--g);color:#fff;border-color:var(--g);}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+.time-btn{font-size:12px;padding:8px 4px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;color:#666;text-align:center;}
+.time-btn.on{background:var(--g);color:#fff;border-color:var(--g);}
+.btn-reg{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;}
+.btn-reg:disabled{background:#aaa;cursor:not-allowed;}
+.btn-del{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--red);background:#fff0f0;color:var(--red);cursor:pointer;}
+
+/* 登録済みリスト */
+.sched-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.sched-item:last-child{border-bottom:none;}
+.sched-date{font-size:13px;font-weight:500;color:#1a1a1a;}
+.sched-times{font-size:12px;color:#666;margin-top:2px;}
+.sched-type{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--gd);}
+
+/* プロフィール */
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:4px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;outline:none;}
+.form-group textarea{resize:vertical;min-height:64px;}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.b-g{background:var(--gl);color:var(--gd);}
+.b-bl{background:#e6f1fb;color:#185fa5;}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.history-item:last-child{border-bottom:none;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">GolfCoach <span style="font-size:11px;color:var(--g);font-family:'Noto Sans JP';">コーチ</span></div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:12px;color:#666;" id="coach-name"></span>
+    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="snav">
+    <button class="snb on" onclick="tab(this,'s-schedule')">空き日時登録</button>
+    <button class="snb" onclick="tab(this,'s-bookings')">予約確認</button>
+    <button class="snb" onclick="tab(this,'s-profile')">プロフィール</button>
+  </div>
+
+  <!-- 空き日時登録 -->
+  <div class="screen on" id="s-schedule">
+    <div class="card">
+      <div class="card-title">依頼タイプを選ぶ</div>
+      <div class="type-tabs">
+        <button class="type-tab on" onclick="selLessonType(this,'indoor')">⛳ インドア</button>
+        <button class="type-tab" onclick="selLessonType(this,'round')">🏌 ラウンド</button>
+        <button class="type-tab" onclick="selLessonType(this,'accompany')">🤝 同伴</button>
+        <button class="type-tab" onclick="selLessonType(this,'comp')">🏆 コンペ</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cal-header">
+        <button class="cal-nav" onclick="calPrev()">&#8249;</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav" onclick="calNext()">&#8250;</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="card" id="time-card" style="display:none;">
+      <div class="card-title" id="time-card-title">時間を選ぶ（複数選択可）</div>
+      <div class="time-grid" id="time-grid"></div>
+      <button class="btn-reg" id="btn-reg" onclick="registerSchedule()">この日時を登録する</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">登録済みの空き日時</div>
+      <div id="sched-list"><div style="font-size:13px;color:#bbb;text-align:center;padding:16px;">読み込み中...</div></div>
+    </div>
+  </div>
+
+  <!-- 予約確認 -->
+  <div class="screen" id="s-bookings">
+    <div class="card">
+      <div class="card-title">受付中の予約</div>
+      <div class="history-item">
+        <div>
+          <div style="font-size:13px;font-weight:500;">山田 太郎 様</div>
+          <div style="font-size:12px;color:#666;">インドアレッスン 50分 / 4月15日 10:00</div>
+        </div>
+        <span class="badge b-g">確定</span>
+      </div>
+      <div class="history-item">
+        <div>
+          <div style="font-size:13px;font-weight:500;">鈴木 花子 様</div>
+          <div style="font-size:12px;color:#666;">ラウンドレッスン / 4月20日</div>
+        </div>
+        <span class="badge b-bl">申請中</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- プロフィール -->
+  <div class="screen" id="s-profile">
+    <div class="card">
+      <div class="card-title">コーチ情報</div>
+      <div class="form-group"><label>お名前</label><input type="text" id="p-name" placeholder="山田 コーチ"></div>
+      <div class="form-group"><label>対応エリア</label><input type="text" id="p-area" placeholder="京都市内・大阪"></div>
+      <div class="form-group"><label>経験年数</label><select id="p-exp"><option>1年未満</option><option>1〜3年</option><option>3〜5年</option><option>5〜10年</option><option>10年以上</option></select></div>
+      <div class="form-group"><label>得意分野・タグ</label><input type="text" id="p-tags" placeholder="例：初心者歓迎、スイング矯正"></div>
+      <div class="form-group"><label>自己紹介</label><textarea id="p-bio" placeholder="レッスンの特徴やアピールポイントを入力してください。"></textarea></div>
+      <div class="form-group"><label>インドアレッスン料金（60分）</label><input type="number" id="p-price" placeholder="例：5000"></div>
+      <button class="btn-reg" onclick="saveProfile()">保存する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+});
+
+var currentCoachId=null;
+var currentLessonType='indoor';
+var calYear=null,calMonth=null;
+var selectedDate=null;
+var selectedTimes=[];
+var registeredSchedules={};
+
+// セッション確認
+sb.auth.getSession().then(function(res){
+  var session=res.data.session;
+  if(!session){window.location.href='index.html';return;}
+  currentCoachId=session.user.id;
+  var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
+  document.getElementById('coach-name').textContent=name+'コーチ';
+  localStorage.setItem('gc_login_time',Date.now().toString());
+  loadSchedules();
+  var today=new Date();
+  calYear=today.getFullYear();
+  calMonth=today.getMonth();
+  renderCal();
+});
+
+function tab(btn,id){
+  document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+}
+
+function selLessonType(btn,type){
+  document.querySelectorAll('.type-tab').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  currentLessonType=type;
+  selectedDate=null;
+  selectedTimes=[];
+  document.getElementById('time-card').style.display='none';
+  renderCal();
+}
+
+function fmt(d){
+  var y=d.getFullYear();
+  var m=String(d.getMonth()+1).padStart(2,'0');
+  var dd=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
+}
+
+function renderCal(){
+  var today=new Date();
+  var todayStr=fmt(today);
+  var firstDay=new Date(calYear,calMonth,1);
+  var lastDay=new Date(calYear,calMonth+1,0);
+  document.getElementById('cal-title').textContent=calYear+'年'+(calMonth+1)+'月';
+  var labels=['月','火','水','木','金','土','日'];
+  var html='';
+  labels.forEach(function(l){html+='<div class="cal-label">'+l+'</div>';});
+  var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
+  for(var i=0;i<startDow;i++){
+    var d=new Date(calYear,calMonth,1-startDow+i);
+    html+='<div class="cal-day other"><div class="dn">'+d.getDate()+'</div></div>';
+  }
+  for(var day=1;day<=lastDay.getDate();day++){
+    var d=new Date(calYear,calMonth,day);
+    var ds=fmt(d);
+    var isPast=d<new Date(today.getFullYear(),today.getMonth(),today.getDate());
+    var cls='cal-day';
+    var hasReg=registeredSchedules[ds]&&registeredSchedules[ds].some(function(s){return s.lesson_type===currentLessonType;});
+    if(!isPast) cls+=' active';
+    if(ds===todayStr) cls+=' today';
+    if(ds===selectedDate) cls+=' selected';
+    var dot=hasReg?'<div class="reg-dot"></div>':'';
+    if(isPast){
+      html+='<div class="cal-day other"><div class="dn">'+day+'</div></div>';
+    }else{
+      html+='<div class="'+cls+'" onclick="selectDate(''+ds+'')"><div class="dn">'+day+'</div>'+dot+'</div>';
+    }
+  }
+  var total=startDow+lastDay.getDate();
+  var remain=(7-total%7)%7;
+  for(var i=1;i<=remain;i++){
+    html+='<div class="cal-day other"><div class="dn">'+i+'</div></div>';
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCal();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();}
+
+function selectDate(ds){
+  selectedDate=ds;
+  selectedTimes=[];
+  renderCal();
+  var timeCard=document.getElementById('time-card');
+  timeCard.style.display='block';
+  var d=new Date(ds);
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  document.getElementById('time-card-title').textContent=ds.replace(/-/g,'/')+'（'+typeNames[currentLessonType]+'）';
+  if(currentLessonType==='indoor'){
+    var times=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+    var html='';
+    var existing=[];
+    if(registeredSchedules[ds]){
+      var reg=registeredSchedules[ds].find(function(s){return s.lesson_type===currentLessonType;});
+      if(reg&&reg.times) existing=reg.times;
+    }
+    times.forEach(function(t){
+      var on=existing.indexOf(t)>=0?' on':'';
+      if(on) selectedTimes.push(t);
+      html+='<button class="time-btn'+on+'" onclick="toggleTime(this,''+t+'')">' +t+'</button>';
+    });
+    document.getElementById('time-grid').innerHTML=html;
+  }else{
+    document.getElementById('time-grid').innerHTML='<div style="font-size:13px;color:var(--gd);padding:8px 0;">この日を空き日として登録します</div>';
+  }
+  timeCard.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function toggleTime(btn,t){
+  btn.classList.toggle('on');
+  var idx=selectedTimes.indexOf(t);
+  if(idx>=0){selectedTimes.splice(idx,1);}else{selectedTimes.push(t);}
+}
+
+async function registerSchedule(){
+  if(!selectedDate){alert('日付を選択してください');return;}
+  if(currentLessonType==='indoor'&&selectedTimes.length===0){alert('時間を選択してください');return;}
+  var btn=document.getElementById('btn-reg');
+  btn.disabled=true;
+  btn.textContent='登録中...';
+  try{
+    var payload={
+      coach_id:currentCoachId,
+      lesson_type:currentLessonType,
+      date:selectedDate,
+      times:currentLessonType==='indoor'?selectedTimes:[],
+      updated_at:new Date().toISOString()
+    };
+    var{error}=await sb.from('coach_schedules').upsert(payload,{onConflict:'coach_id,lesson_type,date'});
+    if(error){
+      // テーブルがない場合はlocalStorageに保存
+      if(!registeredSchedules[selectedDate]) registeredSchedules[selectedDate]=[];
+      var existing=registeredSchedules[selectedDate].findIndex(function(s){return s.lesson_type===currentLessonType;});
+      if(existing>=0){registeredSchedules[selectedDate][existing]=payload;}
+      else{registeredSchedules[selectedDate].push(payload);}
+    }else{
+      if(!registeredSchedules[selectedDate]) registeredSchedules[selectedDate]=[];
+      var existing=registeredSchedules[selectedDate].findIndex(function(s){return s.lesson_type===currentLessonType;});
+      if(existing>=0){registeredSchedules[selectedDate][existing]=payload;}
+      else{registeredSchedules[selectedDate].push(payload);}
+    }
+    alert('登録しました！');
+    renderCal();
+    renderSchedList();
+  }catch(e){
+    alert('登録に失敗しました');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='この日時を登録する';
+  }
+}
+
+async function loadSchedules(){
+  try{
+    var{data,error}=await sb.from('coach_schedules').select('*').eq('coach_id',currentCoachId);
+    if(!error&&data){
+      data.forEach(function(row){
+        if(!registeredSchedules[row.date]) registeredSchedules[row.date]=[];
+        var existing=registeredSchedules[row.date].findIndex(function(s){return s.lesson_type===row.lesson_type;});
+        if(existing>=0){registeredSchedules[row.date][existing]=row;}
+        else{registeredSchedules[row.date].push(row);}
+      });
+    }
+  }catch(e){}
+  renderSchedList();
+  renderCal();
+}
+
+function renderSchedList(){
+  var keys=Object.keys(registeredSchedules).sort();
+  if(keys.length===0){
+    document.getElementById('sched-list').innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:16px;">登録された空き日時はありません</div>';
+    return;
+  }
+  var typeNames={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ'};
+  var html='';
+  keys.forEach(function(ds){
+    registeredSchedules[ds].forEach(function(s){
+      html+='<div class="sched-item">';
+      html+='<div><div class="sched-date">'+ds.replace(/-/g,'/')+'</div>';
+      html+='<div class="sched-times">';
+      html+='<span class="sched-type">'+typeNames[s.lesson_type]+'</span>';
+      if(s.times&&s.times.length>0) html+=' '+s.times.join(' / ');
+      html+='</div></div>';
+      html+='<button class="btn-del" onclick="deleteSchedule(''+ds+'',''+s.lesson_type+'')">削除</button>';
+      html+='</div>';
+    });
+  });
+  document.getElementById('sched-list').innerHTML=html;
+}
+
+async function deleteSchedule(ds,type){
+  if(!confirm('削除しますか？')) return;
+  await sb.from('coach_schedules').delete().eq('coach_id',currentCoachId).eq('date',ds).eq('lesson_type',type);
+  if(registeredSchedules[ds]){
+    registeredSchedules[ds]=registeredSchedules[ds].filter(function(s){return s.lesson_type!==type;});
+    if(registeredSchedules[ds].length===0) delete registeredSchedules[ds];
+  }
+  renderCal();
+  renderSchedList();
+}
+
+async function saveProfile(){
+  var res=await sb.auth.getSession();
+  var session=res.data.session;
+  if(!session) return;
+  var payload={
+    user_id:session.user.id,
+    name:document.getElementById('p-name').value,
+    area:document.getElementById('p-area').value,
+    experience:document.getElementById('p-exp').value,
+    tags:document.getElementById('p-tags').value,
+    bio:document.getElementById('p-bio').value,
+    price_60min:document.getElementById('p-price').value||null,
+    updated_at:new Date().toISOString()
+  };
+  var{error}=await sb.from('coaches').upsert(payload,{onConflict:'user_id'});
+  if(error){alert('保存に失敗しました');}
+  else{alert('プロフィールを保存しました！');}
+}
+
+async function doLogout(){
+  localStorage.removeItem('gc_login_time');
+  await sb.auth.signOut();
+  window.location.href='index.html';
+}
+</script>
+</body>
+</html>
