@@ -6,24 +6,105 @@
 <title>GolfCoach — お客様画面</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
-:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;}
-.header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:10;}
-.logo{font-size:18px;font-weight:700;color:var(--gd);}
-.user-name{font-size:13px;color:#666;}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--gold-l:#FAEEDA;--red:#E24B4A;--border:#e0e0e0;}
+.header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;}
+.logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--gd);}
+.user-name{font-size:12px;color:#666;}
 .logout-btn{font-size:12px;color:var(--g);background:none;border:1px solid var(--g);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;}
-.content{padding:20px 16px;max-width:480px;margin:0 auto;}
-.welcome{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);}
-.welcome h2{font-size:18px;color:var(--gd);margin-bottom:6px;}
-.welcome p{font-size:13px;color:#666;}
-.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-.menu-card{background:#fff;border-radius:12px;padding:20px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:transform .15s;}
-.menu-card:hover{transform:translateY(-2px);}
-.menu-icon{font-size:28px;margin-bottom:8px;}
-.menu-title{font-size:14px;font-weight:500;color:var(--gd);}
-.menu-sub{font-size:11px;color:#999;margin-top:4px;}
+.content{padding:16px;max-width:480px;margin:0 auto;}
+.snav{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap;overflow-x:auto;padding-bottom:4px;}
+.snb{font-size:12px;padding:6px 12px;border-radius:20px;border:0.5px solid var(--border);background:#fff;font-family:inherit;cursor:pointer;color:#666;transition:all .15s;white-space:nowrap;}
+.snb.on{background:var(--gd);color:#fff;border-color:var(--gd);}
+.screen{display:none;}.screen.on{display:block;}
+
+/* TYPE CARDS */
+.type-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.type-card{border-radius:12px;overflow:hidden;border:0.5px solid var(--border);cursor:pointer;transition:all .15s;background:#fff;}
+.type-card.on{outline:2px solid var(--g);}
+.photo-bg{position:relative;height:100px;background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 12px;}
+.photo-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.60) 100%);}
+.photo-content{position:relative;z-index:1;}
+.photo-title{font-size:13px;font-weight:700;color:#fff;line-height:1.3;}
+.photo-sub{font-size:10px;color:rgba(255,255,255,0.88);margin-top:2px;}
+.notice-bar{background:var(--gold-l);border-top:0.5px solid var(--gold);padding:5px 10px;display:flex;align-items:center;gap:5px;}
+.notice-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.notice-text{font-size:10px;color:#633806;font-weight:500;line-height:1.4;}
+.indoor-bottom{background:var(--gl);border-top:0.5px solid var(--g);padding:5px 10px;}
+.indoor-bottom-text{font-size:10px;color:var(--gd);font-weight:500;}
+
+/* SEARCH */
+.search-bar{display:flex;gap:8px;margin-bottom:10px;}
+.search-bar input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;outline:none;}
+.search-bar input:focus{border-color:var(--g);}
+.btn-search{padding:10px 16px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer;}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;}
+.filter-row select{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:#fff;outline:none;}
+
+/* COACH CARD */
+.ccard{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;}
+.ccard-top{display:flex;gap:10px;align-items:flex-start;}
+.avatar{width:46px;height:46px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--gd);font-size:12px;flex-shrink:0;}
+.cname{font-size:14px;font-weight:500;color:#1a1a1a;}
+.csub{font-size:12px;color:#666;margin-top:2px;}
+.stars{color:var(--gold);font-size:12px;}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:var(--gl);color:var(--gd);margin:2px 2px 0 0;}
+.heart-btn{background:none;border:none;cursor:pointer;font-size:20px;color:#ccc;padding:0;line-height:1;}
+.heart-btn.fav{color:var(--red);}
+.cprice{font-size:14px;font-weight:700;color:var(--g);}
+
+/* TIME SLOTS */
+.slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.slot{font-size:11px;padding:4px 10px;border-radius:6px;cursor:pointer;border:0.5px solid var(--border);color:#666;background:#f5f5f5;transition:all .15s;}
+.slot.avail{border-color:var(--g);color:var(--gd);background:var(--gl);}
+.slot.sel{background:var(--g);color:#fff;border-color:var(--g);}
+.btn-request{width:100%;margin-top:10px;padding:10px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;}
+
+/* ROUND CARD */
+.round-fixed{background:var(--gl);border:0.5px solid var(--g);border-radius:10px;padding:12px;margin-top:8px;}
+.round-price{font-size:16px;font-weight:700;color:var(--g);}
+.round-notice{background:var(--gold-l);border:0.5px solid var(--gold);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:11px;color:#633806;line-height:1.6;}
+
+/* TERMS */
+.terms-box{background:#f9f9f9;border:0.5px solid var(--border);border-radius:8px;padding:12px;font-size:11px;color:#666;line-height:1.8;max-height:150px;overflow-y:auto;margin-bottom:10px;}
+.terms-box h4{font-size:11px;font-weight:500;color:#1a1a1a;margin:8px 0 3px;}
+.agree-row{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;padding:10px;border:0.5px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:12px;}
+.agree-row input{width:16px;height:16px;accent-color:var(--g);cursor:pointer;}
+.btn-confirm{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.btn-confirm:disabled{background:#aaa;cursor:not-allowed;opacity:.5;}
+
+/* STEP */
+.stepbar{display:flex;align-items:center;margin-bottom:12px;}
+.stepc{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;}
+.stepc.done{background:var(--g);color:#fff;}
+.stepc.cur{background:var(--gd);color:#fff;}
+.stepc.yet{background:#eee;color:#999;border:0.5px solid var(--border);}
+.stepl{flex:1;height:1px;background:var(--border);}
+.stepl.done{background:var(--g);}
+
+/* FORM */
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:4px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;outline:none;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--g);}
+.form-group textarea{resize:vertical;min-height:64px;}
+
+/* FAV */
+.fav-notice{background:#fff0f0;border:0.5px solid var(--red);border-radius:8px;padding:10px 12px;font-size:12px;color:#a00;margin-bottom:10px;display:flex;gap:8px;align-items:flex-start;}
+
+/* REVIEW */
+.star-row{display:flex;gap:5px;margin:8px 0;}
+.starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;line-height:1;}
+.starb.on{color:var(--gold);}
+
+/* MYPAGE */
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.history-item:last-child{border-bottom:none;}
+.badge{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;}
+.b-g{background:var(--gl);color:var(--gd);}
+.b-bl{background:#e6f1fb;color:#185fa5;}
 </style>
 </head>
 <body>
@@ -34,28 +115,290 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </div>
+
 <div class="content">
-  <div class="welcome">
-    <h2>ようこそ！</h2>
-    <p>コーチを探して、ゴルフレッスンを予約しましょう</p>
+  <div class="snav">
+    <button class="snb on" onclick="tab(this,'s-search')">コーチを探す</button>
+    <button class="snb" onclick="tab(this,'s-request')">依頼する</button>
+    <button class="snb" onclick="tab(this,'s-fav')">お気に入り</button>
+    <button class="snb" onclick="tab(this,'s-mypage')">マイページ</button>
+    <button class="snb" onclick="tab(this,'s-review')">レビュー</button>
   </div>
-  <div class="menu-grid">
-    <div class="menu-card"><div class="menu-icon">🔍</div><div class="menu-title">コーチを探す</div><div class="menu-sub">条件で検索</div></div>
-    <div class="menu-card"><div class="menu-icon">📅</div><div class="menu-title">予約一覧</div><div class="menu-sub">予約を確認</div></div>
-    <div class="menu-card"><div class="menu-icon">♥</div><div class="menu-title">お気に入り</div><div class="menu-sub">気になるコーチ</div></div>
-    <div class="menu-card"><div class="menu-icon">👤</div><div class="menu-title">マイページ</div><div class="menu-sub">プロフィール編集</div></div>
+
+  <!-- コーチを探す -->
+  <div class="screen on" id="s-search">
+    <div style="font-size:14px;font-weight:500;color:var(--gd);margin-bottom:10px;">依頼の種類を選ぶ</div>
+    <div class="type-grid">
+      <div class="type-card on" onclick="selType(this,'indoor')">
+        <div class="photo-bg" style="background:linear-gradient(135deg,#085041,#1D9E75);">
+          <div class="photo-content">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" style="margin-bottom:3px;"><rect x="10" y="3" width="2" height="10" rx="1" fill="white"/><path d="M7 7 Q11 5 15 7" stroke="white" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="11" cy="16" rx="5" ry="1.4" fill="white" opacity="0.4"/></svg>
+            <div class="photo-title">インドアゴルフ<br>レッスン</div>
+            <div class="photo-sub">5〜120分・時間制</div>
+          </div>
+        </div>
+        <div class="indoor-bottom"><div class="indoor-bottom-text">時間と料金はこちら</div></div>
+      </div>
+      <div class="type-card" onclick="selType(this,'round')">
+        <div class="photo-bg" style="background:linear-gradient(135deg,#2a4a2a,#5a7a5a);">
+          <div class="photo-content">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" style="margin-bottom:3px;"><path d="M4 17 Q11 7 18 17" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="18" cy="17" r="2" fill="white"/><line x1="7" y1="12" x2="5" y2="17" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="photo-title">ラウンドレッスン</div>
+            <div class="photo-sub">1ラウンド固定</div>
+          </div>
+        </div>
+        <div class="notice-bar"><div class="notice-dot"></div><div class="notice-text">コーチのプレーフィー・キャディフィーはお客様のご負担となります</div></div>
+      </div>
+      <div class="type-card" onclick="selType(this,'accompany')">
+        <div class="photo-bg" style="background:linear-gradient(135deg,#1a3a5a,#3a6a9a);">
+          <div class="photo-content">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" style="margin-bottom:3px;"><circle cx="8" cy="7" r="2.5" fill="white"/><circle cx="14" cy="7" r="2.5" fill="white" opacity="0.6"/><path d="M8 9.5 L8 16 M14 9.5 L14 16 M8 16 L14 16" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="photo-title">同伴ラウンド</div>
+            <div class="photo-sub">1ラウンド固定</div>
+          </div>
+        </div>
+        <div class="notice-bar"><div class="notice-dot"></div><div class="notice-text">コーチのプレーフィー・キャディフィーはお客様のご負担となります</div></div>
+      </div>
+      <div class="type-card" onclick="selType(this,'comp')">
+        <div class="photo-bg" style="background:linear-gradient(135deg,#4a3a00,#9a7a00);">
+          <div class="photo-content">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none" style="margin-bottom:3px;"><path d="M11 3 L13 8.5 L19 8.5 L14 12 L16 18 L11 14.5 L6 18 L8 12 L3 8.5 L9 8.5 Z" fill="white"/></svg>
+            <div class="photo-title">コンペ参加</div>
+            <div class="photo-sub">1ラウンド固定</div>
+          </div>
+        </div>
+        <div class="notice-bar"><div class="notice-dot"></div><div class="notice-text">コーチのプレーフィー・キャディフィーはお客様のご負担となります</div></div>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" placeholder="コーチ名・キーワード">
+      <button class="btn-search">検索</button>
+    </div>
+    <div class="filter-row">
+      <select><option>希望日</option><option>今日</option><option>明日</option><option>今週末</option></select>
+      <select><option>エリア</option><option>京都市内</option><option>伏見区</option><option>大阪</option></select>
+    </div>
+
+    <div style="font-size:12px;color:#666;margin-bottom:10px;">2件のコーチが見つかりました</div>
+
+    <div class="ccard">
+      <div class="ccard-top">
+        <div class="avatar">田中</div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;">
+            <div>
+              <div class="cname">田中 雄一 コーチ</div>
+              <div class="csub">京都市内 / 経験8年</div>
+              <div class="stars">★★★★★ <span style="color:#666;font-size:11px;">4.9 (32件)</span></div>
+              <div style="margin-top:4px;"><span class="tag">初心者歓迎</span><span class="tag">スイング矯正</span></div>
+            </div>
+            <div style="text-align:right;">
+              <button class="heart-btn fav" onclick="toggleHeart(this)">♥</button>
+              <div class="cprice">¥5,000</div>
+              <div style="font-size:10px;color:#666;">/ 60分</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slots" id="slots1">
+        <div class="slot avail sel" onclick="selSlot(this,'slots1')">10:00</div>
+        <div class="slot avail" onclick="selSlot(this,'slots1')">11:00</div>
+        <div class="slot">13:00</div>
+        <div class="slot avail" onclick="selSlot(this,'slots1')">14:00</div>
+        <div class="slot avail" onclick="selSlot(this,'slots1')">15:00</div>
+      </div>
+      <button class="btn-request" onclick="tab(document.querySelectorAll('.snb')[1],'s-request')">この時間で依頼する</button>
+    </div>
+
+    <div class="ccard">
+      <div class="ccard-top">
+        <div class="avatar" style="background:var(--gold-l);color:#633806;">山本</div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;">
+            <div>
+              <div class="cname">山本 花子 コーチ</div>
+              <div class="csub">京都・大阪 / 経験3年</div>
+              <div class="stars">★★★★☆ <span style="color:#666;font-size:11px;">4.3 (8件)</span></div>
+              <div style="margin-top:4px;"><span class="tag">女性専門</span><span class="tag">パター</span></div>
+            </div>
+            <div style="text-align:right;">
+              <button class="heart-btn" onclick="toggleHeart(this)">♡</button>
+              <div class="cprice">¥4,500</div>
+              <div style="font-size:10px;color:#666;">/ 60分</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slots" id="slots2">
+        <div class="slot avail" onclick="selSlot(this,'slots2')">09:00</div>
+        <div class="slot">10:00</div>
+        <div class="slot avail" onclick="selSlot(this,'slots2')">15:00</div>
+      </div>
+      <button class="btn-request" style="background:transparent;color:var(--g);border:1px solid var(--g);">この時間で依頼する</button>
+    </div>
+  </div>
+
+  <!-- 依頼する -->
+  <div class="screen" id="s-request">
+    <div class="stepbar">
+      <div class="stepc done">1</div><div class="stepl done"></div>
+      <div class="stepc done">2</div><div class="stepl done"></div>
+      <div class="stepc cur">3</div><div class="stepl"></div>
+      <div class="stepc yet">4</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#999;margin-bottom:14px;margin-top:-8px;">
+      <span>種類</span><span>時間選択</span><span>詳細入力</span><span>同意・確定</span>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px;">依頼内容を入力</div>
+      <div class="form-group"><label>依頼の種類</label>
+        <select><option>⛳ インドアゴルフレッスン（時間制）</option><option>🏌 ラウンドレッスン（1ラウンド）</option><option>🤝 同伴ラウンド（1ラウンド）</option><option>🏆 コンペ参加（1ラウンド）</option></select>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" value="10:00"></div>
+      </div>
+      <div class="form-group"><label>レッスン時間</label>
+        <select><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
+      </div>
+      <div class="form-group"><label>場所</label>
+        <select><option>Golf Create 京都店</option><option>Golf Create 伏見店</option></select>
+      </div>
+      <div class="form-group"><label>ゴルフ歴</label>
+        <select><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
+      </div>
+      <div class="form-group"><label>ご要望・コメント</label>
+        <textarea placeholder="例：スイングの基礎から教えていただきたいです。"></textarea>
+      </div>
+    </div>
+
+    <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px;">利用規約・同意事項</div>
+      <div class="terms-box">
+        <h4>第1条（サービスの性質と派遣業務の非該当）</h4>
+        本サービス「GolfCoach」はマッチングプラットフォームです。運営者はコーチに業務上の指揮命令を行わず、レッスン内容・方法・料金はコーチが自ら決定します。本サービスは労働者派遣事業に該当しません。
+        <h4>第2条（コーチの独立性）</h4>
+        コーチはすべて個人事業主であり、運営者との雇用関係はありません。
+        <h4>第3条（個人情報の取り扱い）</h4>
+        個人情報保護法に基づき個人情報を適切に管理します。
+        <h4>第4条（お気に入り機能と情報開示）</h4>
+        お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
+        <h4>第5条（ラウンド系依頼におけるお客様負担事項）</h4>
+        ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。
+        <h4>第6条（キャンセルポリシー）</h4>
+        レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
+        <h4>第7条（レビュー義務）</h4>
+        レッスン終了後、星評価（1〜5）の投稿が必須です。
+        <h4>第8条（準拠法・管轄）</h4>
+        本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
+      </div>
+      <label class="agree-row">
+        <input type="checkbox" id="agreeChk" onchange="checkAgree()">
+        利用規約をすべて読み、内容に同意してサービスを利用します
+      </label>
+      <button class="btn-confirm" id="req-btn" disabled>同意して依頼を確定する →</button>
+    </div>
+  </div>
+
+  <!-- お気に入り -->
+  <div class="screen" id="s-fav">
+    <div class="fav-notice">♥ お気に入り登録すると、コーチにあなたのお名前が通知されます。（利用規約第4条）</div>
+    <div class="ccard">
+      <div class="ccard-top">
+        <div class="avatar">田中</div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;">
+            <div><div class="cname">田中 雄一 コーチ</div><div class="stars">★★★★★ 4.9</div></div>
+            <button class="heart-btn fav" onclick="toggleHeart(this)">♥</button>
+          </div>
+          <button class="btn-request" style="margin-top:8px;">このコーチに依頼する</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- マイページ -->
+  <div class="screen" id="s-mypage">
+    <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px;">お客様情報</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>お名前</label><input type="text" placeholder="山田 太郎"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>ふりがな</label><input type="text" placeholder="やまだ たろう"></div>
+      </div>
+      <div class="form-group"><label>メールアドレス</label><input type="email" placeholder="example@mail.com"></div>
+      <div class="form-group"><label>電話番号</label><input type="tel" placeholder="090-XXXX-XXXX"></div>
+      <div class="form-group"><label>ゴルフ歴</label><select><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select></div>
+      <button class="btn-request">保存する</button>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px;">予約履歴</div>
+      <div class="history-item"><div><div style="font-size:13px;font-weight:500;">田中コーチ / インドアレッスン 50分</div><div style="font-size:12px;color:#666;">4月12日 10:00 / ¥4,000</div></div><span class="badge b-g">確定</span></div>
+      <div class="history-item"><div><div style="font-size:13px;font-weight:500;">山本コーチ / パター 30分</div><div style="font-size:12px;color:#666;">4月08日 15:00 / ¥2,250</div></div><span class="badge b-bl">完了</span></div>
+    </div>
+  </div>
+
+  <!-- レビュー -->
+  <div class="screen" id="s-review">
+    <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);">
+      <div style="font-size:13px;font-weight:500;">田中コーチへの評価（必須）</div>
+      <div style="font-size:12px;color:#666;margin-bottom:10px;">4月08日 インドアゴルフレッスン 50分</div>
+      <label style="font-size:12px;color:#666;">総合評価</label>
+      <div class="star-row" id="rev-stars">
+        <button class="starb" onclick="rate(1)">★</button>
+        <button class="starb" onclick="rate(2)">★</button>
+        <button class="starb" onclick="rate(3)">★</button>
+        <button class="starb" onclick="rate(4)">★</button>
+        <button class="starb" onclick="rate(5)">★</button>
+      </div>
+      <div class="form-group"><label>コメント（必須）</label><textarea placeholder="レッスンの感想をご記入ください。"></textarea></div>
+      <button class="btn-request">評価を送信する</button>
+    </div>
   </div>
 </div>
+
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const{createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
 sb.auth.getSession().then(({data:{session}})=>{
   if(!session){window.location.href='index.html';return;}
   const name=session.user.user_metadata?.name||session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
 });
+
+function tab(btn,id){
+  document.querySelectorAll('.snb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+function selType(card,type){
+  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('on'));
+  card.classList.add('on');
+}
+function toggleHeart(btn){
+  var f=btn.classList.contains('fav');
+  btn.classList.toggle('fav',!f);
+  btn.textContent=f?'♡':'♥';
+}
+function selSlot(el,gid){
+  document.querySelectorAll('#'+gid+' .slot.avail').forEach(s=>s.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function checkAgree(){
+  var chk=document.getElementById('agreeChk');
+  var btn=document.getElementById('req-btn');
+  btn.disabled=!chk.checked;
+}
+function rate(n){
+  document.querySelectorAll('#rev-stars .starb').forEach((s,i)=>{
+    s.classList.toggle('on',i<n);
+  });
+}
 async function doLogout(){
   await sb.auth.signOut();
   window.location.href='index.html';
