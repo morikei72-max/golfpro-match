@@ -28,15 +28,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
 .cal-label{text-align:center;font-size:11px;color:#999;padding:4px 0;}
 .cal-day{text-align:center;padding:8px 2px;border-radius:8px;cursor:pointer;min-height:40px;position:relative;}
-.cal-day .dn{font-size:14px;font-weight:500;color:#bbb;}
+.cal-day .dn{font-size:15px;font-weight:500;color:#ccc;}
 .cal-day.active .dn{color:var(--gd);font-weight:700;}
-.cal-day.active{background:var(--gl);}
-.cal-day.selected{background:var(--g)!important;}
-.cal-day.selected .dn{color:#fff!important;}
-.cal-day.today .dn{text-decoration:underline;}
+.cal-day.active{background:#d4f0e5;border:1px solid var(--g);}
+.cal-day.selected{background:var(--gd)!important;border:2px solid var(--gd)!important;}
+.cal-day.selected .dn{color:#fff!important;font-weight:700;}
+.cal-day.today{border:2px solid var(--gold)!important;}
+.cal-day.today .dn{color:var(--gold);font-weight:700;}
 .cal-day.other .dn{color:#ddd;}
-.reg-dot{width:6px;height:6px;border-radius:50%;background:var(--g);margin:2px auto 0;}
+.reg-dot{width:7px;height:7px;border-radius:50%;background:var(--g);margin:3px auto 0;}
 .cal-day.selected .reg-dot{background:#fff;}
+.cal-day.active:hover{background:#b8e8d5;}
 
 /* 時間選択 */
 .type-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
@@ -234,7 +236,7 @@ function renderCal(){
     if(isPast){
       html+='<div class="cal-day other"><div class="dn">'+day+'</div></div>';
     }else{
-      html+='<div class="'+cls+'" onclick="selectDate(''+ds+'')"><div class="dn">'+day+'</div>'+dot+'</div>';
+      html+='<div class="'+cls+'" data-ds="'+ds+'" onclick="selectDate(this.getAttribute(\"data-ds\"))"><div class="dn">'+day+'</div>'+dot+'</div>';
     }
   }
   var total=startDow+lastDay.getDate();
@@ -268,7 +270,7 @@ function selectDate(ds){
     times.forEach(function(t){
       var on=existing.indexOf(t)>=0?' on':'';
       if(on) selectedTimes.push(t);
-      html+='<button class="time-btn'+on+'" onclick="toggleTime(this,''+t+'')">' +t+'</button>';
+      html+='<button class="time-btn'+on+'" data-t="'+t+'" onclick="toggleTime(this,this.getAttribute(\"data-t\"))">' +t+'</button>';
     });
     document.getElementById('time-grid').innerHTML=html;
   }else{
@@ -353,7 +355,7 @@ function renderSchedList(){
       html+='<span class="sched-type">'+typeNames[s.lesson_type]+'</span>';
       if(s.times&&s.times.length>0) html+=' '+s.times.join(' / ');
       html+='</div></div>';
-      html+='<button class="btn-del" onclick="deleteSchedule(''+ds+'',''+s.lesson_type+'')">削除</button>';
+      html+='<button class="btn-del" data-ds="'+ds+'" data-lt="'+s.lesson_type+'" onclick="deleteSchedule(this.getAttribute(\"data-ds\"),this.getAttribute(\"data-lt\"))">削除</button>';
       html+='</div>';
     });
   });
