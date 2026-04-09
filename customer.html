@@ -359,35 +359,14 @@ const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const{createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{
-    persistSession:true,
-    storageKey:'golfcoach_session',
-    storage:window.localStorage,
-    autoRefreshToken:true,
-    detectSessionInUrl:false
-  }
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
-
-async function initSession(){
-  const{data:{session}}=await sb.auth.getSession();
-  if(!session){
-    window.location.href='index.html';
-    return;
-  }
-  // 30日セッション管理
-  const loginTime=parseInt(localStorage.getItem('gc_login_time')||'0');
-  const now=Date.now();
-  const thirtyDays=30*24*60*60*1000;
-  if(loginTime>0 && now-loginTime>thirtyDays){
-    await sb.auth.signOut();
-    window.location.href='index.html';
-    return;
-  }
-  if(!loginTime) localStorage.setItem('gc_login_time',now.toString());
+sb.auth.getSession().then(({data:{session}})=>{
+  if(!session){window.location.href='index.html';return;}
   const name=session.user.user_metadata?.name||session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
-}
-initSession();
+  localStorage.setItem('gc_login_time',Date.now().toString());
+});
 
 function tab(btn,id){
   document.querySelectorAll('.snb').forEach(b=>b.classList.remove('on'));
