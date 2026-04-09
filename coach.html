@@ -10,54 +10,92 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 :root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--gold-l:#FAEEDA;--red:#E24B4A;--border:#e0e0e0;}
+
+/* ヘッダー */
 .header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--g);position:sticky;top:0;z-index:100;}
 .logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--gd);}
 .logo-sub{font-size:11px;color:var(--g);font-family:'Noto Sans JP',sans-serif;margin-left:6px;}
 .logout-btn{font-size:12px;color:var(--g);background:none;border:1.5px solid var(--g);border-radius:6px;padding:6px 14px;cursor:pointer;font-family:inherit;font-weight:500;}
-.content{padding:16px;max-width:480px;margin:0 auto;}
-.snav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
-.snb{font-size:13px;padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;cursor:pointer;color:#666;white-space:nowrap;flex-shrink:0;font-weight:500;}
-.snb.on{background:var(--gd);color:#fff;border-color:var(--gd);}
-.screen{display:none;}.screen.on{display:block;}
-.card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:14px;}
-.card-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--gl);}
 
-/* 店舗選択 */
-.store-tabs{display:flex;gap:8px;margin-bottom:4px;}
-.store-tab{flex:1;padding:12px;text-align:center;border-radius:10px;border:2px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;font-size:13px;font-weight:500;color:#666;}
-.store-tab.on{border-color:var(--g);background:var(--gl);color:var(--gd);}
+/* トースト */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.success{background:var(--gd);}
+#toast.error{background:var(--red);}
+
+.content{padding:16px;max-width:480px;margin:0 auto;}
+
+/* ステップバー */
+.step-bar{display:flex;align-items:center;margin-bottom:20px;padding:0 4px;}
+.step-item{display:flex;flex-direction:column;align-items:center;flex:1;}
+.step-circle{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#bbb;}
+.step-circle.done{background:var(--g);border-color:var(--g);color:#fff;}
+.step-circle.active{background:var(--gd);border-color:var(--gd);color:#fff;}
+.step-label{font-size:10px;color:#bbb;margin-top:4px;text-align:center;line-height:1.3;}
+.step-label.done{color:var(--g);}
+.step-label.active{color:var(--gd);font-weight:700;}
+.step-line{flex:1;height:2px;background:var(--border);margin-bottom:16px;}
+.step-line.done{background:var(--g);}
+
+/* カード */
+.card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:20px;margin-bottom:14px;}
+.card-title{font-size:17px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.card-desc{font-size:13px;color:#888;margin-bottom:20px;line-height:1.6;}
+
+/* フォーム */
+.form-group{margin-bottom:16px;}
+.form-group label{display:block;font-size:13px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;background:#fff;outline:none;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--g);}
+.form-group textarea{resize:vertical;min-height:80px;}
+
+/* 店舗カード選択 */
+.store-cards{display:flex;flex-direction:column;gap:12px;}
+.store-card{padding:16px;border-radius:12px;border:2px solid var(--border);background:#fff;cursor:pointer;display:flex;align-items:center;gap:14px;}
+.store-card.on{border-color:var(--g);background:var(--gl);}
+.store-card.on .store-check{background:var(--g);border-color:var(--g);}
+.store-card.on .store-check::after{display:block;}
+.store-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:#fff;flex-shrink:0;position:relative;}
+.store-check::after{content:'✓';display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:13px;font-weight:700;}
+.store-info{flex:1;}
+.store-name{font-size:15px;font-weight:700;color:var(--gd);}
+.store-addr{font-size:12px;color:#888;margin-top:2px;}
+
+/* 料金 */
+.price-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.price-row:last-child{border-bottom:none;}
+.price-label{font-size:14px;font-weight:500;color:var(--gd);}
+.price-sub{font-size:11px;color:#888;margin-top:2px;}
+.price-input-wrap{display:flex;align-items:center;gap:6px;}
+.price-input{width:100px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;text-align:right;outline:none;}
+.price-input:focus{border-color:var(--g);}
+.price-unit{font-size:13px;color:#666;}
 
 /* カレンダー */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.cal-nav{background:none;border:none;font-size:26px;cursor:pointer;color:var(--g);padding:4px 10px;line-height:1;}
+.cal-nav{background:none;border:none;font-size:28px;cursor:pointer;color:var(--g);padding:4px 10px;line-height:1;}
 .cal-title{font-size:16px;font-weight:700;color:var(--gd);}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
 .cal-label{text-align:center;font-size:11px;color:#999;padding:4px 0;font-weight:500;}
 .cal-day{text-align:center;padding:8px 4px;border-radius:8px;cursor:pointer;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid transparent;}
-.cal-day .dn{font-size:15px;font-weight:500;color:#ccc;}
-.cal-day.active{background:#d4f0e5;border-color:var(--g);}
-.cal-day.active .dn{color:var(--gd);font-weight:700;}
-.cal-day.selected{background:var(--gd);border-color:var(--gd);}
-.cal-day.selected .dn{color:#fff;font-weight:700;}
+.cal-day .dn{font-size:15px;font-weight:500;color:#333;}
+.cal-day.past .dn{color:#ccc;}
+.cal-day.past{cursor:default;}
+.cal-day.other .dn{color:#ddd;}
+.cal-day.other{cursor:default;}
 .cal-day.today{border-color:var(--gold);}
 .cal-day.today .dn{color:var(--gold);font-weight:700;}
-.cal-day.other .dn{color:#ddd;}
 .cal-day.has-reg{background:#d4f0e5;border-color:var(--g);}
 .cal-day.has-reg .dn{color:var(--gd);font-weight:700;}
-.cal-day.selected.has-reg{background:var(--gd);}
-.cal-day.selected.has-reg .dn{color:#fff;}
+.cal-day.selected{background:var(--gd) !important;border-color:var(--gd) !important;}
+.cal-day.selected .dn{color:#fff !important;font-weight:700;}
 .reg-dot{width:6px;height:6px;border-radius:50%;background:var(--g);margin-top:3px;}
 .cal-day.selected .reg-dot{background:#fff;}
 
-/* 時間選択 */
-.time-section{margin-top:14px;}
-.section-label{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:10px;}
-.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
-.time-btn{font-size:13px;padding:10px 4px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:#666;text-align:center;font-family:inherit;font-weight:500;}
+/* 時間グリッド */
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0;}
+.time-btn{font-size:13px;padding:11px 4px;border-radius:8px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:#666;text-align:center;font-family:inherit;font-weight:500;}
 .time-btn.on{background:var(--g);color:#fff;border-color:var(--g);}
-.btn-reg{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;}
-.btn-reg:disabled{background:#aaa;cursor:not-allowed;}
-.btn-del{font-size:12px;padding:5px 10px;border-radius:6px;border:1.5px solid var(--red);background:#fff0f0;color:var(--red);cursor:pointer;font-family:inherit;}
 
 /* 登録済みリスト */
 .sched-item{padding:12px 0;border-bottom:1px solid var(--border);}
@@ -65,209 +103,278 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .sched-row{display:flex;justify-content:space-between;align-items:flex-start;}
 .sched-date{font-size:14px;font-weight:700;color:var(--gd);}
 .sched-store{font-size:11px;color:#888;margin-top:2px;}
-.sched-times{font-size:12px;color:#555;margin-top:4px;line-height:1.6;}
+.sched-times{font-size:12px;color:#555;margin-top:4px;}
+.btn-del{font-size:12px;padding:5px 10px;border-radius:6px;border:1.5px solid var(--red);background:#fff0f0;color:var(--red);cursor:pointer;font-family:inherit;}
 
-/* 料金設定 */
-.price-group{margin-bottom:16px;}
-.price-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
-.price-row:last-child{border-bottom:none;}
-.price-label{font-size:14px;font-weight:500;color:var(--gd);}
-.price-sub{font-size:11px;color:#888;margin-top:2px;}
-.price-input-wrap{display:flex;align-items:center;gap:6px;}
-.price-input{width:90px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;text-align:right;outline:none;}
-.price-input:focus{border-color:var(--g);}
-.price-unit{font-size:13px;color:#666;}
+/* ボタン */
+.btn-next{width:100%;padding:16px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;}
+.btn-next:disabled{background:#aaa;cursor:not-allowed;}
+.btn-back{width:100%;padding:14px;background:#fff;color:#666;border:1.5px solid var(--border);border-radius:12px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px;}
+.btn-skip{width:100%;padding:12px;background:none;color:#aaa;border:none;font-family:inherit;font-size:13px;cursor:pointer;margin-top:4px;text-decoration:underline;}
 
-/* 予約確認 */
-.booking-item{padding:14px;background:var(--gl);border-radius:10px;margin-bottom:10px;border:1px solid var(--g);}
+/* メイン画面タブ */
+.snav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+.snb{font-size:13px;padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;cursor:pointer;color:#666;white-space:nowrap;flex-shrink:0;font-weight:500;}
+.snb.on{background:var(--gd);color:#fff;border-color:var(--gd);}
+.screen{display:none;}.screen.on{display:block;}
+
+/* 予約アイテム */
+.booking-item{padding:14px;border-radius:10px;margin-bottom:10px;border:1px solid var(--g);background:var(--gl);}
 .booking-name{font-size:15px;font-weight:700;color:var(--gd);}
-.booking-detail{font-size:13px;color:#555;margin-top:4px;}
-.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500;}
+.booking-detail{font-size:13px;color:#555;margin-top:4px;line-height:1.6;}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500;white-space:nowrap;}
 .b-g{background:var(--g);color:#fff;}
-.b-bl{background:#e6f1fb;color:#185fa5;}
 .b-pe{background:var(--gold-l);color:var(--gold);}
+.b-bl{background:#e6f1fb;color:#185fa5;}
 
-/* プロフィール */
-.form-group{margin-bottom:14px;}
-.form-group label{display:block;font-size:13px;font-weight:500;color:var(--gd);margin-bottom:6px;}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;outline:none;}
-.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--g);}
-.form-group textarea{resize:vertical;min-height:72px;}
+/* 完了画面 */
+.complete-wrap{text-align:center;padding:30px 0;}
+.complete-icon{font-size:60px;margin-bottom:16px;}
+.complete-title{font-size:20px;font-weight:700;color:var(--gd);margin-bottom:8px;}
+.complete-desc{font-size:14px;color:#666;line-height:1.7;}
 </style>
 </head>
 <body>
+<div id="toast"></div>
 <div class="header">
   <div>
     <span class="logo">GolfCoach</span>
     <span class="logo-sub">コーチ画面</span>
   </div>
   <div style="display:flex;align-items:center;gap:10px;">
-    <span style="font-size:12px;color:#666;" id="coach-name"></span>
+    <span style="font-size:12px;color:#666;" id="coach-name-header"></span>
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </div>
 
 <div class="content">
-  <div class="snav">
-    <button class="snb on" onclick="tab(this,'s-schedule')">空き日時登録</button>
-    <button class="snb" onclick="tab(this,'s-price')">料金設定</button>
-    <button class="snb" onclick="tab(this,'s-bookings')">予約確認</button>
-    <button class="snb" onclick="tab(this,'s-profile')">プロフィール</button>
-  </div>
 
-  <!-- 空き日時登録 -->
-  <div class="screen on" id="s-schedule">
+  <!-- ===== セットアップウィザード ===== -->
+  <div id="wizard">
 
-    <div class="card">
-      <div class="card-title">店舗を選ぶ</div>
-      <div class="store-tabs">
-        <button class="store-tab on" id="store-kyoto" onclick="selStore(this,'kyoto')">Golf Create<br>京都店</button>
-        <button class="store-tab" id="store-fushimi" onclick="selStore(this,'fushimi')">Golf Create<br>伏見店</button>
+    <!-- ステップバー -->
+    <div class="step-bar" id="step-bar">
+      <div class="step-item">
+        <div class="step-circle active" id="sc1">1</div>
+        <div class="step-label active" id="sl1">コーチ登録</div>
+      </div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc2">2</div>
+        <div class="step-label" id="sl2">店舗選択</div>
+      </div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc3">3</div>
+        <div class="step-label" id="sl3">料金設定</div>
+      </div>
+      <div class="step-line" id="line3"></div>
+      <div class="step-item">
+        <div class="step-circle" id="sc4">4</div>
+        <div class="step-label" id="sl4">日時登録</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="cal-header">
-        <button class="cal-nav" onclick="calPrev()">&#8249;</button>
-        <div class="cal-title" id="cal-title"></div>
-        <button class="cal-nav" onclick="calNext()">&#8250;</button>
-      </div>
-      <div class="cal-grid" id="cal-grid"></div>
-    </div>
-
-    <div class="card" id="time-card" style="display:none;">
-      <div class="card-title" id="time-card-title">時間を選ぶ</div>
-      <div class="time-section">
-        <div class="section-label">開始時間（複数選択可）</div>
-        <div class="time-grid" id="time-grid"></div>
-      </div>
-      <button class="btn-reg" id="btn-reg" onclick="registerSchedule()">この日時を登録する</button>
-    </div>
-
-    <div class="card">
-      <div class="card-title">登録済みの空き日時</div>
-      <div id="sched-list"><div style="font-size:13px;color:#bbb;text-align:center;padding:20px;">登録された空き日時はありません</div></div>
-    </div>
-  </div>
-
-  <!-- 料金設定 -->
-  <div class="screen" id="s-price">
-    <div class="card">
-      <div class="card-title">店舗を選ぶ</div>
-      <div class="store-tabs">
-        <button class="store-tab on" id="pstore-kyoto" onclick="selPriceStore(this,'kyoto')">Golf Create<br>京都店</button>
-        <button class="store-tab" id="pstore-fushimi" onclick="selPriceStore(this,'fushimi')">Golf Create<br>伏見店</button>
+    <!-- STEP1: コーチ登録 -->
+    <div id="step1">
+      <div class="card">
+        <div class="card-title">👤 コーチ情報を登録する</div>
+        <div class="card-desc">まずはあなたのプロフィールを入力してください。お客様に表示される情報です。</div>
+        <div class="form-group"><label>お名前 *</label><input type="text" id="pf-name" placeholder="例：山田 一郎"></div>
+        <div class="form-group"><label>対応エリア</label><input type="text" id="pf-area" placeholder="例：京都市内・大阪"></div>
+        <div class="form-group"><label>経験年数</label>
+          <select id="pf-exp">
+            <option>1年未満</option><option>1〜3年</option><option>3〜5年</option>
+            <option>5〜10年</option><option>10年以上</option>
+          </select>
+        </div>
+        <div class="form-group"><label>得意分野・タグ</label><input type="text" id="pf-tags" placeholder="例：初心者歓迎、スイング矯正"></div>
+        <div class="form-group"><label>自己紹介</label><textarea id="pf-bio" placeholder="レッスンの特徴やアピールポイントを入力してください。"></textarea></div>
+        <button class="btn-next" id="btn-step1" onclick="saveStep1()">次へ　→　店舗選択</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">インドアゴルフレッスン 料金</div>
-      <div class="price-group">
-        <div class="price-row">
-          <div><div class="price-label">50分</div></div>
-          <div class="price-input-wrap">
-            <input type="number" class="price-input" id="p-50" placeholder="5000">
-            <span class="price-unit">円</span>
+    <!-- STEP2: 店舗選択 -->
+    <div id="step2" style="display:none;">
+      <div class="card">
+        <div class="card-title">🏌️ 勤務する店舗を選ぶ</div>
+        <div class="card-desc">あなたがレッスンを行う店舗を選んでください。複数選択できます。</div>
+        <div class="store-cards">
+          <div class="store-card on" id="sc-kyoto" onclick="toggleStore('kyoto')">
+            <div class="store-check" id="check-kyoto"></div>
+            <div class="store-info">
+              <div class="store-name">Golf Create 京都店</div>
+              <div class="store-addr">京都府八幡市</div>
+            </div>
+          </div>
+          <div class="store-card" id="sc-fushimi" onclick="toggleStore('fushimi')">
+            <div class="store-check" id="check-fushimi"></div>
+            <div class="store-info">
+              <div class="store-name">Golf Create 伏見店</div>
+              <div class="store-addr">京都府京都市伏見区</div>
+            </div>
           </div>
         </div>
-        <div class="price-row">
-          <div><div class="price-label">90分</div></div>
-          <div class="price-input-wrap">
-            <input type="number" class="price-input" id="p-90" placeholder="8000">
-            <span class="price-unit">円</span>
-          </div>
-        </div>
-        <div class="price-row">
-          <div><div class="price-label">120分</div></div>
-          <div class="price-input-wrap">
-            <input type="number" class="price-input" id="p-120" placeholder="10000">
-            <span class="price-unit">円</span>
-          </div>
-        </div>
+        <button class="btn-next" onclick="saveStep2()">次へ　→　料金設定</button>
+        <button class="btn-back" onclick="goStep(1)">← 戻る</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title">ラウンド系 料金</div>
-      <div class="price-group">
+    <!-- STEP3: 料金設定 -->
+    <div id="step3" style="display:none;">
+      <div class="card">
+        <div class="card-title">💴 料金を設定する</div>
+        <div class="card-desc">各レッスンの料金を入力してください。あとから変更できます。</div>
+
+        <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:10px;">📍 インドアゴルフレッスン</div>
         <div class="price-row">
-          <div>
-            <div class="price-label">ラウンドレッスン</div>
-            <div class="price-sub">1ラウンド固定</div>
-          </div>
-          <div class="price-input-wrap">
-            <input type="number" class="price-input" id="p-round" placeholder="20000">
-            <span class="price-unit">円</span>
-          </div>
+          <div class="price-label">50分</div>
+          <div class="price-input-wrap"><input type="number" class="price-input" id="p-50" placeholder="5000" min="0"><span class="price-unit">円</span></div>
         </div>
         <div class="price-row">
-          <div>
-            <div class="price-label">同伴ラウンド</div>
-            <div class="price-sub">1ラウンド固定</div>
-          </div>
-          <div class="price-input-wrap">
-            <input type="number" class="price-input" id="p-accompany" placeholder="15000">
-            <span class="price-unit">円</span>
-          </div>
+          <div class="price-label">90分</div>
+          <div class="price-input-wrap"><input type="number" class="price-input" id="p-90" placeholder="8000" min="0"><span class="price-unit">円</span></div>
         </div>
         <div class="price-row">
-          <div>
-            <div class="price-label">コンペ参加</div>
-            <div class="price-sub">1ラウンド固定</div>
-          </div>
-          <div class="price-input-wrap">
-            <input type="number" class="price-input" id="p-comp" placeholder="15000">
-            <span class="price-unit">円</span>
-          </div>
+          <div class="price-label">120分</div>
+          <div class="price-input-wrap"><input type="number" class="price-input" id="p-120" placeholder="10000" min="0"><span class="price-unit">円</span></div>
         </div>
+
+        <div style="font-size:13px;font-weight:700;color:var(--gd);margin:16px 0 10px;">⛳ ラウンド系</div>
+        <div class="price-row">
+          <div><div class="price-label">ラウンドレッスン</div><div class="price-sub">1ラウンド固定</div></div>
+          <div class="price-input-wrap"><input type="number" class="price-input" id="p-round" placeholder="20000" min="0"><span class="price-unit">円</span></div>
+        </div>
+        <div class="price-row">
+          <div><div class="price-label">同伴ラウンド</div><div class="price-sub">1ラウンド固定</div></div>
+          <div class="price-input-wrap"><input type="number" class="price-input" id="p-accompany" placeholder="15000" min="0"><span class="price-unit">円</span></div>
+        </div>
+        <div class="price-row">
+          <div><div class="price-label">コンペ参加</div><div class="price-sub">1ラウンド固定</div></div>
+          <div class="price-input-wrap"><input type="number" class="price-input" id="p-comp" placeholder="15000" min="0"><span class="price-unit">円</span></div>
+        </div>
+
+        <button class="btn-next" id="btn-step3" onclick="saveStep3()">次へ　→　空き日時登録</button>
+        <button class="btn-back" onclick="goStep(2)">← 戻る</button>
       </div>
     </div>
 
-    <button class="btn-reg" onclick="savePrices()">料金を保存する</button>
-  </div>
+    <!-- STEP4: 空き日時登録 -->
+    <div id="step4" style="display:none;">
+      <div class="card">
+        <div class="card-title">📅 空き日時を登録する</div>
+        <div class="card-desc">レッスン可能な日時を登録してください。カレンダーで日付を選び、時間を選択して登録します。</div>
 
-  <!-- 予約確認 -->
-  <div class="screen" id="s-bookings">
-    <div class="card">
-      <div class="card-title">受付中の予約</div>
-      <div class="booking-item">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div class="booking-name">山田 太郎 様</div>
-            <div class="booking-detail">インドアレッスン 50分<br>4月15日 10:00 / Golf Create 京都店</div>
-          </div>
-          <span class="badge b-g">確定</span>
+        <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:10px;">店舗を選ぶ</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;" id="cal-store-kyoto" onclick="selCalStore(this,'kyoto')">京都店</button>
+          <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;" id="cal-store-fushimi" onclick="selCalStore(this,'fushimi')">伏見店</button>
+        </div>
+
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calPrev()">‹</button>
+          <div class="cal-title" id="cal-title"></div>
+          <button class="cal-nav" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+
+        <div id="time-section" style="display:none;margin-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;" id="time-section-title"></div>
+          <div style="font-size:12px;color:#888;margin-bottom:10px;">開始時間を選んでください（複数選択可）</div>
+          <div class="time-grid" id="time-grid"></div>
+          <button class="btn-next" id="btn-reg-time" onclick="registerSchedule()">この日時を登録する</button>
         </div>
       </div>
-      <div class="booking-item" style="background:#FAEEDA;border-color:var(--gold);">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-          <div>
-            <div class="booking-name" style="color:var(--gold);">鈴木 花子 様</div>
-            <div class="booking-detail">ラウンドレッスン<br>4月20日 / Golf Create 伏見店</div>
-          </div>
-          <span class="badge b-pe">申請中</span>
+
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;">登録済みの空き日時</div>
+        <div id="sched-list"><div style="font-size:13px;color:#bbb;text-align:center;padding:16px;">まだ登録がありません</div></div>
+      </div>
+
+      <button class="btn-next" onclick="goMain()" style="background:var(--gd);">✅ 設定完了！メイン画面へ</button>
+      <button class="btn-back" onclick="goStep(3)">← 戻る</button>
+    </div>
+
+  </div><!-- /wizard -->
+
+  <!-- ===== メイン画面 ===== -->
+  <div id="main-view" style="display:none;">
+    <div class="snav">
+      <button class="snb on" onclick="mainTab(this,'m-bookings')">予約確認</button>
+      <button class="snb" onclick="mainTab(this,'m-schedule')">空き日時</button>
+      <button class="snb" onclick="mainTab(this,'m-price')">料金設定</button>
+      <button class="snb" onclick="mainTab(this,'m-profile')">プロフィール</button>
+    </div>
+
+    <!-- 予約確認 -->
+    <div class="screen on" id="m-bookings">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">受付中の予約</div>
+        <div id="bookings-list"><div style="font-size:13px;color:#bbb;text-align:center;padding:20px;">読み込み中...</div></div>
+      </div>
+    </div>
+
+    <!-- 空き日時（メイン） -->
+    <div class="screen" id="m-schedule">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">空き日時の管理</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;" id="ms-store-kyoto" onclick="selMainCalStore(this,'kyoto')">京都店</button>
+          <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;" id="ms-store-fushimi" onclick="selMainCalStore(this,'fushimi')">伏見店</button>
+        </div>
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calPrev()">‹</button>
+          <div class="cal-title" id="cal-title2"></div>
+          <button class="cal-nav" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid2"></div>
+        <div id="time-section2" style="display:none;margin-top:16px;">
+          <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;" id="time-section-title2"></div>
+          <div class="time-grid" id="time-grid2"></div>
+          <button class="btn-next" onclick="registerSchedule2()">この日時を登録する</button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- プロフィール -->
-  <div class="screen" id="s-profile">
-    <div class="card">
-      <div class="card-title">コーチ情報</div>
-      <div class="form-group"><label>お名前</label><input type="text" id="pf-name" placeholder="山田 一郎"></div>
-      <div class="form-group"><label>対応エリア</label><input type="text" id="pf-area" placeholder="例：京都市内・大阪"></div>
-      <div class="form-group"><label>経験年数</label>
-        <select id="pf-exp">
-          <option>1年未満</option><option>1〜3年</option><option>3〜5年</option>
-          <option>5〜10年</option><option>10年以上</option>
-        </select>
+      <div class="card">
+        <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;">登録済み一覧</div>
+        <div id="sched-list2"><div style="font-size:13px;color:#bbb;text-align:center;padding:16px;">登録なし</div></div>
       </div>
-      <div class="form-group"><label>得意分野・タグ</label><input type="text" id="pf-tags" placeholder="例：初心者歓迎、スイング矯正"></div>
-      <div class="form-group"><label>自己紹介</label><textarea id="pf-bio" placeholder="レッスンの特徴やアピールポイントを入力してください。"></textarea></div>
-      <button class="btn-reg" onclick="saveProfile()">プロフィールを保存する</button>
     </div>
-  </div>
+
+    <!-- 料金設定（メイン） -->
+    <div class="screen" id="m-price">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px;">料金設定</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+          <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;" id="mp-kyoto" onclick="selPriceStore2(this,'kyoto')">京都店</button>
+          <button style="flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;" id="mp-fushimi" onclick="selPriceStore2(this,'fushimi')">伏見店</button>
+        </div>
+        <div class="price-row"><div class="price-label">50分</div><div class="price-input-wrap"><input type="number" class="price-input" id="mp-50" min="0"><span class="price-unit">円</span></div></div>
+        <div class="price-row"><div class="price-label">90分</div><div class="price-input-wrap"><input type="number" class="price-input" id="mp-90" min="0"><span class="price-unit">円</span></div></div>
+        <div class="price-row"><div class="price-label">120分</div><div class="price-input-wrap"><input type="number" class="price-input" id="mp-120" min="0"><span class="price-unit">円</span></div></div>
+        <div class="price-row"><div><div class="price-label">ラウンドレッスン</div><div class="price-sub">1ラウンド</div></div><div class="price-input-wrap"><input type="number" class="price-input" id="mp-round" min="0"><span class="price-unit">円</span></div></div>
+        <div class="price-row"><div><div class="price-label">同伴ラウンド</div><div class="price-sub">1ラウンド</div></div><div class="price-input-wrap"><input type="number" class="price-input" id="mp-accompany" min="0"><span class="price-unit">円</span></div></div>
+        <div class="price-row"><div><div class="price-label">コンペ参加</div><div class="price-sub">1ラウンド</div></div><div class="price-input-wrap"><input type="number" class="price-input" id="mp-comp" min="0"><span class="price-unit">円</span></div></div>
+        <button class="btn-next" id="btn-save-price2" onclick="savePrices2()" style="margin-top:16px;">料金を保存する</button>
+      </div>
+    </div>
+
+    <!-- プロフィール（メイン） -->
+    <div class="screen" id="m-profile">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">プロフィール編集</div>
+        <div class="form-group"><label>お名前</label><input type="text" id="mpf-name"></div>
+        <div class="form-group"><label>対応エリア</label><input type="text" id="mpf-area"></div>
+        <div class="form-group"><label>経験年数</label>
+          <select id="mpf-exp"><option>1年未満</option><option>1〜3年</option><option>3〜5年</option><option>5〜10年</option><option>10年以上</option></select>
+        </div>
+        <div class="form-group"><label>得意分野・タグ</label><input type="text" id="mpf-tags"></div>
+        <div class="form-group"><label>自己紹介</label><textarea id="mpf-bio"></textarea></div>
+        <button class="btn-next" id="btn-save-profile2" onclick="saveProfile2()">プロフィールを保存する</button>
+      </div>
+    </div>
+
+  </div><!-- /main-view -->
+
 </div>
 
 <script>
@@ -279,252 +386,463 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 });
 
 var coachId=null;
-var currentStore='kyoto';
-var currentPriceStore='kyoto';
-var calYear=null,calMonth=null;
+var currentStep=1;
+var selectedStores=['kyoto'];
+var currentCalStore='kyoto';
+var currentPriceStore2='kyoto';
+var calYear,calMonth;
 var selectedDate=null;
 var selectedTimes=[];
 var schedules={};
 
+// ---- トースト ----
+function showToast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className=type||'';t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+// ---- 認証 ----
 sb.auth.getSession().then(function(res){
   var session=res.data.session;
   if(!session){window.location.href='index.html';return;}
   coachId=session.user.id;
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
-  document.getElementById('coach-name').textContent=name+'コーチ';
+  document.getElementById('coach-name-header').textContent=name+'コーチ';
   localStorage.setItem('gc_login_time',Date.now().toString());
-  var today=new Date();
-  calYear=today.getFullYear();
-  calMonth=today.getMonth();
-  loadSchedules();
-  loadPrices();
+  var today=new Date();calYear=today.getFullYear();calMonth=today.getMonth();
+  // 既にプロフィール登録済みかチェック
+  checkSetupDone();
 });
 
-function tab(btn,id){
+async function checkSetupDone(){
+  try{
+    var {data}=await sb.from('coaches').select('id,name').eq('user_id',coachId).single();
+    if(data&&data.name){
+      // セットアップ済み→メイン画面
+      loadMainData();
+      showMain();
+    }else{
+      loadProfile();
+      showStep(1);
+    }
+  }catch(e){
+    loadProfile();
+    showStep(1);
+  }
+}
+
+// ---- ステップ表示 ----
+function showStep(n){
+  currentStep=n;
+  for(var i=1;i<=4;i++){
+    document.getElementById('step'+i).style.display=i===n?'block':'none';
+    var sc=document.getElementById('sc'+i);
+    var sl=document.getElementById('sl'+i);
+    sc.className='step-circle'+(i<n?' done':i===n?' active':'');
+    sl.className='step-label'+(i<n?' done':i===n?' active':'');
+    if(i<4){
+      document.getElementById('line'+i).className='step-line'+(i<n?' done':'');
+    }
+  }
+  document.getElementById('wizard').style.display='block';
+  document.getElementById('main-view').style.display='none';
+  if(n===4){renderCal();}
+}
+
+function goStep(n){showStep(n);}
+
+// ---- メイン画面表示 ----
+function showMain(){
+  document.getElementById('wizard').style.display='none';
+  document.getElementById('main-view').style.display='block';
+}
+
+function goMain(){
+  loadMainData();
+  showMain();
+}
+
+function mainTab(btn,id){
   document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});
   btn.classList.add('on');
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
   document.getElementById(id).classList.add('on');
 }
 
-function selStore(btn,store){
-  document.querySelectorAll('.store-tab').forEach(function(b){b.classList.remove('on');});
-  btn.classList.add('on');
-  currentStore=store;
-  selectedDate=null;
-  selectedTimes=[];
-  document.getElementById('time-card').style.display='none';
-  renderCal();
+// ---- STEP1: プロフィール保存 ----
+async function saveStep1(){
+  var name=document.getElementById('pf-name').value.trim();
+  if(!name){showToast('お名前を入力してください','error');return;}
+  var btn=document.getElementById('btn-step1');
+  btn.disabled=true;btn.textContent='保存中...';
+  try{
+    var payload={
+      user_id:coachId,
+      name:name,
+      area:document.getElementById('pf-area').value.trim(),
+      experience:document.getElementById('pf-exp').value,
+      tags:document.getElementById('pf-tags').value.trim(),
+      bio:document.getElementById('pf-bio').value.trim(),
+      updated_at:new Date().toISOString()
+    };
+    var {error}=await sb.from('coaches').upsert(payload,{onConflict:'user_id'});
+    if(error) throw error;
+    showToast('プロフィールを保存しました！','success');
+    showStep(2);
+  }catch(e){
+    showToast('保存に失敗しました: '+(e.message||e),'error');
+  }finally{
+    btn.disabled=false;btn.textContent='次へ　→　店舗選択';
+  }
 }
 
-function selPriceStore(btn,store){
-  document.getElementById('pstore-kyoto').classList.remove('on');
-  document.getElementById('pstore-fushimi').classList.remove('on');
-  btn.classList.add('on');
-  currentPriceStore=store;
-  loadPrices();
+// ---- STEP2: 店舗選択 ----
+function toggleStore(store){
+  var card=document.getElementById('sc-'+store);
+  card.classList.toggle('on');
+  if(card.classList.contains('on')){
+    if(selectedStores.indexOf(store)<0) selectedStores.push(store);
+  }else{
+    selectedStores=selectedStores.filter(function(s){return s!==store;});
+  }
 }
 
-function fmt(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+function saveStep2(){
+  if(selectedStores.length===0){showToast('店舗を1つ以上選んでください','error');return;}
+  showStep(3);
 }
 
-function renderCal(){
+// ---- STEP3: 料金保存 ----
+async function saveStep3(){
+  var btn=document.getElementById('btn-step3');
+  btn.disabled=true;btn.textContent='保存中...';
+  try{
+    for(var i=0;i<selectedStores.length;i++){
+      var st=selectedStores[i];
+      var payload={
+        coach_id:coachId,store:st,
+        price_50:parseInt(document.getElementById('p-50').value)||null,
+        price_90:parseInt(document.getElementById('p-90').value)||null,
+        price_120:parseInt(document.getElementById('p-120').value)||null,
+        price_round:parseInt(document.getElementById('p-round').value)||null,
+        price_accompany:parseInt(document.getElementById('p-accompany').value)||null,
+        price_comp:parseInt(document.getElementById('p-comp').value)||null,
+        updated_at:new Date().toISOString()
+      };
+      var {error}=await sb.from('coach_prices').upsert(payload,{onConflict:'coach_id,store'});
+      if(error) throw error;
+    }
+    showToast('料金を保存しました！','success');
+    loadSchedules();
+    showStep(4);
+  }catch(e){
+    showToast('保存に失敗しました: '+(e.message||e),'error');
+  }finally{
+    btn.disabled=false;btn.textContent='次へ　→　空き日時登録';
+  }
+}
+
+// ---- カレンダー共通 ----
+function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+function calPrev(){
+  calMonth--;if(calMonth<0){calMonth=11;calYear--;}
+  var t=new Date();if(calYear<t.getFullYear()||(calYear===t.getFullYear()&&calMonth<t.getMonth())){calMonth=t.getMonth();calYear=t.getFullYear();}
+  if(currentStep===4){renderCal();}else{renderCal2();}
+}
+function calNext(){
+  calMonth++;if(calMonth>11){calMonth=0;calYear++;}
+  if(currentStep===4){renderCal();}else{renderCal2();}
+}
+
+function renderCalCore(gridId,titleId,store,selectedD,onClickFn){
   var today=new Date();
   var todayStr=fmt(today);
+  var todayDate=new Date(today.getFullYear(),today.getMonth(),today.getDate());
   var firstDay=new Date(calYear,calMonth,1);
   var lastDay=new Date(calYear,calMonth+1,0);
-  document.getElementById('cal-title').textContent=calYear+'年'+(calMonth+1)+'月';
+  document.getElementById(titleId).textContent=calYear+'年'+(calMonth+1)+'月';
   var labels=['月','火','水','木','金','土','日'];
   var html='';
   labels.forEach(function(l){html+='<div class="cal-label">'+l+'</div>';});
   var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
-  for(var i=0;i<startDow;i++){
-    var d=new Date(calYear,calMonth,1-startDow+i);
-    html+='<div class="cal-day other"><div class="dn">'+d.getDate()+'</div></div>';
-  }
+  for(var i=0;i<startDow;i++){var d=new Date(calYear,calMonth,1-startDow+i);html+='<div class="cal-day other"><div class="dn">'+d.getDate()+'</div></div>';}
   for(var day=1;day<=lastDay.getDate();day++){
     var d=new Date(calYear,calMonth,day);
     var ds=fmt(d);
-    var isPast=d<new Date(today.getFullYear(),today.getMonth(),today.getDate());
-    if(isPast){
-      html+='<div class="cal-day other"><div class="dn">'+day+'</div></div>';
-      continue;
-    }
-    var hasReg=schedules[currentStore]&&schedules[currentStore][ds];
-    var cls='cal-day';
-    if(hasReg) cls+=' has-reg';
-    if(ds===todayStr) cls+=' today';
-    if(ds===selectedDate) cls+=' selected';
+    if(d<todayDate){html+='<div class="cal-day past"><div class="dn">'+day+'</div></div>';continue;}
+    var hasReg=schedules[store]&&schedules[store][ds];
+    var cls='cal-day'+(hasReg?' has-reg':'')+(ds===todayStr?' today':'')+(ds===selectedD?' selected':'');
     var dot=hasReg?'<div class="reg-dot"></div>':'';
-    html+='<div class="'+cls+'" data-date="'+ds+'" onclick="selectDate(this.dataset.date)"><div class="dn">'+day+'</div>'+dot+'</div>';
+    html+='<div class="'+cls+'" onclick="'+onClickFn+'(\''+ds+'\')"><div class="dn">'+day+'</div>'+dot+'</div>';
   }
   var total=startDow+lastDay.getDate();
   var remain=(7-total%7)%7;
-  for(var i=1;i<=remain;i++){
-    html+='<div class="cal-day other"><div class="dn">'+i+'</div></div>';
-  }
-  document.getElementById('cal-grid').innerHTML=html;
+  for(var i=1;i<=remain;i++){html+='<div class="cal-day other"><div class="dn">'+i+'</div></div>';}
+  document.getElementById(gridId).innerHTML=html;
 }
 
-function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCal();}
-function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();}
-
-function selectDate(ds){
-  selectedDate=ds;
-  selectedTimes=[];
+// STEP4カレンダー
+function renderCal(){renderCalCore('cal-grid','cal-title',currentCalStore,selectedDate,'selectDate');}
+function selCalStore(btn,store){
+  document.getElementById('cal-store-kyoto').style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;';
+  document.getElementById('cal-store-fushimi').style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;';
+  btn.style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;';
+  currentCalStore=store;selectedDate=null;selectedTimes=[];
+  document.getElementById('time-section').style.display='none';
   renderCal();
-  var tc=document.getElementById('time-card');
-  tc.style.display='block';
-  var d=ds.replace(/-/g,'/');
-  document.getElementById('time-card-title').textContent=d+'の空き時間を登録';
+}
+function selectDate(ds){
+  selectedDate=ds;selectedTimes=[];renderCal();
+  document.getElementById('time-section').style.display='block';
+  document.getElementById('time-section-title').textContent=ds.replace(/-/g,'/')+'の空き時間';
+  renderTimeGrid('time-grid',selectedTimes,schedules[currentCalStore]&&schedules[currentCalStore][ds]?schedules[currentCalStore][ds].times:[]);
+  document.getElementById('time-section').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function renderTimeGrid(gridId,selTimes,existingTimes){
   var times=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
-  var existing=[];
-  if(schedules[currentStore]&&schedules[currentStore][ds]){
-    existing=schedules[currentStore][ds].times||[];
-    selectedTimes=existing.slice();
-  }
   var html='';
   times.forEach(function(t){
-    var on=existing.indexOf(t)>=0?' on':'';
-    html+='<button class="time-btn'+on+'" data-time="'+t+'" onclick="toggleTime(this,this.dataset.time)">'+t+'</button>';
+    var on=existingTimes.indexOf(t)>=0?' on':'';
+    if(on) selTimes.push(t);
+    html+='<button class="time-btn'+on+'" onclick="toggleTime(this,\''+t+'\',\''+gridId+'\')">'+t+'</button>';
   });
-  document.getElementById('time-grid').innerHTML=html;
-  tc.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById(gridId).innerHTML=html;
 }
-
-function toggleTime(btn,t){
+function toggleTime(btn,t,gridId){
   btn.classList.toggle('on');
-  var idx=selectedTimes.indexOf(t);
-  if(idx>=0){selectedTimes.splice(idx,1);}else{selectedTimes.push(t);}
+  var arr=gridId==='time-grid'?selectedTimes:selectedTimes2;
+  var idx=arr.indexOf(t);
+  if(idx>=0){arr.splice(idx,1);}else{arr.push(t);}
 }
 
 async function registerSchedule(){
-  if(!selectedDate){alert('日付を選択してください');return;}
-  if(selectedTimes.length===0){alert('時間を1つ以上選択してください');return;}
-  var btn=document.getElementById('btn-reg');
+  if(!selectedDate||selectedTimes.length===0){showToast('日付と時間を選択してください','error');return;}
+  var btn=document.getElementById('btn-reg-time');
   btn.disabled=true;btn.textContent='登録中...';
   try{
-    var payload={coach_id:coachId,store:currentStore,date:selectedDate,times:selectedTimes,updated_at:new Date().toISOString()};
-    var {error}=await sb.from('coach_schedules').upsert(payload,{onConflict:'coach_id,store,date'});
-    if(!schedules[currentStore]) schedules[currentStore]={};
-    schedules[currentStore][selectedDate]={times:selectedTimes};
-    alert('登録しました！');
-    renderCal();
-    renderSchedList();
-  }catch(e){alert('登録しました（ローカル保存）');}
+    var {error}=await sb.from('coach_schedules').upsert({coach_id:coachId,store:currentCalStore,date:selectedDate,times:selectedTimes,updated_at:new Date().toISOString()},{onConflict:'coach_id,store,date'});
+    if(error) throw error;
+    if(!schedules[currentCalStore]) schedules[currentCalStore]={};
+    schedules[currentCalStore][selectedDate]={times:selectedTimes.slice()};
+    showToast('登録しました！','success');
+    selectedDate=null;selectedTimes=[];
+    document.getElementById('time-section').style.display='none';
+    renderCal();renderSchedList('sched-list');
+  }catch(e){showToast('登録に失敗しました: '+(e.message||e),'error');}
   finally{btn.disabled=false;btn.textContent='この日時を登録する';}
 }
 
+// メイン画面カレンダー
+var selectedDate2=null;var selectedTimes2=[];
+function renderCal2(){renderCalCore('cal-grid2','cal-title2',currentCalStore,selectedDate2,'selectDate2');}
+function selMainCalStore(btn,store){
+  document.getElementById('ms-store-kyoto').style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;';
+  document.getElementById('ms-store-fushimi').style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;';
+  btn.style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;';
+  currentCalStore=store;selectedDate2=null;selectedTimes2=[];
+  document.getElementById('time-section2').style.display='none';
+  renderCal2();
+}
+function selectDate2(ds){
+  selectedDate2=ds;selectedTimes2=[];renderCal2();
+  document.getElementById('time-section2').style.display='block';
+  document.getElementById('time-section-title2').textContent=ds.replace(/-/g,'/')+'の空き時間';
+  renderTimeGrid2(selectedTimes2,schedules[currentCalStore]&&schedules[currentCalStore][ds]?schedules[currentCalStore][ds].times:[]);
+}
+function renderTimeGrid2(selTimes,existingTimes){
+  var times=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00','20:00'];
+  var html='';
+  times.forEach(function(t){
+    var on=existingTimes.indexOf(t)>=0?' on':'';
+    html+='<button class="time-btn'+on+'" onclick="toggleTime2(this,\''+t+'\')">'+t+'</button>';
+  });
+  document.getElementById('time-grid2').innerHTML=html;
+  selTimes.length=0;existingTimes.forEach(function(t){selTimes.push(t);});
+}
+function toggleTime2(btn,t){
+  btn.classList.toggle('on');
+  var idx=selectedTimes2.indexOf(t);
+  if(idx>=0){selectedTimes2.splice(idx,1);}else{selectedTimes2.push(t);}
+}
+async function registerSchedule2(){
+  if(!selectedDate2||selectedTimes2.length===0){showToast('日付と時間を選択してください','error');return;}
+  try{
+    var {error}=await sb.from('coach_schedules').upsert({coach_id:coachId,store:currentCalStore,date:selectedDate2,times:selectedTimes2,updated_at:new Date().toISOString()},{onConflict:'coach_id,store,date'});
+    if(error) throw error;
+    if(!schedules[currentCalStore]) schedules[currentCalStore]={};
+    schedules[currentCalStore][selectedDate2]={times:selectedTimes2.slice()};
+    showToast('登録しました！','success');
+    selectedDate2=null;selectedTimes2=[];
+    document.getElementById('time-section2').style.display='none';
+    renderCal2();renderSchedList('sched-list2');
+  }catch(e){showToast('登録に失敗しました: '+(e.message||e),'error');}
+}
+
+// ---- スケジュール読み込み ----
 async function loadSchedules(){
   try{
     var {data,error}=await sb.from('coach_schedules').select('*').eq('coach_id',coachId);
     if(!error&&data){
       schedules={};
-      data.forEach(function(row){
-        var st=row.store||'kyoto';
-        if(!schedules[st]) schedules[st]={};
-        schedules[st][row.date]={times:row.times||[]};
-      });
+      data.forEach(function(row){var st=row.store||'kyoto';if(!schedules[st])schedules[st]={};schedules[st][row.date]={times:row.times||[]};});
     }
   }catch(e){}
-  renderCal();
-  renderSchedList();
+  renderSchedList('sched-list');
+  renderSchedList('sched-list2');
 }
 
-function renderSchedList(){
+function renderSchedList(elId){
   var allItems=[];
   ['kyoto','fushimi'].forEach(function(st){
     if(!schedules[st]) return;
+    var today=new Date();var todayDate=new Date(today.getFullYear(),today.getMonth(),today.getDate());
     Object.keys(schedules[st]).sort().forEach(function(ds){
+      if(new Date(ds)<todayDate) return;
       allItems.push({store:st,date:ds,times:schedules[st][ds].times});
     });
   });
-  if(allItems.length===0){
-    document.getElementById('sched-list').innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:20px;">登録された空き日時はありません</div>';
-    return;
-  }
-  var storeNames={kyoto:'京都店',fushimi:'伏見店'};
+  var el=document.getElementById(elId);
+  if(!el) return;
+  if(allItems.length===0){el.innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:16px;">登録なし</div>';return;}
+  var sn={kyoto:'京都店',fushimi:'伏見店'};
   var html='';
   allItems.forEach(function(item){
-    html+='<div class="sched-item">';
-    html+='<div class="sched-row">';
+    html+='<div class="sched-item"><div class="sched-row">';
     html+='<div><div class="sched-date">'+item.date.replace(/-/g,'/')+'</div>';
-    html+='<div class="sched-store">Golf Create '+storeNames[item.store]+'</div>';
+    html+='<div class="sched-store">Golf Create '+sn[item.store]+'</div>';
     html+='<div class="sched-times">'+item.times.join(' / ')+'</div></div>';
-    html+='<button class="btn-del" data-date="'+item.date+'" data-store="'+item.store+'" onclick="deleteSchedule(this.dataset.date,this.dataset.store)">削除</button>';
+    html+='<button class="btn-del" onclick="deleteSchedule(\''+item.date+'\',\''+item.store+'\',\''+elId+'\')">削除</button>';
     html+='</div></div>';
   });
-  document.getElementById('sched-list').innerHTML=html;
+  el.innerHTML=html;
 }
 
-async function deleteSchedule(ds,store){
+async function deleteSchedule(ds,store,elId){
   if(!confirm('削除しますか？')) return;
-  await sb.from('coach_schedules').delete().eq('coach_id',coachId).eq('date',ds).eq('store',store);
-  if(schedules[store]) delete schedules[store][ds];
-  renderCal();
-  renderSchedList();
+  try{
+    var {error}=await sb.from('coach_schedules').delete().eq('coach_id',coachId).eq('date',ds).eq('store',store);
+    if(error) throw error;
+    if(schedules[store]) delete schedules[store][ds];
+    showToast('削除しました','success');
+    if(currentStep===4){renderCal();}else{renderCal2();}
+    renderSchedList(elId);
+  }catch(e){showToast('削除に失敗しました','error');}
 }
 
-var priceData={};
-
-async function loadPrices(){
+// ---- 料金（メイン） ----
+async function selPriceStore2(btn,store){
+  document.getElementById('mp-kyoto').style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;';
+  document.getElementById('mp-fushimi').style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--border);background:#fff;color:#666;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;';
+  btn.style.cssText='flex:1;padding:10px;border-radius:10px;border:2px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;';
+  currentPriceStore2=store;
+  await loadPrices2();
+}
+async function loadPrices2(){
   try{
-    var {data,error}=await sb.from('coach_prices').select('*').eq('coach_id',coachId).eq('store',currentPriceStore);
-    if(!error&&data&&data.length>0){
+    var {data}=await sb.from('coach_prices').select('*').eq('coach_id',coachId).eq('store',currentPriceStore2);
+    var ids=['mp-50','mp-90','mp-120','mp-round','mp-accompany','mp-comp'];
+    var keys=['price_50','price_90','price_120','price_round','price_accompany','price_comp'];
+    ids.forEach(function(id){document.getElementById(id).value='';});
+    if(data&&data.length>0){
       var p=data[0];
-      document.getElementById('p-50').value=p.price_50||'';
-      document.getElementById('p-90').value=p.price_90||'';
-      document.getElementById('p-120').value=p.price_120||'';
-      document.getElementById('p-round').value=p.price_round||'';
-      document.getElementById('p-accompany').value=p.price_accompany||'';
-      document.getElementById('p-comp').value=p.price_comp||'';
-    }else{
-      document.getElementById('p-50').value='';
-      document.getElementById('p-90').value='';
-      document.getElementById('p-120').value='';
-      document.getElementById('p-round').value='';
-      document.getElementById('p-accompany').value='';
-      document.getElementById('p-comp').value='';
+      ids.forEach(function(id,i){document.getElementById(id).value=p[keys[i]]||'';});
     }
   }catch(e){}
 }
-
-async function savePrices(){
-  var payload={
-    coach_id:coachId,
-    store:currentPriceStore,
-    price_50:parseInt(document.getElementById('p-50').value)||null,
-    price_90:parseInt(document.getElementById('p-90').value)||null,
-    price_120:parseInt(document.getElementById('p-120').value)||null,
-    price_round:parseInt(document.getElementById('p-round').value)||null,
-    price_accompany:parseInt(document.getElementById('p-accompany').value)||null,
-    price_comp:parseInt(document.getElementById('p-comp').value)||null,
-    updated_at:new Date().toISOString()
-  };
-  var {error}=await sb.from('coach_prices').upsert(payload,{onConflict:'coach_id,store'});
-  if(error){alert('保存に失敗しました: '+error.message);}
-  else{alert('料金を保存しました！');}
+async function savePrices2(){
+  var btn=document.getElementById('btn-save-price2');
+  btn.disabled=true;btn.textContent='保存中...';
+  try{
+    var payload={
+      coach_id:coachId,store:currentPriceStore2,
+      price_50:parseInt(document.getElementById('mp-50').value)||null,
+      price_90:parseInt(document.getElementById('mp-90').value)||null,
+      price_120:parseInt(document.getElementById('mp-120').value)||null,
+      price_round:parseInt(document.getElementById('mp-round').value)||null,
+      price_accompany:parseInt(document.getElementById('mp-accompany').value)||null,
+      price_comp:parseInt(document.getElementById('mp-comp').value)||null,
+      updated_at:new Date().toISOString()
+    };
+    var {error}=await sb.from('coach_prices').upsert(payload,{onConflict:'coach_id,store'});
+    if(error) throw error;
+    showToast('料金を保存しました！','success');
+  }catch(e){showToast('保存に失敗しました: '+(e.message||e),'error');}
+  finally{btn.disabled=false;btn.textContent='料金を保存する';}
 }
 
-async function saveProfile(){
-  var res=await sb.auth.getSession();
-  var session=res.data.session;
-  if(!session) return;
-  var payload={
-    user_id:session.user.id,
-    name:document.getElementById('pf-name').value,
-    area:document.getElementById('pf-area').value,
-    experience:document.getElementById('pf-exp').value,
-    tags:document.getElementById('pf-tags').value,
-    bio:document.getElementById('pf-bio').value,
-    updated_at:new Date().toISOString()
-  };
-  var {error}=await sb.from('coaches').upsert(payload,{onConflict:'user_id'});
-  if(error){alert('保存に失敗しました');}
-  else{alert('プロフィールを保存しました！');}
+// ---- プロフィール（メイン） ----
+async function loadMainData(){
+  await loadSchedules();
+  await loadPrices2();
+  await loadProfileMain();
+  await loadBookings();
+  renderCal2();
+}
+async function loadProfile(){
+  try{
+    var {data}=await sb.from('coaches').select('*').eq('user_id',coachId).single();
+    if(data){
+      document.getElementById('pf-name').value=data.name||'';
+      document.getElementById('pf-area').value=data.area||'';
+      document.getElementById('pf-tags').value=data.tags||'';
+      document.getElementById('pf-bio').value=data.bio||'';
+    }
+  }catch(e){}
+}
+async function loadProfileMain(){
+  try{
+    var {data}=await sb.from('coaches').select('*').eq('user_id',coachId).single();
+    if(data){
+      document.getElementById('mpf-name').value=data.name||'';
+      document.getElementById('mpf-area').value=data.area||'';
+      document.getElementById('mpf-tags').value=data.tags||'';
+      document.getElementById('mpf-bio').value=data.bio||'';
+    }
+  }catch(e){}
+}
+async function saveProfile2(){
+  var btn=document.getElementById('btn-save-profile2');
+  btn.disabled=true;btn.textContent='保存中...';
+  try{
+    var {error}=await sb.from('coaches').upsert({user_id:coachId,name:document.getElementById('mpf-name').value.trim(),area:document.getElementById('mpf-area').value.trim(),experience:document.getElementById('mpf-exp').value,tags:document.getElementById('mpf-tags').value.trim(),bio:document.getElementById('mpf-bio').value.trim(),updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    if(error) throw error;
+    showToast('プロフィールを保存しました！','success');
+  }catch(e){showToast('保存に失敗しました: '+(e.message||e),'error');}
+  finally{btn.disabled=false;btn.textContent='プロフィールを保存する';}
 }
 
+// ---- 予約一覧 ----
+async function loadBookings(){
+  try{
+    var {data,error}=await sb.from('bookings').select('*').eq('coach_id',coachId).order('created_at',{ascending:false});
+    var el=document.getElementById('bookings-list');
+    if(error) throw error;
+    if(!data||data.length===0){el.innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:20px;">予約はまだありません</div>';return;}
+    var sm={pending:'申請中',confirmed:'確定',cancelled:'キャンセル'};
+    var sc={pending:'b-pe',confirmed:'b-g',cancelled:'b-bl'};
+    var tm={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+    var sn={kyoto:'京都店',fushimi:'伏見店'};
+    var html='';
+    data.forEach(function(b){
+      var bg=b.status==='pending'?'background:#FAEEDA;border-color:var(--gold);':'';
+      html+='<div class="booking-item" style="'+bg+'">';
+      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+      html+='<div><div class="booking-name" style="'+(b.status==='pending'?'color:var(--gold);':'')+'">'+(b.customer_name||'お客様')+'様</div>';
+      html+='<div class="booking-detail">'+(tm[b.type]||b.type||'');
+      if(b.date) html+='<br>'+b.date.replace(/-/g,'/');
+      if(b.time) html+=' '+b.time;
+      if(b.store) html+=' / '+(sn[b.store]||b.store);
+      html+='</div></div>';
+      html+='<span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+'</span>';
+      html+='</div></div>';
+    });
+    el.innerHTML=html;
+  }catch(e){document.getElementById('bookings-list').innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:20px;">読み込めませんでした</div>';}
+}
+
+// ---- ログアウト ----
 async function doLogout(){
   localStorage.removeItem('gc_login_time');
   await sb.auth.signOut();
