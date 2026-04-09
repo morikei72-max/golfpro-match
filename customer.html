@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GolfCoach — お客様画面</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;}
+.header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:10;}
+.logo{font-size:18px;font-weight:700;color:var(--gd);}
+.user-name{font-size:13px;color:#666;}
+.logout-btn{font-size:12px;color:var(--g);background:none;border:1px solid var(--g);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;}
+.content{padding:20px 16px;max-width:480px;margin:0 auto;}
+.welcome{background:#fff;border-radius:12px;padding:20px;margin-bottom:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.welcome h2{font-size:18px;color:var(--gd);margin-bottom:6px;}
+.welcome p{font-size:13px;color:#666;}
+.menu-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.menu-card{background:#fff;border-radius:12px;padding:20px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:transform .15s;}
+.menu-card:hover{transform:translateY(-2px);}
+.menu-icon{font-size:28px;margin-bottom:8px;}
+.menu-title{font-size:14px;font-weight:500;color:var(--gd);}
+.menu-sub{font-size:11px;color:#999;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">GolfCoach</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="user-name" id="user-name"></div>
+    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+  </div>
+</div>
+<div class="content">
+  <div class="welcome">
+    <h2>ようこそ！</h2>
+    <p>コーチを探して、ゴルフレッスンを予約しましょう</p>
+  </div>
+  <div class="menu-grid">
+    <div class="menu-card"><div class="menu-icon">🔍</div><div class="menu-title">コーチを探す</div><div class="menu-sub">条件で検索</div></div>
+    <div class="menu-card"><div class="menu-icon">📅</div><div class="menu-title">予約一覧</div><div class="menu-sub">予約を確認</div></div>
+    <div class="menu-card"><div class="menu-icon">♥</div><div class="menu-title">お気に入り</div><div class="menu-sub">気になるコーチ</div></div>
+    <div class="menu-card"><div class="menu-icon">👤</div><div class="menu-title">マイページ</div><div class="menu-sub">プロフィール編集</div></div>
+  </div>
+</div>
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+sb.auth.getSession().then(({data:{session}})=>{
+  if(!session){window.location.href='index.html';return;}
+  const name=session.user.user_metadata?.name||session.user.email;
+  document.getElementById('user-name').textContent=name+'さん';
+});
+async function doLogout(){
+  await sb.auth.signOut();
+  window.location.href='index.html';
+}
+</script>
+</body>
+</html>
