@@ -200,9 +200,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
   </div>
   <div class="screen" id="s-mypage">
     <div class="mpcard">
-      <div style="font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;">お客様情報</div>
-      <div class="fg"><label>お名前</label><input type="text" id="mp-name" placeholder="山田 太郎"></div>
-      <div class="fg"><label>電話番号</label><input type="tel" id="mp-phone" placeholder="090-XXXX-XXXX"></div>
+      <div style="font-size:15px;font-weight:700;color:var(--gd);margin-bottom:4px;">お客様情報</div>
+      <div style="font-size:11px;color:var(--red);margin-bottom:14px;">※ 予約には以下の必須項目の登録が必要です</div>
+      <div class="fg"><label>お名前 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="text" id="mp-name" placeholder="山田 太郎"></div>
+      <div class="fg"><label>電話番号 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="tel" id="mp-phone" placeholder="090-XXXX-XXXX"></div>
+      <div class="fg"><label>メールアドレス <span style="color:var(--red);font-size:11px;">必須</span></label><input type="email" id="mp-email" placeholder="example@mail.com" readonly style="background:#f5f5f5;"></div>
+      <div style="display:flex;gap:8px;">
+        <div class="fg" style="flex:1;"><label>年齢 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="number" id="mp-age" placeholder="例：35" min="1" max="120"></div>
+        <div class="fg" style="flex:1;"><label>性別 <span style="color:var(--red);font-size:11px;">必須</span></label>
+          <select id="mp-gender"><option value="">選択してください</option><option value="male">男性</option><option value="female">女性</option><option value="other">その他</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>会員種別 <span style="color:var(--red);font-size:11px;">必須</span></label>
+        <select id="mp-member"><option value="">選択してください</option><option value="regular">ゴルフクリエイト正会員</option><option value="trial">体験会員</option><option value="other">その他会員</option></select>
+        <div style="margin-top:6px;padding:8px 10px;background:#fff8e1;border-left:3px solid var(--gold);border-radius:0 6px 6px 0;font-size:11px;color:#633806;line-height:1.6;">⚠ 本レッスンはゴルフクリエイト会員様のみご利用いただけます。</div>
+      </div>
+      <div id="mp-msg" style="display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px;"></div>
       <button class="bcon" onclick="saveProfile()">保存する</button>
     </div>
     <div class="mpcard">
@@ -268,10 +281,20 @@ function loadAll(){
       price[r.coach_id][r.store]=r;
     });
     favs=(res[3].data||[]).map(function(x){return x.coach_id;});
+    var emailEl=document.getElementById('mp-email');
+    if(emailEl&&res[0]){
+      var session=sb.auth.getSession();
+    }
     if(res[4].data){
       document.getElementById('mp-name').value=res[4].data.name||'';
       document.getElementById('mp-phone').value=res[4].data.phone||'';
+      if(res[4].data.age)document.getElementById('mp-age').value=res[4].data.age||'';
+      if(res[4].data.gender)document.getElementById('mp-gender').value=res[4].data.gender||'';
+      if(res[4].data.member_type)document.getElementById('mp-member').value=res[4].data.member_type||'';
     }
+    sb.auth.getSession().then(function(sr){
+      if(sr.data.session)document.getElementById('mp-email').value=sr.data.session.user.email||'';
+    });
     var bd=res[5].data||[];
     var bel=document.getElementById('my-bookings');
     if(bd.length===0){bel.innerHTML='<div class="loading">予約履歴はありません</div>';}
@@ -440,7 +463,20 @@ function toggleFav(cid,btn){
   }
 }
 
+function isProfileComplete(){
+  var n=document.getElementById('mp-name').value.trim();
+  var p=document.getElementById('mp-phone').value.trim();
+  var a=document.getElementById('mp-age').value;
+  var g=document.getElementById('mp-gender').value;
+  var m=document.getElementById('mp-member').value;
+  return n&&p&&a&&g&&m;
+}
 function goReq(cid,name){
+  if(!isProfileComplete()){
+    toast('先にマイページでお客様情報を登録してください','error');
+    setTimeout(function(){tab(document.querySelector('.snb:nth-child(4)'),'s-mypage');},800);
+    return;
+  }
   selCoach=cid;
   document.getElementById('rcoach').value=name;
   var sel=document.getElementById('rtype');
@@ -489,8 +525,25 @@ function submitReq(){
 }
 
 function saveProfile(){
-  sb.from('customers').upsert({user_id:uid,name:document.getElementById('mp-name').value.trim(),phone:document.getElementById('mp-phone').value.trim(),updated_at:new Date().toISOString()},{onConflict:'user_id'}).then(function(r){
-    if(r.error)toast('保存に失敗しました','error');else toast('保存しました','success');
+  var name=document.getElementById('mp-name').value.trim();
+  var phone=document.getElementById('mp-phone').value.trim();
+  var age=document.getElementById('mp-age').value;
+  var gender=document.getElementById('mp-gender').value;
+  var member=document.getElementById('mp-member').value;
+  var msg=document.getElementById('mp-msg');
+  if(!name||!phone||!age||!gender||!member){
+    msg.textContent='お名前・電話番号・年齢・性別・会員種別は必須です。';
+    msg.style.cssText='display:block;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px;background:#fff0f0;color:var(--red);border:1px solid var(--red);';
+    return;
+  }
+  msg.style.display='none';
+  sb.from('customers').upsert({
+    user_id:uid,name:name,phone:phone,
+    age:parseInt(age),gender:gender,member_type:member,
+    updated_at:new Date().toISOString()
+  },{onConflict:'user_id'}).then(function(r){
+    if(r.error)toast('保存に失敗しました','error');
+    else toast('保存しました！予約が可能になりました','success');
   });
 }
 
