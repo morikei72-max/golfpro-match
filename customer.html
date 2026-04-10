@@ -89,6 +89,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;}
 .starb.on{color:var(--gold);}
 .loading{text-align:center;padding:20px;color:#bbb;font-size:13px;}
+.mg-table{width:100%;border-collapse:collapse;}
+.mg-table th{font-size:11px;color:#888;font-weight:500;text-align:center;padding:4px 2px;border-bottom:1px solid var(--border);}
+.mg-table td{text-align:center;padding:3px 2px;vertical-align:top;}
+.mg-day{min-height:36px;border-radius:6px;padding:2px;}
+.mg-num{font-size:12px;color:#ccc;line-height:1.4;}
+.mg-day.avail{background:var(--gl);cursor:pointer;}
+.mg-day.avail .mg-num{color:var(--gd);font-weight:700;}
+.mg-day.today .mg-num{color:var(--gold);font-weight:700;}
+.mg-day.sel{background:var(--gd);}
+.mg-day.sel .mg-num{color:#fff;}
+.mg-avs{display:flex;justify-content:center;gap:1px;flex-wrap:wrap;margin-top:2px;}
+.mg-av{width:16px;height:16px;border-radius:50%;object-fit:cover;border:1px solid #fff;}
+.mg-av-i{width:16px;height:16px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--gd);}
 #pbg1{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/indoor.png?width=400&quality=70&resize=cover");}
 #pbg2{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/round.png?width=400&quality=70&resize=cover");}
 #pbg3{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/accompany.png?width=400&quality=70&resize=cover");}
@@ -145,6 +158,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
             <tbody id="sg-body"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+    <div id="month-grid" style="display:none;">
+      <div class="sched-box">
+        <div class="sched-head">
+          <button class="sched-nav" onclick="mgPrev()">&#8249;</button>
+          <span class="sched-lbl" id="mg-label"></span>
+          <button class="sched-nav" onclick="mgNext()">&#8250;</button>
+        </div>
+        <div id="mg-body"></div>
       </div>
     </div>
     <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;" id="ctitle">対応コーチ一覧</div>
@@ -206,8 +229,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="fg"><label>電話番号 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="tel" id="mp-phone" placeholder="090-XXXX-XXXX"></div>
       <div class="fg"><label>メールアドレス <span style="color:var(--red);font-size:11px;">必須</span></label><input type="email" id="mp-email" placeholder="example@mail.com" readonly style="background:#f5f5f5;"></div>
       <div style="display:flex;gap:8px;">
-        <div class="fg" style="flex:1;"><label>年齢 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="number" id="mp-age" placeholder="例：35" min="1" max="120"></div>
-        <div class="fg" style="flex:1;"><label>性別 <span style="color:var(--red);font-size:11px;">必須</span></label>
+        <div class="fg" style="flex:1;"><label>年齢 <span style="color:#aaa;font-size:11px;">任意</span></label><input type="number" id="mp-age" placeholder="例：35" min="1" max="120"></div>
+        <div class="fg" style="flex:1;"><label>性別 <span style="color:#aaa;font-size:11px;">任意</span></label>
           <select id="mp-gender"><option value="">選択してください</option><option value="male">男性</option><option value="female">女性</option><option value="other">その他</option></select>
         </div>
       </div>
@@ -225,6 +248,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
   </div>
   <div class="screen" id="s-review">
     <div class="fcard">
+      <div id="review-notice" style="display:none;background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:10px;font-size:12px;color:#a00;margin-bottom:12px;">
+        ⚠ 完了したレッスンのレビューが未投稿です。次回予約の前にレビューをお願いします。
+      </div>
       <div class="ftitle">⭐ レビューを書く</div>
       <div style="font-size:13px;color:#666;margin-bottom:12px;">レッスン完了後に投稿してください</div>
       <label style="font-size:13px;font-weight:700;color:var(--gd);">評価</label>
@@ -302,7 +328,14 @@ function loadAll(){
       var tm={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
       var sc={pending:'b-pe',confirmed:'b-g',cancelled:'b-bl'};
       var sm={pending:'申請中',confirmed:'確定',cancelled:'キャンセル'};
-      bel.innerHTML=bd.map(function(b){return '<div class="history-item"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,'/'):'')+' '+(b.time||'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+'</span></div>';}).join('');
+      var hasUnreviewed=false;
+      bel.innerHTML=bd.map(function(b){
+        var reviewed=b.reviewed?'true':'false';
+        if(b.status==='confirmed'&&!b.reviewed)hasUnreviewed=true;
+        return '<div class="history-item" data-reviewed="'+reviewed+'"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,'/'):'')+' '+(b.time||'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+(b.status==='confirmed'&&!b.reviewed?'<br><span style="font-size:10px;color:var(--red);">レビュー未投稿</span>':'')+'</span></div>';
+      }).join('');
+      var notice=document.getElementById('review-notice');
+      if(notice)notice.style.display=hasUnreviewed?'block':'none';
     }
     renderAll();
   }).catch(function(e){
@@ -338,17 +371,16 @@ function renderAll(){
   var tn={indoor:'この週の対応コーチ',round:'ラウンドレッスン対応コーチ',accompany:'同伴ラウンド対応コーチ',comp:'コンペ参加対応コーチ'};
   document.getElementById('ctitle').textContent=tn[curType]||'対応コーチ一覧';
   var grid=document.getElementById('sched-grid');
-  if(curType!=='indoor'){
+  var mgrid=document.getElementById('month-grid');
+  if(curType==='indoor'){
+    grid.style.display='block';
+    mgrid.style.display='none';
+    renderSchedGrid();
+  } else {
     grid.style.display='none';
-    var td=fmt(new Date());
-    var list=coaches.filter(function(c){
-      var av=getAvail(c.user_id);return Object.keys(av).length>0;
-    });
-    renderCoachList(list);
-    return;
+    mgrid.style.display='block';
+    renderMonthGrid();
   }
-  grid.style.display='block';
-  renderSchedGrid();
 }
 
 function renderSchedGrid(){
@@ -407,6 +439,72 @@ function renderSchedGrid(){
 }
 
 function sgPrev(){sgOffset--;renderSchedGrid();}
+
+var mgYear=new Date().getFullYear();
+var mgMonth=new Date().getMonth();
+var mgSelDate=null;
+
+function mgPrev(){
+  mgMonth--;if(mgMonth<0){mgMonth=11;mgYear--;}
+  renderMonthGrid();
+}
+function mgNext(){
+  mgMonth++;if(mgMonth>11){mgMonth=0;mgYear++;}
+  renderMonthGrid();
+}
+
+function renderMonthGrid(){
+  var dayNames=['日','月','火','水','木','金','土'];
+  var today=fmt(new Date());
+  document.getElementById('mg-label').textContent=mgYear+'年'+(mgMonth+1)+'月';
+  var first=new Date(mgYear,mgMonth,1);
+  var last=new Date(mgYear,mgMonth+1,0);
+  var startDow=first.getDay();
+  var visIds=[];
+
+  var html='<table class="mg-table"><thead><tr>';
+  dayNames.forEach(function(d){html+='<th>'+d+'</th>';});
+  html+='</tr></thead><tbody><tr>';
+
+  for(var i=0;i<startDow;i++)html+='<td></td>';
+  var dow=startDow;
+  for(var day=1;day<=last.getDate();day++){
+    var d=new Date(mgYear,mgMonth,day);
+    var ds=fmt(d);
+    var here=coaches.filter(function(c){
+      var sc=sched[c.user_id];if(!sc)return false;
+      return Object.keys(sc).some(function(st){return sc[st][ds]&&sc[st][ds].times&&sc[st][ds].times.length>0;});
+    });
+    var isToday=ds===today;
+    var isSel=ds===mgSelDate;
+    var isAvail=here.length>0&&ds>=today;
+    var cls='mg-day'+(isAvail?' avail':'')+(isToday?' today':'')+(isSel?' sel':'');
+    var avHtml='';
+    if(isAvail){
+      here.forEach(function(c){if(visIds.indexOf(c.user_id)<0)visIds.push(c.user_id);});
+      avHtml='<div class="mg-avs">';
+      here.slice(0,3).forEach(function(c){
+        if(c.photo_url){avHtml+='<img class="mg-av" src="'+c.photo_url+'?width=32&quality=70&resize=cover" title="'+(c.name||'')+'">';}
+        else{avHtml+='<div class="mg-av-i">'+(c.name||'?').charAt(0)+'</div>';}
+      });
+      avHtml+='</div>';
+    }
+    var onclick=isAvail?'onclick="mgPickDay(''+ds+'')"':'';
+    html+='<td><div class="'+cls+'" '+onclick+'><div class="mg-num">'+day+'</div>'+avHtml+'</div></td>';
+    dow++;
+    if(dow===7&&day<last.getDate()){html+='</tr><tr>';dow=0;}
+  }
+  while(dow>0&&dow<7){html+='<td></td>';dow++;}
+  html+='</tr></tbody></table>';
+  document.getElementById('mg-body').innerHTML=html;
+  renderCoachList(coaches.filter(function(c){return visIds.indexOf(c.user_id)>=0;}));
+}
+
+function mgPickDay(ds){
+  mgSelDate=ds;
+  renderMonthGrid();
+  selDate=ds;
+}
 function sgNext(){sgOffset++;renderSchedGrid();}
 
 function renderCoachList(list){
@@ -463,18 +561,34 @@ function toggleFav(cid,btn){
   }
 }
 
+function hasUnreviewedBooking(){
+  var bel=document.getElementById('my-bookings');
+  if(!bel)return false;
+  var items=bel.querySelectorAll('.history-item');
+  for(var i=0;i<items.length;i++){
+    var badge=items[i].querySelector('.badge');
+    if(badge&&badge.classList.contains('b-g')){
+      var reviewed=items[i].getAttribute('data-reviewed');
+      if(reviewed==='false')return true;
+    }
+  }
+  return false;
+}
 function isProfileComplete(){
   var n=document.getElementById('mp-name').value.trim();
   var p=document.getElementById('mp-phone').value.trim();
-  var a=document.getElementById('mp-age').value;
-  var g=document.getElementById('mp-gender').value;
   var m=document.getElementById('mp-member').value;
-  return n&&p&&a&&g&&m;
+  return n&&p&&m;
 }
 function goReq(cid,name){
   if(!isProfileComplete()){
     toast('先にマイページでお客様情報を登録してください','error');
     setTimeout(function(){tab(document.querySelector('.snb:nth-child(4)'),'s-mypage');},800);
+    return;
+  }
+  if(hasUnreviewedBooking()){
+    toast('完了したレッスンのレビューを先に投稿してください','error');
+    setTimeout(function(){tab(document.querySelector('.snb:nth-child(5)'),'s-review');},800);
     return;
   }
   selCoach=cid;
@@ -531,8 +645,8 @@ function saveProfile(){
   var gender=document.getElementById('mp-gender').value;
   var member=document.getElementById('mp-member').value;
   var msg=document.getElementById('mp-msg');
-  if(!name||!phone||!age||!gender||!member){
-    msg.textContent='お名前・電話番号・年齢・性別・会員種別は必須です。';
+  if(!name||!phone||!member){
+    msg.textContent='お名前・電話番号・会員種別は必須です。';
     msg.style.cssText='display:block;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px;background:#fff0f0;color:var(--red);border:1px solid var(--red);';
     return;
   }
