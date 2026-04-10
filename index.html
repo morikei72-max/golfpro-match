@@ -92,7 +92,7 @@ input:focus{border-color:var(--g);background:#fff;}
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'golfcoach_session',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:true}
 });
 
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
@@ -144,13 +144,8 @@ async function doLogin(){
     const {data,error}=await sb.auth.signInWithPassword({email,password});
     if(error)throw error;
     localStorage.setItem('gc_login_time',Date.now().toString());
-    if(currentType==='coach'){
-      window.location.href=BASE+'coach.html';
-    }else if(currentType==='store'){
-      window.location.href=BASE+'store.html';
-    }else{
-      window.location.href=BASE+'customer.html';
-    }
+    const dest=currentType==='coach'?BASE+'coach.html':currentType==='store'?BASE+'store.html':BASE+'customer.html';
+    window.location.replace(dest);
   }catch(err){
     showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');
     btn.disabled=false;
