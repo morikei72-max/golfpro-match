@@ -362,6 +362,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <div class="screen" id="m-profile">
       <div class="card">
         <div class="card-title" style="margin-bottom:16px;">プロフィール編集</div>
+        <div class="photo-upload-area" onclick="document.getElementById('mpf-photo-input').click()">
+          <img id="mpf-photo-preview" class="photo-preview" src="https://via.placeholder.com/80x80/E1F5EE/1D9E75?text=写真" onerror="this.style.display='none'">
+          <div class="upload-label">📷 タップして写真を変更</div>
+          <input type="file" id="mpf-photo-input" accept="image/*" style="display:none" onchange="previewPhotoMain(this)">
+        </div>
         <div class="form-group"><label>お名前</label><input type="text" id="mpf-name"></div>
         <div class="form-group"><label>対応エリア</label><input type="text" id="mpf-area"></div>
         <div class="form-group"><label>経験年数</label>
@@ -477,6 +482,7 @@ async function saveStep1(){
   var btn=document.getElementById('btn-step1');
   btn.disabled=true;btn.textContent='保存中...';
   try{
+    var photoUrl=await uploadPhoto('pf-photo-input');
     var payload={
       user_id:coachId,
       name:name,
@@ -486,6 +492,7 @@ async function saveStep1(){
       bio:document.getElementById('pf-bio').value.trim(),
       updated_at:new Date().toISOString()
     };
+    if(photoUrl) payload.photo_url=photoUrl;
     var {error}=await sb.from('coaches').upsert(payload,{onConflict:'user_id'});
     if(error) throw error;
     showToast('プロフィールを保存しました！','success');
@@ -799,6 +806,10 @@ async function loadProfileMain(){
       document.getElementById('mpf-area').value=data.area||'';
       document.getElementById('mpf-tags').value=data.tags||'';
       document.getElementById('mpf-bio').value=data.bio||'';
+      if(data.photo_url){
+        var img=document.getElementById('mpf-photo-preview');
+        if(img){img.src=data.photo_url;img.style.display='block';}
+      }
     }
   }catch(e){}
 }
@@ -806,7 +817,10 @@ async function saveProfile2(){
   var btn=document.getElementById('btn-save-profile2');
   btn.disabled=true;btn.textContent='保存中...';
   try{
-    var {error}=await sb.from('coaches').upsert({user_id:coachId,name:document.getElementById('mpf-name').value.trim(),area:document.getElementById('mpf-area').value.trim(),experience:document.getElementById('mpf-exp').value,tags:document.getElementById('mpf-tags').value.trim(),bio:document.getElementById('mpf-bio').value.trim(),updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    var photoUrl=await uploadPhoto('mpf-photo-input');
+    var profileData={user_id:coachId,name:document.getElementById('mpf-name').value.trim(),area:document.getElementById('mpf-area').value.trim(),experience:document.getElementById('mpf-exp').value,tags:document.getElementById('mpf-tags').value.trim(),bio:document.getElementById('mpf-bio').value.trim(),updated_at:new Date().toISOString()};
+    if(photoUrl) profileData.photo_url=photoUrl;
+    var {error}=await sb.from('coaches').upsert(profileData,{onConflict:'user_id'});
     if(error) throw error;
     showToast('プロフィールを保存しました！','success');
   }catch(e){showToast('保存に失敗しました: '+(e.message||e),'error');}
@@ -840,6 +854,53 @@ async function loadBookings(){
     });
     el.innerHTML=html;
   }catch(e){document.getElementById('bookings-list').innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:20px;">読み込めませんでした</div>';}
+}
+
+
+// ---- 写真プレビュー（STEP1）----
+function previewPhoto(input){
+  if(!input.files||!input.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=document.getElementById('pf-photo-preview');
+    img.src=e.target.result;
+    img.style.display='block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// ---- 写真プレビュー（メイン画面）----
+function previewPhotoMain(input){
+  if(!input.files||!input.files[0]) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=document.getElementById('mpf-photo-preview');
+    img.src=e.target.result;
+    img.style.display='block';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// ---- 写真をSupabase Storageにアップロード ----
+async function uploadPhoto(inputId){
+  var input=document.getElementById(inputId);
+  if(!input||!input.files||!input.files[0]) return null;
+  var file=input.files[0];
+  var ext=file.name.split('.').pop();
+  var path='coaches/'+coachId+'.'+ext;
+  try{
+    var {data,error}=await sb.storage.from('coach-photos').upload(path,file,{upsert:true});
+    if(error) throw error;
+    var {data:urlData}=sb.storage.from('coach-photos').getPublicUrl(path);
+    return urlData.publicUrl;
+  }catch(e){
+    // Storageが未設定の場合はbase64で保存
+    return new Promise(function(resolve){
+      var reader=new FileReader();
+      reader.onload=function(ev){resolve(ev.target.result);};
+      reader.readAsDataURL(file);
+    });
+  }
 }
 
 // ---- ログアウト ----
