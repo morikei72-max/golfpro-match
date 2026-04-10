@@ -33,18 +33,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .nbar{background:var(--gold-l);border-top:1px solid var(--gold);padding:5px 10px;font-size:10px;color:#633806;}
 .ccard{background:#fff;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;}
 .ccard-top{display:flex;gap:10px;padding:10px 12px;align-items:center;}
-.cavatar{width:52px;height:52px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.cavatar{width:50px;height:50px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
 .cinfo{flex:1;min-width:0;}
-.cname{font-size:14px;font-weight:700;color:var(--gd);}
-.cmeta{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;align-items:center;}
+.cinfo-row1{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;}
+.cname{font-size:14px;font-weight:700;color:var(--gd);white-space:nowrap;}
+.cprice{font-size:11px;color:var(--gd);font-weight:700;background:var(--gl);padding:2px 6px;border-radius:20px;white-space:nowrap;}
+.cinfo-row2{display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap;}
 .csub{font-size:11px;color:#888;}
-.cprice{font-size:12px;color:var(--gd);font-weight:700;background:var(--gl);padding:2px 6px;border-radius:20px;}
-.cbio{font-size:11px;color:#777;margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cavail{font-size:11px;color:#aaa;}
-.cinfo-row1{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-.cinfo-row2{display:flex;align-items:center;margin-top:3px;flex-wrap:wrap;}
-.cinfo-row3{display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap;}
+.cbio{font-size:11px;color:#777;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;}
 .ctag{font-size:11px;color:#888;}
+.cinfo-row3{display:none;}
+.hbtn{background:none;border:none;cursor:pointer;font-size:18px;color:#ccc;padding:0;flex-shrink:0;}
+.hbtn.fav{color:var(--red);}
 .hbtn{background:none;border:none;cursor:pointer;font-size:18px;color:#ccc;padding:0;flex-shrink:0;}
 .hbtn.fav{color:var(--red);}
 .cal-wrap{padding:0 14px 10px;border-top:1px solid var(--gl);}
@@ -336,7 +337,7 @@ function buildCard(c){
   var cnt=Object.keys(av).length;
   var isFav=favs.indexOf(c.user_id)>=0;
   var ph=c.photo_url
-    ?'<img src="'+c.photo_url+'?width=104&quality=70&resize=cover" style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;">'
+    ?'<img src="'+c.photo_url+'?width=104&quality=70&resize=cover" style="width:50px;height:50px;border-radius:50%;object-fit:cover;display:block;">'
     :'<span style="font-size:13px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
   var pr='';
   var cp=price[c.user_id];
@@ -349,17 +350,21 @@ function buildCard(c){
   return '<div class="ccard" id="cc-'+c.user_id+'">'
     +'<div class="ccard-top">'
     +'<div class="cavatar">'+ph+'</div>'
-    +'<div style="flex:1;">'
-    +'<div class="cname">'+esc(c.name||'コーチ')+'</div>'
-    +(c.area?'<div class="csub">📍'+esc(c.area)+(c.experience?' · '+esc(c.experience):'')+'</div>':'')
-    +(c.tags?'<div class="csub">🏷 '+esc(c.tags)+'</div>':'')
-    +(pr?'<div class="cprice">💴 '+pr+'</div>':'')
-    +(c.bio?'<div class="cbio">'+esc(c.bio)+'</div>':'')
-    +'<div style="font-size:11px;color:#aaa;margin-top:3px;">空き '+cnt+'日</div>'
+    +'<div class="cinfo">'
+    +'<div class="cinfo-row1">'
+    +'<span class="cname">'+esc(c.name||'コーチ')+'</span>'
+    +(pr?'<span class="cprice">'+pr+'</span>':'')
+    +(c.bio?'<span class="cbio">'+esc(c.bio)+'</span>':'')
+    +(c.tags?'<span class="ctag">'+esc(c.tags)+'</span>':'')
+    +'<button class="hbtn'+(isFav?' fav':'')+'" onclick="toggleFav(''+c.user_id+'',this)">'+(isFav?'♥':'♡')+'</button>'
     +'</div>'
-    +'<button class="hbtn'+(isFav?' fav':'')+'" onclick="toggleFav(\''+c.user_id+'\',this)">'+(isFav?'♥':'♡')+'</button>'
+    +'<div class="cinfo-row2">'
+    +(c.area?'<span class="csub">📍'+esc(c.area)+(c.experience?' · '+esc(c.experience):'')+'</span>':'')
+    +(cnt?'<span class="cavail">　空き'+cnt+'日</span>':'')
     +'</div>'
-    +'<button class="btn-req" onclick="goReq(\''+c.user_id+'\',\''+esc(c.name||'コーチ')+'\')">このコーチに依頼する →</button>'
+    +'</div>'
+    +'</div>'
+    +'<button class="btn-req" onclick="goReq(''+c.user_id+'',''+esc(c.name||'コーチ')+'')">このコーチに依頼する →</button>'
     +'</div>';
 }
 
