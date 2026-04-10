@@ -259,7 +259,7 @@ async function loadAll(){
         var tm={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
         var sc={pending:'b-pe',confirmed:'b-g',cancelled:'b-bl'};
         var sm={pending:'申請中',confirmed:'確定',cancelled:'キャンセル'};
-        bel.innerHTML=bd.map(function(b){return '<div class="history-item"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,'/'):'')+(b.time?' '+b.time:'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+'</span></div>';}).join('');
+        bel.innerHTML=bd.map(function(b){return '<div class="history-item"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,"/"):'')+(b.time?' '+b.time:'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+'</span></div>';}).join('');
       }
     }catch(e){}
     renderList();
@@ -351,7 +351,7 @@ function buildWeek(cid,av){
     Object.values(av[selDate]).forEach(function(a){a.forEach(function(t){if(ts.indexOf(t)<0)ts.push(t);});});
     ts.sort();
     slots='<div class="slots-box">'
-      +'<div class="slots-ttl">'+selDate.replace(/-/g,'/')+'の空き時間</div>'
+      +"<div class=\"slots-ttl\">"+selDate.replace(/-/g,"/")+"の空き時間</div>"
       +'<div class="slots-row">'+ts.map(function(t){
         return '<button class="tslot'+(t===selTime?' sel':'')+'" onclick="pickT(\''+cid+'\',\''+t+'\')">'+t+'</button>';
       }).join('')+'</div></div>';
