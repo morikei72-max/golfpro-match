@@ -211,6 +211,8 @@ const SURL='https://gojrdnufmueuvkroevut.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SURL,SKEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:false}});
 
+const LOGIN_URL='https://soft-speculoos-5ef188.netlify.app/';
+
 var uid=null,type='indoor',coaches=[],sched={},price={},favs=[];
 var selCoach=null,selDate=null,selTime=null,stars=0,wkStarts={};
 
@@ -221,7 +223,7 @@ function mon(d){var x=new Date(d),day=x.getDay(),diff=day===0?-6:1-day;x.setDate
 
 sb.auth.getSession().then(function(r){
   var s=r.data.session;
-  if(!s){location.href='https://morikei72-max.github.io/golfpro-match/index.html';return;}
+  if(!s){location.href=LOGIN_URL;return;}
   uid=s.user.id;
   var n=s.user.user_metadata&&s.user.user_metadata.name?s.user.user_metadata.name:s.user.email;
   document.getElementById('uname').textContent=n+'さん';
@@ -457,7 +459,7 @@ async function submitRev(){
 function selType(card,t){document.querySelectorAll('.tcard').forEach(function(c){c.classList.remove('on');});card.classList.add('on');type=t;selCoach=null;selDate=null;selTime=null;renderList();}
 function tab(btn,id){document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');if(id==='s-fav')renderFavList();}
 function checkAgree(){document.getElementById('rbtn').disabled=!document.getElementById('agree').checked;}
-async function doLogout(){localStorage.removeItem('gc_login_time');await sb.auth.signOut();location.href='https://morikei72-max.github.io/golfpro-match/index.html';}
+async function doLogout(){localStorage.removeItem('gc_login_time');await sb.auth.signOut();location.href=LOGIN_URL;}
 
 </script>
 </body>
