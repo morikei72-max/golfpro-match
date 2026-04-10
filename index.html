@@ -8,31 +8,27 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--red:#E24B4A;--border:#e0e0e0;--white:#ffffff;}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--red:#E24B4A;--border:#e0e0e0;}
 body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
 .logo-wrap{text-align:center;margin-bottom:32px;}
 .logo-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--gd);}
-.logo-sub{font-size:12px;color:#666;margin-top:4px;letter-spacing:.06em;}
-.main-card{background:var(--white);border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:420px;overflow:hidden;}
+.logo-sub{font-size:12px;color:#666;margin-top:4px;}
+.main-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:420px;overflow:hidden;}
 .type-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
-.type-tab{padding:16px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:#666;transition:all .2s;border-bottom:3px solid transparent;}
+.type-tab{padding:16px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:#666;border-bottom:3px solid transparent;}
 .type-tab.active{color:var(--gd);border-bottom:3px solid var(--g);background:var(--gl);}
 .type-tab-icon{font-size:20px;display:block;margin-bottom:4px;}
-.form-area{padding:28px 28px 24px;}
+.form-area{padding:28px;}
 .form-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
 .form-sub{font-size:12px;color:#666;margin-bottom:24px;line-height:1.6;}
 .form-group{margin-bottom:16px;}
 label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:6px;}
-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;color:#1a1a1a;background:#fafafa;outline:none;transition:border-color .2s;}
-input:focus{border-color:var(--g);background:var(--white);box-shadow:0 0 0 3px rgba(29,158,117,.10);}
-.btn-primary{width:100%;padding:14px;background:var(--g);color:white;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:8px;}
-.btn-primary:hover{background:var(--gd);}
+input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;background:#fafafa;outline:none;}
+input:focus{border-color:var(--g);background:#fff;}
+.btn-primary{width:100%;padding:14px;background:var(--g);color:white;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
 .btn-primary:disabled{background:#aaa;cursor:not-allowed;}
-.btn-outline{width:100%;padding:12px;background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;margin-top:10px;}
-.btn-outline:hover{background:var(--gl);}
-.toggle-link{text-align:center;margin-top:18px;font-size:13px;color:#666;}
-.toggle-link a{color:var(--g);font-weight:500;cursor:pointer;text-decoration:none;}
-.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;line-height:1.5;}
+.btn-outline{width:100%;padding:12px;background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:10px;}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
 .msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
 .msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
 .security-badge{display:flex;align-items:center;gap:6px;background:var(--gl);border:.5px solid var(--g);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--gd);margin-top:16px;}
@@ -40,8 +36,7 @@ input:focus{border-color:var(--g);background:var(--white);box-shadow:0 0 0 3px r
 .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#bbb;font-size:12px;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .forgot-link{text-align:right;margin-top:-8px;margin-bottom:12px;}
-.forgot-link a{font-size:12px;color:#666;cursor:pointer;text-decoration:none;}
-.forgot-link a:hover{color:var(--g);}
+.forgot-link a{font-size:12px;color:#666;cursor:pointer;}
 .screen{display:none;}.screen.active{display:block;}
 .footer{text-align:center;margin-top:24px;font-size:11px;color:#aaa;line-height:1.7;}
 .loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
@@ -92,28 +87,77 @@ input:focus{border-color:var(--g);background:var(--white);box-shadow:0 0 0 3px r
   </div>
 </div>
 <div class="footer">© 2026 GolfCoach by 株式会社ケイエスケー<br><a href="#" style="color:#aaa;">利用規約</a> ・ <a href="#" style="color:#aaa;">プライバシーポリシー</a></div>
+
 <script>
-const SUPABASE_URL = 'https://gojrdnufmueuvkroevut.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const {createClient}=supabase;
-const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
+
+const BASE='https://soft-speculoos-5ef188.netlify.app/';
 let currentType='customer';
-const typeLabels={customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください'},coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください'},store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください'}};
-function switchType(type,btn){currentType=type;document.querySelectorAll('.type-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.getElementById('login-title').textContent=typeLabels[type].title;document.getElementById('login-sub').textContent=typeLabels[type].sub;showScreen('screen-login');clearMsg();}
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');clearMsg();}
-function showMsg(text,type){const el=document.getElementById('msg');el.textContent=text;el.className='msg '+type;}
-function clearMsg(){const el=document.getElementById('msg');el.className='msg';el.textContent='';}
-function setLoading(btnId,loading){const btn=document.getElementById(btnId);if(loading){btn.disabled=true;btn.innerHTML='<span class="loading"></span>処理中...';}else{btn.disabled=false;btn.textContent=btnId==='login-btn'?'ログイン':'アカウントを作成する';}}
+
+const typeLabels={
+  customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください'},
+  coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください'},
+  store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください'}
+};
+
+function switchType(type,btn){
+  currentType=type;
+  document.querySelectorAll('.type-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('login-title').textContent=typeLabels[type].title;
+  document.getElementById('login-sub').textContent=typeLabels[type].sub;
+  showScreen('screen-login');
+  clearMsg();
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  clearMsg();
+}
+
+function showMsg(text,type){
+  const el=document.getElementById('msg');
+  el.textContent=text;
+  el.className='msg '+type;
+}
+
+function clearMsg(){
+  const el=document.getElementById('msg');
+  el.className='msg';
+  el.textContent='';
+}
+
 async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const password=document.getElementById('login-password').value;
   if(!email||!password){showMsg('メールアドレスとパスワードを入力してください','error');return;}
-  setLoading('login-btn',true);clearMsg();
-  try{const{data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;localStorage.setItem('gc_login_time',Date.now().toString());showMsg('ログインしました！','success');setTimeout(()=>{var base='https://soft-speculoos-5ef188.netlify.app/';if(currentType==='coach')window.location.href=base+'coach.html';else if(currentType==='store')window.location.href=base+'store.html';else window.location.href=base+'customer.html';},800);}
-  catch(err){showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');setLoading('login-btn',false);}
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="loading"></span>処理中...';
+  clearMsg();
+  try{
+    const {data,error}=await sb.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    localStorage.setItem('gc_login_time',Date.now().toString());
+    if(currentType==='coach'){
+      window.location.href=BASE+'coach.html';
+    }else if(currentType==='store'){
+      window.location.href=BASE+'store.html';
+    }else{
+      window.location.href=BASE+'customer.html';
+    }
+  }catch(err){
+    showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');
+    btn.disabled=false;
+    btn.textContent='ログイン';
+  }
 }
+
 async function doRegister(){
   const name=document.getElementById('reg-name').value.trim();
   const email=document.getElementById('reg-email').value.trim();
@@ -122,15 +166,34 @@ async function doRegister(){
   if(!name||!email||!password){showMsg('全ての項目を入力してください','error');return;}
   if(password.length<8){showMsg('パスワードは8文字以上で設定してください','error');return;}
   if(password!==password2){showMsg('パスワードが一致しません','error');return;}
-  setLoading('register-btn',true);clearMsg();
-  try{const{data,error}=await sb.auth.signUp({email,password,options:{data:{name,role:currentType}}});if(error)throw error;showMsg('登録が完了しました！ログインしてください。','success');setLoading('register-btn',false);setTimeout(()=>showScreen('screen-login'),2000);}
-  catch(err){showMsg('登録に失敗しました：'+(err.message||''),'error');setLoading('register-btn',false);}
+  const btn=document.getElementById('register-btn');
+  btn.disabled=true;
+  btn.innerHTML='<span class="loading"></span>処理中...';
+  clearMsg();
+  try{
+    const {data,error}=await sb.auth.signUp({email,password,options:{data:{name,role:currentType}}});
+    if(error)throw error;
+    showMsg('登録が完了しました！ログインしてください。','success');
+    btn.disabled=false;
+    btn.textContent='アカウントを作成する';
+    setTimeout(()=>showScreen('screen-login'),2000);
+  }catch(err){
+    showMsg('登録に失敗しました：'+(err.message||''),'error');
+    btn.disabled=false;
+    btn.textContent='アカウントを作成する';
+  }
 }
+
 async function doReset(){
   const email=document.getElementById('reset-email').value.trim();
   if(!email){showMsg('メールアドレスを入力してください','error');return;}
-  try{const{error}=await sb.auth.resetPasswordForEmail(email);if(error)throw error;showMsg('リセット用のメールを送信しました。','success');}
-  catch(err){showMsg('送信に失敗しました。','error');}
+  try{
+    const {error}=await sb.auth.resetPasswordForEmail(email);
+    if(error)throw error;
+    showMsg('リセット用のメールを送信しました。','success');
+  }catch(err){
+    showMsg('送信に失敗しました。','error');
+  }
 }
 </script>
 </body>
