@@ -363,7 +363,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="card">
         <div class="card-title" style="margin-bottom:16px;">プロフィール編集</div>
         <div class="photo-upload-area" onclick="document.getElementById('mpf-photo-input').click()">
-          <img id="mpf-photo-preview" class="photo-preview" src="https://via.placeholder.com/80x80/E1F5EE/1D9E75?text=写真" onerror="this.style.display='none'">
+          <img id="mpf-photo-preview" class="photo-preview" style="width:64px;height:64px;min-width:64px;max-width:64px;border-radius:50%;object-fit:cover;" src="https://via.placeholder.com/80x80/E1F5EE/1D9E75?text=写真" onerror="this.style.display='none'">
           <div class="upload-label">📷 タップして写真を変更</div>
           <input type="file" id="mpf-photo-input" accept="image/*" style="display:none" onchange="previewPhotoMain(this)">
         </div>
