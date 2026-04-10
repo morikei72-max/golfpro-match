@@ -31,6 +31,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .ps{font-size:10px;color:rgba(255,255,255,0.9);margin-top:2px;}
 .cbot{background:var(--gl);border-top:1px solid var(--g);padding:5px 10px;font-size:10px;color:var(--gd);font-weight:500;}
 .nbar{background:var(--gold-l);border-top:1px solid var(--gold);padding:5px 10px;font-size:10px;color:#633806;}
+/* スケジュールグリッド（インドア） */
 .sched-box{background:#fff;border-radius:12px;border:1px solid var(--border);padding:10px;margin-bottom:12px;}
 .sched-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .sched-lbl{flex:1;font-size:12px;font-weight:700;color:var(--gd);text-align:center;}
@@ -47,6 +48,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .av-img{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid #fff;box-shadow:0 0 0 1.5px var(--g);}
 .av-init{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:1.5px solid #fff;box-shadow:0 0 0 1.5px var(--g);background:var(--gl);color:var(--gd);}
 .av-price{font-size:8px;color:var(--gd);background:var(--gl);border-radius:3px;padding:1px 3px;white-space:nowrap;}
+/* 月カレンダー（ラウンド系） */
+.mg-box{background:#fff;border-radius:12px;border:1px solid var(--border);padding:10px;margin-bottom:12px;}
+.mg-table{width:100%;border-collapse:collapse;}
+.mg-table th{font-size:11px;color:#888;font-weight:500;text-align:center;padding:4px 2px;border-bottom:1px solid var(--border);}
+.mg-table td{text-align:center;padding:2px;}
+.mg-cell{min-height:38px;border-radius:6px;padding:2px;}
+.mg-num{font-size:12px;color:#ccc;line-height:1.4;}
+.mg-avail{background:var(--gl);cursor:pointer;}
+.mg-avail .mg-num{color:var(--gd);font-weight:700;}
+.mg-today .mg-num{color:var(--gold);font-weight:700;}
+.mg-sel{background:var(--gd);}
+.mg-sel .mg-num{color:#fff;}
+.mg-avs{display:flex;justify-content:center;gap:1px;flex-wrap:wrap;margin-top:2px;}
+.mg-av{width:16px;height:16px;border-radius:50%;object-fit:cover;border:1px solid #fff;}
+.mg-av-i{width:16px;height:16px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--gd);}
+/* コーチカード */
 .ccard{background:#fff;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;}
 .ccard-top{display:flex;gap:10px;padding:10px 12px;align-items:center;}
 .cavatar{width:50px;height:50px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
@@ -61,12 +78,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .ctag{font-size:11px;color:#888;}
 .hbtn{background:none;border:none;cursor:pointer;font-size:18px;color:#ccc;padding:0;margin-left:auto;flex-shrink:0;}
 .hbtn.fav{color:var(--red);}
+.btn-req{display:block;width:calc(100% - 24px);margin:0 12px 12px;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+/* 依頼フォーム */
 .price-box{background:var(--gl);border:1px solid var(--g);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:none;}
 .price-box-title{font-size:12px;color:var(--gd);font-weight:700;margin-bottom:6px;}
-.price-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;}
+.price-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;}
 .price-row span:first-child{color:#555;}
 .price-row span:last-child{font-weight:700;color:var(--gd);}
-.btn-req{display:block;width:calc(100% - 24px);margin:0 12px 12px;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
 .fcard{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
 .ftitle{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;}
 .fg{margin-bottom:14px;}
@@ -74,34 +92,28 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;outline:none;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--g);}
 .fg textarea{resize:vertical;min-height:72px;}
+.member-notice{margin-top:6px;padding:8px 10px;background:#fff8e1;border-left:3px solid var(--gold);border-radius:0 6px 6px 0;font-size:11px;color:#633806;line-height:1.6;}
 .terms{background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;color:#666;line-height:1.8;max-height:130px;overflow-y:auto;margin-bottom:10px;}
 .agrow{display:flex;align-items:center;gap:8px;font-size:13px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:12px;}
 .agrow input{width:16px;height:16px;accent-color:var(--g);cursor:pointer;}
 .bcon{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
 .bcon:disabled{background:#aaa;cursor:not-allowed;}
+/* お気に入り */
 .fav-notice{background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:10px;font-size:12px;color:#a00;margin-bottom:10px;}
+/* マイページ */
 .mpcard{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.req-label{font-size:11px;color:var(--red);}
+.opt-label{font-size:11px;color:#aaa;}
 .history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
 .history-item:last-child{border-bottom:none;}
 .badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500;}
 .b-g{background:var(--gl);color:var(--gd);}.b-pe{background:var(--gold-l);color:var(--gold);}.b-bl{background:#e6f1fb;color:#185fa5;}
+/* レビュー */
+.review-warn{background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:10px;font-size:12px;color:#a00;margin-bottom:12px;display:none;}
 .star-row{display:flex;gap:5px;margin:8px 0;}
 .starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;}
 .starb.on{color:var(--gold);}
 .loading{text-align:center;padding:20px;color:#bbb;font-size:13px;}
-.mg-table{width:100%;border-collapse:collapse;}
-.mg-table th{font-size:11px;color:#888;font-weight:500;text-align:center;padding:4px 2px;border-bottom:1px solid var(--border);}
-.mg-table td{text-align:center;padding:3px 2px;vertical-align:top;}
-.mg-day{min-height:36px;border-radius:6px;padding:2px;}
-.mg-num{font-size:12px;color:#ccc;line-height:1.4;}
-.mg-day.avail{background:var(--gl);cursor:pointer;}
-.mg-day.avail .mg-num{color:var(--gd);font-weight:700;}
-.mg-day.today .mg-num{color:var(--gold);font-weight:700;}
-.mg-day.sel{background:var(--gd);}
-.mg-day.sel .mg-num{color:#fff;}
-.mg-avs{display:flex;justify-content:center;gap:1px;flex-wrap:wrap;margin-top:2px;}
-.mg-av{width:16px;height:16px;border-radius:50%;object-fit:cover;border:1px solid #fff;}
-.mg-av-i{width:16px;height:16px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--gd);}
 #pbg1{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/indoor.png?width=400&quality=70&resize=cover");}
 #pbg2{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/round.png?width=400&quality=70&resize=cover");}
 #pbg3{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/accompany.png?width=400&quality=70&resize=cover");}
@@ -125,6 +137,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <button class="snb" onclick="tab(this,'s-mypage')">マイページ</button>
     <button class="snb" onclick="tab(this,'s-review')">レビュー</button>
   </div>
+
+  <!-- コーチを探す -->
   <div class="screen on" id="s-search">
     <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:10px;">依頼の種類を選ぶ</div>
     <div class="tgrid">
@@ -145,6 +159,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="nbar">⚠ プレーフィー・キャディフィーはお客様負担</div>
       </div>
     </div>
+    <!-- インドア：週間グリッド -->
     <div id="sched-grid" style="display:none;">
       <div class="sched-box">
         <div class="sched-head">
@@ -160,8 +175,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         </div>
       </div>
     </div>
+    <!-- ラウンド系：月カレンダー -->
     <div id="month-grid" style="display:none;">
-      <div class="sched-box">
+      <div class="mg-box">
         <div class="sched-head">
           <button class="sched-nav" onclick="mgPrev()">&#8249;</button>
           <span class="sched-lbl" id="mg-label"></span>
@@ -173,14 +189,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;" id="ctitle">対応コーチ一覧</div>
     <div id="clist"><div class="loading">読み込み中...</div></div>
   </div>
+
+  <!-- 依頼する -->
   <div class="screen" id="s-req">
     <div class="fcard">
       <div class="ftitle">📋 依頼内容を入力</div>
-      <div class="fg"><label>選択中のコーチ</label><input type="text" id="rcoach" readonly style="background:#f5f5f5;"></div>
       <div class="price-box" id="price-box">
-        <div class="price-box-title">&#128181; 料金のご案内</div>
+        <div class="price-box-title">💴 料金のご案内</div>
         <div id="price-detail"></div>
       </div>
+      <div class="fg"><label>選択中のコーチ</label><input type="text" id="rcoach" readonly style="background:#f5f5f5;"></div>
       <div class="fg"><label>依頼の種類</label>
         <select id="rtype"><option value="indoor">インドアゴルフレッスン</option><option value="round">ラウンドレッスン</option><option value="accompany">同伴ラウンド</option><option value="comp">コンペ参加</option></select>
       </div>
@@ -197,7 +215,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="fg">
         <label>会員種別</label>
         <select id="rmember"><option value="regular">ゴルフクリエイト正会員</option><option value="trial">体験会員</option><option value="other">その他会員</option></select>
-        <div style="margin-top:6px;padding:8px 10px;background:#fff8e1;border-left:3px solid var(--gold);border-radius:0 6px 6px 0;font-size:11px;color:#633806;line-height:1.6;">⚠ 本レッスンはゴルフクリエイト会員様のみご利用いただけます。未会員の方は店舗スタッフへお申し付けください。</div>
+        <div class="member-notice">⚠ 本レッスンはゴルフクリエイト会員様のみご利用いただけます。未会員の方は店舗スタッフへお申し付けください。</div>
       </div>
       <div class="fg"><label>ゴルフ歴</label>
         <select id="rhist"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -217,28 +235,31 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <button class="bcon" id="rbtn" disabled onclick="submitReq()">同意して依頼を確定する →</button>
     </div>
   </div>
+
+  <!-- お気に入り -->
   <div class="screen" id="s-fav">
     <div class="fav-notice">♥ お気に入り登録すると、コーチにあなたの氏名が通知されます。</div>
     <div id="flist"><div class="loading">読み込み中...</div></div>
   </div>
+
+  <!-- マイページ -->
   <div class="screen" id="s-mypage">
     <div class="mpcard">
       <div style="font-size:15px;font-weight:700;color:var(--gd);margin-bottom:4px;">お客様情報</div>
-      <div style="font-size:11px;color:var(--red);margin-bottom:14px;">※ 予約には以下の必須項目の登録が必要です</div>
-      <div class="fg"><label>お名前 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="text" id="mp-name" placeholder="山田 太郎"></div>
-      <div class="fg"><label>電話番号 <span style="color:var(--red);font-size:11px;">必須</span></label><input type="tel" id="mp-phone" placeholder="090-XXXX-XXXX"></div>
-      <div class="fg"><label>メールアドレス <span style="color:var(--red);font-size:11px;">必須</span></label><input type="email" id="mp-email" placeholder="example@mail.com" readonly style="background:#f5f5f5;"></div>
+      <div style="font-size:11px;color:var(--red);margin-bottom:14px;">※ お名前・電話番号・会員種別は予約に必要です</div>
+      <div class="fg"><label>お名前 <span class="req-label">必須</span></label><input type="text" id="mp-name" placeholder="山田 太郎"></div>
+      <div class="fg"><label>電話番号 <span class="req-label">必須</span></label><input type="tel" id="mp-phone" placeholder="090-XXXX-XXXX"></div>
+      <div class="fg"><label>メールアドレス <span class="req-label">必須</span></label><input type="email" id="mp-email" placeholder="example@mail.com" readonly style="background:#f5f5f5;"></div>
       <div style="display:flex;gap:8px;">
-        <div class="fg" style="flex:1;"><label>年齢 <span style="color:#aaa;font-size:11px;">任意</span></label><input type="number" id="mp-age" placeholder="例：35" min="1" max="120"></div>
-        <div class="fg" style="flex:1;"><label>性別 <span style="color:#aaa;font-size:11px;">任意</span></label>
-          <select id="mp-gender"><option value="">選択してください</option><option value="male">男性</option><option value="female">女性</option><option value="other">その他</option></select>
+        <div class="fg" style="flex:1;"><label>年齢 <span class="opt-label">任意</span></label><input type="number" id="mp-age" placeholder="例：35" min="1" max="120"></div>
+        <div class="fg" style="flex:1;"><label>性別 <span class="opt-label">任意</span></label>
+          <select id="mp-gender"><option value="">選択</option><option value="male">男性</option><option value="female">女性</option><option value="other">その他</option></select>
         </div>
       </div>
-      <div class="fg"><label>会員種別 <span style="color:var(--red);font-size:11px;">必須</span></label>
+      <div class="fg"><label>会員種別 <span class="req-label">必須</span></label>
         <select id="mp-member"><option value="">選択してください</option><option value="regular">ゴルフクリエイト正会員</option><option value="trial">体験会員</option><option value="other">その他会員</option></select>
-        <div style="margin-top:6px;padding:8px 10px;background:#fff8e1;border-left:3px solid var(--gold);border-radius:0 6px 6px 0;font-size:11px;color:#633806;line-height:1.6;">⚠ 本レッスンはゴルフクリエイト会員様のみご利用いただけます。</div>
       </div>
-      <div id="mp-msg" style="display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px;"></div>
+      <div id="mp-err" style="display:none;padding:10px;background:#fff0f0;color:var(--red);border:1px solid var(--red);border-radius:8px;font-size:13px;margin-bottom:10px;"></div>
       <button class="bcon" onclick="saveProfile()">保存する</button>
     </div>
     <div class="mpcard">
@@ -246,17 +267,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div id="my-bookings"><div class="loading">読み込み中...</div></div>
     </div>
   </div>
+
+  <!-- レビュー -->
   <div class="screen" id="s-review">
+    <div class="review-warn" id="review-warn">⚠ 完了したレッスンのレビューが未投稿です。次回予約の前にレビューをお願いします。</div>
     <div class="fcard">
-      <div id="review-notice" style="display:none;background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:10px;font-size:12px;color:#a00;margin-bottom:12px;">
-        ⚠ 完了したレッスンのレビューが未投稿です。次回予約の前にレビューをお願いします。
-      </div>
       <div class="ftitle">⭐ レビューを書く</div>
       <div style="font-size:13px;color:#666;margin-bottom:12px;">レッスン完了後に投稿してください</div>
       <label style="font-size:13px;font-weight:700;color:var(--gd);">評価</label>
       <div class="star-row" id="rstars">
-        <button class="starb" onclick="rate(1)">★</button><button class="starb" onclick="rate(2)">★</button>
-        <button class="starb" onclick="rate(3)">★</button><button class="starb" onclick="rate(4)">★</button>
+        <button class="starb" onclick="rate(1)">★</button>
+        <button class="starb" onclick="rate(2)">★</button>
+        <button class="starb" onclick="rate(3)">★</button>
+        <button class="starb" onclick="rate(4)">★</button>
         <button class="starb" onclick="rate(5)">★</button>
       </div>
       <div class="fg"><label>コメント</label><textarea id="rcomment2" placeholder="レッスンの感想をご記入ください。"></textarea></div>
@@ -264,169 +287,218 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 </div>
+
 <script>
-var SURL='https://gojrdnufmueuvkroevut.supabase.co';
-var SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-var LOGIN_URL='https://soft-speculoos-5ef188.netlify.app/';
-var sb=supabase.createClient(SURL,SKEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:false}});
-var uid=null,curType='indoor',coaches=[],sched={},price={},favs=[];
-var selCoach=null,selDate=null,selTime=null,stars=0,sgOffset=0;
+var SURL = 'https://gojrdnufmueuvkroevut.supabase.co';
+var SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+var LOGIN_URL = 'https://soft-speculoos-5ef188.netlify.app/';
+var sb = supabase.createClient(SURL, SKEY, {
+  auth: { persistSession: true, storageKey: 'gc', storage: localStorage, autoRefreshToken: true, detectSessionInUrl: false }
+});
 
-function toast(msg,t){var el=document.getElementById('toast');el.textContent=msg;el.className=t||'';el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2500);}
-function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+var uid = null;
+var curType = 'indoor';
+var coaches = [];
+var sched = {};
+var price = {};
+var favs = [];
+var selCoach = null;
+var selDate = null;
+var selTime = null;
+var stars = 0;
+var sgOffset = 0;
+var mgYear = new Date().getFullYear();
+var mgMonth = new Date().getMonth();
+var mgSelDate = null;
+var hasUnreviewed = false;
 
-sb.auth.getSession().then(function(r){
-  var s=r.data.session;
-  if(!s){location.href=LOGIN_URL;return;}
-  uid=s.user.id;
-  var n=(s.user.user_metadata&&s.user.user_metadata.name)?s.user.user_metadata.name:s.user.email;
-  document.getElementById('uname').textContent=n+'さん';
+function toast(msg, t) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = t || '';
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2500);
+}
+
+function fmt(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+sb.auth.getSession().then(function(r) {
+  var s = r.data.session;
+  if (!s) { location.href = LOGIN_URL; return; }
+  uid = s.user.id;
+  var n = (s.user.user_metadata && s.user.user_metadata.name) ? s.user.user_metadata.name : s.user.email;
+  document.getElementById('uname').textContent = n + 'さん';
+  document.getElementById('mp-email').value = s.user.email || '';
   loadAll();
 });
 
-function loadAll(){
-  Promise.all([
-    sb.from('coaches').select('*'),
-    sb.from('coach_schedules').select('*'),
-    sb.from('coach_prices').select('*'),
-    sb.from('favorites').select('coach_id').eq('customer_id',uid),
-    sb.from('customers').select('*').eq('user_id',uid).maybeSingle(),
-    sb.from('bookings').select('*').eq('customer_id',uid).order('created_at',{ascending:false})
-  ]).then(function(res){
-    coaches=res[0].data||[];
-    sched={};
-    (res[1].data||[]).forEach(function(r){
-      if(!sched[r.coach_id])sched[r.coach_id]={};
-      if(!sched[r.coach_id][r.store])sched[r.coach_id][r.store]={};
-      sched[r.coach_id][r.store][r.date]={times:r.times||[]};
+function loadAll() {
+  sb.from('coaches').select('*').then(function(r1) {
+    coaches = r1.data || [];
+    sb.from('coach_schedules').select('*').then(function(r2) {
+      sched = {};
+      (r2.data || []).forEach(function(r) {
+        if (!sched[r.coach_id]) sched[r.coach_id] = {};
+        if (!sched[r.coach_id][r.store]) sched[r.coach_id][r.store] = {};
+        sched[r.coach_id][r.store][r.date] = { times: r.times || [] };
+      });
+      sb.from('coach_prices').select('*').then(function(r3) {
+        price = {};
+        (r3.data || []).forEach(function(r) {
+          if (!price[r.coach_id]) price[r.coach_id] = {};
+          price[r.coach_id][r.store] = r;
+        });
+        sb.from('favorites').select('coach_id').eq('customer_id', uid).then(function(r4) {
+          favs = (r4.data || []).map(function(x) { return x.coach_id; });
+          sb.from('customers').select('*').eq('user_id', uid).maybeSingle().then(function(r5) {
+            if (r5.data) {
+              document.getElementById('mp-name').value = r5.data.name || '';
+              document.getElementById('mp-phone').value = r5.data.phone || '';
+              if (r5.data.age) document.getElementById('mp-age').value = r5.data.age;
+              if (r5.data.gender) document.getElementById('mp-gender').value = r5.data.gender;
+              if (r5.data.member_type) document.getElementById('mp-member').value = r5.data.member_type;
+            }
+            sb.from('bookings').select('*').eq('customer_id', uid).order('created_at', { ascending: false }).then(function(r6) {
+              loadBookings(r6.data || []);
+              renderAll();
+            });
+          });
+        });
+      });
     });
-    price={};
-    (res[2].data||[]).forEach(function(r){
-      if(!price[r.coach_id])price[r.coach_id]={};
-      price[r.coach_id][r.store]=r;
-    });
-    favs=(res[3].data||[]).map(function(x){return x.coach_id;});
-    var emailEl=document.getElementById('mp-email');
-    if(emailEl&&res[0]){
-      var session=sb.auth.getSession();
-    }
-    if(res[4].data){
-      document.getElementById('mp-name').value=res[4].data.name||'';
-      document.getElementById('mp-phone').value=res[4].data.phone||'';
-      if(res[4].data.age)document.getElementById('mp-age').value=res[4].data.age||'';
-      if(res[4].data.gender)document.getElementById('mp-gender').value=res[4].data.gender||'';
-      if(res[4].data.member_type)document.getElementById('mp-member').value=res[4].data.member_type||'';
-    }
-    sb.auth.getSession().then(function(sr){
-      if(sr.data.session)document.getElementById('mp-email').value=sr.data.session.user.email||'';
-    });
-    var bd=res[5].data||[];
-    var bel=document.getElementById('my-bookings');
-    if(bd.length===0){bel.innerHTML='<div class="loading">予約履歴はありません</div>';}
-    else{
-      var tm={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
-      var sc={pending:'b-pe',confirmed:'b-g',cancelled:'b-bl'};
-      var sm={pending:'申請中',confirmed:'確定',cancelled:'キャンセル'};
-      _hasUnreviewed=false;
-      bel.innerHTML=bd.map(function(b){
-        var reviewed=(b.reviewed||false)?'true':'false';
-        if(b.status==='confirmed'&&!b.reviewed)hasUnreviewed=true;
-        return '<div class="history-item" data-reviewed="'+reviewed+'"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,'/'):'')+' '+(b.time||'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+(b.status==='confirmed'&&!b.reviewed?'<br><span style="font-size:10px;color:var(--red);">レビュー未投稿</span>':'')+'</span></div>';
-      }).join('');
-      var notice=document.getElementById('review-notice');
-      if(notice)notice.style.display=_hasUnreviewed?'block':'none';
-    }
-    renderAll();
-  }).catch(function(e){
-    document.getElementById('clist').innerHTML='<div class="loading">読み込みに失敗しました</div>';
   });
 }
 
-function getPrice(c){
-  var cp=price[c.user_id];if(!cp)return'';
-  var sk=Object.keys(cp);if(!sk.length)return'';
-  var p=cp[sk[0]];
-  if(curType==='indoor'&&p.price_50)return'50分 ¥'+Number(p.price_50).toLocaleString()+'〜';
-  if(curType==='round'&&p.price_round)return'¥'+Number(p.price_round).toLocaleString();
-  if(curType==='accompany'&&p.price_accompany)return'¥'+Number(p.price_accompany).toLocaleString();
-  if(curType==='comp'&&p.price_comp)return'¥'+Number(p.price_comp).toLocaleString();
-  return'';
+function loadBookings(bd) {
+  var bel = document.getElementById('my-bookings');
+  hasUnreviewed = false;
+  if (bd.length === 0) {
+    bel.innerHTML = '<div class="loading">予約履歴はありません</div>';
+    return;
+  }
+  var tm = { indoor: 'インドアレッスン', round: 'ラウンドレッスン', accompany: '同伴ラウンド', comp: 'コンペ参加' };
+  var scMap = { pending: 'b-pe', confirmed: 'b-g', cancelled: 'b-bl' };
+  var smMap = { pending: '申請中', confirmed: '確定', cancelled: 'キャンセル' };
+  var html = '';
+  bd.forEach(function(b) {
+    if (b.status === 'confirmed' && !b.reviewed) hasUnreviewed = true;
+    var typeLabel = tm[b.type] || b.type || '';
+    var dateLabel = b.date ? b.date.replace(/-/g, '/') : '';
+    var timeLabel = b.time || '';
+    var badgeCls = scMap[b.status] || 'b-bl';
+    var statusLabel = smMap[b.status] || b.status;
+    var reviewNote = (b.status === 'confirmed' && !b.reviewed) ? '<br><small style="color:#E24B4A;">レビュー未投稿</small>' : '';
+    html += '<div class="history-item">';
+    html += '<div><div style="font-size:13px;font-weight:500;">' + typeLabel + '</div>';
+    html += '<div style="font-size:12px;color:#666;">' + dateLabel + ' ' + timeLabel + '</div></div>';
+    html += '<span class="badge ' + badgeCls + '">' + statusLabel + reviewNote + '</span></div>';
+  });
+  bel.innerHTML = html;
+  var warn = document.getElementById('review-warn');
+  if (warn) warn.style.display = hasUnreviewed ? 'block' : 'none';
 }
 
-function getAvail(cid){
-  var sc=sched[cid];if(!sc)return{};
-  var td=fmt(new Date());var res={};
-  Object.keys(sc).forEach(function(st){
-    Object.keys(sc[st]).forEach(function(dt){
-      if(dt<td)return;
-      var ts=sc[st][dt].times||[];
-      if(ts.length>0){if(!res[dt])res[dt]={};res[dt][st]=ts;}
+function getPrice(c) {
+  var cp = price[c.user_id]; if (!cp) return '';
+  var sk = Object.keys(cp); if (!sk.length) return '';
+  var p = cp[sk[0]];
+  if (curType === 'indoor' && p.price_50) return '50分 ¥' + Number(p.price_50).toLocaleString() + '〜';
+  if (curType === 'round' && p.price_round) return '¥' + Number(p.price_round).toLocaleString();
+  if (curType === 'accompany' && p.price_accompany) return '¥' + Number(p.price_accompany).toLocaleString();
+  if (curType === 'comp' && p.price_comp) return '¥' + Number(p.price_comp).toLocaleString();
+  return '';
+}
+
+function getAvail(cid) {
+  var sc = sched[cid]; if (!sc) return {};
+  var td = fmt(new Date()); var res = {};
+  Object.keys(sc).forEach(function(st) {
+    Object.keys(sc[st]).forEach(function(dt) {
+      if (dt < td) return;
+      var ts = sc[st][dt].times || [];
+      if (ts.length > 0) { if (!res[dt]) res[dt] = {}; res[dt][st] = ts; }
     });
   });
   return res;
 }
 
-function renderAll(){
-  var tn={indoor:'この週の対応コーチ',round:'ラウンドレッスン対応コーチ',accompany:'同伴ラウンド対応コーチ',comp:'コンペ参加対応コーチ'};
-  document.getElementById('ctitle').textContent=tn[curType]||'対応コーチ一覧';
-  var grid=document.getElementById('sched-grid');
-  var mgrid=document.getElementById('month-grid');
-  if(curType==='indoor'){
-    grid.style.display='block';
-    mgrid.style.display='none';
+function renderAll() {
+  var titles = { indoor: 'この週の対応コーチ', round: 'ラウンドレッスン対応コーチ', accompany: '同伴ラウンド対応コーチ', comp: 'コンペ参加対応コーチ' };
+  document.getElementById('ctitle').textContent = titles[curType] || '対応コーチ一覧';
+  var sgEl = document.getElementById('sched-grid');
+  var mgEl = document.getElementById('month-grid');
+  if (curType === 'indoor') {
+    sgEl.style.display = 'block';
+    mgEl.style.display = 'none';
     renderSchedGrid();
   } else {
-    grid.style.display='none';
-    mgrid.style.display='block';
+    sgEl.style.display = 'none';
+    mgEl.style.display = 'block';
     renderMonthGrid();
   }
 }
 
-function renderSchedGrid(){
-  var today=new Date();today.setHours(0,0,0,0);
-  var start=new Date(today);start.setDate(start.getDate()+sgOffset*5);
-  var dates=[];
-  for(var i=0;i<5;i++){var d=new Date(start);d.setDate(d.getDate()+i);dates.push(d);}
-  var todayStr=fmt(new Date());
-  var dayNames=['日','月','火','水','木','金','土'];
-  document.getElementById('sg-label').textContent=(start.getMonth()+1)+'/'+start.getDate()+'〜'+(dates[4].getMonth()+1)+'/'+dates[4].getDate();
-  var thead=document.getElementById('sg-head');
-  var hrow='<tr><th style="width:44px;">時間</th>';
-  for(var di=0;di<5;di++){
-    var dd=dates[di];var ds=fmt(dd);
-    hrow+='<th'+(ds===todayStr?' class="tc-today"':'')+'>'+dayNames[dd.getDay()]+'<br>'+(dd.getMonth()+1)+'/'+(dd.getDate())+'</th>';
+/* ---- 週間グリッド（インドア） ---- */
+function renderSchedGrid() {
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var start = new Date(today); start.setDate(start.getDate() + sgOffset * 5);
+  var dates = [];
+  for (var i = 0; i < 5; i++) { var d = new Date(start); d.setDate(d.getDate() + i); dates.push(d); }
+  var todayStr = fmt(new Date());
+  var dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  document.getElementById('sg-label').textContent =
+    (start.getMonth() + 1) + '/' + start.getDate() + '〜' + (dates[4].getMonth() + 1) + '/' + dates[4].getDate();
+  var thead = document.getElementById('sg-head');
+  var hrow = '<tr><th style="width:44px;">時間</th>';
+  for (var di = 0; di < 5; di++) {
+    var dd = dates[di]; var ds = fmt(dd);
+    hrow += '<th' + (ds === todayStr ? ' class="tc-today"' : '') + '>' + dayNames[dd.getDay()] + '<br>' + (dd.getMonth() + 1) + '/' + dd.getDate() + '</th>';
   }
-  thead.innerHTML=hrow+'</tr>';
-  var tbody=document.getElementById('sg-body');
-  tbody.innerHTML='';
-  var visIds=[];
-  for(var h=8;h<=23;h++){
-    var tr=document.createElement('tr');
-    var tdl=document.createElement('td');tdl.className='tl';tdl.textContent=h+':00';tr.appendChild(tdl);
-    var tstr=String(h).padStart(2,'0')+':00';
-    for(var di2=0;di2<5;di2++){
-      var dd2=dates[di2];var ds2=fmt(dd2);
-      var td2=document.createElement('td');td2.className='ts';
-      var here=coaches.filter(function(c){
-        var sc2=sched[c.user_id];if(!sc2)return false;
-        return Object.keys(sc2).some(function(st){return sc2[st][ds2]&&sc2[st][ds2].times&&sc2[st][ds2].times.indexOf(tstr)>=0;});
+  thead.innerHTML = hrow + '</tr>';
+  var tbody = document.getElementById('sg-body');
+  tbody.innerHTML = '';
+  var visIds = [];
+  for (var h = 8; h <= 23; h++) {
+    var tr = document.createElement('tr');
+    var tdl = document.createElement('td'); tdl.className = 'tl'; tdl.textContent = h + ':00'; tr.appendChild(tdl);
+    var tstr = String(h).padStart(2, '0') + ':00';
+    for (var di2 = 0; di2 < 5; di2++) {
+      var dd2 = dates[di2]; var ds2 = fmt(dd2);
+      var td2 = document.createElement('td'); td2.className = 'ts';
+      var here = coaches.filter(function(c) {
+        var sc2 = sched[c.user_id]; if (!sc2) return false;
+        return Object.keys(sc2).some(function(st) {
+          return sc2[st][ds2] && sc2[st][ds2].times && sc2[st][ds2].times.indexOf(tstr) >= 0;
+        });
       });
-      if(here.length>0){
-        here.forEach(function(c){if(visIds.indexOf(c.user_id)<0)visIds.push(c.user_id);});
-        var wrap=document.createElement('div');wrap.className='av-wrap';
-        here.forEach(function(c){
-          var pr=getPrice(c);
-          var item=document.createElement('div');item.className='av-item';
+      if (here.length > 0) {
+        here.forEach(function(c) { if (visIds.indexOf(c.user_id) < 0) visIds.push(c.user_id); });
+        var wrap = document.createElement('div'); wrap.className = 'av-wrap';
+        here.forEach(function(c) {
+          var pr = getPrice(c);
+          var item = document.createElement('div'); item.className = 'av-item';
           var av;
-          if(c.photo_url){
-            av=document.createElement('img');av.src=c.photo_url+'?width=56&quality=70&resize=cover';av.className='av-img';av.title=c.name||'';
+          if (c.photo_url) {
+            av = document.createElement('img');
+            av.src = c.photo_url + '?width=56&quality=70&resize=cover';
+            av.className = 'av-img'; av.title = c.name || '';
           } else {
-            av=document.createElement('div');av.className='av-init';av.textContent=(c.name||'?').charAt(0);av.title=c.name||'';
+            av = document.createElement('div'); av.className = 'av-init';
+            av.textContent = (c.name || '?').charAt(0); av.title = c.name || '';
           }
-          (function(coach,date,ts2){av.onclick=function(){selCoach=coach.user_id;selDate=date;selTime=ts2;goReq(coach.user_id,coach.name||'コーチ');};})(c,ds2,tstr);
+          (function(coach, date, ts2) {
+            av.onclick = function() { selCoach = coach.user_id; selDate = date; selTime = ts2; goReq(coach.user_id, coach.name || 'コーチ'); };
+          })(c, ds2, tstr);
           item.appendChild(av);
-          if(here.length===1&&pr){var ptag=document.createElement('span');ptag.className='av-price';ptag.textContent=pr;item.appendChild(ptag);}
+          if (here.length === 1 && pr) {
+            var ptag = document.createElement('span'); ptag.className = 'av-price'; ptag.textContent = pr; item.appendChild(ptag);
+          }
           wrap.appendChild(item);
         });
         td2.appendChild(wrap);
@@ -435,246 +507,256 @@ function renderSchedGrid(){
     }
     tbody.appendChild(tr);
   }
-  renderCoachList(coaches.filter(function(c){return visIds.indexOf(c.user_id)>=0;}));
+  renderCoachList(coaches.filter(function(c) { return visIds.indexOf(c.user_id) >= 0; }));
 }
 
-function sgPrev(){sgOffset--;renderSchedGrid();}
+function sgPrev() { sgOffset--; renderSchedGrid(); }
+function sgNext() { sgOffset++; renderSchedGrid(); }
 
-var mgYear=new Date().getFullYear();
-var mgMonth=new Date().getMonth();
-var mgSelDate=null;
-
-function mgPrev(){
-  mgMonth--;if(mgMonth<0){mgMonth=11;mgYear--;}
-  renderMonthGrid();
-}
-function mgNext(){
-  mgMonth++;if(mgMonth>11){mgMonth=0;mgYear++;}
-  renderMonthGrid();
-}
-
-function renderMonthGrid(){
-  var dayNames=['日','月','火','水','木','金','土'];
-  var today=fmt(new Date());
-  document.getElementById('mg-label').textContent=mgYear+'年'+(mgMonth+1)+'月';
-  var first=new Date(mgYear,mgMonth,1);
-  var last=new Date(mgYear,mgMonth+1,0);
-  var startDow=first.getDay();
-  var visIds=[];
-
-  var html='<table class="mg-table"><thead><tr>';
-  dayNames.forEach(function(d){html+='<th>'+d+'</th>';});
-  html+='</tr></thead><tbody><tr>';
-
-  for(var i=0;i<startDow;i++)html+='<td></td>';
-  var dow=startDow;
-  for(var day=1;day<=last.getDate();day++){
-    var d=new Date(mgYear,mgMonth,day);
-    var ds=fmt(d);
-    var here=coaches.filter(function(c){
-      var sc=sched[c.user_id];if(!sc)return false;
-      return Object.keys(sc).some(function(st){return sc[st][ds]&&sc[st][ds].times&&sc[st][ds].times.length>0;});
-    });
-    var isToday=ds===today;
-    var isSel=ds===mgSelDate;
-    var isAvail=here.length>0&&ds>=today;
-    var cls='mg-day'+(isAvail?' avail':'')+(isToday?' today':'')+(isSel?' sel':'');
-    var avHtml='';
-    if(isAvail){
-      here.forEach(function(c){if(visIds.indexOf(c.user_id)<0)visIds.push(c.user_id);});
-      avHtml='<div class="mg-avs">';
-      here.slice(0,3).forEach(function(c){
-        if(c.photo_url){avHtml+='<img class="mg-av" src="'+c.photo_url+'?width=32&quality=70&resize=cover" title="'+(c.name||'')+'">';}
-        else{avHtml+='<div class="mg-av-i">'+(c.name||'?').charAt(0)+'</div>';}
+/* ---- 月カレンダー（ラウンド系） ---- */
+function renderMonthGrid() {
+  var todayStr = fmt(new Date());
+  var dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  document.getElementById('mg-label').textContent = mgYear + '年' + (mgMonth + 1) + '月';
+  var first = new Date(mgYear, mgMonth, 1);
+  var last = new Date(mgYear, mgMonth + 1, 0);
+  var startDow = first.getDay();
+  var visIds = [];
+  var html = '<table class="mg-table"><thead><tr>';
+  dayNames.forEach(function(d) { html += '<th>' + d + '</th>'; });
+  html += '</tr></thead><tbody><tr>';
+  for (var i = 0; i < startDow; i++) html += '<td></td>';
+  var dow = startDow;
+  for (var day = 1; day <= last.getDate(); day++) {
+    var d2 = new Date(mgYear, mgMonth, day);
+    var ds3 = fmt(d2);
+    var here2 = coaches.filter(function(c) {
+      var sc3 = sched[c.user_id]; if (!sc3) return false;
+      return Object.keys(sc3).some(function(st) {
+        return sc3[st][ds3] && sc3[st][ds3].times && sc3[st][ds3].times.length > 0;
       });
-      avHtml+='</div>';
+    });
+    var isToday = ds3 === todayStr;
+    var isSel = ds3 === mgSelDate;
+    var isAvail = here2.length > 0 && ds3 >= todayStr;
+    if (isAvail) here2.forEach(function(c) { if (visIds.indexOf(c.user_id) < 0) visIds.push(c.user_id); });
+    var cellCls = 'mg-cell' + (isAvail ? ' mg-avail' : '') + (isToday ? ' mg-today' : '') + (isSel ? ' mg-sel' : '');
+    var avHtml = '';
+    if (isAvail) {
+      avHtml = '<div class="mg-avs">';
+      here2.slice(0, 3).forEach(function(c) {
+        if (c.photo_url) avHtml += '<img class="mg-av" src="' + c.photo_url + '?width=32&quality=70&resize=cover" title="' + esc(c.name || '') + '">';
+        else avHtml += '<div class="mg-av-i">' + esc((c.name || '?').charAt(0)) + '</div>';
+      });
+      avHtml += '</div>';
     }
-    var onclick=isAvail?'onclick="mgPickDay(''+ds+'')"':'';
-    html+='<td><div class="'+cls+'" '+onclick+'><div class="mg-num">'+day+'</div>'+avHtml+'</div></td>';
+    var onclick2 = isAvail ? ' onclick="mgPick(\'' + ds3 + '\')"' : '';
+    html += '<td><div class="' + cellCls + '"' + onclick2 + '><div class="mg-num">' + day + '</div>' + avHtml + '</div></td>';
     dow++;
-    if(dow===7&&day<last.getDate()){html+='</tr><tr>';dow=0;}
+    if (dow === 7 && day < last.getDate()) { html += '</tr><tr>'; dow = 0; }
   }
-  while(dow>0&&dow<7){html+='<td></td>';dow++;}
-  html+='</tr></tbody></table>';
-  document.getElementById('mg-body').innerHTML=html;
-  renderCoachList(coaches.filter(function(c){return visIds.indexOf(c.user_id)>=0;}));
+  while (dow > 0 && dow < 7) { html += '<td></td>'; dow++; }
+  html += '</tr></tbody></table>';
+  document.getElementById('mg-body').innerHTML = html;
+  renderCoachList(coaches.filter(function(c) { return visIds.indexOf(c.user_id) >= 0; }));
 }
 
-function mgPickDay(ds){
-  mgSelDate=ds;
-  renderMonthGrid();
-  selDate=ds;
-}
-function sgNext(){sgOffset++;renderSchedGrid();}
+function mgPrev() { mgMonth--; if (mgMonth < 0) { mgMonth = 11; mgYear--; } renderMonthGrid(); }
+function mgNext() { mgMonth++; if (mgMonth > 11) { mgMonth = 0; mgYear++; } renderMonthGrid(); }
+function mgPick(ds) { mgSelDate = ds; selDate = ds; renderMonthGrid(); }
 
-function renderCoachList(list){
-  if(!list||list.length===0){document.getElementById('clist').innerHTML='<div class="loading">この期間に空きのあるコーチはいません</div>';return;}
-  document.getElementById('clist').innerHTML=list.map(buildCard).join('');
-}
-
-function buildCard(c){
-  var av=getAvail(c.user_id);
-  var cnt=Object.keys(av).length;
-  var pr=getPrice(c);
-  var isFav=favs.indexOf(c.user_id)>=0;
-  var ph=c.photo_url
-    ?'<img src="'+c.photo_url+'?width=100&quality=70&resize=cover" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">'
-    :'<span style="font-size:13px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
-  var favBtn='<button class="hbtn'+(isFav?' fav':'')+'" onclick="toggleFav(\''+c.user_id+'\',this)">'+(isFav?'&#9829;':'&#9825;')+'</button>';
-  return '<div class="ccard" id="cc-'+c.user_id+'">'
-    +'<div class="ccard-top">'
-    +'<div class="cavatar">'+ph+'</div>'
-    +'<div class="cinfo">'
-    +'<div class="crow1">'
-    +'<span class="cname">'+esc(c.name||'コーチ')+'</span>'
-    +(pr?'<span class="cprice">'+pr+'</span>':'')
-    +(cnt?'<span class="cavail">空き'+cnt+'日</span>':'')
-    +favBtn
-    +'</div>'
-    +'<div class="crow2">'
-    +(c.area?'<span class="csub">&#128205;'+esc(c.area)+(c.experience?' &middot; '+esc(c.experience):'')+'</span>':'')
-    +(c.bio?'<span class="cbio">'+esc(c.bio)+'</span>':'')
-    +(c.tags?'<span class="ctag">'+esc(c.tags)+'</span>':'')
-    +'</div>'
-    +'</div>'
-    +'</div>'
-    +'<button class="btn-req" onclick="goReq(\''+c.user_id+'\',\''+esc(c.name||'コーチ')+'\')">このコーチに依頼する &#8594;</button>'
-    +'</div>';
+/* ---- コーチ一覧 ---- */
+function renderCoachList(list) {
+  if (!list || list.length === 0) {
+    document.getElementById('clist').innerHTML = '<div class="loading">この期間に空きのあるコーチはいません</div>';
+    return;
+  }
+  document.getElementById('clist').innerHTML = list.map(buildCard).join('');
 }
 
-function renderFavList(){
-  var fc=coaches.filter(function(c){return favs.indexOf(c.user_id)>=0;});
-  if(fc.length===0){document.getElementById('flist').innerHTML='<div class="loading">お気に入りのコーチはいません</div>';return;}
-  document.getElementById('flist').innerHTML=fc.map(buildCard).join('');
+function buildCard(c) {
+  var av = getAvail(c.user_id);
+  var cnt = Object.keys(av).length;
+  var pr = getPrice(c);
+  var isFav = favs.indexOf(c.user_id) >= 0;
+  var ph = c.photo_url
+    ? '<img src="' + c.photo_url + '?width=100&quality=70&resize=cover" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">'
+    : '<span style="font-size:13px;font-weight:700;color:var(--gd);">' + esc((c.name || '?').substring(0, 2)) + '</span>';
+  var favIcon = isFav ? '&#9829;' : '&#9825;';
+  var favCls = isFav ? 'hbtn fav' : 'hbtn';
+  return '<div class="ccard" id="cc-' + c.user_id + '">'
+    + '<div class="ccard-top">'
+    + '<div class="cavatar">' + ph + '</div>'
+    + '<div class="cinfo">'
+    + '<div class="crow1">'
+    + '<span class="cname">' + esc(c.name || 'コーチ') + '</span>'
+    + (pr ? '<span class="cprice">' + pr + '</span>' : '')
+    + (cnt ? '<span class="cavail">空き' + cnt + '日</span>' : '')
+    + '<button class="' + favCls + '" onclick="toggleFav(\'' + c.user_id + '\',this)">' + favIcon + '</button>'
+    + '</div>'
+    + '<div class="crow2">'
+    + (c.area ? '<span class="csub">&#128205;' + esc(c.area) + (c.experience ? ' &middot; ' + esc(c.experience) : '') + '</span>' : '')
+    + (c.bio ? '<span class="cbio">' + esc(c.bio) + '</span>' : '')
+    + (c.tags ? '<span class="ctag">' + esc(c.tags) + '</span>' : '')
+    + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<button class="btn-req" onclick="goReq(\'' + c.user_id + '\',\'' + esc(c.name || 'コーチ') + '\')">このコーチに依頼する &#8594;</button>'
+    + '</div>';
 }
 
-function toggleFav(cid,btn){
-  var f=btn.classList.contains('fav');
-  if(f){
-    sb.from('favorites').delete().eq('customer_id',uid).eq('coach_id',cid).then(function(){
-      favs=favs.filter(function(x){return x!==cid;});btn.classList.remove('fav');btn.innerHTML='&#9825;';toast('お気に入りを解除しました');renderFavList();
+function renderFavList() {
+  var fc = coaches.filter(function(c) { return favs.indexOf(c.user_id) >= 0; });
+  if (fc.length === 0) { document.getElementById('flist').innerHTML = '<div class="loading">お気に入りのコーチはいません</div>'; return; }
+  document.getElementById('flist').innerHTML = fc.map(buildCard).join('');
+}
+
+function toggleFav(cid, btn) {
+  var f = btn.classList.contains('fav');
+  if (f) {
+    sb.from('favorites').delete().eq('customer_id', uid).eq('coach_id', cid).then(function() {
+      favs = favs.filter(function(x) { return x !== cid; });
+      btn.classList.remove('fav'); btn.innerHTML = '&#9825;';
+      toast('お気に入りを解除しました'); renderFavList();
     });
   } else {
-    sb.from('favorites').insert({customer_id:uid,coach_id:cid}).then(function(){
-      favs.push(cid);btn.classList.add('fav');btn.innerHTML='&#9829;';toast('お気に入りに追加しました','success');renderFavList();
+    sb.from('favorites').insert({ customer_id: uid, coach_id: cid }).then(function() {
+      favs.push(cid); btn.classList.add('fav'); btn.innerHTML = '&#9829;';
+      toast('お気に入りに追加しました', 'success'); renderFavList();
     });
   }
 }
 
-var _hasUnreviewed=false;
-function hasUnreviewedBooking(){return _hasUnreviewed;}
-function isProfileComplete(){
-  var n=document.getElementById('mp-name').value.trim();
-  var p=document.getElementById('mp-phone').value.trim();
-  var m=document.getElementById('mp-member').value;
-  return n&&p&&m;
+function isProfileComplete() {
+  var n = document.getElementById('mp-name').value.trim();
+  var p = document.getElementById('mp-phone').value.trim();
+  var m = document.getElementById('mp-member').value;
+  return n && p && m;
 }
-function goReq(cid,name){
-  if(!isProfileComplete()){
-    toast('先にマイページでお客様情報を登録してください','error');
-    setTimeout(function(){tab(document.querySelector('.snb:nth-child(4)'),'s-mypage');},800);
+
+function showPriceBox(cid) {
+  var box = document.getElementById('price-box');
+  var detail = document.getElementById('price-detail');
+  var cp = price[cid];
+  if (!cp) { box.style.display = 'none'; return; }
+  var sk = Object.keys(cp); if (!sk.length) { box.style.display = 'none'; return; }
+  var p = cp[sk[0]];
+  var rows = '';
+  if (p.price_50) rows += '<div class="price-row"><span>50分レッスン</span><span>&#165;' + Number(p.price_50).toLocaleString() + '</span></div>';
+  if (p.price_90) rows += '<div class="price-row"><span>90分レッスン</span><span>&#165;' + Number(p.price_90).toLocaleString() + '</span></div>';
+  if (p.price_120) rows += '<div class="price-row"><span>120分レッスン</span><span>&#165;' + Number(p.price_120).toLocaleString() + '</span></div>';
+  if (p.price_round) rows += '<div class="price-row"><span>ラウンドレッスン</span><span>&#165;' + Number(p.price_round).toLocaleString() + '</span></div>';
+  if (p.price_accompany) rows += '<div class="price-row"><span>同伴ラウンド</span><span>&#165;' + Number(p.price_accompany).toLocaleString() + '</span></div>';
+  if (p.price_comp) rows += '<div class="price-row"><span>コンペ参加</span><span>&#165;' + Number(p.price_comp).toLocaleString() + '</span></div>';
+  if (rows) { detail.innerHTML = rows; box.style.display = 'block'; }
+  else box.style.display = 'none';
+}
+
+function goReq(cid, name) {
+  if (!isProfileComplete()) {
+    toast('先にマイページでお客様情報を登録してください', 'error');
+    setTimeout(function() { tab(document.querySelector('.snb:nth-child(4)'), 's-mypage'); }, 800);
     return;
   }
-  if(hasUnreviewedBooking()){
-    toast('完了したレッスンのレビューを先に投稿してください','error');
-    setTimeout(function(){tab(document.querySelector('.snb:nth-child(5)'),'s-review');},800);
+  if (hasUnreviewed) {
+    toast('完了したレッスンのレビューを先に投稿してください', 'error');
+    setTimeout(function() { tab(document.querySelector('.snb:nth-child(5)'), 's-review'); }, 800);
     return;
   }
-  selCoach=cid;
-  document.getElementById('rcoach').value=name;
-  var sel=document.getElementById('rtype');
-  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===curType){sel.selectedIndex=i;break;}}
-  if(selDate)document.getElementById('rdate').value=selDate;
-  if(selTime)document.getElementById('rtime').value=selTime;
-  document.getElementById('rdur').style.display=curType==='indoor'?'block':'none';
-  document.getElementById('rtime-g').style.display=curType==='indoor'?'block':'none';
+  selCoach = cid;
+  document.getElementById('rcoach').value = name;
+  var sel = document.getElementById('rtype');
+  for (var i = 0; i < sel.options.length; i++) { if (sel.options[i].value === curType) { sel.selectedIndex = i; break; } }
+  if (selDate) document.getElementById('rdate').value = selDate;
+  if (selTime) document.getElementById('rtime').value = selTime;
+  document.getElementById('rdur').style.display = curType === 'indoor' ? 'block' : 'none';
+  document.getElementById('rtime-g').style.display = curType === 'indoor' ? 'block' : 'none';
   showPriceBox(cid);
-  tab(document.querySelector('.snb:nth-child(2)'),'s-req');
+  tab(document.querySelector('.snb:nth-child(2)'), 's-req');
 }
 
-function showPriceBox(cid){
-  var box=document.getElementById('price-box');
-  var detail=document.getElementById('price-detail');
-  var cp=price[cid];
-  if(!cp){box.style.display='none';return;}
-  var sk=Object.keys(cp);if(!sk.length){box.style.display='none';return;}
-  var p=cp[sk[0]];
-  var rows='';
-  if(p.price_50)rows+='<div class="price-row"><span>50分レッスン</span><span>¥'+Number(p.price_50).toLocaleString()+'</span></div>';
-  if(p.price_90)rows+='<div class="price-row"><span>90分レッスン</span><span>¥'+Number(p.price_90).toLocaleString()+'</span></div>';
-  if(p.price_120)rows+='<div class="price-row"><span>120分レッスン</span><span>¥'+Number(p.price_120).toLocaleString()+'</span></div>';
-  if(p.price_round)rows+='<div class="price-row"><span>ラウンドレッスン</span><span>¥'+Number(p.price_round).toLocaleString()+'</span></div>';
-  if(p.price_accompany)rows+='<div class="price-row"><span>同伴ラウンド</span><span>¥'+Number(p.price_accompany).toLocaleString()+'</span></div>';
-  if(p.price_comp)rows+='<div class="price-row"><span>コンペ参加</span><span>¥'+Number(p.price_comp).toLocaleString()+'</span></div>';
-  if(rows){detail.innerHTML=rows;box.style.display='block';}
-  else{box.style.display='none';}
-}
-function submitReq(){
-  var btn=document.getElementById('rbtn');btn.disabled=true;btn.textContent='送信中...';
+function submitReq() {
+  var btn = document.getElementById('rbtn'); btn.disabled = true; btn.textContent = '送信中...';
   sb.from('bookings').insert({
-    customer_id:uid,coach_id:selCoach,
-    type:document.getElementById('rtype').value,
-    date:document.getElementById('rdate').value||null,
-    time:document.getElementById('rtime').value||null,
-    store:document.getElementById('rstore').value,
-    duration:curType==='indoor'?parseInt(document.getElementById('rdur-sel').value):null,
-    comment:document.getElementById('rcomment').value,
-    status:'pending',created_at:new Date().toISOString()
-  }).then(function(r){
-    if(r.error)toast('送信に失敗しました','error');
-    else{toast('依頼を送信しました！','success');document.getElementById('agree').checked=false;btn.disabled=true;}
-    btn.textContent='同意して依頼を確定する →';
+    customer_id: uid, coach_id: selCoach,
+    type: document.getElementById('rtype').value,
+    date: document.getElementById('rdate').value || null,
+    time: document.getElementById('rtime').value || null,
+    store: document.getElementById('rstore').value,
+    duration: curType === 'indoor' ? parseInt(document.getElementById('rdur-sel').value) : null,
+    comment: document.getElementById('rcomment').value,
+    status: 'pending', created_at: new Date().toISOString()
+  }).then(function(r) {
+    if (r.error) toast('送信に失敗しました', 'error');
+    else { toast('依頼を送信しました！', 'success'); document.getElementById('agree').checked = false; btn.disabled = true; }
+    btn.textContent = '同意して依頼を確定する →';
   });
 }
 
-function saveProfile(){
-  var name=document.getElementById('mp-name').value.trim();
-  var phone=document.getElementById('mp-phone').value.trim();
-  var age=document.getElementById('mp-age').value;
-  var gender=document.getElementById('mp-gender').value;
-  var member=document.getElementById('mp-member').value;
-  var msg=document.getElementById('mp-msg');
-  if(!name||!phone||!member){
-    msg.textContent='お名前・電話番号・会員種別は必須です。';
-    msg.style.cssText='display:block;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px;background:#fff0f0;color:var(--red);border:1px solid var(--red);';
-    return;
+function saveProfile() {
+  var name = document.getElementById('mp-name').value.trim();
+  var phone = document.getElementById('mp-phone').value.trim();
+  var age = document.getElementById('mp-age').value;
+  var gender = document.getElementById('mp-gender').value;
+  var member = document.getElementById('mp-member').value;
+  var errEl = document.getElementById('mp-err');
+  if (!name || !phone || !member) {
+    errEl.textContent = 'お名前・電話番号・会員種別は必須です。';
+    errEl.style.display = 'block'; return;
   }
-  msg.style.display='none';
-  sb.from('customers').upsert({
-    user_id:uid,name:name,phone:phone,
-    age:parseInt(age),gender:gender,member_type:member,
-    updated_at:new Date().toISOString()
-  },{onConflict:'user_id'}).then(function(r){
-    if(r.error)toast('保存に失敗しました','error');
-    else toast('保存しました！予約が可能になりました','success');
+  errEl.style.display = 'none';
+  var data = { user_id: uid, name: name, phone: phone, member_type: member, updated_at: new Date().toISOString() };
+  if (age) data.age = parseInt(age);
+  if (gender) data.gender = gender;
+  sb.from('customers').upsert(data, { onConflict: 'user_id' }).then(function(r) {
+    if (r.error) toast('保存に失敗しました', 'error');
+    else toast('保存しました！予約が可能になりました', 'success');
   });
 }
 
-function rate(n){stars=n;document.querySelectorAll('#rstars .starb').forEach(function(s,i){s.classList.toggle('on',i<n);});}
+function rate(n) {
+  stars = n;
+  document.querySelectorAll('#rstars .starb').forEach(function(s, i) { s.classList.toggle('on', i < n); });
+}
 
-function submitRev(){
-  if(!stars){toast('評価を選んでください','error');return;}
-  var cm=document.getElementById('rcomment2').value.trim();
-  if(!cm){toast('コメントを入力してください','error');return;}
-  sb.from('reviews').insert({customer_id:uid,stars:stars,comment:cm,created_at:new Date().toISOString()}).then(function(r){
-    if(r.error)toast('送信に失敗しました','error');
-    else{toast('レビューを送信しました！','success');document.getElementById('rcomment2').value='';stars=0;document.querySelectorAll('#rstars .starb').forEach(function(s){s.classList.remove('on');});}
+function submitRev() {
+  if (!stars) { toast('評価を選んでください', 'error'); return; }
+  var cm = document.getElementById('rcomment2').value.trim();
+  if (!cm) { toast('コメントを入力してください', 'error'); return; }
+  sb.from('reviews').insert({ customer_id: uid, stars: stars, comment: cm, created_at: new Date().toISOString() }).then(function(r) {
+    if (r.error) toast('送信に失敗しました', 'error');
+    else {
+      toast('レビューを送信しました！', 'success');
+      document.getElementById('rcomment2').value = '';
+      stars = 0;
+      document.querySelectorAll('#rstars .starb').forEach(function(s) { s.classList.remove('on'); });
+    }
   });
 }
 
-function selType(card,t){
-  document.querySelectorAll('.tcard').forEach(function(c){c.classList.remove('on');});
-  card.classList.add('on');curType=t;selCoach=null;selDate=null;selTime=null;sgOffset=0;renderAll();
+function selType(card, t) {
+  document.querySelectorAll('.tcard').forEach(function(c) { c.classList.remove('on'); });
+  card.classList.add('on'); curType = t; selCoach = null; selDate = null; selTime = null;
+  sgOffset = 0; mgSelDate = null;
+  renderAll();
 }
 
-function tab(btn,id){
-  document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');
-  if(id==='s-fav')renderFavList();
+function tab(btn, id) {
+  document.querySelectorAll('.snb').forEach(function(b) { b.classList.remove('on'); });
+  btn.classList.add('on');
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('on'); });
+  document.getElementById(id).classList.add('on');
+  if (id === 's-fav') renderFavList();
 }
 
-function checkAgree(){document.getElementById('rbtn').disabled=!document.getElementById('agree').checked;}
-function doLogout(){localStorage.removeItem('gc_login_time');sb.auth.signOut().then(function(){location.href=LOGIN_URL;});}
+function checkAgree() {
+  document.getElementById('rbtn').disabled = !document.getElementById('agree').checked;
+}
+
+function doLogout() {
+  localStorage.removeItem('gc_login_time');
+  sb.auth.signOut().then(function() { location.href = LOGIN_URL; });
+}
 </script>
 </body>
 </html>
