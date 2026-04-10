@@ -3,193 +3,464 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GolfCoach — ログイン</title>
+<title>GolfCoach — コーチを探す</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--red:#E24B4A;--border:#e0e0e0;}
-body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-.logo-wrap{text-align:center;margin-bottom:32px;}
-.logo-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--gd);}
-.logo-sub{font-size:12px;color:#666;margin-top:4px;}
-.main-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:420px;overflow:hidden;}
-.type-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
-.type-tab{padding:16px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:#666;border-bottom:3px solid transparent;}
-.type-tab.active{color:var(--gd);border-bottom:3px solid var(--g);background:var(--gl);}
-.type-tab-icon{font-size:20px;display:block;margin-bottom:4px;}
-.form-area{padding:28px;}
-.form-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
-.form-sub{font-size:12px;color:#666;margin-bottom:24px;line-height:1.6;}
-.form-group{margin-bottom:16px;}
-label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:6px;}
-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;background:#fafafa;outline:none;}
-input:focus{border-color:var(--g);background:#fff;}
-.btn-primary{width:100%;padding:14px;background:var(--g);color:white;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
-.btn-primary:disabled{background:#aaa;cursor:not-allowed;}
-.btn-outline{width:100%;padding:12px;background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:10px;}
-.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
-.msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
-.msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
-.security-badge{display:flex;align-items:center;gap:6px;background:var(--gl);border:.5px solid var(--g);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--gd);margin-top:16px;}
-.security-dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;}
-.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#bbb;font-size:12px;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-.forgot-link{text-align:right;margin-top:-8px;margin-bottom:12px;}
-.forgot-link a{font-size:12px;color:#666;cursor:pointer;}
-.screen{display:none;}.screen.active{display:block;}
-.footer{text-align:center;margin-top:24px;font-size:11px;color:#aaa;line-height:1.7;}
-.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
-@keyframes spin{to{transform:rotate(360deg);}}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--gold-l:#FAEEDA;--red:#E24B4A;--border:#e0e0e0;}
+.header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--g);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--gd);}
+.logout-btn{font-size:12px;color:var(--g);background:none;border:1.5px solid var(--g);border-radius:6px;padding:6px 14px;cursor:pointer;font-family:inherit;}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#toast.success{background:var(--gd);}#toast.error{background:var(--red);}
+.content{padding:16px;max-width:480px;margin:0 auto;}
+.snav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+.snb{font-size:13px;padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;cursor:pointer;color:#666;white-space:nowrap;flex-shrink:0;font-weight:500;}
+.snb.on{background:var(--gd);color:#fff;border-color:var(--gd);}
+.screen{display:none;}.screen.on{display:block;}
+.tgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.tcard{border-radius:12px;overflow:hidden;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.tcard.on{outline:3px solid var(--g);outline-offset:-3px;}
+.pbg{width:100%;height:130px;background-size:cover;background-position:center;background-repeat:no-repeat;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:10px 12px;}
+.pbg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0) 20%,rgba(0,0,0,0.72) 100%);}
+.pc{position:relative;z-index:1;}
+.pt{font-size:13px;font-weight:700;color:#fff;line-height:1.3;}
+.ps{font-size:10px;color:rgba(255,255,255,0.9);margin-top:2px;}
+.cbot{background:var(--gl);border-top:1px solid var(--g);padding:5px 10px;font-size:10px;color:var(--gd);font-weight:500;}
+.nbar{background:var(--gold-l);border-top:1px solid var(--gold);padding:5px 10px;font-size:10px;color:#633806;}
+.ccard{background:#fff;border-radius:14px;border:1px solid var(--border);margin-bottom:14px;overflow:hidden;}
+.ccard-top{display:flex;gap:12px;padding:14px;align-items:flex-start;}
+.cavatar{width:60px;height:60px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.cname{font-size:16px;font-weight:700;color:var(--gd);}
+.csub{font-size:11px;color:#888;margin-top:2px;line-height:1.5;}
+.cprice{font-size:13px;color:var(--g);font-weight:700;margin-top:4px;}
+.cbio{font-size:12px;color:#555;margin-top:5px;line-height:1.6;}
+.hbtn{background:none;border:none;cursor:pointer;font-size:22px;color:#ccc;padding:0;flex-shrink:0;}
+.hbtn.fav{color:var(--red);}
+.cal-wrap{padding:0 14px 10px;border-top:1px solid var(--gl);}
+.cal-head{display:flex;justify-content:space-between;align-items:center;padding:10px 0 8px;}
+.cal-lbl{font-size:13px;font-weight:700;color:var(--gd);}
+.cnav{background:none;border:none;font-size:22px;color:var(--g);cursor:pointer;padding:0 8px;line-height:1;}
+.wgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:8px;}
+.wlbl{text-align:center;font-size:10px;color:#999;padding:2px 0;}
+.wday{text-align:center;padding:6px 2px;border-radius:8px;min-height:42px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.wday .wdn{font-size:13px;font-weight:500;color:#ccc;}
+.wday.avail{background:var(--gl);cursor:pointer;}
+.wday.avail .wdn{color:var(--gd);font-weight:700;}
+.wday.today{border:1.5px solid var(--gold);}
+.wday.today .wdn{color:var(--gold);}
+.wday.sel{background:var(--gd) !important;}
+.wday.sel .wdn{color:#fff !important;}
+.wdot{width:5px;height:5px;border-radius:50%;background:var(--g);margin-top:2px;}
+.wday.sel .wdot{background:#fff;}
+.slots-box{background:var(--gl);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.slots-ttl{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;}
+.slots-row{display:flex;flex-wrap:wrap;gap:6px;}
+.tslot{font-size:12px;padding:7px 11px;border-radius:8px;border:1.5px solid var(--g);color:var(--gd);background:#fff;cursor:pointer;font-weight:500;font-family:inherit;}
+.tslot.sel{background:var(--g);color:#fff;}
+.mday{text-align:center;padding:5px 2px;border-radius:6px;min-height:34px;}
+.mday .mdn{font-size:12px;color:#ccc;}
+.mday.avail{background:var(--gl);cursor:pointer;}
+.mday.avail .mdn{color:var(--gd);font-weight:700;}
+.mday.today .mdn{color:var(--gold);font-weight:700;}
+.mday.sel{background:var(--gd) !important;}
+.mday.sel .mdn{color:#fff !important;}
+.mdot{font-size:8px;color:var(--g);}
+.mday.sel .mdot{color:#fff;}
+.btn-req{display:block;width:calc(100% - 28px);margin:8px 14px 14px;padding:13px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+.fcard{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.ftitle{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:13px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;outline:none;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--g);}
+.fg textarea{resize:vertical;min-height:72px;}
+.terms{background:#f9f9f9;border:1px solid var(--border);border-radius:8px;padding:12px;font-size:11px;color:#666;line-height:1.8;max-height:130px;overflow-y:auto;margin-bottom:10px;}
+.agrow{display:flex;align-items:center;gap:8px;font-size:13px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:12px;}
+.agrow input{width:16px;height:16px;accent-color:var(--g);cursor:pointer;}
+.bcon{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;}
+.bcon:disabled{background:#aaa;cursor:not-allowed;}
+.fav-notice{background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:10px;font-size:12px;color:#a00;margin-bottom:10px;}
+.mpcard{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.history-item:last-child{border-bottom:none;}
+.badge{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500;}
+.b-g{background:var(--gl);color:var(--gd);}.b-pe{background:var(--gold-l);color:var(--gold);}.b-bl{background:#e6f1fb;color:#185fa5;}
+.star-row{display:flex;gap:5px;margin:8px 0;}
+.starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;}
+.starb.on{color:var(--gold);}
+.loading{text-align:center;padding:20px;color:#bbb;font-size:13px;}
+#pbg1{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/indoor.png?width=400&quality=70&resize=cover");}
+#pbg2{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/round.png?width=400&quality=70&resize=cover");}
+#pbg3{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/accompany.png?width=400&quality=70&resize=cover");}
+#pbg4{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/comp.png?width=400&quality=70&resize=cover");}
 </style>
 </head>
 <body>
-<div class="logo-wrap">
-  <div class="logo-title">GolfCoach</div>
-  <div class="logo-sub">ゴルフコーチ マッチングサービス</div>
-</div>
-<div class="main-card">
-  <div class="type-tabs">
-    <button class="type-tab active" onclick="switchType('customer',this)"><span class="type-tab-icon">👤</span>お客様</button>
-    <button class="type-tab" onclick="switchType('coach',this)"><span class="type-tab-icon">🏌</span>コーチ</button>
-    <button class="type-tab" onclick="switchType('store',this)"><span class="type-tab-icon">🏪</span>店舗管理</button>
-  </div>
-  <div class="form-area">
-    <div class="msg" id="msg"></div>
-    <div class="screen active" id="screen-login">
-      <div class="form-title" id="login-title">お客様ログイン</div>
-      <div class="form-sub" id="login-sub">メールアドレスとパスワードでログインしてください</div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="login-email" placeholder="example@mail.com"></div>
-      <div class="form-group"><label>パスワード</label><input type="password" id="login-password" placeholder="パスワードを入力"></div>
-      <div class="forgot-link"><a onclick="showScreen('screen-reset')">パスワードをお忘れの方</a></div>
-      <button class="btn-primary" id="login-btn" onclick="doLogin()">ログイン</button>
-      <div class="divider">または</div>
-      <button class="btn-outline" onclick="showScreen('screen-register')">新規アカウント登録</button>
-      <div class="security-badge"><span class="security-dot"></span>SSL暗号化通信で安全に保護されています</div>
-    </div>
-    <div class="screen" id="screen-register">
-      <div class="form-title">新規アカウント登録</div>
-      <div class="form-sub">情報を入力してアカウントを作成してください</div>
-      <div class="form-group"><label>お名前</label><input type="text" id="reg-name" placeholder="山田 太郎"></div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="reg-email" placeholder="example@mail.com"></div>
-      <div class="form-group"><label>パスワード（8文字以上）</label><input type="password" id="reg-password" placeholder="パスワードを設定"></div>
-      <div class="form-group"><label>パスワード（確認）</label><input type="password" id="reg-password2" placeholder="パスワードを再入力"></div>
-      <button class="btn-primary" id="register-btn" onclick="doRegister()">アカウントを作成する</button>
-      <button class="btn-outline" onclick="showScreen('screen-login')">ログインに戻る</button>
-    </div>
-    <div class="screen" id="screen-reset">
-      <div class="form-title">パスワードをリセット</div>
-      <div class="form-sub">登録済みのメールアドレスにリセット用リンクを送信します</div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="reset-email" placeholder="example@mail.com"></div>
-      <button class="btn-primary" onclick="doReset()">リセットメールを送信</button>
-      <button class="btn-outline" onclick="showScreen('screen-login')">ログインに戻る</button>
-    </div>
+<div id="toast"></div>
+<div class="header">
+  <div class="logo">GolfCoach</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:12px;color:#666;" id="uname"></span>
+    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </div>
-<div class="footer">© 2026 GolfCoach by 株式会社ケイエスケー<br><a href="#" style="color:#aaa;">利用規約</a> ・ <a href="#" style="color:#aaa;">プライバシーポリシー</a></div>
-
+<div class="content">
+  <div class="snav">
+    <button class="snb on" onclick="tab(this,'s-search')">コーチを探す</button>
+    <button class="snb" onclick="tab(this,'s-req')">依頼する</button>
+    <button class="snb" onclick="tab(this,'s-fav')">お気に入り</button>
+    <button class="snb" onclick="tab(this,'s-mypage')">マイページ</button>
+    <button class="snb" onclick="tab(this,'s-review')">レビュー</button>
+  </div>
+  <div class="screen on" id="s-search">
+    <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:10px;">依頼の種類を選ぶ</div>
+    <div class="tgrid">
+      <div class="tcard on" id="card-indoor" onclick="selType(this,'indoor')">
+        <div class="pbg" id="pbg1"><div class="pc"><div class="pt">インドアゴルフ<br>レッスン</div><div class="ps">5〜120分・時間制</div></div></div>
+        <div class="cbot">⏱ 時間と料金はこちら</div>
+      </div>
+      <div class="tcard" id="card-round" onclick="selType(this,'round')">
+        <div class="pbg" id="pbg2"><div class="pc"><div class="pt">ラウンドレッスン</div><div class="ps">1ラウンド固定</div></div></div>
+        <div class="nbar">⚠ プレーフィー・キャディフィーはお客様負担</div>
+      </div>
+      <div class="tcard" id="card-accompany" onclick="selType(this,'accompany')">
+        <div class="pbg" id="pbg3"><div class="pc"><div class="pt">同伴ラウンド</div><div class="ps">1ラウンド固定</div></div></div>
+        <div class="nbar">⚠ プレーフィー・キャディフィーはお客様負担</div>
+      </div>
+      <div class="tcard" id="card-comp" onclick="selType(this,'comp')">
+        <div class="pbg" id="pbg4"><div class="pc"><div class="pt">コンペ参加</div><div class="ps">1ラウンド固定</div></div></div>
+        <div class="nbar">⚠ プレーフィー・キャディフィーはお客様負担</div>
+      </div>
+    </div>
+    <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:10px;" id="ctitle">対応コーチ一覧</div>
+    <div id="clist"><div class="loading">読み込み中...</div></div>
+  </div>
+  <div class="screen" id="s-req">
+    <div class="fcard">
+      <div class="ftitle">📋 依頼内容を入力</div>
+      <div class="fg"><label>選択中のコーチ</label><input type="text" id="rcoach" readonly style="background:#f5f5f5;"></div>
+      <div class="fg"><label>依頼の種類</label>
+        <select id="rtype"><option value="indoor">インドアゴルフレッスン</option><option value="round">ラウンドレッスン</option><option value="accompany">同伴ラウンド</option><option value="comp">コンペ参加</option></select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <div class="fg" style="flex:1;"><label>希望日</label><input type="date" id="rdate"></div>
+        <div class="fg" style="flex:1;" id="rtime-g"><label>希望時間</label><input type="time" id="rtime" value="10:00"></div>
+      </div>
+      <div class="fg" id="rdur"><label>レッスン時間</label>
+        <select id="rdur-sel"><option value="50">50分</option><option value="90">90分</option><option value="120">120分</option></select>
+      </div>
+      <div class="fg"><label>店舗</label>
+        <select id="rstore"><option value="kyoto">Golf Create 京都店</option><option value="fushimi">Golf Create 伏見店</option></select>
+      </div>
+      <div class="fg"><label>ゴルフ歴</label>
+        <select id="rhist"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
+      </div>
+      <div class="fg"><label>ご要望</label><textarea id="rcomment" placeholder="例：スイングの基礎から教えてください。"></textarea></div>
+    </div>
+    <div class="fcard">
+      <div class="ftitle" style="font-size:14px;">利用規約</div>
+      <div class="terms">
+        <b>第1条</b> 本サービスはマッチングプラットフォームです。コーチはすべて個人事業主です。<br>
+        <b>第2条</b> ラウンド系費用（プレーフィー・キャディフィー）はお客様負担です。<br>
+        <b>第3条</b> キャンセルは48時間前まで無料。以降50%、当日全額。<br>
+        <b>第4条</b> レッスン後に星評価の投稿が必須です。<br>
+        <b>第5条</b> お気に入り登録時、あなたの氏名がコーチに通知されます。
+      </div>
+      <label class="agrow"><input type="checkbox" id="agree" onchange="checkAgree()">利用規約に同意してサービスを利用します</label>
+      <button class="bcon" id="rbtn" disabled onclick="submitReq()">同意して依頼を確定する →</button>
+    </div>
+  </div>
+  <div class="screen" id="s-fav">
+    <div class="fav-notice">♥ お気に入り登録すると、コーチにあなたの氏名が通知されます。</div>
+    <div id="flist"><div class="loading">読み込み中...</div></div>
+  </div>
+  <div class="screen" id="s-mypage">
+    <div class="mpcard">
+      <div style="font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;">お客様情報</div>
+      <div class="fg"><label>お名前</label><input type="text" id="mp-name" placeholder="山田 太郎"></div>
+      <div class="fg"><label>電話番号</label><input type="tel" id="mp-phone" placeholder="090-XXXX-XXXX"></div>
+      <button class="bcon" onclick="saveProfile()">保存する</button>
+    </div>
+    <div class="mpcard">
+      <div style="font-size:15px;font-weight:700;color:var(--gd);margin-bottom:12px;">予約履歴</div>
+      <div id="my-bookings"><div class="loading">読み込み中...</div></div>
+    </div>
+  </div>
+  <div class="screen" id="s-review">
+    <div class="fcard">
+      <div class="ftitle">⭐ レビューを書く</div>
+      <div style="font-size:13px;color:#666;margin-bottom:12px;">レッスン完了後に投稿してください</div>
+      <label style="font-size:13px;font-weight:700;color:var(--gd);">評価</label>
+      <div class="star-row" id="rstars">
+        <button class="starb" onclick="rate(1)">★</button><button class="starb" onclick="rate(2)">★</button>
+        <button class="starb" onclick="rate(3)">★</button><button class="starb" onclick="rate(4)">★</button>
+        <button class="starb" onclick="rate(5)">★</button>
+      </div>
+      <div class="fg"><label>コメント</label><textarea id="rcomment2" placeholder="レッスンの感想をご記入ください。"></textarea></div>
+      <button class="bcon" onclick="submitRev()">評価を送信する</button>
+    </div>
+  </div>
+</div>
 <script>
-const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:true}
+
+const SURL='https://gojrdnufmueuvkroevut.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SURL,SKEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:false}});
+
+const LOGIN_URL='https://soft-speculoos-5ef188.netlify.app/';
+
+var uid=null,type='indoor',coaches=[],sched={},price={},favs=[];
+var selCoach=null,selDate=null,selTime=null,stars=0,wkStarts={};
+
+function toast(msg,t){var el=document.getElementById('toast');el.textContent=msg;el.className=t||'';el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2500);}
+function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function mon(d){var x=new Date(d),day=x.getDay(),diff=day===0?-6:1-day;x.setDate(x.getDate()+diff);x.setHours(0,0,0,0);return x;}
+
+sb.auth.getSession().then(function(r){
+  var s=r.data.session;
+  if(!s){location.href=LOGIN_URL;return;}
+  uid=s.user.id;
+  var n=s.user.user_metadata&&s.user.user_metadata.name?s.user.user_metadata.name:s.user.email;
+  document.getElementById('uname').textContent=n+'さん';
+  loadAll();
 });
 
-const BASE='https://soft-speculoos-5ef188.netlify.app/';
-let currentType='customer';
-
-const typeLabels={
-  customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください'},
-  coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください'},
-  store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください'}
-};
-
-function switchType(type,btn){
-  currentType=type;
-  document.querySelectorAll('.type-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('login-title').textContent=typeLabels[type].title;
-  document.getElementById('login-sub').textContent=typeLabels[type].sub;
-  showScreen('screen-login');
-  clearMsg();
-}
-
-function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  clearMsg();
-}
-
-function showMsg(text,type){
-  const el=document.getElementById('msg');
-  el.textContent=text;
-  el.className='msg '+type;
-}
-
-function clearMsg(){
-  const el=document.getElementById('msg');
-  el.className='msg';
-  el.textContent='';
-}
-
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  if(!email||!password){showMsg('メールアドレスとパスワードを入力してください','error');return;}
-  const btn=document.getElementById('login-btn');
-  btn.disabled=true;
-  btn.innerHTML='<span class="loading"></span>処理中...';
-  clearMsg();
+async function loadAll(){
   try{
-    const {data,error}=await sb.auth.signInWithPassword({email,password});
-    if(error)throw error;
-    localStorage.setItem('gc_login_time',Date.now().toString());
-    const dest=currentType==='coach'?BASE+'coach.html':currentType==='store'?BASE+'store.html':BASE+'customer.html';
-    window.location.replace(dest);
-  }catch(err){
-    showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');
-    btn.disabled=false;
-    btn.textContent='ログイン';
+    var r1=await sb.from('coaches').select('*');
+    var r2=await sb.from('coach_schedules').select('*');
+    var r3=await sb.from('coach_prices').select('*');
+    coaches=r1.data||[];
+    sched={};
+    (r2.data||[]).forEach(function(r){
+      if(!sched[r.coach_id])sched[r.coach_id]={};
+      if(!sched[r.coach_id][r.store])sched[r.coach_id][r.store]={};
+      sched[r.coach_id][r.store][r.date]={times:r.times||[]};
+    });
+    price={};
+    (r3.data||[]).forEach(function(r){if(!price[r.coach_id])price[r.coach_id]={};price[r.coach_id][r.store]=r;});
+    try{var rf=await sb.from('favorites').select('coach_id').eq('customer_id',uid);favs=(rf.data||[]).map(function(x){return x.coach_id;});}catch(e){}
+    try{
+      var rp=await sb.from('customers').select('*').eq('user_id',uid).single();
+      if(rp.data){
+        document.getElementById('mp-name').value=rp.data.name||'';
+        document.getElementById('mp-phone').value=rp.data.phone||'';
+      }
+    }catch(e){}
+    try{
+      var rb=await sb.from('bookings').select('*').eq('customer_id',uid).order('created_at',{ascending:false});
+      var bel=document.getElementById('my-bookings');
+      var bd=rb.data||[];
+      if(bd.length===0){bel.innerHTML='<div class="loading">予約履歴はありません</div>';}
+      else{
+        var tm={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+        var sc={pending:'b-pe',confirmed:'b-g',cancelled:'b-bl'};
+        var sm={pending:'申請中',confirmed:'確定',cancelled:'キャンセル'};
+        bel.innerHTML=bd.map(function(b){return '<div class="history-item"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,"/"):'')+(b.time?' '+b.time:'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+'</span></div>';}).join('');
+      }
+    }catch(e){}
+    renderList();
+  }catch(e){
+    document.getElementById('clist').innerHTML='<div class="loading">読み込みに失敗しました</div>';
   }
 }
 
-async function doRegister(){
-  const name=document.getElementById('reg-name').value.trim();
-  const email=document.getElementById('reg-email').value.trim();
-  const password=document.getElementById('reg-password').value;
-  const password2=document.getElementById('reg-password2').value;
-  if(!name||!email||!password){showMsg('全ての項目を入力してください','error');return;}
-  if(password.length<8){showMsg('パスワードは8文字以上で設定してください','error');return;}
-  if(password!==password2){showMsg('パスワードが一致しません','error');return;}
-  const btn=document.getElementById('register-btn');
-  btn.disabled=true;
-  btn.innerHTML='<span class="loading"></span>処理中...';
-  clearMsg();
-  try{
-    const {data,error}=await sb.auth.signUp({email,password,options:{data:{name,role:currentType}}});
-    if(error)throw error;
-    showMsg('登録が完了しました！ログインしてください。','success');
-    btn.disabled=false;
-    btn.textContent='アカウントを作成する';
-    setTimeout(()=>showScreen('screen-login'),2000);
-  }catch(err){
-    showMsg('登録に失敗しました：'+(err.message||''),'error');
-    btn.disabled=false;
-    btn.textContent='アカウントを作成する';
-  }
+function avail(cid){
+  var sc=sched[cid];if(!sc)return{};
+  var td=fmt(new Date());var res={};
+  Object.keys(sc).forEach(function(st){
+    Object.keys(sc[st]).forEach(function(dt){
+      if(dt<td)return;
+      var ts=sc[st][dt].times||[];
+      if(ts.length>0){if(!res[dt])res[dt]={};res[dt][st]=ts;}
+    });
+  });
+  return res;
 }
 
-async function doReset(){
-  const email=document.getElementById('reset-email').value.trim();
-  if(!email){showMsg('メールアドレスを入力してください','error');return;}
-  try{
-    const {error}=await sb.auth.resetPasswordForEmail(email);
-    if(error)throw error;
-    showMsg('リセット用のメールを送信しました。','success');
-  }catch(err){
-    showMsg('送信に失敗しました。','error');
-  }
+function renderList(){
+  var tn={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  document.getElementById('ctitle').textContent=tn[type]+'の対応コーチ';
+  var td=fmt(new Date());
+  var list=coaches.filter(function(c){
+    var sc=sched[c.user_id];if(!sc)return false;
+    return Object.keys(sc).some(function(st){return Object.keys(sc[st]).some(function(d){return d>=td;});});
+  });
+  if(list.length===0){document.getElementById('clist').innerHTML='<div class="loading">現在対応可能なコーチが登録されていません</div>';return;}
+  document.getElementById('clist').innerHTML=list.map(function(c){return buildCard(c);}).join('');
 }
+
+function buildCard(c){
+  var av=avail(c.user_id);
+  var cnt=Object.keys(av).length;
+  var isFav=favs.indexOf(c.user_id)>=0;
+  var ph=c.photo_url
+    ?'<img src="'+c.photo_url+'?width=120&quality=70&resize=cover" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;">'
+    :'<span style="font-size:15px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
+  var pr='';
+  var cp=price[c.user_id];
+  if(cp){var sk=Object.keys(cp);if(sk.length){var p=cp[sk[0]];
+    if(type==='indoor'&&p.price_50)pr='50分 ¥'+Number(p.price_50).toLocaleString()+'〜';
+    if(type==='round'&&p.price_round)pr='¥'+Number(p.price_round).toLocaleString();
+    if(type==='accompany'&&p.price_accompany)pr='¥'+Number(p.price_accompany).toLocaleString();
+    if(type==='comp'&&p.price_comp)pr='¥'+Number(p.price_comp).toLocaleString();
+  }}
+  var cal=type==='indoor'?buildWeek(c.user_id,av):buildMonth(c.user_id,av);
+  return '<div class="ccard" id="cc-'+c.user_id+'">'
+    +'<div class="ccard-top">'
+    +'<div class="cavatar">'+ph+'</div>'
+    +'<div style="flex:1;">'
+    +'<div class="cname">'+esc(c.name||'コーチ')+'</div>'
+    +(c.area?'<div class="csub">📍'+esc(c.area)+(c.experience?' · '+esc(c.experience):'')+'</div>':'')
+    +(c.tags?'<div class="csub">🏷 '+esc(c.tags)+'</div>':'')
+    +(pr?'<div class="cprice">💴 '+pr+'</div>':'')
+    +(c.bio?'<div class="cbio">'+esc(c.bio)+'</div>':'')
+    +'<div style="font-size:11px;color:#aaa;margin-top:3px;">空き '+cnt+'日</div>'
+    +'</div>'
+    +'<button class="hbtn'+(isFav?' fav':'')+'" onclick="toggleFav(\''+c.user_id+'\',this)">'+(isFav?'♥':'♡')+'</button>'
+    +'</div>'
+    +cal
+    +'<button class="btn-req" onclick="goReq(\''+c.user_id+'\',\''+esc(c.name||'コーチ')+'\')">このコーチに依頼する →</button>'
+    +'</div>';
+}
+
+function buildWeek(cid,av){
+  if(!wkStarts[cid])wkStarts[cid]=mon(new Date());
+  var ws=wkStarts[cid];
+  var td=fmt(new Date());
+  var we=new Date(ws);we.setDate(we.getDate()+6);
+  var wl=(ws.getMonth()+1)+'月'+ws.getDate()+'日〜'+(we.getMonth()+1)+'月'+we.getDate()+'日';
+  var days=['月','火','水','木','金','土','日'];
+  var grid=days.map(function(d){return '<div class="wlbl">'+d+'</div>';}).join('');
+  for(var i=0;i<7;i++){
+    var d=new Date(ws);d.setDate(d.getDate()+i);
+    var ds=fmt(d);
+    var ha=av[ds]&&Object.keys(av[ds]).length>0;
+    var cls='wday'+(ha?' avail':'')+(ds===td?' today':'')+(ds===selDate&&selCoach===cid?' sel':'');
+    grid+='<div class="'+cls+'" '+(ha?'onclick="pickD(\''+cid+'\',\''+ds+'\')"':'')+'>'+
+      '<div class="wdn">'+d.getDate()+'</div>'+
+      (ha?'<div class="wdot"></div>':'')+
+      '</div>';
+  }
+  var slots='';
+  if(selCoach===cid&&selDate&&av[selDate]){
+    var ts=[];
+    Object.values(av[selDate]).forEach(function(a){a.forEach(function(t){if(ts.indexOf(t)<0)ts.push(t);});});
+    ts.sort();
+    slots='<div class="slots-box">'
+      +"<div class=\"slots-ttl\">"+selDate.replace(/-/g,"/")+"の空き時間</div>"
+      +'<div class="slots-row">'+ts.map(function(t){
+        return '<button class="tslot'+(t===selTime?' sel':'')+'" onclick="pickT(\''+cid+'\',\''+t+'\')">'+t+'</button>';
+      }).join('')+'</div></div>';
+  }
+  return '<div class="cal-wrap">'
+    +'<div class="cal-head">'
+    +'<button class="cnav" onclick="wkPrev(\''+cid+'\')">‹</button>'
+    +'<span class="cal-lbl">📅 '+wl+'</span>'
+    +'<button class="cnav" onclick="wkNext(\''+cid+'\')">›</button>'
+    +'</div>'
+    +'<div class="wgrid">'+grid+'</div>'
+    +slots
+    +'</div>';
+}
+
+function buildMonth(cid,av){
+  var td=new Date();var yr=td.getFullYear();var mo=td.getMonth();
+  var tds=fmt(td);
+  var first=new Date(yr,mo,1);var last=new Date(yr,mo+1,0);
+  var days=['月','火','水','木','金','土','日'];
+  var grid=days.map(function(d){return '<div class="wlbl">'+d+'</div>';}).join('');
+  var sdow=first.getDay()===0?6:first.getDay()-1;
+  for(var i=0;i<sdow;i++)grid+='<div class="mday"></div>';
+  for(var day=1;day<=last.getDate();day++){
+    var d=new Date(yr,mo,day);var ds=fmt(d);
+    var ha=av[ds];
+    var cls='mday'+(ha?' avail':'')+(ds===tds?' today':'')+(ds===selDate&&selCoach===cid?' sel':'');
+    grid+='<div class="'+cls+'"'+(ha?' onclick="pickD(\''+cid+'\',\''+ds+'\')"':'')+'>'+
+      '<div class="mdn">'+day+'</div>'+
+      (ha?'<div class="mdot">●</div>':'')+
+      '</div>';
+  }
+  return '<div class="cal-wrap">'
+    +'<div class="cal-head"><span class="cal-lbl">📅 '+yr+'年'+(mo+1)+'月</span></div>'
+    +'<div class="wgrid">'+grid+'</div>'
+    +'</div>';
+}
+
+function wkPrev(cid){
+  if(!wkStarts[cid])wkStarts[cid]=mon(new Date());
+  var mn=mon(new Date());var pv=new Date(wkStarts[cid]);pv.setDate(pv.getDate()-7);
+  if(pv>=mn)wkStarts[cid]=pv;
+  renderList();
+}
+function wkNext(cid){
+  if(!wkStarts[cid])wkStarts[cid]=mon(new Date());
+  var nx=new Date(wkStarts[cid]);nx.setDate(nx.getDate()+7);
+  wkStarts[cid]=nx;renderList();
+}
+function pickD(cid,ds){selCoach=cid;selDate=ds;selTime=null;renderList();setTimeout(function(){var el=document.getElementById('cc-'+cid);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},80);}
+function pickT(cid,t){selCoach=cid;selTime=t;renderList();}
+
+async function toggleFav(cid,btn){
+  var f=btn.classList.contains('fav');
+  try{
+    if(f){await sb.from('favorites').delete().eq('customer_id',uid).eq('coach_id',cid);favs=favs.filter(function(x){return x!==cid;});btn.classList.remove('fav');btn.textContent='♡';toast('お気に入りを解除しました');}
+    else{await sb.from('favorites').insert({customer_id:uid,coach_id:cid});favs.push(cid);btn.classList.add('fav');btn.textContent='♥';toast('お気に入りに追加しました','success');}
+    renderFavList();
+  }catch(e){toast('操作に失敗しました','error');}
+}
+function renderFavList(){
+  var fc=coaches.filter(function(c){return favs.indexOf(c.user_id)>=0;});
+  if(fc.length===0){document.getElementById('flist').innerHTML='<div class="loading">お気に入りのコーチはいません</div>';return;}
+  document.getElementById('flist').innerHTML=fc.map(function(c){
+    var ph=c.photo_url?'<img src="'+c.photo_url+'?width=120&quality=70&resize=cover" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;">':'<span>'+esc((c.name||'?').substring(0,2))+'</span>';
+    return '<div class="ccard"><div class="ccard-top"><div class="cavatar">'+ph+'</div><div style="flex:1;"><div class="cname">'+esc(c.name||'コーチ')+'</div></div><button class="hbtn fav" onclick="toggleFav(\''+c.user_id+'\',this)">♥</button></div><button class="btn-req" onclick="goReq(\''+c.user_id+'\',\''+esc(c.name||'コーチ')+'\')">このコーチに依頼する →</button></div>';
+  }).join('');
+}
+
+function goReq(cid,name){
+  selCoach=cid;
+  document.getElementById('rcoach').value=name;
+  var sel=document.getElementById('rtype');
+  for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===type){sel.selectedIndex=i;break;}}
+  if(selDate)document.getElementById('rdate').value=selDate;
+  if(selTime)document.getElementById('rtime').value=selTime;
+  document.getElementById('rdur').style.display=type==='indoor'?'block':'none';
+  document.getElementById('rtime-g').style.display=type==='indoor'?'block':'none';
+  tab(document.querySelector('.snb:nth-child(2)'),'s-req');
+}
+async function submitReq(){
+  var btn=document.getElementById('rbtn');btn.disabled=true;btn.textContent='送信中...';
+  try{
+    var err=(await sb.from('bookings').insert({customer_id:uid,coach_id:selCoach,type:document.getElementById('rtype').value,date:document.getElementById('rdate').value||null,time:document.getElementById('rtime').value||null,store:document.getElementById('rstore').value,duration:type==='indoor'?parseInt(document.getElementById('rdur-sel').value):null,comment:document.getElementById('rcomment').value,status:'pending',created_at:new Date().toISOString()})).error;
+    if(err)throw err;
+    toast('依頼を送信しました！','success');
+    document.getElementById('agree').checked=false;btn.disabled=true;
+  }catch(e){toast('送信に失敗しました: '+(e.message||e),'error');btn.disabled=false;}
+  btn.textContent='同意して依頼を確定する →';
+}
+async function saveProfile(){
+  try{
+    var err=(await sb.from('customers').upsert({user_id:uid,name:document.getElementById('mp-name').value.trim(),phone:document.getElementById('mp-phone').value.trim(),updated_at:new Date().toISOString()},{onConflict:'user_id'})).error;
+    if(err)throw err;toast('保存しました','success');
+  }catch(e){toast('保存に失敗しました','error');}
+}
+function rate(n){stars=n;document.querySelectorAll('#rstars .starb').forEach(function(s,i){s.classList.toggle('on',i<n);});}
+async function submitRev(){
+  if(!stars){toast('評価を選んでください','error');return;}
+  var cm=document.getElementById('rcomment2').value.trim();if(!cm){toast('コメントを入力してください','error');return;}
+  try{var err=(await sb.from('reviews').insert({customer_id:uid,stars:stars,comment:cm,created_at:new Date().toISOString()})).error;if(err)throw err;toast('レビューを送信しました！','success');document.getElementById('rcomment2').value='';stars=0;document.querySelectorAll('#rstars .starb').forEach(function(s){s.classList.remove('on');});}catch(e){toast('送信に失敗しました','error');}
+}
+function selType(card,t){document.querySelectorAll('.tcard').forEach(function(c){c.classList.remove('on');});card.classList.add('on');type=t;selCoach=null;selDate=null;selTime=null;renderList();}
+function tab(btn,id){document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');if(id==='s-fav')renderFavList();}
+function checkAgree(){document.getElementById('rbtn').disabled=!document.getElementById('agree').checked;}
+async function doLogout(){localStorage.removeItem('gc_login_time');await sb.auth.signOut();location.href=LOGIN_URL;}
+
 </script>
 </body>
 </html>
