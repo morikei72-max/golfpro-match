@@ -17,7 +17,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 #toast.success{background:var(--gd);}#toast.error{background:var(--red);}
 .content{padding:16px;max-width:480px;margin:0 auto;}
-.snav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+.snav{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;}
 .snb{font-size:13px;padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-family:inherit;cursor:pointer;color:#666;white-space:nowrap;flex-shrink:0;font-weight:500;}
 .snb.on{background:var(--gd);color:#fff;border-color:var(--gd);}
 .screen{display:none;}.screen.on{display:block;}
@@ -291,7 +291,7 @@ function loadAll(){
     sb.from('coach_schedules').select('*'),
     sb.from('coach_prices').select('*'),
     sb.from('favorites').select('coach_id').eq('customer_id',uid),
-    sb.from('customers').select('*').eq('user_id',uid).single(),
+    sb.from('customers').select('*').eq('user_id',uid).maybeSingle(),
     sb.from('bookings').select('*').eq('customer_id',uid).order('created_at',{ascending:false})
   ]).then(function(res){
     coaches=res[0].data||[];
@@ -328,14 +328,14 @@ function loadAll(){
       var tm={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
       var sc={pending:'b-pe',confirmed:'b-g',cancelled:'b-bl'};
       var sm={pending:'申請中',confirmed:'確定',cancelled:'キャンセル'};
-      var hasUnreviewed=false;
+      _hasUnreviewed=false;
       bel.innerHTML=bd.map(function(b){
-        var reviewed=b.reviewed?'true':'false';
+        var reviewed=(b.reviewed||false)?'true':'false';
         if(b.status==='confirmed'&&!b.reviewed)hasUnreviewed=true;
         return '<div class="history-item" data-reviewed="'+reviewed+'"><div><div style="font-size:13px;font-weight:500;">'+(tm[b.type]||b.type||'')+'</div><div style="font-size:12px;color:#666;">'+(b.date?b.date.replace(/-/g,'/'):'')+' '+(b.time||'')+'</div></div><span class="badge '+(sc[b.status]||'b-bl')+'">'+(sm[b.status]||b.status)+(b.status==='confirmed'&&!b.reviewed?'<br><span style="font-size:10px;color:var(--red);">レビュー未投稿</span>':'')+'</span></div>';
       }).join('');
       var notice=document.getElementById('review-notice');
-      if(notice)notice.style.display=hasUnreviewed?'block':'none';
+      if(notice)notice.style.display=_hasUnreviewed?'block':'none';
     }
     renderAll();
   }).catch(function(e){
@@ -561,19 +561,8 @@ function toggleFav(cid,btn){
   }
 }
 
-function hasUnreviewedBooking(){
-  var bel=document.getElementById('my-bookings');
-  if(!bel)return false;
-  var items=bel.querySelectorAll('.history-item');
-  for(var i=0;i<items.length;i++){
-    var badge=items[i].querySelector('.badge');
-    if(badge&&badge.classList.contains('b-g')){
-      var reviewed=items[i].getAttribute('data-reviewed');
-      if(reviewed==='false')return true;
-    }
-  }
-  return false;
-}
+var _hasUnreviewed=false;
+function hasUnreviewedBooking(){return _hasUnreviewed;}
 function isProfileComplete(){
   var n=document.getElementById('mp-name').value.trim();
   var p=document.getElementById('mp-phone').value.trim();
