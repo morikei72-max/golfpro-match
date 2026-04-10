@@ -34,9 +34,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--da
 
 /* ===== ヒーロー（スライドショー） ===== */
 .hero{position:relative;height:100vh;min-height:600px;overflow:hidden;}
-.slide{position:absolute;inset:0;opacity:0;transition:opacity 1.8s ease;background-size:cover;background-position:center;}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;background-size:cover;background-position:center;}
 .slide.on{opacity:1;}
-/* サンプル背景（後で本物の写真URLに差し替え） */
+
 .slide-1{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/slide_woman1.jpg?width=1600&quality=75&resize=cover") center/cover no-repeat;}
 .slide-2{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/slide_woman2.jpg?width=1600&quality=75&resize=cover") center/cover no-repeat;}
 .slide-3{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/slide_woman3.jpg?width=1600&quality=75&resize=cover") center/cover no-repeat;}
@@ -498,7 +498,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
   
   setInterval(function(){
     goSlide((cur+1)%slides.length);
-  },4000);
+  },3500);
 })();
 
 window.addEventListener('scroll',function(){
