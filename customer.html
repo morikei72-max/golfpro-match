@@ -61,6 +61,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .ctag{font-size:11px;color:#888;}
 .hbtn{background:none;border:none;cursor:pointer;font-size:18px;color:#ccc;padding:0;margin-left:auto;flex-shrink:0;}
 .hbtn.fav{color:var(--red);}
+.price-box{background:var(--gl);border:1px solid var(--g);border-radius:8px;padding:10px 14px;margin-bottom:14px;display:none;}
+.price-box-title{font-size:12px;color:var(--gd);font-weight:700;margin-bottom:6px;}
+.price-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:3px 0;}
+.price-row span:first-child{color:#555;}
+.price-row span:last-child{font-weight:700;color:var(--gd);}
 .btn-req{display:block;width:calc(100% - 24px);margin:0 12px 12px;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
 .fcard{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
 .ftitle{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;}
@@ -149,6 +154,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <div class="fcard">
       <div class="ftitle">📋 依頼内容を入力</div>
       <div class="fg"><label>選択中のコーチ</label><input type="text" id="rcoach" readonly style="background:#f5f5f5;"></div>
+      <div class="price-box" id="price-box">
+        <div class="price-box-title">&#128181; 料金のご案内</div>
+        <div id="price-detail"></div>
+      </div>
       <div class="fg"><label>依頼の種類</label>
         <select id="rtype"><option value="indoor">インドアゴルフレッスン</option><option value="round">ラウンドレッスン</option><option value="accompany">同伴ラウンド</option><option value="comp">コンペ参加</option></select>
       </div>
@@ -161,6 +170,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       </div>
       <div class="fg"><label>店舗</label>
         <select id="rstore"><option value="kyoto">Golf Create 京都店</option><option value="fushimi">Golf Create 伏見店</option></select>
+      </div>
+      <div class="fg">
+        <label>会員種別</label>
+        <select id="rmember"><option value="regular">ゴルフクリエイト正会員</option><option value="trial">体験会員</option><option value="other">その他会員</option></select>
+        <div style="margin-top:6px;padding:8px 10px;background:#fff8e1;border-left:3px solid var(--gold);border-radius:0 6px 6px 0;font-size:11px;color:#633806;line-height:1.6;">⚠ 本レッスンはゴルフクリエイト会員様のみご利用いただけます。未会員の方は店舗スタッフへお申し付けください。</div>
       </div>
       <div class="fg"><label>ゴルフ歴</label>
         <select id="rhist"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -435,9 +449,27 @@ function goReq(cid,name){
   if(selTime)document.getElementById('rtime').value=selTime;
   document.getElementById('rdur').style.display=curType==='indoor'?'block':'none';
   document.getElementById('rtime-g').style.display=curType==='indoor'?'block':'none';
+  showPriceBox(cid);
   tab(document.querySelector('.snb:nth-child(2)'),'s-req');
 }
 
+function showPriceBox(cid){
+  var box=document.getElementById('price-box');
+  var detail=document.getElementById('price-detail');
+  var cp=price[cid];
+  if(!cp){box.style.display='none';return;}
+  var sk=Object.keys(cp);if(!sk.length){box.style.display='none';return;}
+  var p=cp[sk[0]];
+  var rows='';
+  if(p.price_50)rows+='<div class="price-row"><span>50分レッスン</span><span>¥'+Number(p.price_50).toLocaleString()+'</span></div>';
+  if(p.price_90)rows+='<div class="price-row"><span>90分レッスン</span><span>¥'+Number(p.price_90).toLocaleString()+'</span></div>';
+  if(p.price_120)rows+='<div class="price-row"><span>120分レッスン</span><span>¥'+Number(p.price_120).toLocaleString()+'</span></div>';
+  if(p.price_round)rows+='<div class="price-row"><span>ラウンドレッスン</span><span>¥'+Number(p.price_round).toLocaleString()+'</span></div>';
+  if(p.price_accompany)rows+='<div class="price-row"><span>同伴ラウンド</span><span>¥'+Number(p.price_accompany).toLocaleString()+'</span></div>';
+  if(p.price_comp)rows+='<div class="price-row"><span>コンペ参加</span><span>¥'+Number(p.price_comp).toLocaleString()+'</span></div>';
+  if(rows){detail.innerHTML=rows;box.style.display='block';}
+  else{box.style.display='none';}
+}
 function submitReq(){
   var btn=document.getElementById('rbtn');btn.disabled=true;btn.textContent='送信中...';
   sb.from('bookings').insert({
