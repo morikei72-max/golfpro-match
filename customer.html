@@ -33,11 +33,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .nbar{background:var(--gold-l);border-top:1px solid var(--gold);padding:5px 10px;font-size:10px;color:#633806;}
 .ccard{background:#fff;border-radius:14px;border:1px solid var(--border);margin-bottom:14px;overflow:hidden;}
 .ccard-top{display:flex;gap:12px;padding:14px;align-items:flex-start;}
-.cavatar{width:60px;height:60px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
-.cname{font-size:16px;font-weight:700;color:var(--gd);}
+.cavatar{width:72px;height:72px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.cname{font-size:18px;font-weight:700;color:var(--gd);}
 .csub{font-size:11px;color:#888;margin-top:2px;line-height:1.5;}
-.cprice{font-size:13px;color:var(--g);font-weight:700;margin-top:4px;}
-.cbio{font-size:12px;color:#555;margin-top:5px;line-height:1.6;}
+.cprice{font-size:15px;color:var(--g);font-weight:700;margin-top:6px;}
+.cbio{font-size:13px;color:#555;margin-top:6px;line-height:1.7;}
 .hbtn{background:none;border:none;cursor:pointer;font-size:22px;color:#ccc;padding:0;flex-shrink:0;}
 .hbtn.fav{color:var(--red);}
 .cal-wrap{padding:0 14px 10px;border-top:1px solid var(--gl);}
@@ -93,7 +93,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;}
 .starb.on{color:var(--gold);}
 .loading{text-align:center;padding:20px;color:#bbb;font-size:13px;}
-.sched-wrap{margin-top:12px;overflow-x:auto;}
+.sched-wrap{margin-top:12px;overflow-x:auto;}.sched-scroll{max-height:280px;overflow-y:auto;}.sched-sticky th{position:sticky;top:0;background:#fff;z-index:2;}
 .sched-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .sched-lbl{font-size:12px;font-weight:700;color:var(--gd);}
 .sched-nav{background:none;border:1.5px solid var(--border);border-radius:8px;padding:3px 10px;cursor:pointer;font-size:16px;color:var(--g);line-height:1;}
@@ -156,7 +156,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <span class="sched-lbl" id="sg-label"></span>
         <button class="sched-nav" onclick="sgNext()">&#8250;</button>
       </div>
-      <div class="sched-wrap"><table class="sched-table"><thead id="sg-head"></thead><tbody id="sg-body"></tbody></table></div>
+      <div class="sched-wrap"><table class="sched-table sched-sticky"><thead id="sg-head"></thead></table><div class="sched-scroll"><table class="sched-table"><tbody id="sg-body"></tbody></table></div></div>
     </div>
     <div id="clist"><div class="loading">読み込み中...</div></div>
   </div>
@@ -321,8 +321,8 @@ function buildCard(c){
   var cnt=Object.keys(av).length;
   var isFav=favs.indexOf(c.user_id)>=0;
   var ph=c.photo_url
-    ?'<img src="'+c.photo_url+'?width=120&quality=70&resize=cover" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;">'
-    :'<span style="font-size:15px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
+    ?'<img src="'+c.photo_url+'?width=144&quality=70&resize=cover" style="width:72px;height:72px;border-radius:50%;object-fit:cover;display:block;">'
+    :'<span style="font-size:18px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
   var pr='';
   var cp=price[c.user_id];
   if(cp){var sk=Object.keys(cp);if(sk.length){var p=cp[sk[0]];
@@ -331,7 +331,6 @@ function buildCard(c){
     if(type==='accompany'&&p.price_accompany)pr='¥'+Number(p.price_accompany).toLocaleString();
     if(type==='comp'&&p.price_comp)pr='¥'+Number(p.price_comp).toLocaleString();
   }}
-  var cal=type==='indoor'?buildWeek(c.user_id,av):buildMonth(c.user_id,av);
   return '<div class="ccard" id="cc-'+c.user_id+'">'
     +'<div class="ccard-top">'
     +'<div class="cavatar">'+ph+'</div>'
@@ -345,7 +344,6 @@ function buildCard(c){
     +'</div>'
     +'<button class="hbtn'+(isFav?' fav':'')+'" onclick="toggleFav(\''+c.user_id+'\',this)">'+(isFav?'♥':'♡')+'</button>'
     +'</div>'
-    +cal
     +'<button class="btn-req" onclick="goReq(\''+c.user_id+'\',\''+esc(c.name||'コーチ')+'\')">このコーチに依頼する →</button>'
     +'</div>';
 }
