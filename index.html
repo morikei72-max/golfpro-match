@@ -111,7 +111,7 @@ async function doLogin(){
   const password=document.getElementById('login-password').value;
   if(!email||!password){showMsg('メールアドレスとパスワードを入力してください','error');return;}
   setLoading('login-btn',true);clearMsg();
-  try{const{data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;localStorage.setItem('gc_login_time',Date.now().toString());showMsg('ログインしました！','success');setTimeout(()=>{if(currentType==='coach')window.location.href='coach.html';else if(currentType==='store')window.location.href='store.html';else window.location.href='customer.html';},800);}
+  try{const{data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;localStorage.setItem('gc_login_time',Date.now().toString());showMsg('ログインしました！','success');setTimeout(()=>{var base='https://soft-speculoos-5ef188.netlify.app/';if(currentType==='coach')window.location.href=base+'coach.html';else if(currentType==='store')window.location.href=base+'store.html';else window.location.href=base+'customer.html';},800);}
   catch(err){showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');setLoading('login-btn',false);}
 }
 async function doRegister(){
