@@ -306,7 +306,7 @@ function avail(cid){
 
 function renderList(){
   var tn={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
-  document.getElementById('ctitle').textContent=tn[type]+'の対応コーチ';
+  document.getElementById('ctitle').textContent=type==='indoor'?'この週の対応コーチ':tn[type]+'の対応コーチ';
   var td=fmt(new Date());
   var list=coaches.filter(function(c){
     var sc=sched[c.user_id];if(!sc)return false;
@@ -353,6 +353,13 @@ function buildCard(c){
 
 var sgWeekOffset=0;
 function sgMonday(offset){var d=new Date();var day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day)+(offset*7));d.setHours(0,0,0,0);return d;}
+function getCoachPrice(c){
+  var cp=price[c.user_id];if(!cp)return'';
+  var sk=Object.keys(cp);if(!sk.length)return'';
+  var p=cp[sk[0]];
+  if(p.price_50)return '50分 ¥'+Number(p.price_50).toLocaleString()+'〜';
+  return '';
+}
 function renderSchedGrid(){
   var grid=document.getElementById('sched-grid');
   if(type!=='indoor'){grid.style.display='none';return;}
@@ -365,13 +372,15 @@ function renderSchedGrid(){
   var today=fmt(new Date());
   var thead=document.getElementById('sg-head');
   var headRow='<tr><th class="tc"></th>';
-  for(var di=0;di<7;di++){var dd=dates[di];var ds2=fmt(dd);headRow+='<th style="'+(ds2===today?'color:var(--gold);':'')+'">'+days[di]+'<br>'+(dd.getMonth()+1)+'/'+(dd.getDate())+'</th>';}
+  for(var di=0;di<7;di++){var dd=dates[di];var ds2=fmt(dd);headRow+='<th style="'+(ds2===today?'color:var(--gold);font-weight:700;':'')+'">'+days[di]+'<br>'+(dd.getMonth()+1)+'/'+(dd.getDate())+'</th>';}
   thead.innerHTML=headRow+'</tr>';
   var HOURS=[];for(var h=8;h<=23;h++)HOURS.push(h);
   var tbody=document.getElementById('sg-body');tbody.innerHTML='';
+  var visibleCoachIds=[];
   HOURS.forEach(function(h){
     var tr=document.createElement('tr');
     var tdl=document.createElement('td');tdl.className='tl';tdl.textContent=h+':00';tr.appendChild(tdl);
+    var hasAny=false;
     dates.forEach(function(dd){
       var ds3=fmt(dd);
       var td2=document.createElement('td');td2.className='ts';
@@ -381,28 +390,46 @@ function renderSchedGrid(){
         return Object.keys(sc).some(function(st){return sc[st][ds3]&&sc[st][ds3].times&&sc[st][ds3].times.indexOf(timeStr)>=0;});
       });
       if(coachesHere.length>0){
+        hasAny=true;
+        coachesHere.forEach(function(c){if(visibleCoachIds.indexOf(c.user_id)<0)visibleCoachIds.push(c.user_id);});
         var wrap=document.createElement('div');wrap.className='multi-av';
+        var pr=getCoachPrice(coachesHere[0]);
         coachesHere.forEach(function(c){
+          var outer=document.createElement('div');outer.style.cssText='display:inline-flex;flex-direction:column;align-items:center;gap:1px;';
           var el;
           if(c.photo_url){
             el=document.createElement('img');
             el.src=c.photo_url+'?width=56&quality=70&resize=cover';
-            el.className='coach-av';el.title=c.name||'';
+            el.className='coach-av';el.title=(c.name||'')+(pr?' | '+pr:'');
           } else {
             el=document.createElement('div');el.className='coach-av-init';
             el.style.background='#E1F5EE';el.style.color='#085041';
-            el.textContent=(c.name||'?').substring(0,1);el.title=c.name||'';
+            el.textContent=(c.name||'?').substring(0,1);el.title=(c.name||'')+(pr?' | '+pr:'');
           }
           el.style.cursor='pointer';
           (function(coach,date,tstr){el.onclick=function(){selCoach=coach.user_id;selDate=date;selTime=tstr;goReq(coach.user_id,coach.name||'コーチ');};})(c,ds3,timeStr);
-          wrap.appendChild(el);
+          outer.appendChild(el);
+          if(coachesHere.length===1&&pr){
+            var ptag=document.createElement('span');
+            ptag.style.cssText='font-size:9px;color:#085041;background:#E1F5EE;border-radius:3px;padding:1px 3px;white-space:nowrap;line-height:1.3;';
+            ptag.textContent=pr;outer.appendChild(ptag);
+          }
+          wrap.appendChild(outer);
         });
         td2.appendChild(wrap);
       }
       tr.appendChild(td2);
     });
-    tbody.appendChild(tr);
+    if(hasAny)tbody.appendChild(tr);
   });
+  renderVisibleCoaches(visibleCoachIds);
+}
+function renderVisibleCoaches(ids){
+  var el=document.getElementById('clist');
+  var td=fmt(new Date());
+  var list=coaches.filter(function(c){return ids.indexOf(c.user_id)>=0;});
+  if(list.length===0){el.innerHTML='<div class="loading">この週に空きのあるコーチはいません</div>';return;}
+  el.innerHTML=list.map(function(c){return buildCard(c);}).join('');
 }
 function sgPrev(){sgWeekOffset--;renderSchedGrid();}
 function sgNext(){sgWeekOffset++;renderSchedGrid();}
