@@ -93,6 +93,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;}
 .starb.on{color:var(--gold);}
 .loading{text-align:center;padding:20px;color:#bbb;font-size:13px;}
+.sched-wrap{margin-top:12px;overflow-x:auto;}
+.sched-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.sched-lbl{font-size:12px;font-weight:700;color:var(--gd);}
+.sched-nav{background:none;border:1.5px solid var(--border);border-radius:8px;padding:3px 10px;cursor:pointer;font-size:16px;color:var(--g);line-height:1;}
+.sched-table{width:100%;border-collapse:collapse;min-width:480px;table-layout:fixed;}
+.sched-table th{font-size:11px;font-weight:500;color:#888;padding:5px 3px;text-align:center;border-bottom:1px solid var(--border);}
+.sched-table th.tc{width:40px;}
+.sched-table td.tl{font-size:11px;color:#bbb;text-align:right;padding:0 5px 0 0;height:34px;vertical-align:middle;white-space:nowrap;}
+.sched-table td.ts{border-left:0.5px solid #f0f0f0;height:34px;padding:2px;vertical-align:middle;text-align:center;}
+.sched-table td.ts:hover{background:var(--gl);}
+.coach-av{width:26px;height:26px;border-radius:50%;object-fit:cover;border:1.5px solid #fff;box-shadow:0 0 0 1.5px var(--g);display:inline-block;vertical-align:middle;}
+.coach-av-init{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;border:1.5px solid #fff;box-shadow:0 0 0 1.5px var(--g);vertical-align:middle;}
+.multi-av{display:flex;justify-content:center;gap:2px;flex-wrap:wrap;}
 #pbg1{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/indoor.png?width=400&quality=70&resize=cover");}
 #pbg2{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/round.png?width=400&quality=70&resize=cover");}
 #pbg3{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/accompany.png?width=400&quality=70&resize=cover");}
@@ -137,6 +150,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       </div>
     </div>
     <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:10px;" id="ctitle">対応コーチ一覧</div>
+    <div id="sched-grid" style="display:none;background:#fff;border-radius:14px;border:1px solid var(--border);padding:12px;margin-bottom:14px;">
+      <div class="sched-head">
+        <button class="sched-nav" onclick="sgPrev()">&#8249;</button>
+        <span class="sched-lbl" id="sg-label"></span>
+        <button class="sched-nav" onclick="sgNext()">&#8250;</button>
+      </div>
+      <div class="sched-wrap"><table class="sched-table"><thead id="sg-head"></thead><tbody id="sg-body"></tbody></table></div>
+    </div>
     <div id="clist"><div class="loading">読み込み中...</div></div>
   </div>
   <div class="screen" id="s-req">
@@ -292,7 +313,7 @@ function renderList(){
     return Object.keys(sc).some(function(st){return Object.keys(sc[st]).some(function(d){return d>=td;});});
   });
   if(list.length===0){document.getElementById('clist').innerHTML='<div class="loading">現在対応可能なコーチが登録されていません</div>';return;}
-  document.getElementById('clist').innerHTML=list.map(function(c){return buildCard(c);}).join('');
+  document.getElementById('clist').innerHTML=list.map(function(c){return buildCard(c);}).join('');renderSchedGrid();
 }
 
 function buildCard(c){
@@ -329,6 +350,62 @@ function buildCard(c){
     +'</div>';
 }
 
+
+var sgWeekOffset=0;
+function sgMonday(offset){var d=new Date();var day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day)+(offset*7));d.setHours(0,0,0,0);return d;}
+function renderSchedGrid(){
+  var grid=document.getElementById('sched-grid');
+  if(type!=='indoor'){grid.style.display='none';return;}
+  grid.style.display='block';
+  var mon2=sgMonday(sgWeekOffset);
+  var sun=new Date(mon2);sun.setDate(sun.getDate()+6);
+  document.getElementById('sg-label').textContent=(mon2.getMonth()+1)+'月'+mon2.getDate()+'日（月）〜'+(sun.getMonth()+1)+'月'+sun.getDate()+'日（日）';
+  var days=['月','火','水','木','金','土','日'];
+  var dates=[];for(var i=0;i<7;i++){var d=new Date(mon2);d.setDate(d.getDate()+i);dates.push(d);}
+  var today=fmt(new Date());
+  var thead=document.getElementById('sg-head');
+  var headRow='<tr><th class="tc"></th>';
+  for(var di=0;di<7;di++){var dd=dates[di];var ds2=fmt(dd);headRow+='<th style="'+(ds2===today?'color:var(--gold);':'')+'">'+days[di]+'<br>'+(dd.getMonth()+1)+'/'+(dd.getDate())+'</th>';}
+  thead.innerHTML=headRow+'</tr>';
+  var HOURS=[];for(var h=8;h<=23;h++)HOURS.push(h);
+  var tbody=document.getElementById('sg-body');tbody.innerHTML='';
+  HOURS.forEach(function(h){
+    var tr=document.createElement('tr');
+    var tdl=document.createElement('td');tdl.className='tl';tdl.textContent=h+':00';tr.appendChild(tdl);
+    dates.forEach(function(dd){
+      var ds3=fmt(dd);
+      var td2=document.createElement('td');td2.className='ts';
+      var timeStr=String(h).padStart(2,'0')+':00';
+      var coachesHere=coaches.filter(function(c){
+        var sc=sched[c.user_id];if(!sc)return false;
+        return Object.keys(sc).some(function(st){return sc[st][ds3]&&sc[st][ds3].times&&sc[st][ds3].times.indexOf(timeStr)>=0;});
+      });
+      if(coachesHere.length>0){
+        var wrap=document.createElement('div');wrap.className='multi-av';
+        coachesHere.forEach(function(c){
+          var el;
+          if(c.photo_url){
+            el=document.createElement('img');
+            el.src=c.photo_url+'?width=56&quality=70&resize=cover';
+            el.className='coach-av';el.title=c.name||'';
+          } else {
+            el=document.createElement('div');el.className='coach-av-init';
+            el.style.background='#E1F5EE';el.style.color='#085041';
+            el.textContent=(c.name||'?').substring(0,1);el.title=c.name||'';
+          }
+          el.style.cursor='pointer';
+          (function(coach,date,tstr){el.onclick=function(){selCoach=coach.user_id;selDate=date;selTime=tstr;goReq(coach.user_id,coach.name||'コーチ');};})(c,ds3,timeStr);
+          wrap.appendChild(el);
+        });
+        td2.appendChild(wrap);
+      }
+      tr.appendChild(td2);
+    });
+    tbody.appendChild(tr);
+  });
+}
+function sgPrev(){sgWeekOffset--;renderSchedGrid();}
+function sgNext(){sgWeekOffset++;renderSchedGrid();}
 function buildWeek(cid,av){
   if(!wkStarts[cid])wkStarts[cid]=mon(new Date());
   var ws=wkStarts[cid];
