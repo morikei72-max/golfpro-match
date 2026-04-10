@@ -31,17 +31,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .ps{font-size:10px;color:rgba(255,255,255,0.9);margin-top:2px;}
 .cbot{background:var(--gl);border-top:1px solid var(--g);padding:5px 10px;font-size:10px;color:var(--gd);font-weight:500;}
 .nbar{background:var(--gold-l);border-top:1px solid var(--gold);padding:5px 10px;font-size:10px;color:#633806;}
-.ccard{background:#fff;border-radius:12px;border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
-.ccard-top{display:flex;gap:10px;padding:12px;align-items:center;}
-.cavatar{width:60px;height:60px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+.ccard{background:#fff;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;overflow:hidden;}
+.ccard-top{display:flex;gap:10px;padding:10px 12px;align-items:center;}
+.cavatar{width:52px;height:52px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
 .cinfo{flex:1;min-width:0;}
-.cname{font-size:15px;font-weight:700;color:var(--gd);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cmeta{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;align-items:center;}
-.csub{font-size:11px;color:#888;line-height:1.4;}
-.cprice{font-size:13px;color:var(--g);font-weight:700;background:var(--gl);padding:2px 7px;border-radius:20px;}
-.cbio{font-size:11px;color:#777;margin-top:3px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.cname{font-size:14px;font-weight:700;color:var(--gd);}
+.cmeta{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;align-items:center;}
+.csub{font-size:11px;color:#888;}
+.cprice{font-size:12px;color:var(--gd);font-weight:700;background:var(--gl);padding:2px 6px;border-radius:20px;}
+.cbio{font-size:11px;color:#777;margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .cavail{font-size:11px;color:#aaa;}
-.hbtn{background:none;border:none;cursor:pointer;font-size:20px;color:#ccc;padding:0;flex-shrink:0;}
+.hbtn{background:none;border:none;cursor:pointer;font-size:18px;color:#ccc;padding:0;flex-shrink:0;}
 .hbtn.fav{color:var(--red);}
 .cal-wrap{padding:0 14px 10px;border-top:1px solid var(--gl);}
 .cal-head{display:flex;justify-content:space-between;align-items:center;padding:10px 0 8px;}
@@ -97,12 +97,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .starb.on{color:var(--gold);}
 .loading{text-align:center;padding:20px;color:#bbb;font-size:13px;}
 .sched-outer{margin-top:12px;width:100%;border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-.sched-scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.sched-scroll-y{max-height:240px;overflow-y:scroll;-webkit-overflow-scrolling:touch;}
-.sg-head-table{width:100%;border-collapse:collapse;min-width:480px;table-layout:fixed;}
-.sg-head-table th{background:#fff;border-bottom:2px solid var(--g);font-size:11px;font-weight:500;color:#888;padding:6px 3px;text-align:center;}
-.sg-head-table th.tc{width:40px;}
-.sg-body-table{width:100%;border-collapse:collapse;min-width:480px;table-layout:fixed;}
+.sched-scroll{height:260px;overflow-y:scroll;-webkit-overflow-scrolling:touch;overflow-x:hidden;}
+.sg-table{width:100%;border-collapse:collapse;table-layout:fixed;}
+.sg-table th{position:sticky;top:0;background:#fff;z-index:5;border-bottom:2px solid var(--g);font-size:11px;font-weight:500;color:#888;padding:6px 3px;text-align:center;}
+.sg-table th.tc{width:44px;}
 .sched-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .sched-lbl{font-size:12px;font-weight:700;color:var(--gd);}
 .sched-nav{background:none;border:1.5px solid var(--border);border-radius:8px;padding:3px 10px;cursor:pointer;font-size:16px;color:var(--g);line-height:1;}
@@ -166,11 +164,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <button class="sched-nav" onclick="sgNext()">&#8250;</button>
       </div>
       <div class="sched-outer">
-  <div class="sched-scroll-x">
-    <table class="sg-head-table"><thead id="sg-head"></thead></table>
-    <div class="sched-scroll-y">
-      <table class="sg-body-table"><tbody id="sg-body"></tbody></table>
-    </div>
+  <div class="sched-scroll">
+    <table class="sg-table"><thead id="sg-head"></thead><tbody id="sg-body"></tbody></table>
   </div>
 </div>
     </div>
@@ -337,8 +332,8 @@ function buildCard(c){
   var cnt=Object.keys(av).length;
   var isFav=favs.indexOf(c.user_id)>=0;
   var ph=c.photo_url
-    ?'<img src="'+c.photo_url+'?width=120&quality=70&resize=cover" style="width:60px;height:60px;border-radius:50%;object-fit:cover;display:block;">'
-    :'<span style="font-size:14px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
+    ?'<img src="'+c.photo_url+'?width=104&quality=70&resize=cover" style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;">'
+    :'<span style="font-size:13px;font-weight:700;color:var(--gd);">'+(c.name||'?').substring(0,2)+'</span>';
   var pr='';
   var cp=price[c.user_id];
   if(cp){var sk=Object.keys(cp);if(sk.length){var p=cp[sk[0]];
@@ -395,7 +390,7 @@ function renderSchedGrid(){
     var tr=document.createElement('tr');
     var tdl=document.createElement('td');tdl.className='tl';tdl.textContent=h+':00';tr.appendChild(tdl);
     var hasAny=false;
-    dates.forEach(function(dd){
+    for(var di=0;di<5;di++){var dd=dates[di];(function(dd){
       var ds3=fmt(dd);
       var td2=document.createElement('td');td2.className='ts';
       var timeStr=String(h).padStart(2,'0')+':00';
@@ -433,8 +428,8 @@ function renderSchedGrid(){
         td2.appendChild(wrap);
       }
       tr.appendChild(td2);
-    });
-    if(hasAny)tbody.appendChild(tr);
+    })(dd);}
+    tbody.appendChild(tr);
   });
   renderVisibleCoaches(visibleCoachIds);
 
