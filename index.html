@@ -108,7 +108,19 @@ body{
   letter-spacing:0.28em;
   color:rgba(255,255,255,0.35);
   text-align:center;text-transform:uppercase;
-  margin-bottom:22px;
+  margin-bottom:10px;
+}
+.logo-brand{
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:10px;color:rgba(255,255,255,0.4);
+  letter-spacing:0.06em;
+  margin-bottom:18px;
+}
+.logo-brand img{
+  width:16px;height:16px;
+  object-fit:contain;
+  background:transparent;
 }
 
 /* タブ */
@@ -285,6 +297,11 @@ input:focus{
   <div class="card">
     <div class="logo">My<span>Coach</span></div>
     <div class="logo-sub">Golf Matching Service</div>
+    <div class="logo-brand">
+      in
+      <img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/logo_golfcreate.png" alt="Golf Create">
+      Golf Create tozuike
+    </div>
 
     <div class="tabs">
       <button class="tab active" onclick="switchType('customer',this)">
