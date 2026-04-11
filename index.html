@@ -136,8 +136,8 @@ body{
   color:#fff;
   box-shadow:0 1px 4px rgba(0,0,0,0.2);
 }
-.tab-icon{display:block;margin-bottom:2px;}
-.tab-icon img{width:44px;height:44px;object-fit:contain;display:block;margin:0 auto;background:transparent;}
+.tab-icon{display:block;margin-bottom:3px;}
+.tab-icon svg{width:22px;height:22px;display:block;margin:0 auto;}
 
 /* スクリーン */
 .screen{display:none;}
@@ -288,13 +288,19 @@ input:focus{
 
     <div class="tabs">
       <button class="tab active" onclick="switchType('customer',this)">
-        <span class="tab-icon"><img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/icon_customer.png" alt="お客様"></span>お客様
+        <span class="tab-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="9" r="3"/><path d="M6.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/></svg>
+        </span>お客様
       </button>
       <button class="tab" onclick="switchType('coach',this)">
-        <span class="tab-icon"><img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/icon_coach.png" alt="コーチ"></span>コーチ
+        <span class="tab-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        </span>コーチ
       </button>
       <button class="tab" onclick="switchType('store',this)">
-        <span class="tab-icon"><img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/icon_store.png" alt="店舗"></span>店舗
+        <span class="tab-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L2 9v12h7v-7h6v7h7V9L12 3z"/></svg>
+        </span>店舗
       </button>
     </div>
 
