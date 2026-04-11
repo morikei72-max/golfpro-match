@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — スケジュールカレンダー</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#1D9E75;--gd:#085041;--gl:#E1F5EE;
+  --accent:#5dd4a8;--gold:#BA7517;--red:#E24B4A;
+  --border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;
+  --kyoto:#1D9E75;--kyoto-bg:#E1F5EE;--kyoto-border:#1D9E75;
+  --fushimi:#2563eb;--fushimi-bg:#dbeafe;--fushimi-border:#2563eb;
+  --round-bg:#fff3cd;--round-border:#BA7517;
+}
+html,body{height:100%;background:#f0f7f4;}
+body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
+
+.header{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
+.header-logo{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:var(--gd);}
+.header-logo span{color:var(--accent);}
+.header-right{display:flex;align-items:center;gap:8px;}
+.back-btn{font-size:12px;color:var(--g);background:var(--gl);border:1px solid var(--g);padding:5px 12px;border-radius:20px;cursor:pointer;text-decoration:none;}
+
+.main{margin-top:56px;padding:14px;padding-bottom:80px;}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.card-title{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;}
+
+/* 凡例 */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text);}
+.legend-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+
+/* 月間カレンダー */
+.month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.month-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 14px;cursor:pointer;font-size:16px;color:var(--gd);}
+.month-nav-label{font-size:15px;font-weight:700;color:var(--gd);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day-hdr{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
+.cal-cell{min-height:52px;border-radius:8px;border:1px solid var(--border);padding:4px;background:#fff;cursor:pointer;transition:all .15s;position:relative;}
+.cal-cell:hover{border-color:var(--g);}
+.cal-cell.other-month{opacity:0.35;}
+.cal-cell.today{border-color:var(--g);border-width:2px;}
+.cal-date{font-size:11px;font-weight:700;color:var(--text);}
+.cal-cell.today .cal-date{color:var(--g);}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-kyoto-indoor{background:var(--kyoto);}
+.dot-fushimi-indoor{background:var(--fushimi);}
+.dot-kyoto-round{background:var(--gold);}
+.dot-fushimi-round{background:#9333ea;}
+.dot-booked{background:var(--red);}
+
+/* 詳細ポップアップ */
+.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center;}
+.popup-overlay.open{display:flex;}
+.popup{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;max-height:70vh;overflow-y:auto;}
+.popup-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;}
+.popup-item{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
+.popup-item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.popup-item-type{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.type-kyoto-indoor{background:var(--kyoto-bg);color:var(--kyoto);}
+.type-fushimi-indoor{background:var(--fushimi-bg);color:var(--fushimi);}
+.type-kyoto-round{background:var(--round-bg);color:var(--gold);}
+.type-fushimi-round{background:#f3e8fd;color:#9333ea;}
+.type-booked{background:#ffe0e0;color:var(--red);}
+.popup-item-time{font-size:13px;font-weight:700;color:var(--text);}
+.popup-actions{display:flex;gap:6px;margin-top:8px;}
+.btn-edit{flex:1;padding:7px;background:var(--gl);color:var(--gd);border:1px solid var(--g);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-delete{flex:1;padding:7px;background:#fff0f0;color:var(--red);border:1px solid var(--red);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.popup-close{width:100%;padding:11px;background:#f0f0f0;color:var(--muted);border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;}
+
+/* 登録ボタン */
+.register-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:12px;}
+.back-home-btn{width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
+
+.loading{text-align:center;padding:30px;color:var(--muted);font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">My<span>Coach</span></div>
+  <div class="header-right">
+    <a href="https://soft-speculoos-5ef188.netlify.app/coach.html" class="back-btn">← コーチ画面</a>
+  </div>
+</div>
+
+<!-- 詳細ポップアップ -->
+<div class="popup-overlay" id="popup-overlay">
+  <div class="popup">
+    <div class="popup-title" id="popup-title">📅 2026年4月11日（土）</div>
+    <div id="popup-items"></div>
+    <button class="popup-close" onclick="closePopup()">✕ 閉じる</button>
+  </div>
+</div>
+
+<div class="main">
+  <a href="https://soft-speculoos-5ef188.netlify.app/schedule_register.html" class="register-btn">
+    📝 スケジュールを登録する
+  </a>
+
+  <div class="card">
+    <div class="card-title">スケジュールカレンダー</div>
+
+    <!-- 凡例 -->
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--kyoto)"></div>京都店・インドア</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--fushimi)"></div>伏見店・インドア</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>京都店・ラウンド</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#9333ea"></div>伏見店・ラウンド</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>予約済み</div>
+    </div>
+
+    <!-- 月間カレンダー -->
+    <div class="month-nav">
+      <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
+      <div class="month-nav-label" id="month-label"></div>
+      <button class="month-nav-btn" onclick="moveMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-header"></div>
+    <div class="cal-grid" id="cal-grid" style="margin-top:3px;"></div>
+  </div>
+
+  <button class="back-home-btn" onclick="location.href='https://soft-speculoos-5ef188.netlify.app/coach.html'">← コーチ画面に戻る</button>
+</div>
+
+<script>
+const {createClient}=supabase;
+const sb=createClient(
+  'https://gojrdnufmueuvkroevut.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',
+  {auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}}
+);
+const BASE='https://soft-speculoos-5ef188.netlify.app/';
+
+let currentCoachId=null;
+let currentMonth=new Date();
+let scheduleMap={}; // key: YYYY-MM-DD → [{type,store,hours,status}]
+
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace(BASE+'index.html');return;}
+  currentCoachId=session.user.id;
+  await loadSchedules();
+  buildCalendar();
+})();
+
+async function loadSchedules(){
+  scheduleMap={};
+  const {data,error}=await sb.from('schedules').select('*').eq('coach_id',currentCoachId);
+  if(error||!data)return;
+  data.forEach(row=>{
+    const key=row.slot_date;
+    if(!scheduleMap[key])scheduleMap[key]=[];
+    scheduleMap[key].push(row);
+  });
+}
+
+function buildCalendar(){
+  const days=['日','月','火','水','木','金','土'];
+  const hdr=document.getElementById('cal-header');
+  hdr.innerHTML='';
+  days.forEach(d=>{const el=document.createElement('div');el.className='cal-day-hdr';el.textContent=d;hdr.appendChild(el);});
+
+  const year=currentMonth.getFullYear(),month=currentMonth.getMonth();
+  document.getElementById('month-label').textContent=year+'年'+(month+1)+'月';
+  const first=new Date(year,month,1);
+  const last=new Date(year,month+1,0);
+  const today=new Date();
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+
+  for(let i=0;i<first.getDay();i++){
+    const c=document.createElement('div');c.className='cal-cell other-month';grid.appendChild(c);
+  }
+  for(let d=1;d<=last.getDate();d++){
+    const dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const isToday=new Date(year,month,d).toDateString()===today.toDateString();
+    const cell=document.createElement('div');
+    cell.className='cal-cell'+(isToday?' today':'');
+    const dateEl=document.createElement('div');dateEl.className='cal-date';dateEl.textContent=d;
+    cell.appendChild(dateEl);
+
+    const rows=scheduleMap[dateStr]||[];
+    if(rows.length>0){
+      const dotsEl=document.createElement('div');dotsEl.className='cal-dots';
+      rows.forEach(row=>{
+        const dot=document.createElement('div');
+        dot.className='dot '+getDotClass(row);
+        dotsEl.appendChild(dot);
+      });
+      cell.appendChild(dotsEl);
+    }
+    cell.onclick=()=>openPopup(dateStr,d,month,year);
+    grid.appendChild(cell);
+  }
+}
+
+function getDotClass(row){
+  if(row.status==='booked')return 'dot-booked';
+  if(row.lesson_type==='indoor'&&row.store_id==='kyoto')return 'dot-kyoto-indoor';
+  if(row.lesson_type==='indoor'&&row.store_id==='fushimi')return 'dot-fushimi-indoor';
+  if(row.lesson_type==='round'&&row.store_id==='kyoto')return 'dot-kyoto-round';
+  if(row.lesson_type==='round'&&row.store_id==='fushimi')return 'dot-fushimi-round';
+  return 'dot-kyoto-indoor';
+}
+
+function getTypeLabel(row){
+  if(row.status==='booked')return '予約済み';
+  const store=row.store_id==='kyoto'?'京都店':'伏見店';
+  const type=row.lesson_type==='indoor'?'インドア':'ラウンド';
+  return store+'・'+type;
+}
+function getTypeClass(row){
+  if(row.status==='booked')return 'type-booked';
+  if(row.lesson_type==='indoor'&&row.store_id==='kyoto')return 'type-kyoto-indoor';
+  if(row.lesson_type==='indoor'&&row.store_id==='fushimi')return 'type-fushimi-indoor';
+  if(row.lesson_type==='round'&&row.store_id==='kyoto')return 'type-kyoto-round';
+  return 'type-fushimi-round';
+}
+
+const weekDays=['日','月','火','水','木','金','土'];
+function openPopup(dateStr,d,month,year){
+  const rows=scheduleMap[dateStr]||[];
+  const dow=new Date(year,month,d).getDay();
+  document.getElementById('popup-title').textContent='📅 '+year+'年'+(month+1)+'月'+d+'日（'+weekDays[dow]+'）';
+  const container=document.getElementById('popup-items');
+  container.innerHTML='';
+  if(rows.length===0){
+    container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">登録なし</div>';
+  }else{
+    rows.forEach(row=>{
+      const timeText=row.slot_hour===-1?'終日':row.slot_hour+':00〜'+(row.slot_hour+1)+':00';
+      const div=document.createElement('div');div.className='popup-item';
+      div.innerHTML=`
+        <div class="popup-item-header">
+          <span class="popup-item-type ${getTypeClass(row)}">${getTypeLabel(row)}</span>
+        </div>
+        <div class="popup-item-time">⏰ ${timeText}</div>
+        ${row.status!=='booked'?`<div class="popup-actions">
+          <button class="btn-delete" onclick="deleteSchedule('${row.id}','${dateStr}')">🗑️ 削除</button>
+        </div>`:'<div style="font-size:11px;color:var(--red);margin-top:6px;">※ 予約済みのため変更不可</div>'}
+      `;
+      container.appendChild(div);
+    });
+  }
+  document.getElementById('popup-overlay').classList.add('open');
+}
+function closePopup(){document.getElementById('popup-overlay').classList.remove('open');}
+
+async function deleteSchedule(id,dateStr){
+  if(!confirm('このスケジュールを削除しますか？'))return;
+  const {error}=await sb.from('schedules').delete().eq('id',id);
+  if(error){alert('削除に失敗しました：'+error.message);return;}
+  // ローカルのscheduleMapから削除
+  if(scheduleMap[dateStr])scheduleMap[dateStr]=scheduleMap[dateStr].filter(r=>r.id!==id);
+  buildCalendar();
+  closePopup();
+}
+
+function moveMonth(dir){
+  currentMonth.setMonth(currentMonth.getMonth()+dir);
+  buildCalendar();
+}
+</script>
+</body>
+</html>
