@@ -3,391 +3,113 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyCoach — ログイン</title>
+<title>GolfCoach — ログイン</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --g:#1D9E75;--gd:#085041;--gl:#E1F5EE;
-  --accent:#5dd4a8;--dark:#06120c;
-  --red:#E24B4A;
-}
-
-html,body{height:100%;}
-body{
-  font-family:'Noto Sans JP',sans-serif;
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  position:relative;
-  overflow:hidden;
-}
-
-/* 背景スライドショー */
-.bg-slide{
-  position:fixed;inset:0;
-  background-size:cover;background-position:center;
-  opacity:0;
-  transition:opacity 2s ease;
-  z-index:0;
-}
-.bg-slide.on{opacity:1;}
-.bg-s1{background-image:url('https://images.unsplash.com/photo-1610118049770-4a98b44d44c7?w=1200&q=70&fit=crop');}
-.bg-s2{background-image:url('https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1200&q=70&fit=crop');}
-.bg-s3{background-image:url('https://images.unsplash.com/photo-1596075780028-c5e4a6add33d?w=1200&q=70&fit=crop');}
-.bg-s4{background-image:url('https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?w=1200&q=70&fit=crop');}
-.bg-s5{background-image:url('https://images.unsplash.com/photo-1551854838-212c9a5db575?w=1200&q=70&fit=crop');}
-
-/* オーバーレイ */
-.bg-overlay{
-  position:fixed;inset:0;z-index:1;
-  background:rgba(6,18,12,0.62);
-}
-/* グリッドテクスチャ */
-.bg-grid{
-  position:fixed;inset:0;z-index:2;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);
-  background-size:64px 64px;
-  pointer-events:none;
-}
-
-/* コンテンツ */
-.page{
-  position:relative;z-index:10;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-
-/* 戻るリンク */
-.back-link{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:11px;color:rgba(255,255,255,0.35);
-  text-decoration:none;letter-spacing:0.08em;
-  margin-bottom:16px;
-  transition:color .2s;
-}
-.back-link:hover{color:rgba(255,255,255,0.7);}
-.back-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
-
-/* カード */
-.card{
-  width:100%;max-width:320px;
-  background:rgba(255,255,255,0.10);
-  backdrop-filter:blur(24px);
-  -webkit-backdrop-filter:blur(24px);
-  border:1px solid rgba(255,255,255,0.18);
-  border-radius:24px;
-  padding:32px 28px 28px;
-  box-shadow:0 24px 60px rgba(0,0,0,0.45),inset 0 1px 0 rgba(255,255,255,0.15);
-  animation:cardIn .6s ease forwards;
-}
-@keyframes cardIn{
-  from{opacity:0;transform:translateY(20px);}
-  to{opacity:1;transform:translateY(0);}
-}
-
-/* ロゴ */
-.logo{
-  font-family:'Montserrat',sans-serif;
-  font-size:28px;font-weight:900;
-  color:#fff;text-align:center;
-  letter-spacing:-0.02em;
-  margin-bottom:3px;
-}
-.logo span{color:var(--accent);}
-.logo-sub{
-  font-family:'Montserrat',sans-serif;
-  font-size:9px;font-weight:400;
-  letter-spacing:0.28em;
-  color:rgba(255,255,255,0.35);
-  text-align:center;text-transform:uppercase;
-  margin-bottom:22px;
-}
-
-/* タブ */
-.tabs{
-  display:flex;
-  background:rgba(255,255,255,0.07);
-  border-radius:10px;
-  padding:3px;
-  gap:2px;
-  margin-bottom:22px;
-}
-.tab{
-  flex:1;padding:7px 4px;
-  text-align:center;
-  font-family:inherit;font-size:11px;font-weight:500;
-  color:rgba(255,255,255,0.45);
-  background:transparent;border:none;
-  border-radius:8px;cursor:pointer;
-  transition:all .2s;
-  line-height:1.3;
-}
-.tab:hover{color:rgba(255,255,255,0.7);}
-.tab.active{
-  background:rgba(255,255,255,0.14);
-  color:#fff;
-  box-shadow:0 1px 4px rgba(0,0,0,0.2);
-}
-.tab-icon{font-size:15px;display:block;margin-bottom:2px;}
-
-/* スクリーン */
-.screen{display:none;}
-.screen.active{display:block;}
-
-/* フォームタイトル */
-.form-title{
-  font-size:17px;font-weight:700;color:#fff;
-  margin-bottom:4px;
-}
-.form-sub{
-  font-size:11px;color:rgba(255,255,255,0.4);
-  margin-bottom:18px;line-height:1.7;
-}
-
-/* メッセージ */
-.msg{padding:9px 12px;border-radius:10px;font-size:12px;margin-bottom:14px;display:none;}
-.msg.error{background:rgba(226,75,74,0.18);color:#ff9494;border:1px solid rgba(226,75,74,0.35);display:block;}
-.msg.success{background:rgba(29,158,117,0.18);color:var(--accent);border:1px solid rgba(29,158,117,0.35);display:block;}
-
-/* フォーム */
-.form-group{margin-bottom:12px;}
-label{display:block;font-size:10px;font-weight:500;color:rgba(255,255,255,0.45);margin-bottom:5px;letter-spacing:0.06em;}
-input{
-  width:100%;padding:11px 14px;
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.12);
-  border-radius:10px;
-  font-family:inherit;font-size:13px;color:#fff;
-  outline:none;transition:border-color .2s,background .2s;
-}
-input::placeholder{color:rgba(255,255,255,0.22);}
-input:focus{
-  border-color:var(--accent);
-  background:rgba(93,212,168,0.08);
-}
-
-/* パスワード忘れ */
-.forgot{text-align:right;margin-top:-4px;margin-bottom:12px;}
-.forgot a{font-size:10px;color:rgba(255,255,255,0.32);cursor:pointer;transition:color .2s;}
-.forgot a:hover{color:var(--accent);}
-
-/* ボタン */
-.btn-primary{
-  width:100%;padding:13px;
-  background:var(--g);color:#fff;border:none;
-  border-radius:10px;font-family:inherit;
-  font-size:14px;font-weight:700;cursor:pointer;
-  transition:all .25s;letter-spacing:0.04em;
-  margin-top:4px;
-}
-.btn-primary:hover{background:#26c48f;transform:translateY(-1px);box-shadow:0 6px 20px rgba(29,158,117,0.4);}
-.btn-primary:active{transform:translateY(0);}
-.btn-primary:disabled{background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.3);cursor:not-allowed;transform:none;box-shadow:none;}
-
-.btn-outline{
-  width:100%;padding:12px;
-  background:transparent;
-  color:rgba(255,255,255,0.55);
-  border:1px solid rgba(255,255,255,0.18);
-  border-radius:10px;font-family:inherit;
-  font-size:13px;font-weight:500;cursor:pointer;
-  margin-top:10px;transition:all .2s;
-}
-.btn-outline:hover{border-color:rgba(255,255,255,0.4);color:#fff;background:rgba(255,255,255,0.06);}
-
-/* 区切り */
-.divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:rgba(255,255,255,0.18);font-size:11px;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
-
-/* セキュリティバッジ */
-.security{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(29,158,117,0.1);
-  border:1px solid rgba(29,158,117,0.2);
-  border-radius:8px;padding:7px 12px;
-  font-size:10px;color:rgba(255,255,255,0.38);
-  margin-top:14px;
-}
-.sec-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;}
-
-/* ローディング */
-.loading{
-  display:inline-block;width:13px;height:13px;
-  border:2px solid rgba(255,255,255,0.2);
-  border-top-color:#fff;border-radius:50%;
-  animation:spin .7s linear infinite;
-  vertical-align:middle;margin-right:6px;
-}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--red:#E24B4A;--border:#e0e0e0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
+.logo-wrap{text-align:center;margin-bottom:32px;}
+.logo-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--gd);}
+.logo-sub{font-size:12px;color:#666;margin-top:4px;}
+.main-card{background:#fff;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:420px;overflow:hidden;}
+.type-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
+.type-tab{padding:16px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:#666;border-bottom:3px solid transparent;}
+.type-tab.active{color:var(--gd);border-bottom:3px solid var(--g);background:var(--gl);}
+.type-tab-icon{font-size:20px;display:block;margin-bottom:4px;}
+.form-area{padding:28px;}
+.form-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
+.form-sub{font-size:12px;color:#666;margin-bottom:24px;line-height:1.6;}
+.form-group{margin-bottom:16px;}
+label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:6px;}
+input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;background:#fafafa;outline:none;}
+input:focus{border-color:var(--g);background:#fff;}
+.btn-primary{width:100%;padding:14px;background:var(--g);color:white;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;}
+.btn-primary:disabled{background:#aaa;cursor:not-allowed;}
+.btn-outline{width:100%;padding:12px;background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;margin-top:10px;}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;}
+.msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
+.msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
+.security-badge{display:flex;align-items:center;gap:6px;background:var(--gl);border:.5px solid var(--g);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--gd);margin-top:16px;}
+.security-dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;}
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#bbb;font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.forgot-link{text-align:right;margin-top:-8px;margin-bottom:12px;}
+.forgot-link a{font-size:12px;color:#666;cursor:pointer;}
+.screen{display:none;}.screen.active{display:block;}
+.footer{text-align:center;margin-top:24px;font-size:11px;color:#aaa;line-height:1.7;}
+.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* フッター */
-.footer{
-  margin-top:20px;text-align:center;
-  font-size:10px;color:rgba(255,255,255,0.2);
-  line-height:1.9;position:relative;z-index:10;
-}
-.footer a{color:rgba(255,255,255,0.2);text-decoration:none;transition:color .2s;}
-.footer a:hover{color:rgba(255,255,255,0.5);}
-
-/* スライドドット */
-.dots{
-  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  display:flex;gap:6px;z-index:10;
-}
-.dot{
-  width:5px;height:5px;border-radius:50%;
-  background:rgba(255,255,255,0.2);
-  cursor:pointer;transition:all .35s;
-}
-.dot.on{background:var(--accent);width:16px;border-radius:3px;}
-
-/* レスポンシブ */
-@media(max-width:480px){
-  .card{padding:26px 22px 22px;}
-}
 </style>
 </head>
 <body>
-
-<!-- 背景スライド -->
-<div class="bg-slide bg-s1 on"></div>
-<div class="bg-slide bg-s2"></div>
-<div class="bg-slide bg-s3"></div>
-<div class="bg-slide bg-s4"></div>
-<div class="bg-slide bg-s5"></div>
-<div class="bg-overlay"></div>
-<div class="bg-grid"></div>
-
-<!-- スライドドット -->
-<div class="dots">
-  <div class="dot on" onclick="goBg(0)"></div>
-  <div class="dot" onclick="goBg(1)"></div>
-  <div class="dot" onclick="goBg(2)"></div>
-  <div class="dot" onclick="goBg(3)"></div>
-  <div class="dot" onclick="goBg(4)"></div>
+<div class="logo-wrap">
+  <div class="logo-title">GolfCoach</div>
+  <div class="logo-sub">ゴルフコーチ マッチングサービス</div>
 </div>
-
-<!-- コンテンツ -->
-<div class="page">
-
-  <a href="top.html" class="back-link">
-    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-    トップページへ
-  </a>
-
-  <div class="card">
-    <div class="logo">My<span>Coach</span></div>
-    <div class="logo-sub">Golf Matching Service</div>
-
-    <div class="tabs">
-      <button class="tab active" onclick="switchType('customer',this)">
-        <span class="tab-icon">👤</span>お客様
-      </button>
-      <button class="tab" onclick="switchType('coach',this)">
-        <span class="tab-icon">🏌</span>コーチ
-      </button>
-      <button class="tab" onclick="switchType('store',this)">
-        <span class="tab-icon">🏪</span>店舗
-      </button>
-    </div>
-
+<div class="main-card">
+  <div class="type-tabs">
+    <button class="type-tab active" onclick="switchType('customer',this)"><span class="type-tab-icon">👤</span>お客様</button>
+    <button class="type-tab" onclick="switchType('coach',this)"><span class="type-tab-icon">🏌</span>コーチ</button>
+    <button class="type-tab" onclick="switchType('store',this)"><span class="type-tab-icon">🏪</span>店舗管理</button>
+  </div>
+  <div class="form-area">
     <div class="msg" id="msg"></div>
-
-    <!-- ログイン -->
     <div class="screen active" id="screen-login">
       <div class="form-title" id="login-title">お客様ログイン</div>
       <div class="form-sub" id="login-sub">メールアドレスとパスワードでログインしてください</div>
-      <div class="form-group">
-        <label>メールアドレス</label>
-        <input type="email" id="login-email" placeholder="example@mail.com">
-      </div>
-      <div class="form-group">
-        <label>パスワード</label>
-        <input type="password" id="login-password" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doLogin()">
-      </div>
-      <div class="forgot"><a onclick="showScreen('screen-reset')">パスワードをお忘れの方</a></div>
+      <div class="form-group"><label>メールアドレス</label><input type="email" id="login-email" placeholder="example@mail.com"></div>
+      <div class="form-group"><label>パスワード</label><input type="password" id="login-password" placeholder="パスワードを入力"></div>
+      <div class="forgot-link"><a onclick="showScreen('screen-reset')">パスワードをお忘れの方</a></div>
       <button class="btn-primary" id="login-btn" onclick="doLogin()">ログイン</button>
       <div class="divider">または</div>
       <button class="btn-outline" onclick="showScreen('screen-register')">新規アカウント登録</button>
-      <div class="security"><span class="sec-dot"></span>SSL暗号化通信で安全に保護されています</div>
+      <div class="security-badge"><span class="security-dot"></span>SSL暗号化通信で安全に保護されています</div>
     </div>
-
-    <!-- 新規登録 -->
     <div class="screen" id="screen-register">
       <div class="form-title">新規アカウント登録</div>
-      <div class="form-sub" id="register-sub">情報を入力してアカウントを作成してください</div>
-      <div class="form-group">
-        <label>お名前</label>
-        <input type="text" id="reg-name" placeholder="山田 太郎">
-      </div>
-      <div class="form-group">
-        <label>メールアドレス</label>
-        <input type="email" id="reg-email" placeholder="example@mail.com">
-      </div>
-      <div class="form-group">
-        <label>パスワード（8文字以上）</label>
-        <input type="password" id="reg-password" placeholder="パスワードを設定">
-      </div>
-      <div class="form-group">
-        <label>パスワード（確認）</label>
-        <input type="password" id="reg-password2" placeholder="パスワードを再入力">
-      </div>
+      <div class="form-sub">情報を入力してアカウントを作成してください</div>
+      <div class="form-group"><label>お名前</label><input type="text" id="reg-name" placeholder="山田 太郎"></div>
+      <div class="form-group"><label>メールアドレス</label><input type="email" id="reg-email" placeholder="example@mail.com"></div>
+      <div class="form-group"><label>パスワード（8文字以上）</label><input type="password" id="reg-password" placeholder="パスワードを設定"></div>
+      <div class="form-group"><label>パスワード（確認）</label><input type="password" id="reg-password2" placeholder="パスワードを再入力"></div>
       <button class="btn-primary" id="register-btn" onclick="doRegister()">アカウントを作成する</button>
       <button class="btn-outline" onclick="showScreen('screen-login')">ログインに戻る</button>
     </div>
-
-    <!-- パスワードリセット -->
     <div class="screen" id="screen-reset">
       <div class="form-title">パスワードをリセット</div>
       <div class="form-sub">登録済みのメールアドレスにリセット用リンクを送信します</div>
-      <div class="form-group">
-        <label>メールアドレス</label>
-        <input type="email" id="reset-email" placeholder="example@mail.com">
-      </div>
+      <div class="form-group"><label>メールアドレス</label><input type="email" id="reset-email" placeholder="example@mail.com"></div>
       <button class="btn-primary" onclick="doReset()">リセットメールを送信</button>
       <button class="btn-outline" onclick="showScreen('screen-login')">ログインに戻る</button>
     </div>
   </div>
-
-  <div class="footer">
-    © 2026 MyCoach by 株式会社ケイエスケー<br>
-    <a href="#">利用規約</a> ・ <a href="#">プライバシーポリシー</a>
-  </div>
 </div>
+<div class="footer">© 2026 GolfCoach by 株式会社ケイエスケー<br><a href="#" style="color:#aaa;">利用規約</a> ・ <a href="#" style="color:#aaa;">プライバシーポリシー</a></div>
 
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:true}
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:localStorage,autoRefreshToken:true,detectSessionInUrl:true}
 });
 
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 let currentType='customer';
 
-const typeConfig={
-  customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください',regSub:'情報を入力してお客様アカウントを作成してください',dest:'customer.html'},
-  coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください',regSub:'コーチとして登録する情報を入力してください',dest:'coach.html'},
-  store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください',regSub:'店舗管理者アカウントの情報を入力してください',dest:'store.html'}
+const typeLabels={
+  customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください'},
+  coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください'},
+  store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください'}
 };
 
 function switchType(type,btn){
   currentType=type;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.type-tab').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('login-title').textContent=typeConfig[type].title;
-  document.getElementById('login-sub').textContent=typeConfig[type].sub;
-  const rs=document.getElementById('register-sub');
-  if(rs)rs.textContent=typeConfig[type].regSub;
+  document.getElementById('login-title').textContent=typeLabels[type].title;
+  document.getElementById('login-sub').textContent=typeLabels[type].sub;
   showScreen('screen-login');
   clearMsg();
 }
@@ -400,12 +122,14 @@ function showScreen(id){
 
 function showMsg(text,type){
   const el=document.getElementById('msg');
-  el.textContent=text;el.className='msg '+type;
+  el.textContent=text;
+  el.className='msg '+type;
 }
 
 function clearMsg(){
   const el=document.getElementById('msg');
-  el.className='msg';el.textContent='';
+  el.className='msg';
+  el.textContent='';
 }
 
 async function doLogin(){
@@ -413,16 +137,19 @@ async function doLogin(){
   const password=document.getElementById('login-password').value;
   if(!email||!password){showMsg('メールアドレスとパスワードを入力してください','error');return;}
   const btn=document.getElementById('login-btn');
-  btn.disabled=true;btn.innerHTML='<span class="loading"></span>処理中...';clearMsg();
+  btn.disabled=true;
+  btn.innerHTML='<span class="loading"></span>処理中...';
+  clearMsg();
   try{
     const {data,error}=await sb.auth.signInWithPassword({email,password});
     if(error)throw error;
     localStorage.setItem('gc_login_time',Date.now().toString());
-    localStorage.setItem('gc_user_type',currentType);
-    window.location.replace(BASE+typeConfig[currentType].dest);
+    const dest=currentType==='coach'?BASE+'coach.html':currentType==='store'?BASE+'store.html':BASE+'customer.html';
+    window.location.replace(dest);
   }catch(err){
     showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');
-    btn.disabled=false;btn.textContent='ログイン';
+    btn.disabled=false;
+    btn.textContent='ログイン';
   }
 }
 
@@ -435,16 +162,20 @@ async function doRegister(){
   if(password.length<8){showMsg('パスワードは8文字以上で設定してください','error');return;}
   if(password!==password2){showMsg('パスワードが一致しません','error');return;}
   const btn=document.getElementById('register-btn');
-  btn.disabled=true;btn.innerHTML='<span class="loading"></span>処理中...';clearMsg();
+  btn.disabled=true;
+  btn.innerHTML='<span class="loading"></span>処理中...';
+  clearMsg();
   try{
     const {data,error}=await sb.auth.signUp({email,password,options:{data:{name,role:currentType}}});
     if(error)throw error;
     showMsg('登録が完了しました！ログインしてください。','success');
-    btn.disabled=false;btn.textContent='アカウントを作成する';
+    btn.disabled=false;
+    btn.textContent='アカウントを作成する';
     setTimeout(()=>showScreen('screen-login'),2000);
   }catch(err){
     showMsg('登録に失敗しました：'+(err.message||''),'error');
-    btn.disabled=false;btn.textContent='アカウントを作成する';
+    btn.disabled=false;
+    btn.textContent='アカウントを作成する';
   }
 }
 
@@ -452,38 +183,13 @@ async function doReset(){
   const email=document.getElementById('reset-email').value.trim();
   if(!email){showMsg('メールアドレスを入力してください','error');return;}
   try{
-    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:BASE+'index.html'});
+    const {error}=await sb.auth.resetPasswordForEmail(email);
     if(error)throw error;
-    showMsg('リセット用のメールを送信しました。メールをご確認ください。','success');
+    showMsg('リセット用のメールを送信しました。','success');
   }catch(err){
     showMsg('送信に失敗しました。','error');
   }
 }
-
-/* 背景スライドショー */
-var bgSlides=document.querySelectorAll('.bg-slide');
-var bgDots=document.querySelectorAll('.dot');
-var bgCur=0;
-var bgTimer=setInterval(nextBg,5000);
-function nextBg(){
-  bgSlides[bgCur].classList.remove('on');bgDots[bgCur].classList.remove('on');
-  bgCur=(bgCur+1)%bgSlides.length;
-  bgSlides[bgCur].classList.add('on');bgDots[bgCur].classList.add('on');
-}
-function goBg(n){
-  bgSlides[bgCur].classList.remove('on');bgDots[bgCur].classList.remove('on');
-  bgCur=n;bgSlides[bgCur].classList.add('on');bgDots[bgCur].classList.add('on');
-  clearInterval(bgTimer);bgTimer=setInterval(nextBg,5000);
-}
-
-/* 既ログイン時の自動遷移 */
-(async()=>{
-  const {data:{session}}=await sb.auth.getSession();
-  if(session){
-    const saved=localStorage.getItem('gc_user_type')||'customer';
-    window.location.replace(BASE+typeConfig[saved].dest);
-  }
-})();
 </script>
 </body>
 </html>
