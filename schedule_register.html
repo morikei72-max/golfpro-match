@@ -129,10 +129,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .al{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:center;margin-bottom:8px;text-decoration:none;}
 .al.green{background:var(--g);color:#fff;}
 .al.outline{background:#fff;color:var(--gd);border:1.5px solid var(--g);}
-/* 既存登録済み日付の薄い背景 */
-.cal-cell.exist-kyoto{background:#f0fdf8;border-color:rgba(29,158,117,0.3);}
-.cal-cell.exist-fushimi{background:#f0f4ff;border-color:rgba(25,118,210,0.3);}
-.cal-cell.exist-both{background:linear-gradient(135deg,#f0fdf8 50%,#f0f4ff 50%);border-color:rgba(29,158,117,0.3);}
+/* 既存登録済み日付の背景（濃くして見やすく） */
+.cal-cell.exist-kyoto{background:#C8EFE0;border-color:#1D9E75;border-width:1.5px;}
+.cal-cell.exist-fushimi{background:#BBDAF7;border-color:#1976D2;border-width:1.5px;}
+.cal-cell.exist-both{background:linear-gradient(135deg,#C8EFE0 50%,#BBDAF7 50%);border-color:#1D9E75;border-width:1.5px;}
+.cal-cell.exist-round{background:#FAE0B0;border-color:#BA7517;border-width:1.5px;}
 </style>
 </head>
 <body>
@@ -292,6 +293,17 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
     </div>
   </div>
+<!-- 日付詳細ポップアップ -->
+<div id="date-detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;" onclick="closeDateDetail()">
+  <div id="date-detail-modal" style="background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:15px;font-weight:700;color:#085041;" id="detail-title">日付詳細</div>
+      <button onclick="closeDateDetail()" style="background:none;border:none;font-size:20px;color:#6b8a78;cursor:pointer;">✕</button>
+    </div>
+    <div id="detail-content"></div>
+    <button onclick="closeDateDetail();selectDateFromDetail(currentDetailDate)" style="width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">この日も選択する</button>
+  </div>
+</div>
 </main>
 <div class="action-bar" id="action-bar">
   <button class="next-btn" id="next-btn" onclick="handleNext()" disabled style="opacity:0.4;">種別を選んでください</button>
@@ -402,7 +414,17 @@ function goStep(s){
 function setupBtn(){
   const btn=document.getElementById('next-btn');
   btn.disabled=false;btn.style.opacity='1';
-  if(curStep===1){btn.textContent='種別を選んでください';btn.disabled=true;btn.style.opacity='0.4';}
+  if(curStep===1){
+    btn.textContent='種別を選んでください';btn.disabled=true;btn.style.opacity='0.4';
+    // STEP1でもコーチ画面に戻るボタンを表示
+    let bb=document.getElementById('back-step-btn');
+    if(!bb){
+      bb=document.createElement('button');bb.className='back-step-btn';bb.id='back-step-btn';
+      bb.textContent='← コーチ画面に戻る';
+      bb.onclick=()=>window.location.href='coach.html';
+      document.getElementById('action-bar').appendChild(bb);
+    }
+  }
   else if(curStep===2){
     if(storeVal) btn.textContent='「'+storeNames[storeVal]+'」で次へ →';
     else{btn.textContent='店舗を選んでください';btn.disabled=true;btn.style.opacity='0.4';}
@@ -473,9 +495,12 @@ function buildCalendar(){
     const eb2=existingByDate[ds];
     let existClass='';
     if(eb2&&!isSel){
-      if(eb2['kyoto']&&eb2['fushimi']) existClass=' exist-both';
-      else if(eb2['kyoto']) existClass=' exist-kyoto';
-      else if(eb2['fushimi']) existClass=' exist-fushimi';
+      const hasKyoto=eb2['kyoto']||eb2['round_kyoto'];
+      const hasFushimi=eb2['fushimi']||eb2['round_fushimi'];
+      if(hasKyoto&&hasFushimi) existClass=' exist-both';
+      else if(hasKyoto) existClass=' exist-kyoto';
+      else if(hasFushimi) existClass=' exist-fushimi';
+      else if(eb2['round_kyoto']||eb2['round_fushimi']) existClass=' exist-round';
     }
     cell.className='cal-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSel?' sel-'+(storeVal||'kyoto'):existClass);
     let dot='';
@@ -494,6 +519,12 @@ function buildCalendar(){
       cell.onclick=(()=>{
         const _ds=ds;
         return ()=>{
+          // 既存登録がある日付はタップで詳細表示
+          const _eb=existingByDate[_ds];
+          if(_eb&&!datesSet.has(_ds)){
+            showDateDetail(_ds,_eb);
+            return;
+          }
           if(datesSet.has(_ds)) datesSet.delete(_ds);
           else datesSet.add(_ds);
           buildCalendar();
@@ -690,6 +721,52 @@ async function restart(){
   await loadExisting();
   renderAll();showV('v1');setupBtn();
 }
+let currentDetailDate=null;
+function showDateDetail(ds,eb){
+  currentDetailDate=ds;
+  const d=new Date(ds+'T00:00:00');
+  const days=['日','月','火','水','木','金','土'];
+  document.getElementById('detail-title').textContent=(d.getMonth()+1)+'/'+d.getDate()+'（'+days[d.getDay()]+'）の登録内容';
+  let html='';
+  if(eb['kyoto']){
+    html+=`<div style="background:#E1F5EE;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:4px;">🟢 京都店 · インドアレッスン</div>
+      <div style="font-size:11px;color:#6b8a78;">${eb['kyoto']}コマ登録済み</div>
+    </div>`;
+  }
+  if(eb['fushimi']){
+    html+=`<div style="background:#E3F2FD;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:700;color:#0C447C;margin-bottom:4px;">🔵 伏見店 · インドアレッスン</div>
+      <div style="font-size:11px;color:#6b8a78;">${eb['fushimi']}コマ登録済み</div>
+    </div>`;
+  }
+  if(eb['round_kyoto']){
+    html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 京都店 · ラウンド参加可能日</div>
+    </div>`;
+  }
+  if(eb['round_fushimi']){
+    html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+      <div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 伏見店 · ラウンド参加可能日</div>
+    </div>`;
+  }
+  document.getElementById('detail-content').innerHTML=html;
+  document.getElementById('date-detail-overlay').style.display='flex';
+}
+function closeDateDetail(){
+  document.getElementById('date-detail-overlay').style.display='none';
+  currentDetailDate=null;
+}
+function selectDateFromDetail(ds){
+  if(!ds) return;
+  datesSet.add(ds);
+  buildCalendar();
+  const cnt=datesSet.size;
+  document.getElementById('date-count').textContent=cnt+'日選択中';
+  const btn=document.getElementById('next-btn');
+  if(cnt>0){btn.textContent=cnt+'日選択 → 次へ →';btn.disabled=false;btn.style.opacity='1';}
+}
+
 function showMsg(text,type){
   const el=document.getElementById('msg-global');el.textContent=text;el.className='msg '+type;
   if(type==='success') setTimeout(()=>{el.className='msg';el.textContent='';},3000);
