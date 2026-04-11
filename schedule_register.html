@@ -166,6 +166,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="type-desc">日にち単位で参加可能日を登録</div>
         </div>
       </div>
+      <div class="type-card" id="tc-both" onclick="pickType('both')" style="margin-top:12px;border:2px solid var(--border);border-radius:14px;padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;display:flex;align-items:center;justify-content:center;gap:12px;">
+        <span style="font-size:28px;">🏌⛳</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--gd);">インドア＋ラウンド 両方</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">同じ日にどちらも受付・先に入った予約を優先</div>
+        </div>
+      </div>
     </div>
   </div>
   <div id="v2" style="display:none;">
@@ -310,17 +317,22 @@ async function loadExisting(){
     });
   }catch(e){console.error(e);}
 }
-function getSteps(){return typeVal==='indoor'?[1,2,3,'4i',5,6]:[1,2,3,'4r',5,6];}
+function getSteps(){
+  if(typeVal==='indoor') return [1,2,3,'4i',5,6];
+  if(typeVal==='both')   return [1,2,3,'4i','4r',5,6];
+  return [1,2,3,'4r',5,6];
+}
 function renderAll(){renderStepBar();renderSummary();}
 function renderStepBar(){
-  const steps=getSteps();const labels={1:'種別',2:'店舗',3:'日にち','4i':'時間','4r':'設定',5:'確認',6:'完了'};
+  const steps=getSteps();
+  const labels={1:'種別',2:'店舗',3:'日にち','4i':'時間','4r':'設定',5:'確認',6:'完了'};
   const bar=document.getElementById('step-bar');bar.innerHTML='';const ci=steps.indexOf(curStep);
   steps.forEach((s,i)=>{const item=document.createElement('div');item.className='step-item'+(i<ci?' done':i===ci?' active':'');const circle=document.createElement('div');circle.className='step-circle'+(i<ci?' done':i===ci?' active':'');circle.textContent=i<ci?'✓':(i+1);const label=document.createElement('div');label.className='step-label'+(i<ci?' done':i===ci?' active':'');label.textContent=labels[s]||'';item.appendChild(circle);item.appendChild(label);bar.appendChild(item);});
 }
 function renderSummary(){
   const bar=document.getElementById('summary-bar');if(curStep<=1){bar.style.display='none';return;}bar.style.display='flex';
   let h='<span style="font-size:11px;color:var(--muted);font-weight:700;">選択中：</span>';
-  if(typeVal)h+=`<span class="s-chip">${typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド'}</span>`;
+  if(typeVal)h+=`<span class="s-chip">${typeVal==='indoor'?'🏌 インドアレッスン':typeVal==='both'?'🏌⛳ 両方受付':'⛳ ラウンド'}</span>`;
   if(storeVal)h+=`<span class="s-chip${storeVal==='fushimi'?' blue':''}">${storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗'}</span>`;
   if(datesSet.size>0)h+=`<span class="s-chip gold">📅 ${datesSet.size}日選択</span>`;
   bar.innerHTML=h;
@@ -353,7 +365,18 @@ function setupBtn(){
 }
 function handleNext(){const steps=getSteps();const idx=steps.indexOf(curStep);if(curStep===5){saveSchedule();return;}if(idx>=0&&idx<steps.length-1)goStep(steps[idx+1]);}
 function goBack(){const steps=getSteps();const idx=steps.indexOf(curStep);if(idx>0)goStep(steps[idx-1]);}
-function pickType(t){typeVal=t;document.getElementById('tc-indoor').classList.toggle('sel',t==='indoor');document.getElementById('tc-round').classList.toggle('sel',t==='round');const btn=document.getElementById('next-btn');btn.textContent='「'+(t==='indoor'?'インドアレッスン':'ラウンド')+'」で次へ →';btn.disabled=false;btn.style.opacity='1';}
+function pickType(t){
+  typeVal=t;
+  document.getElementById('tc-indoor').classList.toggle('sel',t==='indoor');
+  document.getElementById('tc-round').classList.toggle('sel',t==='round');
+  document.getElementById('tc-both').classList.toggle('sel',t==='both');
+  if(t==='both') document.getElementById('tc-both').style.borderColor='var(--g)',document.getElementById('tc-both').style.background='var(--gl)';
+  else document.getElementById('tc-both').style.borderColor='var(--border)',document.getElementById('tc-both').style.background='#fff';
+  const labels={indoor:'インドアレッスン',round:'ラウンド',both:'インドア＋ラウンド両方'};
+  const btn=document.getElementById('next-btn');
+  btn.textContent='「'+labels[t]+'」で次へ →';
+  btn.disabled=false;btn.style.opacity='1';
+}
 function pickStore(s){storeVal=s;['kyoto','fushimi','both'].forEach(k=>{document.getElementById('sc-'+k).className='store-card'+(k===s?' sel-'+k:'');const ck=document.getElementById('ck-'+k);ck.className='store-check'+(k===s?(k==='fushimi'?' ck-b':' ck-g'):'');ck.textContent=k===s?'✓':'';});const btn=document.getElementById('next-btn');btn.textContent='「'+storeNames[s]+'」で次へ →';btn.disabled=false;btn.style.opacity='1';}
 function buildCalendar(){
   const year=calMonth.getFullYear(),month=calMonth.getMonth();
@@ -410,16 +433,28 @@ function getHoursFor(r){if(r==='morning')return[8,9,10,11];if(r==='afternoon')re
 function applyBulk(applyStore){if(bulkSet.size===0){showMsg('時間帯を選んでから押してください','error');return;}datesSet.forEach(ds=>{bulkSet.forEach(r=>getHoursFor(r).forEach(h=>{const key=ds+'_'+h;if(existingData[key]&&existingData[key].status==='booked')return;hoursMap.set(key,applyStore);}));});buildTimeGrid();showMsg((applyStore==='kyoto'?'🟢 京都店':applyStore==='fushimi'?'🔵 伏見店':'✅ 両店舗')+'に一括適用しました！','success');}
 function clearTime(){datesSet.forEach(ds=>{for(let h=6;h<=22;h++)hoursMap.delete(ds+'_'+h);});buildTimeGrid();}
 function buildConfirm(){
-  const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';const tl=typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド';
+  const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
+  const tl=typeVal==='indoor'?'🏌 インドアレッスン':typeVal==='both'?'🏌⛳ インドア＋ラウンド両方受付':'⛳ ラウンド';
   let h=`<div class="confirm-row"><span class="confirm-label">種別</span><span class="confirm-val">${tl}</span></div><div class="confirm-row"><span class="confirm-label">店舗</span><span class="confirm-val">${sl}</span></div><div style="margin-top:8px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;">選択した日付（${datesSet.size}日）</div><div class="confirm-dates">`;
   [...datesSet].sort().forEach(ds=>{const d=new Date(ds+'T00:00:00');h+=`<span class="confirm-date-chip">${d.getMonth()+1}/${d.getDate()}</span>`;});h+='</div></div>';
-  if(typeVal==='indoor'){let ky=0,fu=0,bo=0;hoursMap.forEach(v=>{if(v==='kyoto')ky++;else if(v==='fushimi')fu++;else bo++;});h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">登録コマ数</span><span class="confirm-val" style="font-size:16px;color:var(--g);">${hoursMap.size}コマ</span></div>`;if(storeVal==='both')h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🟢 京都店のみ</span><span class="confirm-val">${ky}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🔵 伏見店のみ</span><span class="confirm-val">${fu}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">✅ 両店舗</span><span class="confirm-val">${bo}コマ</span></div>`;}
-  else{const bl={all_day:'🚫 一日中レッスン不可',time_range:'🕐 時間帯指定ブロック',none:'✅ レッスンもそのまま'};h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">レッスン受付</span><span class="confirm-val">${bl[blockVal]}</span></div>`;if(blockVal==='time_range'){const bf=document.getElementById('block-from').value;const bt=document.getElementById('block-to').value;h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">ブロック時間</span><span class="confirm-val">${bf}:00〜${bt}:00</span></div>`;}}
+  if(typeVal==='indoor'||typeVal==='both'){
+    let ky=0,fu=0,bo=0;hoursMap.forEach(v=>{if(v==='kyoto')ky++;else if(v==='fushimi')fu++;else bo++;});
+    h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">インドア登録コマ数</span><span class="confirm-val" style="font-size:16px;color:var(--g);">${hoursMap.size}コマ</span></div>`;
+    if(storeVal==='both')h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🟢 京都店のみ</span><span class="confirm-val">${ky}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🔵 伏見店のみ</span><span class="confirm-val">${fu}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">✅ 両店舗</span><span class="confirm-val">${bo}コマ</span></div>`;
+  }
+  if(typeVal==='round'||typeVal==='both'){
+    const bl={all_day:'🚫 一日中レッスン不可',time_range:'🕐 時間帯指定ブロック',none:'✅ レッスンもそのまま'};
+    h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">ラウンド登録日数</span><span class="confirm-val" style="font-size:16px;color:var(--gold);">${datesSet.size}日</span></div>`;
+    h+=`<div class="confirm-row"><span class="confirm-label">レッスン受付</span><span class="confirm-val">${bl[blockVal]||'✅ 先着優先'}</span></div>`;
+  }
+  if(typeVal==='both'){
+    h+=`<div style="background:#E1F5EE;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--gd);line-height:1.7;">🏆 先着優先ルール：インドアまたはラウンドのどちらかに予約が入った時点で、同じ時間帯のもう一方の枠は自動的にキャンセルされます。</div>`;
+  }
   h+=`<div class="confirm-warn">⚠️ 登録後の修正はカレンダー画面から行えます。内容をよく確認してください。</div>`;
   document.getElementById('confirm-content').innerHTML=h;
   const aw=document.getElementById('agree-wrap');if(aw)aw.style.display='block';
   ['agree1','agree2','agree3'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
-  const dw=document.getElementById('agree-dress-wrap');if(dw)dw.style.display=typeVal==='round'?'flex':'none';
+  const dw=document.getElementById('agree-dress-wrap');if(dw)dw.style.display=(typeVal==='round'||typeVal==='both')?'flex':'none';
   document.getElementById('next-btn').disabled=true;document.getElementById('next-btn').style.opacity='0.4';
 }
 function checkAgree(){const a1=document.getElementById('agree1').checked;const a2=document.getElementById('agree2').checked;const a3wrap=document.getElementById('agree-dress-wrap');const a3=a3wrap&&a3wrap.style.display!=='none'?document.getElementById('agree3').checked:true;const ok=a1&&a2&&a3;const btn=document.getElementById('next-btn');btn.disabled=!ok;btn.style.opacity=ok?'1':'0.4';}
@@ -427,11 +462,26 @@ async function saveSchedule(){
   if(saving)return;saving=true;const btn=document.getElementById('next-btn');btn.textContent='保存中...';btn.disabled=true;
   try{
     let rows=[];
-    if(typeVal==='indoor'){await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','indoor').eq('status','available').in('slot_date',[...datesSet]);hoursMap.forEach((store,key)=>{const parts=key.split('_');const date=parts[0];const hour=parseInt(parts[1]);const stores=store==='both'?['kyoto','fushimi']:[store];stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'indoor',slot_date:date,slot_hour:hour,status:'available',store_id:s}));});}
-    else{await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','round').eq('status','available').in('slot_date',[...datesSet]);const bf=parseInt(document.getElementById('block-from')?.value||8);const bt=parseInt(document.getElementById('block-to')?.value||17);const stores=storeVal==='both'?['kyoto','fushimi']:[storeVal];datesSet.forEach(ds=>stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:ds,slot_hour:-1,status:'available',store_id:s,block_type:blockVal,block_from:blockVal==='time_range'?bf:null,block_to:blockVal==='time_range'?bt:null})));}
+    const stores=storeVal==='both'?['kyoto','fushimi']:[storeVal];
+    // インドアレッスンの登録
+    if(typeVal==='indoor'||typeVal==='both'){
+      await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','indoor').eq('status','available').in('slot_date',[...datesSet]);
+      hoursMap.forEach((store,key)=>{const parts=key.split('_');const date=parts[0];const hour=parseInt(parts[1]);const ss=store==='both'?['kyoto','fushimi']:[store];ss.forEach(s=>rows.push({coach_id:coachId,lesson_type:'indoor',slot_date:date,slot_hour:hour,status:'available',store_id:s}));});
+    }
+    // ラウンドの登録
+    if(typeVal==='round'||typeVal==='both'){
+      await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','round').eq('status','available').in('slot_date',[...datesSet]);
+      const bf=parseInt(document.getElementById('block-from')?.value||8);
+      const bt=parseInt(document.getElementById('block-to')?.value||17);
+      // bothの場合はblock_type=noneで先着優先
+      const btype=typeVal==='both'?'none':blockVal;
+      datesSet.forEach(ds=>stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:ds,slot_hour:-1,status:'available',store_id:s,block_type:btype,block_from:btype==='time_range'?bf:null,block_to:btype==='time_range'?bt:null})));
+    }
     if(rows.length>0){const {error}=await sb.from('schedules').insert(rows);if(error){showMsg('保存に失敗しました：'+error.message,'error');saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;return;}}
-    const cnt=typeVal==='indoor'?hoursMap.size:datesSet.size;const unit=typeVal==='indoor'?'コマ':'日';const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
-    document.getElementById('complete-detail').innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">種別</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド'}</div><div style="font-size:12px;color:var(--muted);margin-bottom:2px;">店舗</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${sl}</div><div style="font-size:12px;color:var(--muted);margin-bottom:2px;">登録数</div><div style="font-size:20px;font-weight:900;color:var(--g);">${cnt}${unit}</div>`;
+    const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
+    const typeLabel=typeVal==='indoor'?'🏌 インドアレッスン':typeVal==='both'?'🏌⛳ インドア＋ラウンド両方':'⛳ ラウンド';
+    const cnt=typeVal==='indoor'?hoursMap.size:typeVal==='both'?(hoursMap.size+datesSet.size):datesSet.size;
+    document.getElementById('complete-detail').innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">種別</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${typeLabel}</div><div style="font-size:12px;color:var(--muted);margin-bottom:2px;">店舗</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${sl}</div>${typeVal==='both'?`<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">インドア</div><div style="font-size:18px;font-weight:900;color:var(--g);margin-bottom:8px;">${hoursMap.size}コマ</div><div style="font-size:12px;color:var(--muted);margin-bottom:2px;">ラウンド</div><div style="font-size:18px;font-weight:900;color:var(--gold);">${datesSet.size}日</div>`:`<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">登録数</div><div style="font-size:20px;font-weight:900;color:var(--g);">${cnt}${typeVal==='indoor'?'コマ':'日'}</div>`}`;
     goStep(6);
   }catch(e){showMsg('エラーが発生しました','error');console.error(e);saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;}
 }
