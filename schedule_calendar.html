@@ -47,11 +47,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .cal-date{font-size:11px;font-weight:700;color:var(--text);}
 .cal-cell.today .cal-date{color:var(--g);}
 .cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .dot-kyoto-indoor{background:var(--kyoto);}
 .dot-fushimi-indoor{background:var(--fushimi);}
-.dot-kyoto-round{background:var(--gold);}
-.dot-fushimi-round{background:#9333ea;}
+.dot-kyoto-round{color:var(--gold);font-size:10px;line-height:1;}
+.dot-fushimi-round{color:#9333ea;font-size:10px;line-height:1;}
 .dot-booked{background:var(--red);}
 
 /* 詳細ポップアップ */
@@ -110,8 +110,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="legend">
       <div class="legend-item"><div class="legend-dot" style="background:var(--kyoto)"></div>京都店・インドア</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--fushimi)"></div>伏見店・インドア</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>京都店・ラウンド</div>
-      <div class="legend-item"><div class="legend-dot" style="background:#9333ea"></div>伏見店・ラウンド</div>
+      <div class="legend-item"><span style="font-size:12px;">⭐</span>京都店・ラウンド</div>
+      <div class="legend-item"><span style="font-size:12px;">💜</span>伏見店・ラウンド</div>
       <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>予約済み</div>
     </div>
 
@@ -189,9 +189,15 @@ function buildCalendar(){
     if(rows.length>0){
       const dotsEl=document.createElement('div');dotsEl.className='cal-dots';
       rows.forEach(row=>{
-        const dot=document.createElement('div');
-        dot.className='dot '+getDotClass(row);
-        dotsEl.appendChild(dot);
+        if(isRound(row)){
+          const star=document.createElement('span');
+          star.style.fontSize='10px';star.style.lineHeight='1';
+          star.textContent=getRoundStar(row);
+          dotsEl.appendChild(star);
+        } else {
+          const dotClass=getDotClass(row);
+          if(dotClass){const dot=document.createElement('div');dot.className=dotClass;dotsEl.appendChild(dot);}
+        }
       });
       cell.appendChild(dotsEl);
     }
@@ -201,12 +207,14 @@ function buildCalendar(){
 }
 
 function getDotClass(row){
-  if(row.status==='booked')return 'dot-booked';
-  if(row.lesson_type==='indoor'&&row.store_id==='kyoto')return 'dot-kyoto-indoor';
-  if(row.lesson_type==='indoor'&&row.store_id==='fushimi')return 'dot-fushimi-indoor';
-  if(row.lesson_type==='round'&&row.store_id==='kyoto')return 'dot-kyoto-round';
-  if(row.lesson_type==='round'&&row.store_id==='fushimi')return 'dot-fushimi-round';
-  return 'dot-kyoto-indoor';
+  if(row.status==='booked')return 'dot dot-booked';
+  if(row.lesson_type==='indoor'&&row.store_id==='kyoto')return 'dot dot-kyoto-indoor';
+  if(row.lesson_type==='indoor'&&row.store_id==='fushimi')return 'dot dot-fushimi-indoor';
+  return null; // ラウンドは星マーク
+}
+function isRound(row){return row.lesson_type==='round';}
+function getRoundStar(row){
+  return row.store_id==='kyoto'?'⭐':'💜';
 }
 
 function getTypeLabel(row){
