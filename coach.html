@@ -153,14 +153,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
 /* ===== スケジュール ===== */
 .schedule-mode-btns{display:flex;gap:6px;margin-bottom:12px;}
-.sch-tab{padding:6px 14px;border-radius:16px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);}
-.sch-tab.active{background:var(--g);color:#fff;border-color:var(--g);}
-.sch-item{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
-.sch-item-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-.sch-item-info{flex:1;}
-.sch-item-date{font-size:13px;font-weight:700;color:var(--gd);}
-.sch-item-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-.sch-item-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
 .mode-btn{flex:1;padding:8px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;}
 .mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
 .week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
@@ -395,7 +387,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
       <div class="form-group"><label class="form-label">得意分野</label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
-      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
 
     <div class="card">
@@ -447,6 +438,17 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <!-- インドアレッスン -->
       <div class="price-section">
         <div class="price-section-title">🏌 インドアゴルフレッスン</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:#fff8e1;border:1px solid var(--gold);border-radius:10px;">
+          <span style="font-size:12px;color:var(--text);flex:1;">最低受付時間</span>
+          <select id="min-lesson" class="price-input" style="width:80px" onchange="applyMinLesson()">
+            <option value="0">制限なし</option>
+            <option value="30">30分〜</option>
+            <option value="50" selected>50分〜</option>
+            <option value="90">90分〜</option>
+            <option value="120">120分〜</option>
+          </select>
+          <span style="font-size:11px;color:var(--muted);">から受付</span>
+        </div>
         <div id="pr-30">
           <div class="price-row-full">
             <span class="price-label">30分</span>
@@ -521,55 +523,53 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </div>
       </div>
 
-      <button class="save-btn" id="price-save-btn" onclick="savePrices()">料金を保存</button>
-      <button id="price-edit-hint" style="display:none;width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;" onclick="enablePriceEdit()">✏️ 料金を変更する</button>
+      <button class="save-btn" onclick="savePrices()">料金を保存</button>
     </div>
   </div>
-
-  <!-- スケジュール -->
   <div class="page" id="page-schedule">
-    <!-- 登録ボタン -->
-    <div style="background:linear-gradient(135deg,#085041,#1D9E75);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:4px;">スケジュールを登録する</div>
-        <div style="color:rgba(255,255,255,0.7);font-size:11px;">空き時間・ラウンド参加可能日を登録</div>
-      </div>
-      <a href="schedule_register.html" style="background:#fff;color:var(--gd);font-size:13px;font-weight:700;padding:10px 18px;border-radius:10px;text-decoration:none;white-space:nowrap;">＋ 登録する</a>
-    </div>
-
-    <!-- 登録済みスケジュール一覧 -->
     <div class="card">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="card-title" style="margin-bottom:0;">登録済みスケジュール</div>
-        <a href="schedule_calendar.html" style="font-size:11px;color:var(--blue2);font-weight:700;text-decoration:none;">📅 カレンダーで見る</a>
+      <div class="card-title">スケジュール管理</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
+      <div class="schedule-mode-btns">
+        <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
+        <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
       </div>
 
-      <!-- 凡例 -->
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:8px;background:#f7faf8;border-radius:8px;">
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
-          <div style="width:12px;height:12px;border-radius:2px;background:var(--gl);border:1px solid var(--g);"></div>京都店
+      <!-- 週間ビュー -->
+      <div id="view-week">
+        <div class="week-nav">
+          <button class="week-nav-btn" onclick="moveWeek(-1)">‹</button>
+          <div class="week-nav-label" id="week-label"></div>
+          <button class="week-nav-btn" onclick="moveWeek(1)">›</button>
         </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
-          <div style="width:12px;height:12px;border-radius:2px;background:#E3F2FD;border:1px solid #1976D2;"></div>伏見店
+        <div id="week-wrap" style="touch-action:pan-y;">
+          <div class="week-header-row" id="week-header"></div>
+          <div style="max-height:380px;overflow-y:auto;">
+            <div class="week-grid" id="week-grid"></div>
+          </div>
         </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
-          <div style="width:12px;height:12px;border-radius:2px;background:#fff3cd;border:1px solid var(--gold);"></div>予約済み
-        </div>
-        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
-          <div style="width:12px;height:12px;border-radius:2px;background:#f0f0f0;border:1px solid #ccc;"></div>キャンセル
+        <div class="schedule-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb"></div>予約済み</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
         </div>
       </div>
 
-      <!-- タブ：直近 / インドア / ラウンド -->
-      <div style="display:flex;gap:6px;margin-bottom:12px;">
-        <button class="sch-tab active" id="stab-upcoming" onclick="switchSchTab('upcoming',this)">直近の予定</button>
-        <button class="sch-tab" id="stab-indoor" onclick="switchSchTab('indoor',this)">インドア</button>
-        <button class="sch-tab" id="stab-round" onclick="switchSchTab('round',this)">ラウンド</button>
+      <!-- 月間ビュー -->
+      <div id="view-month" style="display:none">
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
+          <div class="month-nav-label" id="month-label"></div>
+          <button class="month-nav-btn" onclick="moveMonth(1)">›</button>
+        </div>
+        <div class="month-grid" id="month-header"></div>
+        <div class="month-grid" id="month-grid" style="margin-top:4px;"></div>
+        <div class="schedule-legend" style="margin-top:10px;">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き設定済み</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#fff3cd;border:1px solid var(--gold)"></div>予約あり</div>
+        </div>
       </div>
-
-      <div id="sch-list-wrap">
-        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">読み込み中...</div>
-      </div>
+      <button class="save-btn" style="margin-top:12px" onclick="saveSchedule()">スケジュールを保存</button>
     </div>
   </div>
 
@@ -735,141 +735,40 @@ const stores={
 };
 
 function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
-function enablePriceEdit(){
-  document.querySelectorAll('.price-input').forEach(el=>el.disabled=false);
-  document.getElementById('price-save-btn').style.display='block';
-  document.getElementById('price-edit-hint').style.display='none';
-  showMsg('料金を編集できます','success');
-}
-function savePrices(){showMsg('料金設定を保存しました！','success');}
 function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
 
-/* ===== スケジュールタブ新機能 ===== */
-let schTabMode='upcoming';
-let schData=[];
-
-function switchSchTab(mode, btn){
-  schTabMode=mode;
-  document.querySelectorAll('.sch-tab').forEach(t=>t.classList.remove('active'));
-  btn.classList.add('active');
-  renderSchList();
+/* 料金保存（localStorageに保存してタブ移動後も消えない） */
+function savePrices(){
+  if(!currentStore){showMsg('先に店舗を選択してください','error');return;}
+  const priceData={
+    p30:document.getElementById('price-30').value,
+    p50:document.getElementById('price-50').value,
+    p90:document.getElementById('price-90').value,
+    p120:document.getElementById('price-120').value,
+    pRound:document.getElementById('price-round').value,
+    pAccompany:document.getElementById('price-accompany').value,
+    pComp:document.getElementById('price-comp').value,
+    minLesson:document.getElementById('min-lesson').value
+  };
+  localStorage.setItem('gc_prices_'+currentStore, JSON.stringify(priceData));
+  showMsg('料金設定を保存しました！','success');
 }
 
-async function loadScheduleList(){
-  const {data:{session}}=await sb.auth.getSession();
-  if(!session) return;
-  const coachId=session.user.id;
-  try{
-    const today=new Date();
-    const todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
-    const {data}=await sb.from('schedules')
-      .select('*')
-      .eq('coach_id',coachId)
-      .gte('slot_date',todayStr)
-      .order('slot_date',{ascending:true})
-      .order('slot_hour',{ascending:true})
-      .limit(100);
-    schData=data||[];
-    renderSchList();
-  }catch(e){console.error(e);}
-}
-
-function renderSchList(){
-  const wrap=document.getElementById('sch-list-wrap');
-  if(!wrap) return;
-  let items=schData;
-  if(schTabMode==='indoor') items=schData.filter(r=>r.lesson_type==='indoor');
-  else if(schTabMode==='round') items=schData.filter(r=>r.lesson_type==='round');
-  else{
-    // 直近：今日から7日間
-    const limit=new Date();limit.setDate(limit.getDate()+7);
-    const limitStr=limit.getFullYear()+'-'+String(limit.getMonth()+1).padStart(2,'0')+'-'+String(limit.getDate()).padStart(2,'0');
-    items=schData.filter(r=>r.slot_date<=limitStr);
-  }
-
-  if(items.length===0){
-    wrap.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
-      ${schTabMode==='upcoming'?'直近7日間の登録はありません':'登録済みのスケジュールはありません'}
-      <br><a href="schedule_register.html" style="color:var(--g);font-weight:700;display:block;margin-top:8px;">＋ スケジュールを登録する</a>
-    </div>`;
-    return;
-  }
-
-  // 日付でグループ化
-  const grouped={};
-  items.forEach(r=>{
-    if(!grouped[r.slot_date]) grouped[r.slot_date]=[];
-    grouped[r.slot_date].push(r);
-  });
-
-  let html='';
-  const days=['日','月','火','水','木','金','土'];
-  Object.keys(grouped).sort().forEach(ds=>{
-    const d=new Date(ds+'T00:00:00');
-    const dayLabel=(d.getMonth()+1)+'/'+d.getDate()+'（'+days[d.getDay()]+'）';
-    html+=`<div style="font-size:11px;font-weight:700;color:var(--muted);margin:10px 0 6px;padding-left:4px;">${dayLabel}</div>`;
-    // ラウンドを先に表示
-    const rounds=grouped[ds].filter(r=>r.lesson_type==='round');
-    const indoors=grouped[ds].filter(r=>r.lesson_type==='indoor');
-    rounds.forEach(r=>{
-      const dotColor=r.store_id==='kyoto'?'var(--g)':'#1976D2';
-      const storeName=r.store_id==='kyoto'?'🟢 京都店':'🔵 伏見店';
-      const statusBg=r.status==='booked'?'#fff3cd':r.status==='cancelled'?'#f0f0f0':'var(--gl)';
-      const statusColor=r.status==='booked'?'#5a3a00':r.status==='cancelled'?'#999':'var(--gd)';
-      const statusLabel=r.status==='booked'?'予約済':r.status==='cancelled'?'キャンセル':'空き';
-      html+=`<div class="sch-item">
-        <div class="sch-item-dot" style="background:${dotColor};"></div>
-        <div class="sch-item-info">
-          <div class="sch-item-date">⛳ ラウンド参加可能日</div>
-          <div class="sch-item-sub">${storeName}</div>
-        </div>
-        <span class="sch-item-badge" style="background:${statusBg};color:${statusColor};">${statusLabel}</span>
-      </div>`;
-    });
-    // インドアは時間帯をまとめて表示
-    if(indoors.length>0){
-      const kyotoHours=indoors.filter(r=>r.store_id==='kyoto'&&r.status==='available').map(r=>r.slot_hour).sort((a,b)=>a-b);
-      const fushimiHours=indoors.filter(r=>r.store_id==='fushimi'&&r.status==='available').map(r=>r.slot_hour).sort((a,b)=>a-b);
-      const bookedCount=indoors.filter(r=>r.status==='booked').length;
-      if(kyotoHours.length>0){
-        const timeRange=kyotoHours[0]+':00〜'+(kyotoHours[kyotoHours.length-1]+1)+':00';
-        html+=`<div class="sch-item">
-          <div class="sch-item-dot" style="background:var(--g);"></div>
-          <div class="sch-item-info">
-            <div class="sch-item-date">🏌 インドアレッスン ${timeRange}</div>
-            <div class="sch-item-sub">🟢 京都店 · ${kyotoHours.length}コマ空き</div>
-          </div>
-          <span class="sch-item-badge" style="background:var(--gl);color:var(--gd);">空き</span>
-        </div>`;
-      }
-      if(fushimiHours.length>0){
-        const timeRange=fushimiHours[0]+':00〜'+(fushimiHours[fushimiHours.length-1]+1)+':00';
-        html+=`<div class="sch-item">
-          <div class="sch-item-dot" style="background:#1976D2;"></div>
-          <div class="sch-item-info">
-            <div class="sch-item-date">🏌 インドアレッスン ${timeRange}</div>
-            <div class="sch-item-sub">🔵 伏見店 · ${fushimiHours.length}コマ空き</div>
-          </div>
-          <span class="sch-item-badge" style="background:#E3F2FD;color:#1565C0;">空き</span>
-        </div>`;
-      }
-      if(bookedCount>0){
-        html+=`<div class="sch-item">
-          <div class="sch-item-dot" style="background:var(--gold);"></div>
-          <div class="sch-item-info">
-            <div class="sch-item-date">🏌 予約確定済み</div>
-            <div class="sch-item-sub">${bookedCount}コマ予約あり</div>
-          </div>
-          <span class="sch-item-badge" style="background:#fff3cd;color:#5a3a00;">予約済</span>
-        </div>`;
-      }
-    }
-  });
-
-  html+=`<div style="text-align:center;margin-top:12px;">
-    <a href="schedule_register.html" style="color:var(--g);font-size:12px;font-weight:700;text-decoration:none;">＋ スケジュールをさらに登録する</a>
-  </div>`;
-  wrap.innerHTML=html;
+/* 料金読み込み（店舗選択時・タブ切替時） */
+function loadPrices(){
+  if(!currentStore)return;
+  const saved=localStorage.getItem('gc_prices_'+currentStore);
+  if(!saved)return;
+  const d=JSON.parse(saved);
+  if(d.p30){document.getElementById('price-30').value=d.p30;calcTake('30',d.p30,'indoor');}
+  if(d.p50){document.getElementById('price-50').value=d.p50;calcTake('50',d.p50,'indoor');}
+  if(d.p90){document.getElementById('price-90').value=d.p90;calcTake('90',d.p90,'indoor');}
+  if(d.p120){document.getElementById('price-120').value=d.p120;calcTake('120',d.p120,'indoor');}
+  if(d.pRound){document.getElementById('price-round').value=d.pRound;calcTake('round',d.pRound,'round');}
+  if(d.pAccompany){document.getElementById('price-accompany').value=d.pAccompany;calcTake('accompany',d.pAccompany,'accompany');}
+  if(d.pComp){document.getElementById('price-comp').value=d.pComp;calcTake('comp',d.pComp,'comp');}
+  if(d.minLesson)document.getElementById('min-lesson').value=d.minLesson;
+  applyMinLesson();
 }
 let currentCoachId=null;
 let currentStore=null;
@@ -901,12 +800,6 @@ function buildStoreOptions(){
     div.innerHTML=`<div class="store-option-name">${s.name}</div><div class="store-option-addr">📍 ${s.addr}</div><div class="store-option-fee">インドア ${s.fees.indoor}% ／ ラウンド系 ${s.fees.round}% ／ 本部 ${s.hqFee}%</div>`;
     div.onclick=()=>selectStore(key);wrap.appendChild(div);
   });
-  // 店舗追加ボタン
-  const addBtn=document.createElement('button');
-  addBtn.style.cssText='width:100%;max-width:340px;padding:14px;background:none;border:1px dashed rgba(255,255,255,0.3);border-radius:16px;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13px;cursor:pointer;margin-top:4px;';
-  addBtn.textContent='＋ 新しい店舗を追加する';
-  addBtn.onclick=()=>alert('店舗追加機能は準備中です。店舗管理者にお問い合わせください。');
-  wrap.appendChild(addBtn);
 }
 
 /* ===== スケジュール・プロフィールは店舗間共有 ===== */
@@ -933,9 +826,8 @@ function selectStore(key){
     <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
-  // 料金は店舗ごとに再計算
-  ['30','50','90','120'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,'indoor');});
-  ['round','accompany','comp'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,id);});
+  // 保存済み料金を読み込む
+  loadPrices();
 }
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
 
@@ -961,12 +853,22 @@ function calcTake(id,val,type){
   `;
 }
 
+/* ===== 最低レッスン時間適用 ===== */
+function applyMinLesson(){
+  const min=parseInt(document.getElementById('min-lesson')?.value||'0');
+  const timeMap={30:30,50:50,90:90,120:120};
+  Object.keys(timeMap).forEach(t=>{
+    const row=document.getElementById('pr-'+t);
+    if(row)row.style.display=(timeMap[t]<min)?'none':'block';
+  });
+}
+
 /* ===== タブ ===== */
 function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
-  if(tab==='schedule') loadScheduleList();
+  if(tab==='price')loadPrices();
 }
 function switchBoard(type,btn){
   document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -1150,22 +1052,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#1a2e24;padding
 .logo-sub{font-size:10px;letter-spacing:0.2em;color:#6b8a78;margin-top:4px;}
 .doc-title{text-align:right;}
 .doc-title h1{font-size:18px;font-weight:700;color:#085041;}
-.doc-title p{font-size:12px;color:#333;margin-top:4px;}
+.doc-title p{font-size:12px;color:#6b8a78;margin-top:4px;}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
 .info-box{background:#f0f7f4;border-radius:10px;padding:14px 16px;}
-.info-box-label{font-size:10px;font-weight:700;color:#333;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;font-weight:700;}
+.info-box-label{font-size:10px;font-weight:700;color:#6b8a78;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
 .info-box-value{font-size:14px;font-weight:700;color:#085041;}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
 .summary-card{border-radius:12px;padding:16px;color:#fff;text-align:center;}
 .summary-card.green{background:linear-gradient(135deg,#085041,#1D9E75);}
 .summary-card.gold{background:linear-gradient(135deg,#856404,#BA7517);}
 .summary-amount{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;}
-.summary-label{font-size:11px;color:rgba(255,255,255,0.95);margin-top:4px;font-weight:700;}
+.summary-label{font-size:11px;color:rgba(255,255,255,0.8);margin-top:4px;}
 table{width:100%;border-collapse:collapse;margin-bottom:20px;}
 thead tr{background:#085041;color:#fff;}
-thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;color:#fff;}
+thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;}
 tbody tr:nth-child(even){background:#f7faf8;}
-tbody td{padding:10px 12px;font-size:12px;color:#111;border-bottom:1px solid #e0ece6;}
+tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;}
 .indoor{background:#E1F5EE;color:#085041;}
 .round{background:#fff3cd;color:#856404;}
@@ -1176,10 +1078,10 @@ tbody td{padding:10px 12px;font-size:12px;color:#111;border-bottom:1px solid #e0
 .amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#085041;}
 .fee-box{background:#f7faf8;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
 .fee-box-title{font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;}
-.fee-row{display:flex;justify-content:space-between;font-size:12px;color:#222;padding:4px 0;border-bottom:1px solid #e0ece6;}
+.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;}
 .fee-row:last-child{border:none;font-weight:700;color:#085041;font-size:14px;padding-top:8px;}
 .fee-minus{color:#E24B4A;}
-.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#444;text-align:center;line-height:1.8;}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#6b8a78;text-align:center;line-height:1.8;}
 @media print{body{padding:20px;}}
 </style>
 </head>
@@ -1284,12 +1186,29 @@ async function saveProfile(){
   };
   const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
   if(error){showMsg('保存に失敗しました：'+error.message,'error');return;}
+  // localStorageにも保存してタブ移動後も消えないように
+  localStorage.setItem('gc_profile', JSON.stringify(data));
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
   showMsg('プロフィールを保存しました！','success');
 }
 
 async function loadProfile(userId){
+  // まずlocalStorageから即時表示（タブ移動後も消えない）
+  const cached=localStorage.getItem('gc_profile');
+  if(cached){
+    try{
+      const d=JSON.parse(cached);
+      if(d.name){document.getElementById('prof-name').value=d.name;document.getElementById('coach-name').textContent=d.name;document.getElementById('welcome-name').textContent=d.name+'さん、こんにちは！';}
+      if(d.address)document.getElementById('prof-address').value=d.address;
+      if(d.birth)document.getElementById('prof-birth').value=d.birth;
+      if(d.tel)document.getElementById('prof-tel').value=d.tel;
+      if(d.bio)document.getElementById('prof-bio').value=d.bio;
+      if(d.license)document.getElementById('prof-license').value=d.license;
+      if(d.tags)document.getElementById('prof-tags').value=d.tags;
+    }catch(e){}
+  }
+  // Supabaseからも読み込んでlocalStorageを更新
   try{
     const {data,error}=await sb.from('coaches').select('*').eq('user_id',userId).maybeSingle();
     if(error){console.error('プロフィール読み込みエラー:',error);return;}
@@ -1306,6 +1225,8 @@ async function loadProfile(userId){
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
+    // localStorageを最新で更新
+    localStorage.setItem('gc_profile', JSON.stringify(data));
   }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
