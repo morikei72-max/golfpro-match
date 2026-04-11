@@ -1139,16 +1139,23 @@ async function saveProfile(){
 }
 
 async function loadProfile(userId){
-  const {data,error}=await sb.from('coaches').select('*').eq('user_id',userId).single();
-  if(error||!data)return;
-  if(data.name)document.getElementById('prof-name').value=data.name;
-  if(data.address)document.getElementById('prof-address').value=data.address;
-  if(data.birth)document.getElementById('prof-birth').value=data.birth;
-  if(data.tel)document.getElementById('prof-tel').value=data.tel;
-  if(data.bio)document.getElementById('prof-bio').value=data.bio;
-  if(data.license)document.getElementById('prof-license').value=data.license;
-  if(data.tags)document.getElementById('prof-tags').value=data.tags;
-  if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
+  try{
+    const {data,error}=await sb.from('coaches').select('*').eq('user_id',userId).maybeSingle();
+    if(error){console.error('プロフィール読み込みエラー:',error);return;}
+    if(!data)return;
+    if(data.name){
+      document.getElementById('prof-name').value=data.name;
+      document.getElementById('coach-name').textContent=data.name;
+      document.getElementById('welcome-name').textContent=data.name+'さん、こんにちは！';
+    }
+    if(data.address)document.getElementById('prof-address').value=data.address;
+    if(data.birth)document.getElementById('prof-birth').value=data.birth;
+    if(data.tel)document.getElementById('prof-tel').value=data.tel;
+    if(data.bio)document.getElementById('prof-bio').value=data.bio;
+    if(data.license)document.getElementById('prof-license').value=data.license;
+    if(data.tags)document.getElementById('prof-tags').value=data.tags;
+    if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
+  }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
 /* ===== メッセージ ===== */
