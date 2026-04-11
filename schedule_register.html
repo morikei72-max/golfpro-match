@@ -303,6 +303,7 @@ let bulkSet=new Set();
 let calMonth=new Date();
 let existingData={};
 let saving=false;
+let existingByDate={};
 const storeNames={kyoto:'京都店',fushimi:'伏見店',both:'両店舗'};
 function toDS(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 (async()=>{
@@ -318,7 +319,17 @@ async function loadExisting(){
   try{
     const {data}=await sb.from('schedules').select('slot_date,slot_hour,store_id,status,lesson_type').eq('coach_id',coachId);
     existingData={};
-    (data||[]).forEach(r=>{if(r.lesson_type==='indoor') existingData[r.slot_date+'_'+r.slot_hour]={store:r.store_id,status:r.status};});
+    existingByDate={};
+    (data||[]).forEach(r=>{
+      if(r.lesson_type==='indoor'){
+        existingData[r.slot_date+'_'+r.slot_hour]={store:r.store_id,status:r.status};
+        if(!existingByDate[r.slot_date]) existingByDate[r.slot_date]={};
+        existingByDate[r.slot_date][r.store_id]=(existingByDate[r.slot_date][r.store_id]||0)+1;
+      }else if(r.lesson_type==='round'){
+        if(!existingByDate[r.slot_date]) existingByDate[r.slot_date]={};
+        existingByDate[r.slot_date]['round_'+r.store_id]=true;
+      }
+    });
   }catch(e){console.error(e);}
 }
 function getSteps(){
@@ -359,10 +370,25 @@ function showV(id){
 function vId(s){const m={1:'v1',2:'v2',3:'v3','4r':'v4r','4i':'v4i',5:'v5',6:'v6'};return m[s];}
 function goStep(s){
   curStep=s;showV(vId(s));renderAll();setupBtn();
+  // 前に戻るボタン
   let bb=document.getElementById('back-step-btn');
   if(s!==1&&s!==6){
-    if(!bb){bb=document.createElement('button');bb.className='back-step-btn';bb.id='back-step-btn';bb.textContent='← 前に戻る';bb.onclick=goBack;document.getElementById('action-bar').appendChild(bb);}
+    if(!bb){
+      bb=document.createElement('button');bb.className='back-step-btn';bb.id='back-step-btn';
+      bb.textContent='← 前の画面に戻る';bb.onclick=goBack;
+      document.getElementById('action-bar').appendChild(bb);
+    }
   }else{if(bb)bb.remove();}
+  // 最初からやり直すボタン（STEP2以降に表示）
+  let rb=document.getElementById('restart-btn');
+  if(s>=2&&s!==6){
+    if(!rb){
+      rb=document.createElement('button');rb.id='restart-btn';
+      rb.style.cssText='width:100%;padding:8px;background:none;color:var(--red);border:none;font-family:inherit;font-size:12px;cursor:pointer;margin-top:4px;';
+      rb.textContent='🔄 最初からやり直す';rb.onclick=restart;
+      document.getElementById('action-bar').appendChild(rb);
+    }
+  }else{if(rb)rb.remove();}
 }
 function setupBtn(){
   const btn=document.getElementById('next-btn');
@@ -437,7 +463,16 @@ function buildCalendar(){
     cell.className='cal-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSel?' sel-'+(storeVal||'kyoto'):'');
     let dot='';
     if(isSel) dot=storeVal==='kyoto'?'🟢':storeVal==='fushimi'?'🔵':'🟢🔵';
-    cell.innerHTML=`<div class="cal-date">${d}</div>${isSel?`<div class="cal-dot">${dot}</div>`:''}`;
+    // 既存登録の表示
+    let existDot='';
+    const eb=existingByDate[ds];
+    if(eb&&!isSel){
+      if(eb['kyoto']&&eb['fushimi']) existDot='<div class="cal-dot" style="opacity:0.5;">🟢🔵</div>';
+      else if(eb['kyoto']) existDot='<div class="cal-dot" style="opacity:0.5;">🟢</div>';
+      else if(eb['fushimi']) existDot='<div class="cal-dot" style="opacity:0.5;">🔵</div>';
+      if(eb['round_kyoto']||eb['round_fushimi']) existDot+='<div style="font-size:7px;color:var(--gold);">⛳</div>';
+    }
+    cell.innerHTML=`<div class="cal-date">${d}</div>${isSel?`<div class="cal-dot">${dot}</div>`:existDot}`;
     if(!isPast){
       cell.onclick=(()=>{
         const _ds=ds;
@@ -571,8 +606,15 @@ function buildConfirm(){
   }
   h+=`<div class="confirm-warn">⚠️ 登録後の修正はカレンダー画面から行えます。内容をよく確認してください。</div>`;
   document.getElementById('confirm-content').innerHTML=h;
-  document.getElementById('agree1').checked=false;
-  document.getElementById('agree2').checked=false;
+  // 同意チェックを必ず表示・リセット
+  const aw=document.getElementById('agree-wrap');
+  if(aw){aw.style.display='block';}
+  const a1=document.getElementById('agree1');
+  const a2=document.getElementById('agree2');
+  if(a1) a1.checked=false;
+  if(a2) a2.checked=false;
+  const btn=document.getElementById('next-btn');
+  btn.disabled=true;btn.style.opacity='0.4';
 }
 function checkAgree(){
   const ok=document.getElementById('agree1').checked&&document.getElementById('agree2').checked;
@@ -620,6 +662,7 @@ function restart(){
   curStep=1;
   document.getElementById('action-bar').style.display='block';
   const bb=document.getElementById('back-step-btn');if(bb)bb.remove();
+  const rb=document.getElementById('restart-btn');if(rb)rb.remove();
   document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));
   calMonth=new Date();
   renderAll();showV('v1');setupBtn();
