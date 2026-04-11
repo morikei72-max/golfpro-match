@@ -137,6 +137,7 @@ body{
   box-shadow:0 1px 4px rgba(0,0,0,0.2);
 }
 .tab-icon{font-size:15px;display:block;margin-bottom:2px;}
+.tab-icon img{width:32px;height:32px;object-fit:contain;display:block;margin:0 auto;}
 
 /* スクリーン */
 .screen{display:none;}
@@ -287,13 +288,13 @@ input:focus{
 
     <div class="tabs">
       <button class="tab active" onclick="switchType('customer',this)">
-        <span class="tab-icon">👤</span>お客様
+        <span class="tab-icon"><img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/icon_customer.png" alt="お客様"></span>お客様
       </button>
       <button class="tab" onclick="switchType('coach',this)">
-        <span class="tab-icon">🏌</span>コーチ
+        <span class="tab-icon"><img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/icon_coach.png" alt="コーチ"></span>コーチ
       </button>
       <button class="tab" onclick="switchType('store',this)">
-        <span class="tab-icon">🏪</span>店舗
+        <span class="tab-icon"><img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/icon_store.png" alt="店舗"></span>店舗
       </button>
     </div>
 
