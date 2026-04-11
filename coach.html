@@ -725,6 +725,9 @@ const stores={
   fushimi:{name:'Golf Create tozuike 伏見店',addr:'京都府京都市伏見区',fees:{indoor:12,round:6,accompany:6,comp:6},hqFee:5,stripeFee:3.6}
 };
 
+function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
+function savePrices(){showMsg('料金設定を保存しました！','success');}
+function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
 let currentStore=null;
 let scheduleData={};
 let weekOffset=0;
@@ -735,12 +738,15 @@ let cancelTargetItem=null;
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.replace(BASE+'index.html');return;}
-  const name=session.user.user_metadata?.name||'コーチ';
+  const user=session.user;
+  currentCoachId=user.id;
+  const name=user.user_metadata?.name||'コーチ';
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
   buildStoreOptions();
   buildWeekGrid();
   buildMonthGrid();
+  await loadProfile(user.id);
 })();
 
 /* ===== 店舗選択 ===== */
@@ -1109,11 +1115,41 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
   showMsg('明細書を開きました。印刷でPDF保存できます！','success');
 }
 
-/* ===== 保存 ===== */
-function saveProfile(){showMsg('プロフィールを保存しました！','success');}
-function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
-function savePrices(){showMsg('料金設定を保存しました！','success');}
-function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
+/* ===== プロフィール保存・読み込み ===== */
+async function saveProfile(){
+  if(!currentCoachId){showMsg('ログイン情報が取得できません','error');return;}
+  const name=document.getElementById('prof-name').value.trim();
+  if(!name){showMsg('お名前は必須です','error');return;}
+  const data={
+    user_id:currentCoachId,
+    name:name,
+    address:document.getElementById('prof-address').value.trim(),
+    birth:document.getElementById('prof-birth').value,
+    tel:document.getElementById('prof-tel').value.trim(),
+    bio:document.getElementById('prof-bio').value.trim(),
+    license:document.getElementById('prof-license').value.trim(),
+    tags:document.getElementById('prof-tags').value.trim(),
+    updated_at:new Date().toISOString()
+  };
+  const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
+  if(error){showMsg('保存に失敗しました：'+error.message,'error');return;}
+  document.getElementById('coach-name').textContent=name;
+  document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
+  showMsg('プロフィールを保存しました！','success');
+}
+
+async function loadProfile(userId){
+  const {data,error}=await sb.from('coaches').select('*').eq('user_id',userId).single();
+  if(error||!data)return;
+  if(data.name)document.getElementById('prof-name').value=data.name;
+  if(data.address)document.getElementById('prof-address').value=data.address;
+  if(data.birth)document.getElementById('prof-birth').value=data.birth;
+  if(data.tel)document.getElementById('prof-tel').value=data.tel;
+  if(data.bio)document.getElementById('prof-bio').value=data.bio;
+  if(data.license)document.getElementById('prof-license').value=data.license;
+  if(data.tags)document.getElementById('prof-tags').value=data.tags;
+  if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
+}
 
 /* ===== メッセージ ===== */
 function showMsg(text,type){
