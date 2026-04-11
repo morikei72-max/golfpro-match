@@ -21,7 +21,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .header-logo{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:var(--gd);}
 .header-logo span{color:var(--accent);}
 .back-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);padding:5px 12px;border-radius:20px;cursor:pointer;text-decoration:none;}
-.main{margin-top:56px;padding:16px;padding-bottom:130px;}
+.main{margin-top:56px;padding:16px;padding-bottom:180px;}
 .msg{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:12px;display:none;}
 .msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
 .msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
@@ -121,7 +121,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .next-btn{width:100%;padding:16px;background:linear-gradient(135deg,#085041,#1D9E75);color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;box-shadow:0 5px 18px rgba(8,80,65,0.35);transition:all .2s;}
 .next-btn:active{transform:scale(0.97);}
 .next-btn:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none;}
-.back-step-btn{width:100%;padding:10px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;}
+/* ===== 下部ボタン（全ステップ統一） ===== */
+.bottom-btn-wrap{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.btn-back-step{width:100%;padding:13px;background:#fff;color:var(--gd);border:2px solid var(--g);border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-restart{width:100%;padding:10px;background:none;color:var(--red);border:1px solid var(--red);border-radius:12px;font-family:inherit;font-size:12px;cursor:pointer;}
+.btn-coach-back{width:100%;padding:13px;background:#f0f7f4;color:var(--gd);border:2px solid var(--g);border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .complete-wrap{text-align:center;padding:24px 16px;}
 .complete-icon{font-size:60px;margin-bottom:14px;}
 .complete-title{font-size:20px;font-weight:700;color:var(--gd);margin-bottom:8px;}
@@ -129,7 +133,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .al{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:center;margin-bottom:8px;text-decoration:none;}
 .al.green{background:var(--g);color:#fff;}
 .al.outline{background:#fff;color:var(--gd);border:1.5px solid var(--g);}
-/* 既存登録済み日付の背景（濃くして見やすく） */
 .cal-cell.exist-kyoto{background:#C8EFE0;border-color:#1D9E75;border-width:1.5px;}
 .cal-cell.exist-fushimi{background:#BBDAF7;border-color:#1976D2;border-width:1.5px;}
 .cal-cell.exist-both{background:linear-gradient(135deg,#C8EFE0 50%,#BBDAF7 50%);border-color:#1D9E75;border-width:1.5px;}
@@ -209,36 +212,19 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="card-title">⚙️ ラウンド当日のレッスン受付</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7;">ラウンドとレッスン両方の空き枠がある日の扱いを設定します。</div>
       <div class="block-opt" id="bo-all" onclick="pickBlock('all_day')">
-        <div class="block-opt-row">
-          <input type="radio" name="block" id="br-all">
-          <div><div class="block-opt-title">🚫 一日中レッスン不可</div><div class="block-opt-desc">この日のレッスン枠をすべてブロックします</div></div>
-        </div>
+        <div class="block-opt-row"><input type="radio" name="block" id="br-all"><div><div class="block-opt-title">🚫 一日中レッスン不可</div><div class="block-opt-desc">この日のレッスン枠をすべてブロックします</div></div></div>
       </div>
       <div class="block-opt" id="bo-range" onclick="pickBlock('time_range')">
-        <div class="block-opt-row">
-          <input type="radio" name="block" id="br-range">
-          <div><div class="block-opt-title">🕐 時間帯を指定してブロック</div><div class="block-opt-desc">ラウンド中の時間だけブロック。早朝・夜はレッスン可能</div></div>
-        </div>
+        <div class="block-opt-row"><input type="radio" name="block" id="br-range"><div><div class="block-opt-title">🕐 時間帯を指定してブロック</div><div class="block-opt-desc">ラウンド中の時間だけブロック。早朝・夜はレッスン可能</div></div></div>
         <div class="time-range-row" id="time-range-row" style="display:none;">
           <span style="font-size:12px;color:var(--muted);">ブロック時間：</span>
-          <select class="time-sel" id="block-from">
-            <option value="6">6:00</option><option value="7">7:00</option>
-            <option value="8" selected>8:00</option><option value="9">9:00</option>
-            <option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option>
-          </select>
+          <select class="time-sel" id="block-from"><option value="6">6:00</option><option value="7">7:00</option><option value="8" selected>8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option></select>
           <span style="font-size:12px;color:var(--muted);">〜</span>
-          <select class="time-sel" id="block-to">
-            <option value="15">15:00</option><option value="16">16:00</option>
-            <option value="17" selected>17:00</option><option value="18">18:00</option>
-            <option value="19">19:00</option><option value="20">20:00</option>
-          </select>
+          <select class="time-sel" id="block-to"><option value="15">15:00</option><option value="16">16:00</option><option value="17" selected>17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option></select>
         </div>
       </div>
       <div class="block-opt" id="bo-none" onclick="pickBlock('none')">
-        <div class="block-opt-row">
-          <input type="radio" name="block" id="br-none">
-          <div><div class="block-opt-title">✅ レッスンもそのまま受け付ける</div><div class="block-opt-desc">先に予約が入った方を優先します</div></div>
-        </div>
+        <div class="block-opt-row"><input type="radio" name="block" id="br-none"><div><div class="block-opt-title">✅ レッスンもそのまま受け付ける</div><div class="block-opt-desc">先に予約が入った方を優先します</div></div></div>
       </div>
     </div>
   </div>
@@ -265,18 +251,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">内容を確認して下の同意チェックを入れてから「確定して登録する」を押してください。</div>
       <div id="confirm-content"></div>
       <div class="agree-wrap" id="agree-wrap">
-        <div class="agree-item">
-          <input type="checkbox" id="agree1" onchange="checkAgree()">
-          <div class="agree-text">登録した空き枠に予約が入った場合、原則としてキャンセルできません。やむを得ない場合は緊急キャンセル機能を使用してください。</div>
-        </div>
-        <div class="agree-item">
-          <input type="checkbox" id="agree2" onchange="checkAgree()">
-          <div class="agree-text">登録した日時・店舗の情報は正確であることを確認しました。</div>
-        </div>
-        <div class="agree-item" id="agree-dress-wrap" style="display:none;">
-          <input type="checkbox" id="agree3" onchange="checkAgree()">
-          <div class="agree-text">ゴルフ場のドレスコードを厳守し、マナーを守ったプレーを心がけます。</div>
-        </div>
+        <div class="agree-item"><input type="checkbox" id="agree1" onchange="checkAgree()"><div class="agree-text">登録した空き枠に予約が入った場合、原則としてキャンセルできません。やむを得ない場合は緊急キャンセル機能を使用してください。</div></div>
+        <div class="agree-item"><input type="checkbox" id="agree2" onchange="checkAgree()"><div class="agree-text">登録した日時・店舗の情報は正確であることを確認しました。</div></div>
+        <div class="agree-item" id="agree-dress-wrap" style="display:none;"><input type="checkbox" id="agree3" onchange="checkAgree()"><div class="agree-text">ゴルフ場のドレスコードを厳守し、マナーを守ったプレーを心がけます。</div></div>
       </div>
     </div>
   </div>
@@ -293,38 +270,27 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
     </div>
   </div>
-<!-- 日付詳細ポップアップ -->
-<div id="date-detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;" onclick="closeDateDetail()">
-  <div id="date-detail-modal" style="background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;" onclick="event.stopPropagation()">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-      <div style="font-size:15px;font-weight:700;color:#085041;" id="detail-title">日付詳細</div>
-      <button onclick="closeDateDetail()" style="background:none;border:none;font-size:20px;color:#6b8a78;cursor:pointer;">✕</button>
+  <div id="date-detail-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;" onclick="closeDateDetail()">
+    <div id="date-detail-modal" style="background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;" onclick="event.stopPropagation()">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <div style="font-size:15px;font-weight:700;color:#085041;" id="detail-title">日付詳細</div>
+        <button onclick="closeDateDetail()" style="background:none;border:none;font-size:20px;color:#6b8a78;cursor:pointer;">✕</button>
+      </div>
+      <div id="detail-content"></div>
+      <button onclick="closeDateDetail();selectDateFromDetail(currentDetailDate)" style="width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">この日も選択する</button>
     </div>
-    <div id="detail-content"></div>
-    <button onclick="closeDateDetail();selectDateFromDetail(currentDetailDate)" style="width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">この日も選択する</button>
   </div>
-</div>
 </main>
 <div class="action-bar" id="action-bar">
   <button class="next-btn" id="next-btn" onclick="handleNext()" disabled style="opacity:0.4;">種別を選んでください</button>
+  <div id="bottom-btn-wrap" class="bottom-btn-wrap"></div>
 </div>
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
-let coachId=null;
-let curStep=1;
-let typeVal=null;
-let storeVal=null;
-let datesSet=new Set();
-let hoursMap=new Map();
-let blockVal='none';
-let bulkSet=new Set();
-let calMonth=new Date();
-let existingData={};
-let saving=false;
-let existingByDate={};
+let coachId=null,curStep=1,typeVal=null,storeVal=null,datesSet=new Set(),hoursMap=new Map(),blockVal='none',bulkSet=new Set(),calMonth=new Date(),existingData={},saving=false,existingByDate={};
 const storeNames={kyoto:'京都店',fushimi:'伏見店',both:'両店舗'};
 function toDS(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 (async()=>{
@@ -332,151 +298,63 @@ function toDS(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0
   if(!session){window.location.replace(BASE+'index.html');return;}
   coachId=session.user.id;
   document.getElementById('coach-name').textContent=session.user.user_metadata?.name||'コーチ';
-  await loadExisting();
-  renderAll();
-  showV('v1');
+  await loadExisting();renderAll();showV('v1');renderBottomBtns();
 })();
 async function loadExisting(){
   try{
     const {data}=await sb.from('schedules').select('slot_date,slot_hour,store_id,status,lesson_type').eq('coach_id',coachId);
-    existingData={};
-    existingByDate={};
+    existingData={};existingByDate={};
     (data||[]).forEach(r=>{
-      if(r.lesson_type==='indoor'){
-        existingData[r.slot_date+'_'+r.slot_hour]={store:r.store_id,status:r.status};
-        if(!existingByDate[r.slot_date]) existingByDate[r.slot_date]={};
-        existingByDate[r.slot_date][r.store_id]=(existingByDate[r.slot_date][r.store_id]||0)+1;
-      }else if(r.lesson_type==='round'){
-        if(!existingByDate[r.slot_date]) existingByDate[r.slot_date]={};
-        existingByDate[r.slot_date]['round_'+r.store_id]=true;
-      }
+      if(r.lesson_type==='indoor'){existingData[r.slot_date+'_'+r.slot_hour]={store:r.store_id,status:r.status};if(!existingByDate[r.slot_date])existingByDate[r.slot_date]={};existingByDate[r.slot_date][r.store_id]=(existingByDate[r.slot_date][r.store_id]||0)+1;}
+      else if(r.lesson_type==='round'){if(!existingByDate[r.slot_date])existingByDate[r.slot_date]={};existingByDate[r.slot_date]['round_'+r.store_id]=true;}
     });
   }catch(e){console.error(e);}
 }
-function getSteps(){
-  return typeVal==='indoor'?[1,2,3,'4i',5,6]:[1,2,3,'4r',5,6];
-}
+function getSteps(){return typeVal==='indoor'?[1,2,3,'4i',5,6]:[1,2,3,'4r',5,6];}
 function renderAll(){renderStepBar();renderSummary();}
 function renderStepBar(){
-  const steps=getSteps();
-  const labels={1:'種別',2:'店舗',3:'日にち','4i':'時間','4r':'設定',5:'確認',6:'完了'};
-  const bar=document.getElementById('step-bar');bar.innerHTML='';
-  const ci=steps.indexOf(curStep);
-  steps.forEach((s,i)=>{
-    const item=document.createElement('div');
-    item.className='step-item'+(i<ci?' done':i===ci?' active':'');
-    const circle=document.createElement('div');
-    circle.className='step-circle'+(i<ci?' done':i===ci?' active':'');
-    circle.textContent=i<ci?'✓':(i+1);
-    const label=document.createElement('div');
-    label.className='step-label'+(i<ci?' done':i===ci?' active':'');
-    label.textContent=labels[s]||'';
-    item.appendChild(circle);item.appendChild(label);bar.appendChild(item);
-  });
+  const steps=getSteps();const labels={1:'種別',2:'店舗',3:'日にち','4i':'時間','4r':'設定',5:'確認',6:'完了'};
+  const bar=document.getElementById('step-bar');bar.innerHTML='';const ci=steps.indexOf(curStep);
+  steps.forEach((s,i)=>{const item=document.createElement('div');item.className='step-item'+(i<ci?' done':i===ci?' active':'');const circle=document.createElement('div');circle.className='step-circle'+(i<ci?' done':i===ci?' active':'');circle.textContent=i<ci?'✓':(i+1);const label=document.createElement('div');label.className='step-label'+(i<ci?' done':i===ci?' active':'');label.textContent=labels[s]||'';item.appendChild(circle);item.appendChild(label);bar.appendChild(item);});
 }
 function renderSummary(){
-  const bar=document.getElementById('summary-bar');
-  if(curStep<=1){bar.style.display='none';return;}
-  bar.style.display='flex';
+  const bar=document.getElementById('summary-bar');if(curStep<=1){bar.style.display='none';return;}bar.style.display='flex';
   let h='<span style="font-size:11px;color:var(--muted);font-weight:700;">選択中：</span>';
-  if(typeVal) h+=`<span class="s-chip">${typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド'}</span>`;
-  if(storeVal) h+=`<span class="s-chip${storeVal==='fushimi'?' blue':''}">${storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗'}</span>`;
-  if(datesSet.size>0) h+=`<span class="s-chip gold">📅 ${datesSet.size}日選択</span>`;
+  if(typeVal)h+=`<span class="s-chip">${typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド'}</span>`;
+  if(storeVal)h+=`<span class="s-chip${storeVal==='fushimi'?' blue':''}">${storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗'}</span>`;
+  if(datesSet.size>0)h+=`<span class="s-chip gold">📅 ${datesSet.size}日選択</span>`;
   bar.innerHTML=h;
 }
-function showV(id){
-  ['v1','v2','v3','v4r','v4i','v5','v6'].forEach(v=>{const e=document.getElementById(v);if(e)e.style.display='none';});
-  const e=document.getElementById(id);if(e)e.style.display='block';
-}
+function showV(id){['v1','v2','v3','v4r','v4i','v5','v6'].forEach(v=>{const e=document.getElementById(v);if(e)e.style.display='none';});const e=document.getElementById(id);if(e)e.style.display='block';}
 function vId(s){const m={1:'v1',2:'v2',3:'v3','4r':'v4r','4i':'v4i',5:'v5',6:'v6'};return m[s];}
-function goStep(s){
-  curStep=s;showV(vId(s));renderAll();setupBtn();
-  // 前に戻るボタン
-  let bb=document.getElementById('back-step-btn');
-  if(s!==1&&s!==6){
-    if(!bb){
-      bb=document.createElement('button');bb.className='back-step-btn';bb.id='back-step-btn';
-      bb.textContent='← 前の画面に戻る';bb.onclick=goBack;
-      document.getElementById('action-bar').appendChild(bb);
-    }
-  }else{if(bb)bb.remove();}
-  // 最初からやり直すボタン（STEP2以降に表示）
-  let rb=document.getElementById('restart-btn');
-  if(s>=2&&s!==6){
-    if(!rb){
-      rb=document.createElement('button');rb.id='restart-btn';
-      rb.style.cssText='width:100%;padding:8px;background:none;color:var(--red);border:none;font-family:inherit;font-size:12px;cursor:pointer;margin-top:4px;';
-      rb.textContent='🔄 最初からやり直す';rb.onclick=restart;
-      document.getElementById('action-bar').appendChild(rb);
-    }
-  }else{if(rb)rb.remove();}
-}
-function setupBtn(){
-  const btn=document.getElementById('next-btn');
-  btn.disabled=false;btn.style.opacity='1';
+
+/* ===== 下部ボタンを毎回確実に再描画 ===== */
+function renderBottomBtns(){
+  const wrap=document.getElementById('bottom-btn-wrap');
+  wrap.innerHTML='';
+  if(curStep===6){document.getElementById('action-bar').style.display='none';return;}
+  document.getElementById('action-bar').style.display='block';
   if(curStep===1){
-    btn.textContent='種別を選んでください';btn.disabled=true;btn.style.opacity='0.4';
-    // STEP1でもコーチ画面に戻るボタンを表示
-    let bb=document.getElementById('back-step-btn');
-    if(!bb){
-      bb=document.createElement('button');bb.className='back-step-btn';bb.id='back-step-btn';
-      bb.textContent='← コーチ画面に戻る';
-      bb.onclick=()=>window.location.href='coach.html';
-      document.getElementById('action-bar').appendChild(bb);
-    }
+    wrap.innerHTML=`<button class="btn-coach-back" onclick="location.href='coach.html'">← コーチ画面に戻る</button>`;
+  }else{
+    wrap.innerHTML=`<button class="btn-back-step" onclick="goBack()">← 前の画面に戻る</button><button class="btn-restart" onclick="restart()">🔄 最初からやり直す</button>`;
   }
-  else if(curStep===2){
-    if(storeVal) btn.textContent='「'+storeNames[storeVal]+'」で次へ →';
-    else{btn.textContent='店舗を選んでください';btn.disabled=true;btn.style.opacity='0.4';}
-  }
-  else if(curStep===3){
-    buildCalendar();
-    if(datesSet.size>0) btn.textContent=datesSet.size+'日選択 → 次へ →';
-    else{btn.textContent='日にちを選んでください';btn.disabled=true;btn.style.opacity='0.4';}
-  }
-  else if(curStep==='4r') btn.textContent='次へ（確認へ）→';
-  else if(curStep==='4i'){
-    buildTimeGrid();
-    if(hoursMap.size>0) btn.textContent=hoursMap.size+'コマ選択 → 確認へ →';
-    else{btn.textContent='時間を選んでください';btn.disabled=true;btn.style.opacity='0.4';}
-  }
-  else if(curStep===5){
-    buildConfirm();
-    btn.textContent='✅ 確定して登録する';btn.disabled=true;btn.style.opacity='0.4';
-  }
-  else if(curStep===6) document.getElementById('action-bar').style.display='none';
 }
-function handleNext(){
-  const steps=getSteps();
-  const idx=steps.indexOf(curStep);
-  if(curStep===5){saveSchedule();return;}
-  if(idx>=0&&idx<steps.length-1) goStep(steps[idx+1]);
+
+function goStep(s){curStep=s;showV(vId(s));renderAll();setupBtn();renderBottomBtns();}
+function setupBtn(){
+  const btn=document.getElementById('next-btn');btn.disabled=false;btn.style.opacity='1';
+  if(curStep===1){btn.textContent='種別を選んでください';btn.disabled=true;btn.style.opacity='0.4';}
+  else if(curStep===2){if(storeVal)btn.textContent='「'+storeNames[storeVal]+'」で次へ →';else{btn.textContent='店舗を選んでください';btn.disabled=true;btn.style.opacity='0.4';}}
+  else if(curStep===3){buildCalendar();if(datesSet.size>0)btn.textContent=datesSet.size+'日選択 → 次へ →';else{btn.textContent='日にちを選んでください';btn.disabled=true;btn.style.opacity='0.4';}}
+  else if(curStep==='4r')btn.textContent='次へ（確認へ）→';
+  else if(curStep==='4i'){buildTimeGrid();if(hoursMap.size>0)btn.textContent=hoursMap.size+'コマ選択 → 確認へ →';else{btn.textContent='時間を選んでください';btn.disabled=true;btn.style.opacity='0.4';}}
+  else if(curStep===5){buildConfirm();btn.textContent='✅ 確定して登録する';btn.disabled=true;btn.style.opacity='0.4';}
 }
-function goBack(){
-  const steps=getSteps();
-  const idx=steps.indexOf(curStep);
-  if(idx>0) goStep(steps[idx-1]);
-}
-function pickType(t){
-  typeVal=t;
-  document.getElementById('tc-indoor').classList.toggle('sel',t==='indoor');
-  document.getElementById('tc-round').classList.toggle('sel',t==='round');
-  const btn=document.getElementById('next-btn');
-  btn.textContent='「'+(t==='indoor'?'インドアレッスン':'ラウンド')+'」で次へ →';
-  btn.disabled=false;btn.style.opacity='1';
-}
-function pickStore(s){
-  storeVal=s;
-  ['kyoto','fushimi','both'].forEach(k=>{
-    document.getElementById('sc-'+k).className='store-card'+(k===s?' sel-'+k:'');
-    const ck=document.getElementById('ck-'+k);
-    ck.className='store-check'+(k===s?(k==='fushimi'?' ck-b':' ck-g'):'');
-    ck.textContent=k===s?'✓':'';
-  });
-  const btn=document.getElementById('next-btn');
-  btn.textContent='「'+storeNames[s]+'」で次へ →';
-  btn.disabled=false;btn.style.opacity='1';
-}
+function handleNext(){const steps=getSteps();const idx=steps.indexOf(curStep);if(curStep===5){saveSchedule();return;}if(idx>=0&&idx<steps.length-1)goStep(steps[idx+1]);}
+function goBack(){const steps=getSteps();const idx=steps.indexOf(curStep);if(idx>0)goStep(steps[idx-1]);}
+function pickType(t){typeVal=t;document.getElementById('tc-indoor').classList.toggle('sel',t==='indoor');document.getElementById('tc-round').classList.toggle('sel',t==='round');const btn=document.getElementById('next-btn');btn.textContent='「'+(t==='indoor'?'インドアレッスン':'ラウンド')+'」で次へ →';btn.disabled=false;btn.style.opacity='1';}
+function pickStore(s){storeVal=s;['kyoto','fushimi','both'].forEach(k=>{document.getElementById('sc-'+k).className='store-card'+(k===s?' sel-'+k:'');const ck=document.getElementById('ck-'+k);ck.className='store-check'+(k===s?(k==='fushimi'?' ck-b':' ck-g'):'');ck.textContent=k===s?'✓':'';});const btn=document.getElementById('next-btn');btn.textContent='「'+storeNames[s]+'」で次へ →';btn.disabled=false;btn.style.opacity='1';}
 function buildCalendar(){
   const year=calMonth.getFullYear(),month=calMonth.getMonth();
   document.getElementById('month-label').textContent=year+'年'+(month+1)+'月';
@@ -485,292 +363,93 @@ function buildCalendar(){
   const grid=document.getElementById('cal-grid');grid.innerHTML='';
   for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='cal-cell other';grid.appendChild(c);}
   for(let d=1;d<=last.getDate();d++){
-    const ds=toDS(new Date(year,month,d));
-    const cd=new Date(year,month,d);
-    const isToday=cd.toDateString()===today.toDateString();
-    const isPast=cd<today;
-    const isSel=datesSet.has(ds);
+    const ds=toDS(new Date(year,month,d));const cd=new Date(year,month,d);
+    const isToday=cd.toDateString()===today.toDateString();const isPast=cd<today;const isSel=datesSet.has(ds);
     const cell=document.createElement('div');
-    // 既存登録がある日付に薄い背景色を追加
-    const eb2=existingByDate[ds];
-    let existClass='';
-    if(eb2&&!isSel){
-      const hasKyoto=eb2['kyoto']||eb2['round_kyoto'];
-      const hasFushimi=eb2['fushimi']||eb2['round_fushimi'];
-      if(hasKyoto&&hasFushimi) existClass=' exist-both';
-      else if(hasKyoto) existClass=' exist-kyoto';
-      else if(hasFushimi) existClass=' exist-fushimi';
-      else if(eb2['round_kyoto']||eb2['round_fushimi']) existClass=' exist-round';
-    }
+    const eb2=existingByDate[ds];let existClass='';
+    if(eb2&&!isSel){const hasKyoto=eb2['kyoto']||eb2['round_kyoto'];const hasFushimi=eb2['fushimi']||eb2['round_fushimi'];if(hasKyoto&&hasFushimi)existClass=' exist-both';else if(hasKyoto)existClass=' exist-kyoto';else if(hasFushimi)existClass=' exist-fushimi';else if(eb2['round_kyoto']||eb2['round_fushimi'])existClass=' exist-round';}
     cell.className='cal-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSel?' sel-'+(storeVal||'kyoto'):existClass);
-    let dot='';
-    if(isSel) dot=storeVal==='kyoto'?'🟢':storeVal==='fushimi'?'🔵':'🟢🔵';
-    // 既存登録の表示
-    let existDot='';
-    const eb=existingByDate[ds];
-    if(eb&&!isSel){
-      if(eb['kyoto']&&eb['fushimi']) existDot='<div class="cal-dot" style="opacity:0.5;">🟢🔵</div>';
-      else if(eb['kyoto']) existDot='<div class="cal-dot" style="opacity:0.5;">🟢</div>';
-      else if(eb['fushimi']) existDot='<div class="cal-dot" style="opacity:0.5;">🔵</div>';
-      if(eb['round_kyoto']||eb['round_fushimi']) existDot+='<div style="font-size:7px;color:var(--gold);">⛳</div>';
-    }
+    let dot='';if(isSel)dot=storeVal==='kyoto'?'🟢':storeVal==='fushimi'?'🔵':'🟢🔵';
+    let existDot='';const eb=existingByDate[ds];
+    if(eb&&!isSel){if(eb['kyoto']&&eb['fushimi'])existDot='<div class="cal-dot" style="opacity:0.5;">🟢🔵</div>';else if(eb['kyoto'])existDot='<div class="cal-dot" style="opacity:0.5;">🟢</div>';else if(eb['fushimi'])existDot='<div class="cal-dot" style="opacity:0.5;">🔵</div>';if(eb['round_kyoto']||eb['round_fushimi'])existDot+='<div style="font-size:7px;color:var(--gold);">⛳</div>';}
     cell.innerHTML=`<div class="cal-date">${d}</div>${isSel?`<div class="cal-dot">${dot}</div>`:existDot}`;
-    if(!isPast){
-      cell.onclick=(()=>{
-        const _ds=ds;
-        return ()=>{
-          // 既存登録がある日付はタップで詳細表示
-          const _eb=existingByDate[_ds];
-          if(_eb&&!datesSet.has(_ds)){
-            showDateDetail(_ds,_eb);
-            return;
-          }
-          if(datesSet.has(_ds)) datesSet.delete(_ds);
-          else datesSet.add(_ds);
-          buildCalendar();
-          const cnt=datesSet.size;
-          document.getElementById('date-count').textContent=cnt+'日選択中';
-          const btn=document.getElementById('next-btn');
-          if(cnt>0){btn.textContent=cnt+'日選択 → 次へ →';btn.disabled=false;btn.style.opacity='1';}
-          else{btn.textContent='日にちを選んでください';btn.disabled=true;btn.style.opacity='0.4';}
-        };
-      })();
-    }
+    if(!isPast){cell.onclick=(()=>{const _ds=ds;return ()=>{const _eb=existingByDate[_ds];if(_eb&&!datesSet.has(_ds)){showDateDetail(_ds,_eb);return;}if(datesSet.has(_ds))datesSet.delete(_ds);else datesSet.add(_ds);buildCalendar();const cnt=datesSet.size;document.getElementById('date-count').textContent=cnt+'日選択中';const btn=document.getElementById('next-btn');if(cnt>0){btn.textContent=cnt+'日選択 → 次へ →';btn.disabled=false;btn.style.opacity='1';}else{btn.textContent='日にちを選んでください';btn.disabled=true;btn.style.opacity='0.4';}};})();}
     grid.appendChild(cell);
   }
 }
 function moveMonth(dir){calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+dir,1);buildCalendar();}
-function pickBlock(t){
-  blockVal=t;
-  ['all','range','none'].forEach(k=>{document.getElementById('bo-'+k).classList.remove('sel');document.getElementById('br-'+k).checked=false;});
-  const m={all_day:'all',time_range:'range',none:'none'};
-  document.getElementById('bo-'+m[t]).classList.add('sel');
-  document.getElementById('br-'+m[t]).checked=true;
-  document.getElementById('time-range-row').style.display=t==='time_range'?'flex':'none';
-}
+function pickBlock(t){blockVal=t;['all','range','none'].forEach(k=>{document.getElementById('bo-'+k).classList.remove('sel');document.getElementById('br-'+k).checked=false;});const m={all_day:'all',time_range:'range',none:'none'};document.getElementById('bo-'+m[t]).classList.add('sel');document.getElementById('br-'+m[t]).checked=true;document.getElementById('time-range-row').style.display=t==='time_range'?'flex':'none';}
 function buildTimeGrid(){
-  const store=storeVal;
-  const leg=document.getElementById('time-legend');
-  if(store==='both'){
-    leg.innerHTML=`<div class="legend-item"><div class="ld" style="background:var(--gl);border:1px solid var(--g);"></div>京都店のみ</div>
-      <div class="legend-item"><div class="ld" style="background:var(--lb);border:1px solid var(--blue2);"></div>伏見店のみ</div>
-      <div class="legend-item"><div class="ld" style="background:linear-gradient(135deg,var(--gl) 50%,var(--lb) 50%);border:1px solid var(--g);"></div>両店舗</div>
-      <div class="legend-item"><div class="ld" style="background:#f0f0f0;border:1px solid #ccc;"></div>予約済み</div>`;
-  }else if(store==='kyoto'){
-    leg.innerHTML=`<div class="legend-item"><div class="ld" style="background:var(--gl);border:1px solid var(--g);"></div>京都店・空き</div>
-      <div class="legend-item"><div class="ld" style="background:#f0f0f0;border:1px solid #ccc;"></div>予約済み</div>`;
-  }else{
-    leg.innerHTML=`<div class="legend-item"><div class="ld" style="background:var(--lb);border:1px solid var(--blue2);"></div>伏見店・空き</div>
-      <div class="legend-item"><div class="ld" style="background:#f0f0f0;border:1px solid #ccc;"></div>予約済み</div>`;
-  }
+  const store=storeVal;const leg=document.getElementById('time-legend');
+  if(store==='both'){leg.innerHTML=`<div class="legend-item"><div class="ld" style="background:var(--gl);border:1px solid var(--g);"></div>京都店のみ</div><div class="legend-item"><div class="ld" style="background:var(--lb);border:1px solid var(--blue2);"></div>伏見店のみ</div><div class="legend-item"><div class="ld" style="background:linear-gradient(135deg,var(--gl) 50%,var(--lb) 50%);border:1px solid var(--g);"></div>両店舗</div><div class="legend-item"><div class="ld" style="background:#f0f0f0;border:1px solid #ccc;"></div>予約済み</div>`;}
+  else if(store==='kyoto'){leg.innerHTML=`<div class="legend-item"><div class="ld" style="background:var(--gl);border:1px solid var(--g);"></div>京都店・空き</div><div class="legend-item"><div class="ld" style="background:#f0f0f0;border:1px solid #ccc;"></div>予約済み</div>`;}
+  else{leg.innerHTML=`<div class="legend-item"><div class="ld" style="background:var(--lb);border:1px solid var(--blue2);"></div>伏見店・空き</div><div class="legend-item"><div class="ld" style="background:#f0f0f0;border:1px solid #ccc;"></div>予約済み</div>`;}
   const bb=document.getElementById('bulk-btns');
-  if(store==='both'){
-    bb.innerHTML=`<button class="bulk-btn kyoto" onclick="applyBulk('kyoto')">京都店に適用</button>
-      <button class="bulk-btn fushimi" onclick="applyBulk('fushimi')">伏見店に適用</button>
-      <button class="bulk-btn both" onclick="applyBulk('both')">両店舗に適用</button>
-      <button class="bulk-btn clear" onclick="clearTime()">クリア</button>`;
-  }else if(store==='kyoto'){
-    bb.innerHTML=`<button class="bulk-btn kyoto" onclick="applyBulk('kyoto')">京都店に一括適用</button>
-      <button class="bulk-btn clear" onclick="clearTime()">クリア</button>`;
-  }else{
-    bb.innerHTML=`<button class="bulk-btn fushimi" onclick="applyBulk('fushimi')">伏見店に一括適用</button>
-      <button class="bulk-btn clear" onclick="clearTime()">クリア</button>`;
-  }
+  if(store==='both'){bb.innerHTML=`<button class="bulk-btn kyoto" onclick="applyBulk('kyoto')">京都店に適用</button><button class="bulk-btn fushimi" onclick="applyBulk('fushimi')">伏見店に適用</button><button class="bulk-btn both" onclick="applyBulk('both')">両店舗に適用</button><button class="bulk-btn clear" onclick="clearTime()">クリア</button>`;}
+  else if(store==='kyoto'){bb.innerHTML=`<button class="bulk-btn kyoto" onclick="applyBulk('kyoto')">京都店に一括適用</button><button class="bulk-btn clear" onclick="clearTime()">クリア</button>`;}
+  else{bb.innerHTML=`<button class="bulk-btn fushimi" onclick="applyBulk('fushimi')">伏見店に一括適用</button><button class="bulk-btn clear" onclick="clearTime()">クリア</button>`;}
   const wrap=document.getElementById('time-grid-wrap');wrap.innerHTML='';
   [...datesSet].sort().forEach(ds=>{
-    const d=new Date(ds+'T00:00:00');
-    const lbl=(d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）';
-    const sec=document.createElement('div');
-    sec.innerHTML=`<div class="time-date-hdr">${lbl}</div>`;
+    const d=new Date(ds+'T00:00:00');const lbl=(d.getMonth()+1)+'/'+d.getDate()+'（'+['日','月','火','水','木','金','土'][d.getDay()]+'）';
+    const sec=document.createElement('div');sec.innerHTML=`<div class="time-date-hdr">${lbl}</div>`;
     const tgrid=document.createElement('div');tgrid.className='time-grid';
     for(let h=8;h<=20;h++){
-      const key=ds+'_'+h;
-      const ex=existingData[key];
-      const isBooked=ex&&ex.status==='booked';
-      const cur=hoursMap.get(key);
-      const chip=document.createElement('button');
-      chip.className='t-chip'+(isBooked?' booked':cur?' sel-'+cur:'');
-      const sl=cur==='kyoto'?'京都':cur==='fushimi'?'伏見':cur==='both'?'両店':'';
-      chip.textContent=h+':00'+(sl?'\n'+sl:'');
-      chip.disabled=isBooked;
-      if(!isBooked){
-        chip.onclick=(()=>{
-          const _key=key;const _h=h;
-          return ()=>{
-            const _cur=hoursMap.get(_key);
-            if(store==='both'){
-              const cycle={undefined:'kyoto',kyoto:'fushimi',fushimi:'both',both:undefined};
-              const next=cycle[_cur];
-              if(next){hoursMap.set(_key,next);chip.className='t-chip sel-'+next;chip.textContent=_h+':00\n'+(next==='kyoto'?'京都':next==='fushimi'?'伏見':'両店');}
-              else{hoursMap.delete(_key);chip.className='t-chip';chip.textContent=_h+':00';}
-            }else{
-              if(_cur){hoursMap.delete(_key);chip.className='t-chip';chip.textContent=_h+':00';}
-              else{hoursMap.set(_key,store);chip.className='t-chip sel-'+store;chip.textContent=_h+':00\n'+(store==='kyoto'?'京都':'伏見');}
-            }
-            updateTimeBtn();
-          };
-        })();
-      }
+      const key=ds+'_'+h;const ex=existingData[key];const isBooked=ex&&ex.status==='booked';const cur=hoursMap.get(key);
+      const chip=document.createElement('button');chip.className='t-chip'+(isBooked?' booked':cur?' sel-'+cur:'');
+      const sl=cur==='kyoto'?'京都':cur==='fushimi'?'伏見':cur==='both'?'両店':'';chip.textContent=h+':00'+(sl?'\n'+sl:'');chip.disabled=isBooked;
+      if(!isBooked){chip.onclick=(()=>{const _key=key;const _h=h;return ()=>{const _cur=hoursMap.get(_key);if(store==='both'){const cycle={undefined:'kyoto',kyoto:'fushimi',fushimi:'both',both:undefined};const next=cycle[_cur];if(next){hoursMap.set(_key,next);chip.className='t-chip sel-'+next;chip.textContent=_h+':00\n'+(next==='kyoto'?'京都':next==='fushimi'?'伏見':'両店');}else{hoursMap.delete(_key);chip.className='t-chip';chip.textContent=_h+':00';}}else{if(_cur){hoursMap.delete(_key);chip.className='t-chip';chip.textContent=_h+':00';}else{hoursMap.set(_key,store);chip.className='t-chip sel-'+store;chip.textContent=_h+':00\n'+(store==='kyoto'?'京都':'伏見');}}updateTimeBtn();};})();}
       tgrid.appendChild(chip);
     }
     sec.appendChild(tgrid);wrap.appendChild(sec);
   });
   updateTimeBtn();
 }
-function updateTimeBtn(){
-  const cnt=hoursMap.size;
-  const btn=document.getElementById('next-btn');
-  if(cnt>0){btn.textContent=cnt+'コマ選択 → 確認へ →';btn.disabled=false;btn.style.opacity='1';}
-  else{btn.textContent='時間を選んでください';btn.disabled=true;btn.style.opacity='0.4';}
-}
+function updateTimeBtn(){const cnt=hoursMap.size;const btn=document.getElementById('next-btn');if(cnt>0){btn.textContent=cnt+'コマ選択 → 確認へ →';btn.disabled=false;btn.style.opacity='1';}else{btn.textContent='時間を選んでください';btn.disabled=true;btn.style.opacity='0.4';}}
 function togBulk(range,btn){if(bulkSet.has(range)){bulkSet.delete(range);btn.classList.remove('on');}else{bulkSet.add(range);btn.classList.add('on');}}
 function getHoursFor(r){if(r==='morning')return[8,9,10,11];if(r==='afternoon')return[12,13,14,15,16];if(r==='evening')return[17,18,19,20];return[];}
-function applyBulk(applyStore){
-  if(bulkSet.size===0){showMsg('時間帯を選んでから押してください','error');return;}
-  datesSet.forEach(ds=>{bulkSet.forEach(r=>getHoursFor(r).forEach(h=>{const key=ds+'_'+h;if(existingData[key]&&existingData[key].status==='booked')return;hoursMap.set(key,applyStore);}));});
-  buildTimeGrid();
-  showMsg((applyStore==='kyoto'?'🟢 京都店':applyStore==='fushimi'?'🔵 伏見店':'✅ 両店舗')+'に一括適用しました！','success');
-}
-function clearTime(){datesSet.forEach(ds=>{for(let h=6;h<=22;h++) hoursMap.delete(ds+'_'+h);});buildTimeGrid();}
+function applyBulk(applyStore){if(bulkSet.size===0){showMsg('時間帯を選んでから押してください','error');return;}datesSet.forEach(ds=>{bulkSet.forEach(r=>getHoursFor(r).forEach(h=>{const key=ds+'_'+h;if(existingData[key]&&existingData[key].status==='booked')return;hoursMap.set(key,applyStore);}));});buildTimeGrid();showMsg((applyStore==='kyoto'?'🟢 京都店':applyStore==='fushimi'?'🔵 伏見店':'✅ 両店舗')+'に一括適用しました！','success');}
+function clearTime(){datesSet.forEach(ds=>{for(let h=6;h<=22;h++)hoursMap.delete(ds+'_'+h);});buildTimeGrid();}
 function buildConfirm(){
-  const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
-  const tl=typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド';
-  let h=`<div class="confirm-row"><span class="confirm-label">種別</span><span class="confirm-val">${tl}</span></div>
-    <div class="confirm-row"><span class="confirm-label">店舗</span><span class="confirm-val">${sl}</span></div>
-    <div style="margin-top:8px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;">選択した日付（${datesSet.size}日）</div>
-    <div class="confirm-dates">`;
-  [...datesSet].sort().forEach(ds=>{const d=new Date(ds+'T00:00:00');h+=`<span class="confirm-date-chip">${d.getMonth()+1}/${d.getDate()}</span>`;});
-  h+='</div></div>';
-  if(typeVal==='indoor'){
-    let ky=0,fu=0,bo=0;hoursMap.forEach(v=>{if(v==='kyoto')ky++;else if(v==='fushimi')fu++;else bo++;});
-    h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">登録コマ数</span><span class="confirm-val" style="font-size:16px;color:var(--g);">${hoursMap.size}コマ</span></div>`;
-    if(storeVal==='both') h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🟢 京都店のみ</span><span class="confirm-val">${ky}コマ</span></div>
-      <div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🔵 伏見店のみ</span><span class="confirm-val">${fu}コマ</span></div>
-      <div class="confirm-row"><span class="confirm-label" style="font-size:11px;">✅ 両店舗</span><span class="confirm-val">${bo}コマ</span></div>`;
-  }else{
-    const bl={all_day:'🚫 一日中レッスン不可',time_range:'🕐 時間帯指定ブロック',none:'✅ レッスンもそのまま'};
-    h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">レッスン受付</span><span class="confirm-val">${bl[blockVal]}</span></div>`;
-    if(blockVal==='time_range'){const bf=document.getElementById('block-from').value;const bt=document.getElementById('block-to').value;h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">ブロック時間</span><span class="confirm-val">${bf}:00〜${bt}:00</span></div>`;}
-  }
+  const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';const tl=typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド';
+  let h=`<div class="confirm-row"><span class="confirm-label">種別</span><span class="confirm-val">${tl}</span></div><div class="confirm-row"><span class="confirm-label">店舗</span><span class="confirm-val">${sl}</span></div><div style="margin-top:8px;"><div style="font-size:12px;color:var(--muted);margin-bottom:6px;">選択した日付（${datesSet.size}日）</div><div class="confirm-dates">`;
+  [...datesSet].sort().forEach(ds=>{const d=new Date(ds+'T00:00:00');h+=`<span class="confirm-date-chip">${d.getMonth()+1}/${d.getDate()}</span>`;});h+='</div></div>';
+  if(typeVal==='indoor'){let ky=0,fu=0,bo=0;hoursMap.forEach(v=>{if(v==='kyoto')ky++;else if(v==='fushimi')fu++;else bo++;});h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">登録コマ数</span><span class="confirm-val" style="font-size:16px;color:var(--g);">${hoursMap.size}コマ</span></div>`;if(storeVal==='both')h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🟢 京都店のみ</span><span class="confirm-val">${ky}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🔵 伏見店のみ</span><span class="confirm-val">${fu}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">✅ 両店舗</span><span class="confirm-val">${bo}コマ</span></div>`;}
+  else{const bl={all_day:'🚫 一日中レッスン不可',time_range:'🕐 時間帯指定ブロック',none:'✅ レッスンもそのまま'};h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">レッスン受付</span><span class="confirm-val">${bl[blockVal]}</span></div>`;if(blockVal==='time_range'){const bf=document.getElementById('block-from').value;const bt=document.getElementById('block-to').value;h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">ブロック時間</span><span class="confirm-val">${bf}:00〜${bt}:00</span></div>`;}}
   h+=`<div class="confirm-warn">⚠️ 登録後の修正はカレンダー画面から行えます。内容をよく確認してください。</div>`;
   document.getElementById('confirm-content').innerHTML=h;
-  // 同意チェックを必ず表示・リセット
-  const aw=document.getElementById('agree-wrap');
-  if(aw) aw.style.display='block';
+  const aw=document.getElementById('agree-wrap');if(aw)aw.style.display='block';
   ['agree1','agree2','agree3'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
-  // ラウンドの場合のみドレスコードチェックを表示
-  const dw=document.getElementById('agree-dress-wrap');
-  if(dw) dw.style.display=typeVal==='round'?'flex':'none';
-  const btn=document.getElementById('next-btn');
-  btn.disabled=true;btn.style.opacity='0.4';
+  const dw=document.getElementById('agree-dress-wrap');if(dw)dw.style.display=typeVal==='round'?'flex':'none';
+  document.getElementById('next-btn').disabled=true;document.getElementById('next-btn').style.opacity='0.4';
 }
-function checkAgree(){
-  const a1=document.getElementById('agree1').checked;
-  const a2=document.getElementById('agree2').checked;
-  const a3wrap=document.getElementById('agree-dress-wrap');
-  const a3=a3wrap&&a3wrap.style.display!=='none'?document.getElementById('agree3').checked:true;
-  const ok=a1&&a2&&a3;
-  const btn=document.getElementById('next-btn');btn.disabled=!ok;btn.style.opacity=ok?'1':'0.4';
-}
+function checkAgree(){const a1=document.getElementById('agree1').checked;const a2=document.getElementById('agree2').checked;const a3wrap=document.getElementById('agree-dress-wrap');const a3=a3wrap&&a3wrap.style.display!=='none'?document.getElementById('agree3').checked:true;const ok=a1&&a2&&a3;const btn=document.getElementById('next-btn');btn.disabled=!ok;btn.style.opacity=ok?'1':'0.4';}
 async function saveSchedule(){
-  if(saving)return;
-  saving=true;
-  const btn=document.getElementById('next-btn');btn.textContent='保存中...';btn.disabled=true;
+  if(saving)return;saving=true;const btn=document.getElementById('next-btn');btn.textContent='保存中...';btn.disabled=true;
   try{
     let rows=[];
-    if(typeVal==='indoor'){
-      await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','indoor').eq('status','available').in('slot_date',[...datesSet]);
-      hoursMap.forEach((store,key)=>{
-        const parts=key.split('_');const date=parts[0];const hour=parseInt(parts[1]);
-        const stores=store==='both'?['kyoto','fushimi']:[store];
-        stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'indoor',slot_date:date,slot_hour:hour,status:'available',store_id:s}));
-      });
-    }else{
-      await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','round').eq('status','available').in('slot_date',[...datesSet]);
-      const bf=parseInt(document.getElementById('block-from')?.value||8);
-      const bt=parseInt(document.getElementById('block-to')?.value||17);
-      const stores=storeVal==='both'?['kyoto','fushimi']:[storeVal];
-      datesSet.forEach(ds=>stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:ds,slot_hour:-1,status:'available',store_id:s,block_type:blockVal,block_from:blockVal==='time_range'?bf:null,block_to:blockVal==='time_range'?bt:null})));
-    }
-    if(rows.length>0){
-      const {error}=await sb.from('schedules').insert(rows);
-      if(error){showMsg('保存に失敗しました：'+error.message,'error');saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;return;}
-    }
-    const cnt=typeVal==='indoor'?hoursMap.size:datesSet.size;
-    const unit=typeVal==='indoor'?'コマ':'日';
-    const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
-    document.getElementById('complete-detail').innerHTML=`
-      <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">種別</div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px;">${typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド'}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">店舗</div>
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px;">${sl}</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:2px;">登録数</div>
-      <div style="font-size:20px;font-weight:900;color:var(--g);">${cnt}${unit}</div>`;
+    if(typeVal==='indoor'){await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','indoor').eq('status','available').in('slot_date',[...datesSet]);hoursMap.forEach((store,key)=>{const parts=key.split('_');const date=parts[0];const hour=parseInt(parts[1]);const stores=store==='both'?['kyoto','fushimi']:[store];stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'indoor',slot_date:date,slot_hour:hour,status:'available',store_id:s}));});}
+    else{await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','round').eq('status','available').in('slot_date',[...datesSet]);const bf=parseInt(document.getElementById('block-from')?.value||8);const bt=parseInt(document.getElementById('block-to')?.value||17);const stores=storeVal==='both'?['kyoto','fushimi']:[storeVal];datesSet.forEach(ds=>stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:ds,slot_hour:-1,status:'available',store_id:s,block_type:blockVal,block_from:blockVal==='time_range'?bf:null,block_to:blockVal==='time_range'?bt:null})));}
+    if(rows.length>0){const {error}=await sb.from('schedules').insert(rows);if(error){showMsg('保存に失敗しました：'+error.message,'error');saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;return;}}
+    const cnt=typeVal==='indoor'?hoursMap.size:datesSet.size;const unit=typeVal==='indoor'?'コマ':'日';const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
+    document.getElementById('complete-detail').innerHTML=`<div style="font-size:12px;color:var(--muted);margin-bottom:2px;">種別</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${typeVal==='indoor'?'🏌 インドアレッスン':'⛳ ラウンド'}</div><div style="font-size:12px;color:var(--muted);margin-bottom:2px;">店舗</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;">${sl}</div><div style="font-size:12px;color:var(--muted);margin-bottom:2px;">登録数</div><div style="font-size:20px;font-weight:900;color:var(--g);">${cnt}${unit}</div>`;
     goStep(6);
   }catch(e){showMsg('エラーが発生しました','error');console.error(e);saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;}
 }
-async function restart(){
-  typeVal=null;storeVal=null;datesSet.clear();hoursMap.clear();bulkSet.clear();blockVal='none';saving=false;
-  curStep=1;
-  document.getElementById('action-bar').style.display='block';
-  const bb=document.getElementById('back-step-btn');if(bb)bb.remove();
-  const rb=document.getElementById('restart-btn');if(rb)rb.remove();
-  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));
-  calMonth=new Date();
-  // 最新の登録データを再読み込み（続けて登録時に反映するため）
-  await loadExisting();
-  renderAll();showV('v1');setupBtn();
-}
+async function restart(){typeVal=null;storeVal=null;datesSet.clear();hoursMap.clear();bulkSet.clear();blockVal='none';saving=false;curStep=1;document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));calMonth=new Date();await loadExisting();renderAll();showV('v1');setupBtn();renderBottomBtns();}
 let currentDetailDate=null;
 function showDateDetail(ds,eb){
-  currentDetailDate=ds;
-  const d=new Date(ds+'T00:00:00');
-  const days=['日','月','火','水','木','金','土'];
+  currentDetailDate=ds;const d=new Date(ds+'T00:00:00');const days=['日','月','火','水','木','金','土'];
   document.getElementById('detail-title').textContent=(d.getMonth()+1)+'/'+d.getDate()+'（'+days[d.getDay()]+'）の登録内容';
   let html='';
-  if(eb['kyoto']){
-    html+=`<div style="background:#E1F5EE;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:4px;">🟢 京都店 · インドアレッスン</div>
-      <div style="font-size:11px;color:#6b8a78;">${eb['kyoto']}コマ登録済み</div>
-    </div>`;
-  }
-  if(eb['fushimi']){
-    html+=`<div style="background:#E3F2FD;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:700;color:#0C447C;margin-bottom:4px;">🔵 伏見店 · インドアレッスン</div>
-      <div style="font-size:11px;color:#6b8a78;">${eb['fushimi']}コマ登録済み</div>
-    </div>`;
-  }
-  if(eb['round_kyoto']){
-    html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 京都店 · ラウンド参加可能日</div>
-    </div>`;
-  }
-  if(eb['round_fushimi']){
-    html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 伏見店 · ラウンド参加可能日</div>
-    </div>`;
-  }
-  document.getElementById('detail-content').innerHTML=html;
-  document.getElementById('date-detail-overlay').style.display='flex';
+  if(eb['kyoto'])html+=`<div style="background:#E1F5EE;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:4px;">🟢 京都店 · インドアレッスン</div><div style="font-size:11px;color:#6b8a78;">${eb['kyoto']}コマ登録済み</div></div>`;
+  if(eb['fushimi'])html+=`<div style="background:#E3F2FD;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#0C447C;margin-bottom:4px;">🔵 伏見店 · インドアレッスン</div><div style="font-size:11px;color:#6b8a78;">${eb['fushimi']}コマ登録済み</div></div>`;
+  if(eb['round_kyoto'])html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 京都店 · ラウンド参加可能日</div></div>`;
+  if(eb['round_fushimi'])html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 伏見店 · ラウンド参加可能日</div></div>`;
+  document.getElementById('detail-content').innerHTML=html;document.getElementById('date-detail-overlay').style.display='flex';
 }
-function closeDateDetail(){
-  document.getElementById('date-detail-overlay').style.display='none';
-  currentDetailDate=null;
-}
-function selectDateFromDetail(ds){
-  if(!ds) return;
-  datesSet.add(ds);
-  buildCalendar();
-  const cnt=datesSet.size;
-  document.getElementById('date-count').textContent=cnt+'日選択中';
-  const btn=document.getElementById('next-btn');
-  if(cnt>0){btn.textContent=cnt+'日選択 → 次へ →';btn.disabled=false;btn.style.opacity='1';}
-}
-
-function showMsg(text,type){
-  const el=document.getElementById('msg-global');el.textContent=text;el.className='msg '+type;
-  if(type==='success') setTimeout(()=>{el.className='msg';el.textContent='';},3000);
-}
+function closeDateDetail(){document.getElementById('date-detail-overlay').style.display='none';currentDetailDate=null;}
+function selectDateFromDetail(ds){if(!ds)return;datesSet.add(ds);buildCalendar();const cnt=datesSet.size;document.getElementById('date-count').textContent=cnt+'日選択中';const btn=document.getElementById('next-btn');if(cnt>0){btn.textContent=cnt+'日選択 → 次へ →';btn.disabled=false;btn.style.opacity='1';}}
+function showMsg(text,type){const el=document.getElementById('msg-global');el.textContent=text;el.className='msg '+type;if(type==='success')setTimeout(()=>{el.className='msg';el.textContent='';},3000);}
 </script>
 </body>
 </html>
