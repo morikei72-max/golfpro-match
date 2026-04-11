@@ -18,15 +18,23 @@ html,body{height:100%;background:var(--bg);}
 body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
 /* ヘッダー */
-.header{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
+.header{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
 .header-logo{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:var(--gd);}
 .header-logo span{color:var(--accent);}
 .header-right{display:flex;align-items:center;gap:8px;}
 .coach-name-hdr{font-size:12px;font-weight:500;}
 .back-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);padding:4px 10px;border-radius:20px;cursor:pointer;text-decoration:none;}
 
+/* 種別タブバー（固定） */
+.type-bar{position:fixed;top:56px;left:0;right:0;z-index:150;background:#fff;border-bottom:2px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);}
+.type-tab{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;gap:2px;}
+.type-tab-icon{font-size:20px;}
+.type-tab-name{font-size:10px;font-weight:700;color:var(--muted);text-align:center;line-height:1.3;}
+.type-tab.active{border-bottom-color:var(--g);background:var(--gl);}
+.type-tab.active .type-tab-name{color:var(--gd);}
+
 /* メイン */
-.main{margin-top:56px;padding:14px;padding-bottom:110px;}
+.main{margin-top:116px;padding:12px;padding-bottom:100px;}
 
 /* メッセージ */
 .msg{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:12px;display:none;}
@@ -34,116 +42,101 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
 
 /* カード */
-.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
-.card-title{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.card{background:#fff;border-radius:16px;padding:14px;margin-bottom:10px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+.card-title{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
 
-/* ステップ表示 */
-.step-bar{display:flex;align-items:center;gap:0;margin-bottom:16px;}
-.step-item{flex:1;text-align:center;position:relative;}
-.step-circle{width:28px;height:28px;border-radius:50%;background:#e0ece6;color:var(--muted);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;}
-.step-circle.active{background:var(--g);color:#fff;}
-.step-circle.done{background:var(--gd);color:#fff;}
-.step-label{font-size:10px;color:var(--muted);}
-.step-label.active{color:var(--g);font-weight:700;}
-.step-line{position:absolute;top:14px;left:50%;right:-50%;height:2px;background:#e0ece6;z-index:0;}
-.step-line.done{background:var(--g);}
-.step-item:last-child .step-line{display:none;}
+/* 選択中種別バナー */
+.active-type-banner{border-radius:12px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+.active-type-banner.indoor{background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;}
+.active-type-banner.round{background:linear-gradient(135deg,#856404,var(--gold));color:#fff;}
+.active-type-banner.accompany{background:linear-gradient(135deg,#0c5c8a,#3a9fd4);color:#fff;}
+.active-type-banner.comp{background:linear-gradient(135deg,#6b3c8a,#a56fd4);color:#fff;}
+.banner-icon{font-size:24px;}
+.banner-info{flex:1;}
+.banner-name{font-size:14px;font-weight:700;}
+.banner-desc{font-size:10px;opacity:0.8;margin-top:2px;}
+.banner-count{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;}
+.banner-count-label{font-size:9px;opacity:0.8;text-align:center;}
 
-/* STEP1：種別選択カード */
-.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.type-card{border:2px solid var(--border);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;}
-.type-card:active{transform:scale(0.97);}
-.type-card.selected{border-color:var(--g);background:var(--gl);}
-.type-card-icon{font-size:28px;margin-bottom:8px;}
-.type-card-name{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:4px;}
-.type-card-desc{font-size:10px;color:var(--muted);line-height:1.5;}
-.type-card.selected .type-card-name{color:var(--g);}
+/* 登録済みバッジ */
+.registered-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,0.25);color:#fff;margin-left:auto;}
 
-/* STEP2：時間設定（インドア用） */
-.week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.week-nav-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:18px;color:var(--gd);cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.week-nav-label{font-size:13px;font-weight:700;color:var(--gd);}
-.week-header-row{display:grid;grid-template-columns:38px repeat(7,1fr);gap:2px;margin-bottom:3px;}
-.week-day-hdr{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;border-radius:6px;}
+/* 週間グリッド */
+.week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.week-nav-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:16px;color:var(--gd);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.week-nav-label{font-size:12px;font-weight:700;color:var(--gd);}
+.week-header-row{display:grid;grid-template-columns:36px repeat(7,1fr);gap:2px;margin-bottom:2px;}
+.week-day-hdr{text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding:3px 0;border-radius:4px;}
 .week-day-hdr.today{color:var(--g);background:var(--gl);}
 .week-day-hdr.sun{color:var(--red);}
 .week-day-hdr.sat{color:#0c5c8a;}
-.week-scroll{max-height:380px;overflow-y:auto;border-radius:10px;}
-.week-grid{display:grid;grid-template-columns:38px repeat(7,1fr);gap:2px;}
-.week-time-label{font-size:10px;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:4px;height:32px;}
-.week-slot{height:32px;border-radius:4px;border:1px solid var(--border);background:#f7faf8;cursor:pointer;transition:all .12s;position:relative;}
+.week-scroll{max-height:350px;overflow-y:auto;border-radius:8px;}
+.week-grid{display:grid;grid-template-columns:36px repeat(7,1fr);gap:2px;}
+.week-time-label{font-size:9px;color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:3px;height:30px;}
+.week-slot{height:30px;border-radius:3px;border:1px solid var(--border);background:#f7faf8;cursor:pointer;transition:all .1s;position:relative;}
 .week-slot.available{background:var(--gl);border-color:var(--g);}
-.week-slot.available::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:var(--g);font-weight:700;}
+.week-slot.available::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:9px;color:var(--g);font-weight:700;}
 .week-slot.booked{background:#e0e0e0;border-color:#bbb;cursor:not-allowed;}
 .week-slot:hover:not(.booked):not(.available){background:rgba(29,158,117,0.15);}
-.week-slot:active:not(.booked){transform:scale(0.92);}
+.week-slot:active:not(.booked){transform:scale(0.9);}
 
 /* 一括設定 */
-.bulk-wrap{background:#f7faf8;border-radius:12px;padding:12px;margin-bottom:12px;}
-.bulk-title{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;}
-.bulk-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px;}
-.time-chip{font-size:11px;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;transition:all .15s;}
+.bulk-wrap{background:#f7faf8;border-radius:10px;padding:10px;margin-bottom:10px;}
+.bulk-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.bulk-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+.time-chip{font-size:10px;padding:5px 10px;border-radius:16px;border:1px solid var(--border);background:#fff;cursor:pointer;font-family:inherit;transition:all .15s;}
 .time-chip.selected{background:var(--g);color:#fff;border-color:var(--g);}
-.bulk-btn{flex:1;padding:8px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.bulk-btn{flex:1;padding:7px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;min-width:120px;}
 .bulk-btn.clear{background:#fff;color:var(--red);border:1px solid var(--red);}
 
-/* STEP2：日付設定（ラウンド系） */
-.month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.month-nav-btn{width:36px;height:36px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:18px;color:var(--gd);cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.month-nav-label{font-size:15px;font-weight:700;color:var(--gd);}
-.month-day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px;}
-.month-day-hdr{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
+/* モード切替 */
+.mode-wrap{display:flex;gap:5px;margin-bottom:10px;}
+.mode-btn{flex:1;padding:7px;border:1px solid var(--border);background:#fff;border-radius:8px;font-family:inherit;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;}
+.mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
+
+/* 月間グリッド */
+.month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.month-nav-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:16px;color:var(--gd);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.month-nav-label{font-size:14px;font-weight:700;color:var(--gd);}
+.month-day-headers{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px;}
+.month-day-hdr{text-align:center;font-size:9px;font-weight:700;color:var(--muted);padding:3px 0;}
 .month-day-hdr.sun{color:var(--red);}
 .month-day-hdr.sat{color:#0c5c8a;}
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.month-cell{min-height:46px;border-radius:8px;border:1px solid var(--border);padding:4px;background:#fff;cursor:pointer;transition:all .15s;position:relative;text-align:center;}
-.month-cell.other-month{background:#f7faf8;opacity:0.35;cursor:default;pointer-events:none;}
+.month-cell{min-height:44px;border-radius:7px;border:1px solid var(--border);padding:3px;background:#fff;cursor:pointer;transition:all .15s;position:relative;text-align:center;}
+.month-cell.other-month{background:#f7faf8;opacity:0.3;pointer-events:none;}
 .month-cell.today{border-color:var(--g);border-width:2px;}
-.month-cell.selected-day{background:var(--gl);border-color:var(--g);}
-.month-cell.selected-day::after{content:'✓';position:absolute;bottom:3px;right:4px;font-size:9px;color:var(--g);font-weight:700;}
-.month-cell.past{opacity:0.35;cursor:default;pointer-events:none;}
-.month-date{font-size:12px;font-weight:700;}
+.month-cell.sel{background:var(--gl);border-color:var(--g);}
+.month-cell.sel::after{content:'✓';position:absolute;bottom:2px;right:3px;font-size:8px;color:var(--g);font-weight:700;}
+.month-cell.past{opacity:0.3;pointer-events:none;}
+.month-date{font-size:11px;font-weight:700;}
 .month-cell.today .month-date{color:var(--g);}
-.month-cell:not(.other-month):not(.past):hover:not(.selected-day){background:rgba(29,158,117,0.1);}
+.month-slot-count{font-size:8px;color:var(--g);font-weight:700;}
+.month-cell:not(.other-month):not(.past):hover:not(.sel){background:rgba(29,158,117,0.1);}
 
 /* 凡例 */
-.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;padding:10px;background:#f7faf8;border-radius:10px;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
-.legend-dot{width:14px;height:14px;border-radius:3px;flex-shrink:0;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;padding:8px 10px;background:#f7faf8;border-radius:8px;}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
+.legend-dot{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
 
-/* 登録件数 */
-.slot-count-bar{display:flex;justify-content:space-between;align-items:center;background:var(--gl);border-radius:10px;padding:8px 14px;margin-bottom:12px;}
-.slot-count-text{font-size:12px;color:var(--gd);font-weight:700;}
-.slot-count-num{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:900;color:var(--g);}
-
-/* 次へボタン・保存ボタン共通 */
-.action-bar{position:fixed;bottom:0;left:0;right:0;padding:12px 14px 20px;background:linear-gradient(to top,#fff 80%,rgba(255,255,255,0));z-index:100;}
-.next-btn{
-  width:100%;padding:17px;
+/* 保存バー */
+.save-bar{position:fixed;bottom:0;left:0;right:0;padding:10px 14px 16px;background:linear-gradient(to top,#fff 75%,rgba(255,255,255,0));z-index:100;}
+.save-btn{
+  width:100%;padding:16px;
   background:linear-gradient(135deg,#085041,#1D9E75);
-  color:#fff;border:none;border-radius:16px;
-  font-family:inherit;font-size:16px;font-weight:900;
-  cursor:pointer;letter-spacing:0.05em;
-  box-shadow:0 6px 20px rgba(8,80,65,0.4);
+  color:#fff;border:none;border-radius:14px;
+  font-family:inherit;font-size:15px;font-weight:900;
+  cursor:pointer;letter-spacing:0.04em;
+  box-shadow:0 5px 18px rgba(8,80,65,0.4);
   transition:all .2s;
 }
-.next-btn:active{transform:scale(0.97);}
-.next-btn:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none;}
-.back-step-btn{width:100%;padding:10px;background:none;color:var(--muted);border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;}
-
-/* モード切替（インドア用） */
-.mode-wrap{display:flex;gap:6px;margin-bottom:12px;}
-.mode-btn{flex:1;padding:8px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;}
-.mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
-
-/* 選択中種別バッジ */
-.selected-type-badge{display:flex;align-items:center;gap:8px;background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:8px 12px;margin-bottom:12px;}
-.selected-type-badge-icon{font-size:18px;}
-.selected-type-badge-name{font-size:13px;font-weight:700;color:var(--gd);}
+.save-btn:active{transform:scale(0.97);}
+.save-btn:disabled{opacity:0.5;cursor:not-allowed;box-shadow:none;}
 </style>
 </head>
 <body>
 
+<!-- ヘッダー -->
 <header class="header">
   <div class="header-logo">My<span>Coach</span></div>
   <div class="header-right">
@@ -152,81 +145,50 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   </div>
 </header>
 
+<!-- 種別タブバー（常時表示） -->
+<div class="type-bar">
+  <div class="type-tab active" id="tab-indoor" onclick="switchType('indoor')">
+    <div class="type-tab-icon">🏌</div>
+    <div class="type-tab-name">インドア<br>レッスン</div>
+  </div>
+  <div class="type-tab" id="tab-round" onclick="switchType('round')">
+    <div class="type-tab-icon">⛳</div>
+    <div class="type-tab-name">ラウンド<br>レッスン</div>
+  </div>
+  <div class="type-tab" id="tab-accompany" onclick="switchType('accompany')">
+    <div class="type-tab-icon">🚗</div>
+    <div class="type-tab-name">同伴<br>ラウンド</div>
+  </div>
+  <div class="type-tab" id="tab-comp" onclick="switchType('comp')">
+    <div class="type-tab-icon">🏆</div>
+    <div class="type-tab-name">コンペ<br>参加</div>
+  </div>
+</div>
+
+<!-- メイン -->
 <main class="main">
   <div id="msg-global" class="msg"></div>
 
-  <!-- ステップバー -->
-  <div class="step-bar">
-    <div class="step-item">
-      <div class="step-line done" id="line-1"></div>
-      <div class="step-circle active" id="step-1">1</div>
-      <div class="step-label active" id="step-label-1">種別選択</div>
+  <!-- 選択中種別バナー -->
+  <div class="active-type-banner indoor" id="type-banner">
+    <div class="banner-icon" id="banner-icon">🏌</div>
+    <div class="banner-info">
+      <div class="banner-name" id="banner-name">インドアゴルフレッスン</div>
+      <div class="banner-desc" id="banner-desc">空き時間（何時〜何時）を登録</div>
     </div>
-    <div class="step-item">
-      <div class="step-line" id="line-2"></div>
-      <div class="step-circle" id="step-2">2</div>
-      <div class="step-label" id="step-label-2">日時設定</div>
-    </div>
-    <div class="step-item">
-      <div class="step-circle" id="step-3">3</div>
-      <div class="step-label" id="step-label-3">完了</div>
+    <div style="text-align:center;">
+      <div class="banner-count" id="banner-count">0</div>
+      <div class="banner-count-label" id="banner-unit">コマ登録中</div>
     </div>
   </div>
 
-  <!-- ===== STEP1：種別選択 ===== -->
-  <div id="step-view-1">
-    <div class="card">
-      <div class="card-title">
-        📋 どの種別のスケジュールを登録しますか？
-      </div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7;">
-        種別を選ぶと次のステップで日時を設定できます。<br>
-        種別ごとに別々に登録してください。
-      </div>
-      <div class="type-grid">
-        <div class="type-card" id="type-indoor" onclick="selectType('indoor')">
-          <div class="type-card-icon">🏌</div>
-          <div class="type-card-name">インドア<br>ゴルフレッスン</div>
-          <div class="type-card-desc">30・50・90・120分<br>→ 時間帯を設定</div>
-        </div>
-        <div class="type-card" id="type-round" onclick="selectType('round')">
-          <div class="type-card-icon">⛳</div>
-          <div class="type-card-name">ラウンド<br>レッスン</div>
-          <div class="type-card-desc">1ラウンド固定<br>→ 日にちを設定</div>
-        </div>
-        <div class="type-card" id="type-accompany" onclick="selectType('accompany')">
-          <div class="type-card-icon">🚗</div>
-          <div class="type-card-name">同伴<br>ラウンド</div>
-          <div class="type-card-desc">1ラウンド固定<br>→ 日にちを設定</div>
-        </div>
-        <div class="type-card" id="type-comp" onclick="selectType('comp')">
-          <div class="type-card-icon">🏆</div>
-          <div class="type-card-name">コンペ<br>参加</div>
-          <div class="type-card-desc">1ラウンド固定<br>→ 日にちを設定</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== STEP2A：時間設定（インドア） ===== -->
-  <div id="step-view-2-time" style="display:none;">
-    <div class="selected-type-badge">
-      <span class="selected-type-badge-icon">🏌</span>
-      <span class="selected-type-badge-name">インドアゴルフレッスン</span>
-      <span style="font-size:10px;color:var(--muted);margin-left:auto;">種別変更は戻るボタンから</span>
-    </div>
-
-    <div class="slot-count-bar">
-      <div class="slot-count-text">登録中の空き時間</div>
-      <div><span class="slot-count-num" id="slot-count-time">0</span><span style="font-size:11px;color:var(--muted);"> コマ</span></div>
-    </div>
-
+  <!-- ===== インドア用：時間設定 ===== -->
+  <div id="view-indoor">
     <div class="card">
       <div class="card-title">📅 空き時間をタップして登録</div>
 
-      <!-- モード切替 -->
       <div class="mode-wrap">
-        <button class="mode-btn active" id="mode-week" onclick="switchMode('week')">週間ビュー</button>
+        <button class="mode-btn active" id="mode-week-btn" onclick="switchMode('week')">週間ビュー</button>
         <button class="mode-btn" id="mode-month-btn" onclick="switchMode('month')">月間ビュー</button>
       </div>
 
@@ -234,12 +196,12 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="bulk-wrap">
         <div class="bulk-title">⚡ 時間帯を一括設定</div>
         <div class="bulk-row">
-          <button class="time-chip" onclick="toggleTimeRange('morning',this)">午前（8〜12時）</button>
-          <button class="time-chip" onclick="toggleTimeRange('afternoon',this)">午後（12〜17時）</button>
-          <button class="time-chip" onclick="toggleTimeRange('evening',this)">夕方（17〜21時）</button>
+          <button class="time-chip" onclick="toggleChip('morning',this)">午前（8〜12時）</button>
+          <button class="time-chip" onclick="toggleChip('afternoon',this)">午後（12〜17時）</button>
+          <button class="time-chip" onclick="toggleChip('evening',this)">夕方（17〜21時）</button>
         </div>
         <div class="bulk-row">
-          <button class="bulk-btn" onclick="applyBulkToWeek()">この週に一括適用</button>
+          <button class="bulk-btn" onclick="applyBulk()">この週に一括適用</button>
           <button class="bulk-btn clear" onclick="clearWeek()">この週をクリア</button>
         </div>
       </div>
@@ -253,9 +215,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </div>
         <div id="week-wrap">
           <div class="week-header-row" id="week-header"></div>
-          <div class="week-scroll">
-            <div class="week-grid" id="week-grid"></div>
-          </div>
+          <div class="week-scroll"><div class="week-grid" id="week-grid"></div></div>
         </div>
         <div class="legend">
           <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g);"></div>空き登録済み</div>
@@ -267,77 +227,43 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <!-- 月間ビュー -->
       <div id="view-month" style="display:none;">
         <div class="month-nav">
-          <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
-          <div class="month-nav-label" id="month-label-time"></div>
-          <button class="month-nav-btn" onclick="moveMonth(1)">›</button>
+          <button class="month-nav-btn" onclick="moveMonthIndoor(-1)">‹</button>
+          <div class="month-nav-label" id="month-label-indoor"></div>
+          <button class="month-nav-btn" onclick="moveMonthIndoor(1)">›</button>
         </div>
-        <div class="month-day-headers" id="month-header-time"></div>
-        <div class="month-grid" id="month-grid-time" style="margin-top:3px;"></div>
-        <div class="legend" style="margin-top:10px;">
+        <div class="month-day-headers" id="month-hdr-indoor"></div>
+        <div class="month-grid" id="month-grid-indoor" style="margin-top:3px;"></div>
+        <div class="legend" style="margin-top:8px;">
           <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g);"></div>空き登録済み</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ===== STEP2B：日付設定（ラウンド系） ===== -->
-  <div id="step-view-2-date" style="display:none;">
-    <div class="selected-type-badge" id="selected-type-label">
-      <span class="selected-type-badge-icon" id="selected-icon">⛳</span>
-      <span class="selected-type-badge-name" id="selected-name">ラウンドレッスン</span>
-      <span style="font-size:10px;color:var(--muted);margin-left:auto;">種別変更は戻るボタンから</span>
-    </div>
-
-    <div class="slot-count-bar">
-      <div class="slot-count-text">登録中の空き日数</div>
-      <div><span class="slot-count-num" id="slot-count-date">0</span><span style="font-size:11px;color:var(--muted);"> 日</span></div>
-    </div>
-
+  <!-- ===== ラウンド系：日付設定 ===== -->
+  <div id="view-round" style="display:none;">
     <div class="card">
-      <div class="card-title">📅 参加できる日をタップして登録</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">タップで選択、もう一度タップで解除できます。</div>
+      <div class="card-title" id="date-card-title">📅 参加できる日をタップして登録</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">タップで選択・もう一度タップで解除。過去の日付は選択できません。</div>
       <div class="month-nav">
         <button class="month-nav-btn" onclick="moveMonthDate(-1)">‹</button>
         <div class="month-nav-label" id="month-label-date"></div>
         <button class="month-nav-btn" onclick="moveMonthDate(1)">›</button>
       </div>
-      <div class="month-day-headers" id="month-header-date"></div>
+      <div class="month-day-headers" id="month-hdr-date"></div>
       <div class="month-grid" id="month-grid-date" style="margin-top:3px;"></div>
-      <div class="legend" style="margin-top:10px;">
+      <div class="legend" style="margin-top:8px;">
         <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g);"></div>参加可能日</div>
         <div class="legend-item"><div class="legend-dot" style="background:#fff;border:2px solid var(--g);"></div>今日</div>
       </div>
     </div>
   </div>
 
-  <!-- ===== STEP3：完了 ===== -->
-  <div id="step-view-3" style="display:none;">
-    <div class="card" style="text-align:center;padding:32px 16px;">
-      <div style="font-size:56px;margin-bottom:16px;">✅</div>
-      <div style="font-size:18px;font-weight:700;color:var(--gd);margin-bottom:8px;">登録完了！</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px;" id="complete-msg">
-        スケジュールを保存しました。<br>京都店・伏見店 両方のカレンダーに反映されました。
-      </div>
-      <div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:20px;">
-        <div style="font-size:12px;color:var(--gd);font-weight:700;margin-bottom:6px;">登録内容</div>
-        <div style="font-size:13px;color:var(--text);" id="complete-detail"></div>
-      </div>
-      <button onclick="goBackToStep1()" style="width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">
-        別の種別も登録する
-      </button>
-      <a href="coach.html" style="display:block;width:100%;padding:12px;background:#fff;color:var(--muted);border:1px solid var(--border);border-radius:12px;font-size:13px;text-align:center;text-decoration:none;">
-        コーチ画面に戻る
-      </a>
-    </div>
-  </div>
-
 </main>
 
-<!-- アクションバー -->
-<div class="action-bar" id="action-bar">
-  <button class="next-btn" id="next-btn" onclick="handleNext()" disabled style="opacity:0.5;">
-    種別を選んでください
-  </button>
+<!-- 保存バー -->
+<div class="save-bar">
+  <button class="save-btn" id="save-btn" onclick="saveSchedule()">✅ このスケジュールを登録する（両店舗に反映）</button>
 </div>
 
 <script>
@@ -347,217 +273,120 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSess
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 
 let currentCoachId=null;
-let currentStep=1;
-let selectedType=null;
-let scheduleData={};   // インドア用 key: "indoor_YYYY-MM-DD_H"
-let selectedDates={};  // ラウンド系 key: "round_YYYY-MM-DD" など
+let currentType='indoor';
 let weekOffset=0;
-let currentMonthTime=new Date();
+let currentMonthIndoor=new Date();
 let currentMonthDate=new Date();
-let selectedTimeRanges=new Set();
+let selectedChips=new Set();
 let isSaving=false;
 
-const typeInfo={
-  indoor:{icon:'🏌',name:'インドアゴルフレッスン',mode:'time'},
-  round:{icon:'⛳',name:'ラウンドレッスン',mode:'date'},
-  accompany:{icon:'🚗',name:'同伴ラウンド',mode:'date'},
-  comp:{icon:'🏆',name:'コンペ参加',mode:'date'},
+// データ管理
+// indoorData: { "YYYY-MM-DD_H": "available"|"booked" }
+// dateData:   { "round_YYYY-MM-DD": true, "accompany_YYYY-MM-DD": true, "comp_YYYY-MM-DD": true }
+let indoorData={};
+let dateData={};
+
+const typeConfig={
+  indoor:{icon:'🏌',name:'インドアゴルフレッスン',desc:'空き時間（何時〜何時）を登録',unit:'コマ登録中',color:'indoor',mode:'time'},
+  round:{icon:'⛳',name:'ラウンドレッスン',desc:'参加できる日にちを登録',unit:'日登録中',color:'round',mode:'date'},
+  accompany:{icon:'🚗',name:'同伴ラウンド',desc:'参加できる日にちを登録',unit:'日登録中',color:'accompany',mode:'date'},
+  comp:{icon:'🏆',name:'コンペ参加',desc:'参加できる日にちを登録',unit:'日登録中',color:'comp',mode:'date'},
 };
 
-/* ===== 日付変換 ===== */
 function toDateStr(d){
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
-/* ===== 認証チェック ===== */
+/* ===== 認証 ===== */
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.replace(BASE+'index.html');return;}
   currentCoachId=session.user.id;
   document.getElementById('coach-name').textContent=session.user.user_metadata?.name||'コーチ';
-  await loadAllSchedules();
+  await loadAll();
+  switchType('indoor');
 })();
 
-/* ===== Supabaseから読み込み ===== */
-async function loadAllSchedules(){
-  if(!currentCoachId)return;
+/* ===== 全データ読み込み ===== */
+async function loadAll(){
   try{
     const {data,error}=await sb.from('schedules').select('*').eq('coach_id',currentCoachId);
     if(error){console.error(error);return;}
-    scheduleData={};selectedDates={};
+    indoorData={};dateData={};
     (data||[]).forEach(row=>{
       if(row.lesson_type==='indoor'){
-        const key='indoor_'+row.slot_date+'_'+row.slot_hour;
-        scheduleData[key]=row.status;
+        indoorData[row.slot_date+'_'+row.slot_hour]=row.status;
       }else{
-        const key=row.lesson_type+'_'+row.slot_date;
-        selectedDates[key]=true;
+        dateData[row.lesson_type+'_'+row.slot_date]=true;
       }
     });
+    updateBannerCount();
   }catch(e){console.error(e);}
 }
 
-/* ===== STEP1：種別選択 ===== */
-function selectType(type){
-  selectedType=type;
-  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('type-'+type).classList.add('selected');
-  const btn=document.getElementById('next-btn');
-  btn.textContent='「'+typeInfo[type].name+'」で次へ →';
-  btn.disabled=false;btn.style.opacity='1';
-}
+/* ===== 種別切替 ===== */
+function switchType(type){
+  currentType=type;
+  const cfg=typeConfig[type];
 
-/* ===== 次へ処理 ===== */
-function handleNext(){
-  if(currentStep===1){
-    if(!selectedType)return;
-    goToStep2();
-  }else if(currentStep===2){
-    saveSchedule();
-  }
-}
+  // タブ更新
+  document.querySelectorAll('.type-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+type).classList.add('active');
 
-function goToStep2(){
-  currentStep=2;
-  // ステップバー更新
-  document.getElementById('step-1').className='step-circle done';
-  document.getElementById('step-2').className='step-circle active';
-  document.getElementById('step-label-1').className='step-label';
-  document.getElementById('step-label-2').className='step-label active';
-  document.getElementById('line-1').className='step-line done';
-  document.getElementById('line-2').className='step-line done';
+  // バナー更新
+  const banner=document.getElementById('type-banner');
+  banner.className='active-type-banner '+cfg.color;
+  document.getElementById('banner-icon').textContent=cfg.icon;
+  document.getElementById('banner-name').textContent=cfg.name;
+  document.getElementById('banner-desc').textContent=cfg.desc;
+  document.getElementById('banner-unit').textContent=cfg.unit;
 
-  document.getElementById('step-view-1').style.display='none';
-  const info=typeInfo[selectedType];
+  // ビュー切替
+  document.getElementById('view-indoor').style.display=cfg.mode==='time'?'block':'none';
+  document.getElementById('view-round').style.display=cfg.mode==='date'?'block':'none';
 
-  if(info.mode==='time'){
-    // インドア → 時間設定
-    document.getElementById('step-view-2-time').style.display='block';
-    document.getElementById('step-view-2-date').style.display='none';
+  if(cfg.mode==='time'){
     buildWeekGrid();
-    buildMonthGridTime();
-    updateSlotCountTime();
-    document.getElementById('next-btn').textContent='💾 このスケジュールを登録する';
-    document.getElementById('next-btn').disabled=false;
-    document.getElementById('next-btn').style.opacity='1';
+    buildMonthGridIndoor();
   }else{
-    // ラウンド系 → 日付設定
-    document.getElementById('step-view-2-date').style.display='block';
-    document.getElementById('step-view-2-time').style.display='none';
-    document.getElementById('selected-icon').textContent=info.icon;
-    document.getElementById('selected-name').textContent=info.name;
     buildMonthGridDate();
-    updateSlotCountDate();
-    document.getElementById('next-btn').textContent='💾 このスケジュールを登録する';
-    document.getElementById('next-btn').disabled=false;
-    document.getElementById('next-btn').style.opacity='1';
   }
+  updateBannerCount();
+}
 
-  // 戻るボタン追加
-  const bar=document.getElementById('action-bar');
-  if(!document.getElementById('back-step-btn')){
-    const backBtn=document.createElement('button');
-    backBtn.className='back-step-btn';backBtn.id='back-step-btn';
-    backBtn.textContent='← 種別選択に戻る';
-    backBtn.onclick=goBackToStep1;
-    bar.appendChild(backBtn);
+/* ===== バナーカウント更新 ===== */
+function updateBannerCount(){
+  let count=0;
+  if(currentType==='indoor'){
+    count=Object.values(indoorData).filter(v=>v==='available').length;
+  }else{
+    count=Object.keys(dateData).filter(k=>k.startsWith(currentType+'_')).length;
   }
+  document.getElementById('banner-count').textContent=count;
 }
 
-function goBackToStep1(){
-  currentStep=1;selectedType=null;
-  document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('step-view-1').style.display='block';
-  document.getElementById('step-view-2-time').style.display='none';
-  document.getElementById('step-view-2-date').style.display='none';
-  document.getElementById('step-view-3').style.display='none';
-  document.getElementById('action-bar').style.display='block';
-  document.getElementById('step-1').className='step-circle active';
-  document.getElementById('step-2').className='step-circle';
-  document.getElementById('step-3').className='step-circle';
-  document.getElementById('step-label-1').className='step-label active';
-  document.getElementById('step-label-2').className='step-label';
-  document.getElementById('step-label-3').className='step-label';
-  const btn=document.getElementById('next-btn');
-  btn.textContent='種別を選んでください';btn.disabled=true;btn.style.opacity='0.5';
-  const backBtn=document.getElementById('back-step-btn');
-  if(backBtn)backBtn.remove();
+/* ===== モード切替（インドア） ===== */
+function switchMode(mode){
+  document.getElementById('mode-week-btn').classList.toggle('active',mode==='week');
+  document.getElementById('mode-month-btn').classList.toggle('active',mode==='month');
+  document.getElementById('view-week').style.display=mode==='week'?'block':'none';
+  document.getElementById('view-month').style.display=mode==='month'?'block':'none';
+  if(mode==='month')buildMonthGridIndoor();
 }
 
-/* ===== 保存 ===== */
-async function saveSchedule(){
-  if(isSaving)return;
-  isSaving=true;
-  const btn=document.getElementById('next-btn');
-  btn.textContent='保存中...';btn.disabled=true;
-
-  try{
-    const info=typeInfo[selectedType];
-    // 同じ種別の既存データを削除
-    await sb.from('schedules').delete().eq('coach_id',currentCoachId).eq('lesson_type',selectedType);
-
-    let rows=[];
-    let count=0;
-
-    if(info.mode==='time'){
-      // インドア：時間スロット
-      Object.entries(scheduleData).forEach(([key,val])=>{
-        if(!key.startsWith('indoor_')||val!=='available')return;
-        const parts=key.replace('indoor_','').split('_');
-        rows.push({coach_id:currentCoachId,lesson_type:'indoor',slot_date:parts[0],slot_hour:parseInt(parts[1]),status:'available'});
-        count++;
-      });
-    }else{
-      // ラウンド系：日付
-      Object.entries(selectedDates).forEach(([key])=>{
-        if(!key.startsWith(selectedType+'_'))return;
-        const date=key.replace(selectedType+'_','');
-        rows.push({coach_id:currentCoachId,lesson_type:selectedType,slot_date:date,slot_hour:0,status:'available'});
-        count++;
-      });
-    }
-
-    if(rows.length>0){
-      const {error}=await sb.from('schedules').insert(rows);
-      if(error){showMsg('保存に失敗しました：'+error.message,'error');isSaving=false;btn.textContent='💾 このスケジュールを登録する';btn.disabled=false;return;}
-    }
-
-    // STEP3完了画面へ
-    goToStep3(info, count);
-
-  }catch(e){
-    showMsg('エラーが発生しました','error');console.error(e);
-  }
-  isSaving=false;
-}
-
-function goToStep3(info, count){
-  currentStep=3;
-  document.getElementById('step-2').className='step-circle done';
-  document.getElementById('step-3').className='step-circle active';
-  document.getElementById('step-label-2').className='step-label';
-  document.getElementById('step-label-3').className='step-label active';
-  document.getElementById('step-view-2-time').style.display='none';
-  document.getElementById('step-view-2-date').style.display='none';
-  document.getElementById('step-view-3').style.display='block';
-  document.getElementById('action-bar').style.display='none';
-  const unit=info.mode==='time'?'コマ':'日';
-  document.getElementById('complete-detail').textContent=info.icon+' '+info.name+'：'+count+unit+' 登録';
-}
-
-/* ===== 週間グリッド（インドア） ===== */
+/* ===== 週間グリッド ===== */
 function buildWeekGrid(){
   const days=['日','月','火','水','木','金','土'];
   const today=new Date();
   const base=new Date(today);base.setDate(today.getDate()-today.getDay()+weekOffset*7);
-  const header=document.getElementById('week-header');
-  header.innerHTML='<div class="week-day-hdr"></div>';
+  const hdr=document.getElementById('week-header');
+  hdr.innerHTML='<div class="week-day-hdr"></div>';
   const dates=[];
   for(let i=0;i<7;i++){
     const d=new Date(base);d.setDate(base.getDate()+i);dates.push(d);
     const isToday=d.toDateString()===today.toDateString();
     const cls='week-day-hdr'+(isToday?' today':i===0?' sun':i===6?' sat':'');
-    header.innerHTML+=`<div class="${cls}">${days[i]}<br><b style="font-size:12px">${d.getDate()}</b></div>`;
+    hdr.innerHTML+=`<div class="${cls}">${days[i]}<br><b style="font-size:11px">${d.getDate()}</b></div>`;
   }
   const s=dates[0],e=dates[6];
   document.getElementById('week-label').textContent=`${s.getMonth()+1}/${s.getDate()} 〜 ${e.getMonth()+1}/${e.getDate()}`;
@@ -566,15 +395,15 @@ function buildWeekGrid(){
     const tl=document.createElement('div');tl.className='week-time-label';tl.textContent=h+':00';grid.appendChild(tl);
     for(let di=0;di<7;di++){
       const dateStr=toDateStr(dates[di]);
-      const key='indoor_'+dateStr+'_'+h;
+      const key=dateStr+'_'+h;
       const slot=document.createElement('div');
-      const st=scheduleData[key];
+      const st=indoorData[key];
       slot.className='week-slot'+(st==='available'?' available':st==='booked'?' booked':'');
       if(st!=='booked'){
         slot.onclick=function(){
-          if(scheduleData[key]==='available'){delete scheduleData[key];slot.className='week-slot';}
-          else{scheduleData[key]='available';slot.className='week-slot available';}
-          updateSlotCountTime();
+          if(indoorData[key]==='available'){delete indoorData[key];slot.className='week-slot';}
+          else{indoorData[key]='available';slot.className='week-slot available';}
+          updateBannerCount();
         };
       }
       grid.appendChild(slot);
@@ -582,14 +411,14 @@ function buildWeekGrid(){
   }
   const wrap=document.getElementById('week-wrap');
   wrap.ontouchstart=e=>{wrap._sx=e.touches[0].clientX;};
-  wrap.ontouchend=e=>{const d=e.changedTouches[0].clientX-wrap._sx;if(Math.abs(d)>60)moveWeek(d<0?1:-1);};
+  wrap.ontouchend=e=>{const d=e.changedTouches[0].clientX-wrap._sx;if(Math.abs(d)>50)moveWeek(d<0?1:-1);};
 }
 function moveWeek(dir){weekOffset+=dir;buildWeekGrid();}
 
 /* 一括設定 */
-function toggleTimeRange(range,btn){
-  if(selectedTimeRanges.has(range)){selectedTimeRanges.delete(range);btn.classList.remove('selected');}
-  else{selectedTimeRanges.add(range);btn.classList.add('selected');}
+function toggleChip(range,btn){
+  if(selectedChips.has(range)){selectedChips.delete(range);btn.classList.remove('selected');}
+  else{selectedChips.add(range);btn.classList.add('selected');}
 }
 function getHours(range){
   if(range==='morning')return[8,9,10,11];
@@ -597,21 +426,18 @@ function getHours(range){
   if(range==='evening')return[17,18,19,20];
   return[];
 }
-function applyBulkToWeek(){
-  if(selectedTimeRanges.size===0){showMsg('時間帯を選んでから押してください','error');return;}
+function applyBulk(){
+  if(selectedChips.size===0){showMsg('時間帯を選んでから押してください','error');return;}
   const today=new Date();
   const base=new Date(today);base.setDate(today.getDate()-today.getDay()+weekOffset*7);
   for(let di=0;di<7;di++){
     const d=new Date(base);d.setDate(base.getDate()+di);
-    const dateStr=toDateStr(d);
-    selectedTimeRanges.forEach(range=>{
-      getHours(range).forEach(h=>{
-        const key='indoor_'+dateStr+'_'+h;
-        if(scheduleData[key]!=='booked')scheduleData[key]='available';
-      });
-    });
+    const ds=toDateStr(d);
+    selectedChips.forEach(r=>getHours(r).forEach(h=>{
+      if(indoorData[ds+'_'+h]!=='booked')indoorData[ds+'_'+h]='available';
+    }));
   }
-  buildWeekGrid();updateSlotCountTime();
+  buildWeekGrid();updateBannerCount();
   showMsg('一括適用しました！','success');
 }
 function clearWeek(){
@@ -619,98 +445,117 @@ function clearWeek(){
   const base=new Date(today);base.setDate(today.getDate()-today.getDay()+weekOffset*7);
   for(let di=0;di<7;di++){
     const d=new Date(base);d.setDate(base.getDate()+di);
-    const dateStr=toDateStr(d);
-    for(let h=6;h<=22;h++){
-      const key='indoor_'+dateStr+'_'+h;
-      if(scheduleData[key]==='available')delete scheduleData[key];
-    }
+    const ds=toDateStr(d);
+    for(let h=6;h<=22;h++){if(indoorData[ds+'_'+h]==='available')delete indoorData[ds+'_'+h];}
   }
-  buildWeekGrid();updateSlotCountTime();
+  buildWeekGrid();updateBannerCount();
   showMsg('この週をクリアしました','success');
-}
-function updateSlotCountTime(){
-  const c=Object.keys(scheduleData).filter(k=>k.startsWith('indoor_')&&scheduleData[k]==='available').length;
-  document.getElementById('slot-count-time').textContent=c;
 }
 
 /* ===== 月間ビュー（インドア） ===== */
-function switchMode(mode){
-  document.getElementById('mode-week').classList.toggle('active',mode==='week');
-  document.getElementById('mode-month-btn').classList.toggle('active',mode==='month');
-  document.getElementById('view-week').style.display=mode==='week'?'block':'none';
-  document.getElementById('view-month').style.display=mode==='month'?'block':'none';
-  if(mode==='month')buildMonthGridTime();
-}
-function buildMonthGridTime(){
+function buildMonthGridIndoor(){
   const days=['日','月','火','水','木','金','土'];
-  const hdr=document.getElementById('month-header-time');hdr.innerHTML='';
+  const hdr=document.getElementById('month-hdr-indoor');hdr.innerHTML='';
   days.forEach((d,i)=>{const el=document.createElement('div');el.className='month-day-hdr'+(i===0?' sun':i===6?' sat':'');el.textContent=d;hdr.appendChild(el);});
-  const year=currentMonthTime.getFullYear(),month=currentMonthTime.getMonth();
-  document.getElementById('month-label-time').textContent=year+'年'+(month+1)+'月';
+  const year=currentMonthIndoor.getFullYear(),month=currentMonthIndoor.getMonth();
+  document.getElementById('month-label-indoor').textContent=year+'年'+(month+1)+'月';
   const first=new Date(year,month,1),last=new Date(year,month+1,0),today=new Date();
-  const grid=document.getElementById('month-grid-time');grid.innerHTML='';
+  const grid=document.getElementById('month-grid-indoor');grid.innerHTML='';
   for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='month-cell other-month';grid.appendChild(c);}
   for(let d=1;d<=last.getDate();d++){
     const cell=document.createElement('div');
-    const dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const ds=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const isToday=new Date(year,month,d).toDateString()===today.toDateString();
-    cell.className='month-cell'+(isToday?' today':'');
-    const cnt=Object.keys(scheduleData).filter(k=>k.startsWith('indoor_'+dateStr+'_')&&scheduleData[k]==='available').length;
-    if(cnt>0){cell.classList.add('selected-day');cell.innerHTML=`<div class="month-date">${d}</div><div style="font-size:9px;color:var(--g);font-weight:700;">${cnt}コマ</div>`;}
-    else cell.innerHTML=`<div class="month-date">${d}</div>`;
+    const cnt=Object.keys(indoorData).filter(k=>k.startsWith(ds+'_')&&indoorData[k]==='available').length;
+    cell.className='month-cell'+(isToday?' today':'')+(cnt>0?' sel':'');
+    cell.innerHTML=`<div class="month-date">${d}</div>${cnt>0?`<div class="month-slot-count">${cnt}コマ</div>`:''}`;
     cell.onclick=function(){
-      const hasAny=Object.keys(scheduleData).some(k=>k.startsWith('indoor_'+dateStr+'_')&&scheduleData[k]==='available');
-      if(hasAny){for(let h=8;h<=20;h++)delete scheduleData['indoor_'+dateStr+'_'+h];}
-      else{for(let h=8;h<=20;h++)scheduleData['indoor_'+dateStr+'_'+h]='available';}
-      buildMonthGridTime();updateSlotCountTime();
+      const has=Object.keys(indoorData).some(k=>k.startsWith(ds+'_')&&indoorData[k]==='available');
+      if(has){for(let h=8;h<=20;h++)delete indoorData[ds+'_'+h];}
+      else{for(let h=8;h<=20;h++)indoorData[ds+'_'+h]='available';}
+      buildMonthGridIndoor();updateBannerCount();
     };
     grid.appendChild(cell);
   }
 }
-function moveMonth(dir){currentMonthTime=new Date(currentMonthTime.getFullYear(),currentMonthTime.getMonth()+dir,1);buildMonthGridTime();}
+function moveMonthIndoor(dir){currentMonthIndoor=new Date(currentMonthIndoor.getFullYear(),currentMonthIndoor.getMonth()+dir,1);buildMonthGridIndoor();}
 
 /* ===== 月間ビュー（ラウンド系） ===== */
 function buildMonthGridDate(){
   const days=['日','月','火','水','木','金','土'];
-  const hdr=document.getElementById('month-header-date');hdr.innerHTML='';
+  const hdr=document.getElementById('month-hdr-date');hdr.innerHTML='';
   days.forEach((d,i)=>{const el=document.createElement('div');el.className='month-day-hdr'+(i===0?' sun':i===6?' sat':'');el.textContent=d;hdr.appendChild(el);});
   const year=currentMonthDate.getFullYear(),month=currentMonthDate.getMonth();
   document.getElementById('month-label-date').textContent=year+'年'+(month+1)+'月';
-  const first=new Date(year,month,1),last=new Date(year,month+1,0),today=new Date();
-  today.setHours(0,0,0,0);
+  const first=new Date(year,month,1),last=new Date(year,month+1,0);
+  const today=new Date();today.setHours(0,0,0,0);
   const grid=document.getElementById('month-grid-date');grid.innerHTML='';
   for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='month-cell other-month';grid.appendChild(c);}
   for(let d=1;d<=last.getDate();d++){
     const cell=document.createElement('div');
-    const dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const ds=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const cellDate=new Date(year,month,d);
     const isToday=cellDate.toDateString()===today.toDateString();
     const isPast=cellDate<today;
-    const isSelected=selectedDates[selectedType+'_'+dateStr];
-    cell.className='month-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSelected?' selected-day':'');
+    const isSel=dateData[currentType+'_'+ds];
+    cell.className='month-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSel?' sel':'');
     cell.innerHTML=`<div class="month-date">${d}</div>`;
     if(!isPast){
       cell.onclick=function(){
-        const key=selectedType+'_'+dateStr;
-        if(selectedDates[key]){delete selectedDates[key];cell.classList.remove('selected-day');}
-        else{selectedDates[key]=true;cell.classList.add('selected-day');}
-        updateSlotCountDate();
+        const key=currentType+'_'+ds;
+        if(dateData[key]){delete dateData[key];cell.classList.remove('sel');}
+        else{dateData[key]=true;cell.classList.add('sel');}
+        updateBannerCount();
       };
     }
     grid.appendChild(cell);
   }
 }
 function moveMonthDate(dir){currentMonthDate=new Date(currentMonthDate.getFullYear(),currentMonthDate.getMonth()+dir,1);buildMonthGridDate();}
-function updateSlotCountDate(){
-  const c=Object.keys(selectedDates).filter(k=>k.startsWith(selectedType+'_')).length;
-  document.getElementById('slot-count-date').textContent=c;
+
+/* ===== 保存 ===== */
+async function saveSchedule(){
+  if(isSaving)return;
+  isSaving=true;
+  const btn=document.getElementById('save-btn');
+  btn.textContent='保存中...';btn.disabled=true;
+  try{
+    // 同じ種別の既存データを削除
+    await sb.from('schedules').delete().eq('coach_id',currentCoachId).eq('lesson_type',currentType);
+    let rows=[];
+    if(currentType==='indoor'){
+      Object.entries(indoorData).filter(([,v])=>v==='available').forEach(([key])=>{
+        const[date,hour]=key.split('_');
+        rows.push({coach_id:currentCoachId,lesson_type:'indoor',slot_date:date,slot_hour:parseInt(hour),status:'available'});
+      });
+    }else{
+      Object.keys(dateData).filter(k=>k.startsWith(currentType+'_')).forEach(key=>{
+        const date=key.replace(currentType+'_','');
+        rows.push({coach_id:currentCoachId,lesson_type:currentType,slot_date:date,slot_hour:0,status:'available'});
+      });
+    }
+    if(rows.length>0){
+      const{error}=await sb.from('schedules').insert(rows);
+      if(error){showMsg('保存に失敗しました：'+error.message,'error');isSaving=false;resetBtn();return;}
+    }
+    const cfg=typeConfig[currentType];
+    const unit=cfg.mode==='time'?'コマ':'日';
+    showMsg('✅ 「'+cfg.name+'」のスケジュールを'+rows.length+unit+'登録しました！京都店・伏見店 両方に反映されました。','success');
+  }catch(e){showMsg('エラーが発生しました','error');console.error(e);}
+  isSaving=false;
+  resetBtn();
+}
+function resetBtn(){
+  const btn=document.getElementById('save-btn');
+  btn.textContent='✅ このスケジュールを登録する（両店舗に反映）';
+  btn.disabled=false;
 }
 
 /* ===== メッセージ ===== */
 function showMsg(text,type){
   const el=document.getElementById('msg-global');
   el.textContent=text;el.className='msg '+type;
-  if(type==='success')setTimeout(()=>{el.className='msg';el.textContent='';},3000);
+  if(type==='success')setTimeout(()=>{el.className='msg';el.textContent='';},4000);
 }
 </script>
 </body>
