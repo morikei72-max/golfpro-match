@@ -257,10 +257,17 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
 .msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
 
-@media(max-width:360px){
-  .tab-btn{font-size:8px;}
-  .tab-btn svg{width:18px;height:18px;}
+.price-breakdown{
+  background:#f7faf8;border-radius:8px;padding:8px 10px;
+  margin:-6px 0 8px;font-size:11px;
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;
 }
+.breakdown-item{text-align:center;}
+.breakdown-label{color:var(--muted);font-size:10px;margin-bottom:2px;}
+.breakdown-val{font-weight:700;font-family:'Montserrat',sans-serif;}
+.breakdown-val.store{color:var(--gold);}
+.breakdown-val.hq{color:var(--red);}
+.breakdown-val.coach{color:var(--gd);font-size:13px;}
 </style>
 </head>
 <body>
@@ -361,41 +368,88 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
     <div class="card">
       <div class="card-title">料金設定</div>
-      <div class="price-row">
-        <span class="price-label">インドア 30分</span>
-        <input type="number" class="price-input" id="price-30" placeholder="3000">
-        <span class="price-unit">円</span>
+
+      <!-- 店舗選択 -->
+      <div class="form-group">
+        <label class="form-label">所属店舗を選択</label>
+        <select class="form-input" id="store-select" onchange="updatePriceBreakdown()">
+          <option value="">店舗を選択してください</option>
+          <option value="kyoto">Golf Create tozuike 京都店</option>
+          <option value="fushimi">Golf Create tozuike 伏見店</option>
+        </select>
       </div>
-      <div class="price-row">
-        <span class="price-label">インドア 50分</span>
-        <input type="number" class="price-input" id="price-50" placeholder="5000">
-        <span class="price-unit">円</span>
+
+      <!-- 手数料表示 -->
+      <div id="fee-info" style="display:none;background:#f7faf8;border-radius:12px;padding:12px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">手数料設定（店舗より）</div>
+        <div style="display:flex;gap:8px;margin-bottom:4px;">
+          <div style="flex:1;background:#fff;border-radius:8px;padding:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);">店舗使用料</div>
+            <div style="font-size:18px;font-weight:900;color:var(--gold);font-family:'Montserrat',sans-serif;" id="store-fee-pct">15%</div>
+          </div>
+          <div style="flex:1;background:#fff;border-radius:8px;padding:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);">本部手数料</div>
+            <div style="font-size:18px;font-weight:900;color:var(--red);font-family:'Montserrat',sans-serif;" id="hq-fee-pct">5%</div>
+          </div>
+          <div style="flex:1;background:var(--gl);border-radius:8px;padding:8px;text-align:center;">
+            <div style="font-size:11px;color:var(--muted);">コーチ手取り</div>
+            <div style="font-size:18px;font-weight:900;color:var(--gd);font-family:'Montserrat',sans-serif;" id="coach-pct">80%</div>
+          </div>
+        </div>
       </div>
-      <div class="price-row">
-        <span class="price-label">インドア 90分</span>
-        <input type="number" class="price-input" id="price-90" placeholder="8000">
-        <span class="price-unit">円</span>
+
+      <!-- 料金入力 -->
+      <div id="price-inputs">
+        <div class="price-row">
+          <span class="price-label">インドア 30分</span>
+          <input type="number" class="price-input" id="price-30" placeholder="3000" oninput="updateBreakdownRow('30',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-30" class="price-breakdown" style="display:none"></div>
+
+        <div class="price-row">
+          <span class="price-label">インドア 50分</span>
+          <input type="number" class="price-input" id="price-50" placeholder="5000" oninput="updateBreakdownRow('50',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-50" class="price-breakdown" style="display:none"></div>
+
+        <div class="price-row">
+          <span class="price-label">インドア 90分</span>
+          <input type="number" class="price-input" id="price-90" placeholder="8000" oninput="updateBreakdownRow('90',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-90" class="price-breakdown" style="display:none"></div>
+
+        <div class="price-row">
+          <span class="price-label">インドア 120分</span>
+          <input type="number" class="price-input" id="price-120" placeholder="10000" oninput="updateBreakdownRow('120',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-120" class="price-breakdown" style="display:none"></div>
+
+        <div class="price-row">
+          <span class="price-label">ラウンドレッスン</span>
+          <input type="number" class="price-input" id="price-round" placeholder="20000" oninput="updateBreakdownRow('round',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-round" class="price-breakdown" style="display:none"></div>
+
+        <div class="price-row">
+          <span class="price-label">同伴ラウンド</span>
+          <input type="number" class="price-input" id="price-accompany" placeholder="15000" oninput="updateBreakdownRow('accompany',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-accompany" class="price-breakdown" style="display:none"></div>
+
+        <div class="price-row">
+          <span class="price-label">コンペ参加</span>
+          <input type="number" class="price-input" id="price-comp" placeholder="10000" oninput="updateBreakdownRow('comp',this.value)">
+          <span class="price-unit">円</span>
+        </div>
+        <div id="breakdown-comp" class="price-breakdown" style="display:none"></div>
       </div>
-      <div class="price-row">
-        <span class="price-label">インドア 120分</span>
-        <input type="number" class="price-input" id="price-120" placeholder="10000">
-        <span class="price-unit">円</span>
-      </div>
-      <div class="price-row">
-        <span class="price-label">ラウンドレッスン</span>
-        <input type="number" class="price-input" id="price-round" placeholder="20000">
-        <span class="price-unit">円</span>
-      </div>
-      <div class="price-row">
-        <span class="price-label">同伴ラウンド</span>
-        <input type="number" class="price-input" id="price-accompany" placeholder="15000">
-        <span class="price-unit">円</span>
-      </div>
-      <div class="price-row">
-        <span class="price-label">コンペ参加</span>
-        <input type="number" class="price-input" id="price-comp" placeholder="10000">
-        <span class="price-unit">円</span>
-      </div>
+
       <button class="save-btn" onclick="savePrices()">料金を保存</button>
     </div>
   </div>
@@ -784,7 +838,7 @@ function switchBoard(type,btn){
 async function loadHomeStats(){
   document.getElementById('stat-today').textContent='2';
   document.getElementById('stat-month').textContent='18';
-  document.getElementById('stat-income').textContent='¥58K';
+  document.getElementById('stat-income').textContent='¥58,000';
   document.getElementById('monthly-income').textContent='¥58,000';
   document.getElementById('total-income').textContent='¥320,000';
   document.getElementById('count-indoor').textContent='12';
@@ -862,12 +916,64 @@ function saveProfile(){
   showMsg('プロフィールを保存しました！','success');
 }
 
+/* ===== 店舗別手数料設定 ===== */
+const storeFees={
+  kyoto:{name:'京都店',store:15,hq:5},
+  fushimi:{name:'伏見店',store:12,hq:5}
+};
+
+function updatePriceBreakdown(){
+  const storeKey=document.getElementById('store-select').value;
+  const feeInfo=document.getElementById('fee-info');
+  if(!storeKey){feeInfo.style.display='none';hideAllBreakdowns();return;}
+  const fee=storeFees[storeKey];
+  const coachPct=100-fee.store-fee.hq;
+  document.getElementById('store-fee-pct').textContent=fee.store+'%';
+  document.getElementById('hq-fee-pct').textContent=fee.hq+'%';
+  document.getElementById('coach-pct').textContent=coachPct+'%';
+  feeInfo.style.display='block';
+  ['30','50','90','120','round','accompany','comp'].forEach(id=>{
+    const val=document.getElementById('price-'+id).value;
+    if(val)updateBreakdownRow(id,val);
+  });
+}
+
+function updateBreakdownRow(id,val){
+  const storeKey=document.getElementById('store-select').value;
+  const el=document.getElementById('breakdown-'+id);
+  if(!storeKey||!val||val<=0){el.style.display='none';return;}
+  const fee=storeFees[storeKey];
+  const total=parseInt(val);
+  const storeFee=Math.round(total*fee.store/100);
+  const hqFee=Math.round(total*fee.hq/100);
+  const coachGet=total-storeFee-hqFee;
+  el.style.display='grid';
+  el.innerHTML=`
+    <div class="breakdown-item">
+      <div class="breakdown-label">店舗使用料(${fee.store}%)</div>
+      <div class="breakdown-val store">▲¥${storeFee.toLocaleString()}</div>
+    </div>
+    <div class="breakdown-item">
+      <div class="breakdown-label">本部手数料(${fee.hq}%)</div>
+      <div class="breakdown-val hq">▲¥${hqFee.toLocaleString()}</div>
+    </div>
+    <div class="breakdown-item">
+      <div class="breakdown-label">コーチ手取り</div>
+      <div class="breakdown-val coach">¥${coachGet.toLocaleString()}</div>
+    </div>
+  `;
+}
+
+function hideAllBreakdowns(){
+  ['30','50','90','120','round','accompany','comp'].forEach(id=>{
+    document.getElementById('breakdown-'+id).style.display='none';
+  });
+}
+
 /* ===== 料金保存 ===== */
 function savePrices(){
   showMsg('料金設定を保存しました！','success');
 }
-
-/* ===== 予約操作 ===== */
 function approveBooking(btn){
   const item=btn.closest('.booking-item');
   item.querySelector('.booking-status').className='booking-status status-approved';
