@@ -395,6 +395,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
       <div class="form-group"><label class="form-label">得意分野</label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
+      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
 
     <div class="card">
@@ -520,7 +521,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </div>
       </div>
 
-      <button class="save-btn" onclick="savePrices()">料金を保存</button>
+      <button class="save-btn" id="price-save-btn" onclick="savePrices()">料金を保存</button>
+      <button id="price-edit-hint" style="display:none;width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:12px;color:var(--muted);font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;" onclick="enablePriceEdit()">✏️ 料金を変更する</button>
     </div>
   </div>
 
@@ -733,6 +735,12 @@ const stores={
 };
 
 function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
+function enablePriceEdit(){
+  document.querySelectorAll('.price-input').forEach(el=>el.disabled=false);
+  document.getElementById('price-save-btn').style.display='block';
+  document.getElementById('price-edit-hint').style.display='none';
+  showMsg('料金を編集できます','success');
+}
 function savePrices(){showMsg('料金設定を保存しました！','success');}
 function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
 
@@ -893,6 +901,12 @@ function buildStoreOptions(){
     div.innerHTML=`<div class="store-option-name">${s.name}</div><div class="store-option-addr">📍 ${s.addr}</div><div class="store-option-fee">インドア ${s.fees.indoor}% ／ ラウンド系 ${s.fees.round}% ／ 本部 ${s.hqFee}%</div>`;
     div.onclick=()=>selectStore(key);wrap.appendChild(div);
   });
+  // 店舗追加ボタン
+  const addBtn=document.createElement('button');
+  addBtn.style.cssText='width:100%;max-width:340px;padding:14px;background:none;border:1px dashed rgba(255,255,255,0.3);border-radius:16px;color:rgba(255,255,255,0.6);font-family:inherit;font-size:13px;cursor:pointer;margin-top:4px;';
+  addBtn.textContent='＋ 新しい店舗を追加する';
+  addBtn.onclick=()=>alert('店舗追加機能は準備中です。店舗管理者にお問い合わせください。');
+  wrap.appendChild(addBtn);
 }
 
 /* ===== スケジュール・プロフィールは店舗間共有 ===== */
@@ -1136,22 +1150,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#1a2e24;padding
 .logo-sub{font-size:10px;letter-spacing:0.2em;color:#6b8a78;margin-top:4px;}
 .doc-title{text-align:right;}
 .doc-title h1{font-size:18px;font-weight:700;color:#085041;}
-.doc-title p{font-size:12px;color:#6b8a78;margin-top:4px;}
+.doc-title p{font-size:12px;color:#333;margin-top:4px;}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
 .info-box{background:#f0f7f4;border-radius:10px;padding:14px 16px;}
-.info-box-label{font-size:10px;font-weight:700;color:#6b8a78;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.info-box-label{font-size:10px;font-weight:700;color:#333;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;font-weight:700;}
 .info-box-value{font-size:14px;font-weight:700;color:#085041;}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
 .summary-card{border-radius:12px;padding:16px;color:#fff;text-align:center;}
 .summary-card.green{background:linear-gradient(135deg,#085041,#1D9E75);}
 .summary-card.gold{background:linear-gradient(135deg,#856404,#BA7517);}
 .summary-amount{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;}
-.summary-label{font-size:11px;color:rgba(255,255,255,0.8);margin-top:4px;}
+.summary-label{font-size:11px;color:rgba(255,255,255,0.95);margin-top:4px;font-weight:700;}
 table{width:100%;border-collapse:collapse;margin-bottom:20px;}
 thead tr{background:#085041;color:#fff;}
-thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;}
+thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;color:#fff;}
 tbody tr:nth-child(even){background:#f7faf8;}
-tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
+tbody td{padding:10px 12px;font-size:12px;color:#111;border-bottom:1px solid #e0ece6;}
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;}
 .indoor{background:#E1F5EE;color:#085041;}
 .round{background:#fff3cd;color:#856404;}
@@ -1162,10 +1176,10 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 .amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#085041;}
 .fee-box{background:#f7faf8;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
 .fee-box-title{font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;}
-.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;}
+.fee-row{display:flex;justify-content:space-between;font-size:12px;color:#222;padding:4px 0;border-bottom:1px solid #e0ece6;}
 .fee-row:last-child{border:none;font-weight:700;color:#085041;font-size:14px;padding-top:8px;}
 .fee-minus{color:#E24B4A;}
-.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#6b8a78;text-align:center;line-height:1.8;}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#444;text-align:center;line-height:1.8;}
 @media print{body{padding:20px;}}
 </style>
 </head>
