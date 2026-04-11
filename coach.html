@@ -727,15 +727,14 @@ const stores={
 
 function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
 function savePrices(){showMsg('料金設定を保存しました！','success');}
-let currentCoachId=null;
-let currentStore=null;
-let scheduleData={};   // key: "YYYY-MM-DD_H" → 'available' | 'booked'
-let weekOffset=0;
-let currentMonth=new Date();
-let cancelTargetItem=null;
 let isSavingSchedule=false;
 
-/* ===== スケジュール：Supabaseから読み込み ===== */
+/* ===== 日付→YYYY-MM-DD変換 ===== */
+function toDateStr(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+/* ===== スケジュール：Supabaseから読み込み（全店舗共通） ===== */
 async function loadSchedule(){
   if(!currentCoachId)return;
   try{
@@ -751,14 +750,13 @@ async function loadSchedule(){
   }catch(e){console.error('スケジュール読み込み例外:',e);}
 }
 
-/* ===== スケジュール：Supabaseへ保存 ===== */
+/* ===== スケジュール：Supabaseへ保存（全店舗共通） ===== */
 async function saveSchedule(){
   if(!currentCoachId){showMsg('ログイン情報が取得できません','error');return;}
   if(isSavingSchedule)return;
   isSavingSchedule=true;
   showMsg('保存中...','success');
   try{
-    // 既存データを全削除してから再挿入（全店舗共通）
     await sb.from('schedules').delete().eq('coach_id',currentCoachId);
     const rows=Object.entries(scheduleData)
       .filter(([,v])=>v==='available')
@@ -770,10 +768,16 @@ async function saveSchedule(){
       const {error}=await sb.from('schedules').insert(rows);
       if(error){showMsg('保存に失敗しました：'+error.message,'error');isSavingSchedule=false;return;}
     }
-    showMsg('スケジュールを保存しました！（全店舗に反映）','success');
+    showMsg('✅ スケジュールを保存しました！（京都店・伏見店 両方に反映）','success');
   }catch(e){showMsg('保存中にエラーが発生しました','error');console.error(e);}
   isSavingSchedule=false;
 }
+let currentCoachId=null;
+let currentStore=null;
+let scheduleData={};
+let weekOffset=0;
+let currentMonth=new Date();
+let cancelTargetItem=null;
 
 /* ===== 認証チェック ===== */
 (async()=>{
@@ -873,12 +877,7 @@ function switchScheduleMode(mode){
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
 }
 
-/* ===== 日付→YYYY-MM-DD変換 ===== */
-function toDateStr(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-
-/* ===== 週間スケジュール（スワイプ対応・Supabase連携） ===== */
+/* ===== 週間スケジュール（スワイプ対応） ===== */
 function buildWeekGrid(){
   const days=['日','月','火','水','木','金','土'];
   const today=new Date();
@@ -924,7 +923,7 @@ function buildWeekGrid(){
 }
 function moveWeek(dir){weekOffset+=dir;buildWeekGrid();}
 
-/* ===== 月間スケジュール（Supabase連携） ===== */
+/* ===== 月間スケジュール ===== */
 function buildMonthGrid(){
   const days=['日','月','火','水','木','金','土'];
   const hdr=document.getElementById('month-header');hdr.innerHTML='';
@@ -939,12 +938,10 @@ function buildMonthGrid(){
     const dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     const isToday=new Date(year,month,d).toDateString()===today.toDateString();
     cell.className='month-cell'+(isToday?' today':'');
-    // その日に1つでもavailableスロットがあれば緑表示
     const hasSlot=Object.keys(scheduleData).some(k=>k.startsWith(dateStr+'_')&&scheduleData[k]==='available');
     if(hasSlot)cell.classList.add('has-slots');
     cell.innerHTML=`<div class="month-date">${d}</div>`;
     cell.onclick=function(){
-      // 月間ビューのタップ：その日の8〜20時を一括でavailable/解除トグル
       const hasAny=Object.keys(scheduleData).some(k=>k.startsWith(dateStr+'_')&&scheduleData[k]==='available');
       if(hasAny){
         for(let h=8;h<=20;h++)delete scheduleData[dateStr+'_'+h];
