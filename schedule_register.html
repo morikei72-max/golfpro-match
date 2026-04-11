@@ -129,6 +129,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .al{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-align:center;margin-bottom:8px;text-decoration:none;}
 .al.green{background:var(--g);color:#fff;}
 .al.outline{background:#fff;color:var(--gd);border:1.5px solid var(--g);}
+/* 既存登録済み日付の薄い背景 */
+.cal-cell.exist-kyoto{background:#f0fdf8;border-color:rgba(29,158,117,0.3);}
+.cal-cell.exist-fushimi{background:#f0f4ff;border-color:rgba(25,118,210,0.3);}
+.cal-cell.exist-both{background:linear-gradient(135deg,#f0fdf8 50%,#f0f4ff 50%);border-color:rgba(29,158,117,0.3);}
 </style>
 </head>
 <body>
@@ -259,7 +263,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="card-title">✅ 登録内容の確認</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">内容を確認して下の同意チェックを入れてから「確定して登録する」を押してください。</div>
       <div id="confirm-content"></div>
-      <div class="agree-wrap">
+      <div class="agree-wrap" id="agree-wrap">
         <div class="agree-item">
           <input type="checkbox" id="agree1" onchange="checkAgree()">
           <div class="agree-text">登録した空き枠に予約が入った場合、原則としてキャンセルできません。やむを得ない場合は緊急キャンセル機能を使用してください。</div>
@@ -267,6 +271,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="agree-item">
           <input type="checkbox" id="agree2" onchange="checkAgree()">
           <div class="agree-text">登録した日時・店舗の情報は正確であることを確認しました。</div>
+        </div>
+        <div class="agree-item" id="agree-dress-wrap" style="display:none;">
+          <input type="checkbox" id="agree3" onchange="checkAgree()">
+          <div class="agree-text">ゴルフ場のドレスコードを厳守し、マナーを守ったプレーを心がけます。</div>
         </div>
       </div>
     </div>
@@ -279,6 +287,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7;">スケジュールを保存しました。</div>
         <div class="complete-detail" id="complete-detail"></div>
         <button onclick="restart()" class="al green">続けて登録する</button>
+        <a href="schedule_calendar.html" class="al outline" style="border-color:var(--blue2);color:var(--blue2);">📅 カレンダーで確認する</a>
         <a href="coach.html" class="al outline">コーチ画面に戻る</a>
       </div>
     </div>
@@ -460,7 +469,15 @@ function buildCalendar(){
     const isPast=cd<today;
     const isSel=datesSet.has(ds);
     const cell=document.createElement('div');
-    cell.className='cal-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSel?' sel-'+(storeVal||'kyoto'):'');
+    // 既存登録がある日付に薄い背景色を追加
+    const eb2=existingByDate[ds];
+    let existClass='';
+    if(eb2&&!isSel){
+      if(eb2['kyoto']&&eb2['fushimi']) existClass=' exist-both';
+      else if(eb2['kyoto']) existClass=' exist-kyoto';
+      else if(eb2['fushimi']) existClass=' exist-fushimi';
+    }
+    cell.className='cal-cell'+(isToday?' today':'')+(isPast?' past':'')+(isSel?' sel-'+(storeVal||'kyoto'):existClass);
     let dot='';
     if(isSel) dot=storeVal==='kyoto'?'🟢':storeVal==='fushimi'?'🔵':'🟢🔵';
     // 既存登録の表示
@@ -608,16 +625,20 @@ function buildConfirm(){
   document.getElementById('confirm-content').innerHTML=h;
   // 同意チェックを必ず表示・リセット
   const aw=document.getElementById('agree-wrap');
-  if(aw){aw.style.display='block';}
-  const a1=document.getElementById('agree1');
-  const a2=document.getElementById('agree2');
-  if(a1) a1.checked=false;
-  if(a2) a2.checked=false;
+  if(aw) aw.style.display='block';
+  ['agree1','agree2','agree3'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
+  // ラウンドの場合のみドレスコードチェックを表示
+  const dw=document.getElementById('agree-dress-wrap');
+  if(dw) dw.style.display=typeVal==='round'?'flex':'none';
   const btn=document.getElementById('next-btn');
   btn.disabled=true;btn.style.opacity='0.4';
 }
 function checkAgree(){
-  const ok=document.getElementById('agree1').checked&&document.getElementById('agree2').checked;
+  const a1=document.getElementById('agree1').checked;
+  const a2=document.getElementById('agree2').checked;
+  const a3wrap=document.getElementById('agree-dress-wrap');
+  const a3=a3wrap&&a3wrap.style.display!=='none'?document.getElementById('agree3').checked:true;
+  const ok=a1&&a2&&a3;
   const btn=document.getElementById('next-btn');btn.disabled=!ok;btn.style.opacity=ok?'1':'0.4';
 }
 async function saveSchedule(){
@@ -657,7 +678,7 @@ async function saveSchedule(){
     goStep(6);
   }catch(e){showMsg('エラーが発生しました','error');console.error(e);saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;}
 }
-function restart(){
+async function restart(){
   typeVal=null;storeVal=null;datesSet.clear();hoursMap.clear();bulkSet.clear();blockVal='none';saving=false;
   curStep=1;
   document.getElementById('action-bar').style.display='block';
@@ -665,6 +686,8 @@ function restart(){
   const rb=document.getElementById('restart-btn');if(rb)rb.remove();
   document.querySelectorAll('.type-card').forEach(c=>c.classList.remove('sel'));
   calMonth=new Date();
+  // 最新の登録データを再読み込み（続けて登録時に反映するため）
+  await loadExisting();
   renderAll();showV('v1');setupBtn();
 }
 function showMsg(text,type){
