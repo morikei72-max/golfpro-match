@@ -409,7 +409,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <label><input type="radio" name="invoice" value="no" onchange="toggleInvoice(this)" checked> 登録なし</label>
         </div>
         <div id="invoice-num-wrap" style="display:none"><input type="text" class="form-input" id="invoice-num" placeholder="T1234567890123（13桁）"></div>
-        <div class="invoice-warning" id="invoice-warning">⚠️ 未登録の場合、消費税分（約10%）が実質的にご負担となる可能性があります。登録は無料です。→ <a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/invoice_kojin.htm" target="_blank" style="color:var(--g)">国税庁サイトで登録</a></div>
+        <div class="invoice-warning" id="invoice-warning">ℹ️ インボイス登録番号をお持ちの方は「登録あり」を選択して番号を入力してください。登録は任意です。→ <a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/invoice_kojin.htm" target="_blank" style="color:var(--g)">国税庁サイトで確認</a></div>
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
@@ -753,13 +753,18 @@ function buildStoreOptions(){
   });
 }
 
+/* ===== スケジュール・プロフィールは店舗間共有 ===== */
+// scheduleDataはグローバル（店舗切替しても保持）
+// profileDataもグローバル（店舗切替しても保持）
+
 function selectStore(key){
   currentStore=key;const s=stores[key];
   document.getElementById('store-overlay').classList.add('hidden');
   document.getElementById('store-badge').textContent=s.name;
   document.getElementById('welcome-store').textContent='📍 '+s.name;
-  document.getElementById('schedule-store-label').textContent='📍 '+s.name;
-  document.getElementById('booking-store-label').textContent='📍 '+s.name;
+  // スケジュールは店舗間共有なので店舗名のみ更新
+  document.getElementById('schedule-store-label').textContent='📍 スケジュールは全店舗共通です';
+  document.getElementById('booking-store-label').textContent='📍 '+s.name+' の予約';
   const coachPct=100-s.fees.indoor-s.hqFee-s.stripeFee;
   document.getElementById('fee-store-name').textContent=s.name+' の手数料';
   document.getElementById('fee-store').textContent=s.fees.indoor+'%';
@@ -772,6 +777,7 @@ function selectStore(key){
     <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
+  // 料金は店舗ごとに再計算
   ['30','50','90','120'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,'indoor');});
   ['round','accompany','comp'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,id);});
 }
@@ -970,12 +976,137 @@ function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg(
 function downloadPDF(){
   const storeName=currentStore?stores[currentStore].name:'店舗未選択';
   const coachName=document.getElementById('coach-name').textContent;
-  const now=new Date();const month=now.getFullYear()+'年'+(now.getMonth()+1)+'月';
-  const content=`MyCoach — 月次収入明細書\n${month}\nコーチ名：${coachName}\n所属店舗：${storeName}\n出力日：${now.toLocaleDateString('ja-JP')}\n\n────────────────────\n日付　お客様　種別　請求額　手取り\n────────────────────\n4/10 山田太郎 インドア ¥5,000 ¥3,820\n4/9  佐藤花子 ラウンド ¥20,000 ¥15,280\n4/8  田中次郎 同伴 ¥15,000 ¥11,460\n4/7  鈴木一郎 インドア ¥8,000 ¥6,112\n4/5  高橋二郎 コンペ ¥10,000 ¥7,640\n────────────────────\n合計 請求額：¥58,000　手取り：¥44,312\n\n【手数料内訳】\n決済手数料(3.6%)：¥2,088\n店舗使用料：¥8,700\n本部手数料(5%)：¥2,900\n────────────────────\nコーチ手取り合計：¥44,312`;
-  const blob=new Blob([content],{type:'text/plain;charset=utf-8'});
+  const now=new Date();
+  const month=now.getFullYear()+'年'+(now.getMonth()+1)+'月';
+
+  const html=`<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#1a2e24;padding:40px;}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #1D9E75;}
+.logo{font-family:'Montserrat',sans-serif;font-size:28px;font-weight:900;color:#085041;}
+.logo span{color:#1D9E75;}
+.logo-sub{font-size:10px;letter-spacing:0.2em;color:#6b8a78;margin-top:4px;}
+.doc-title{text-align:right;}
+.doc-title h1{font-size:18px;font-weight:700;color:#085041;}
+.doc-title p{font-size:12px;color:#6b8a78;margin-top:4px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.info-box{background:#f0f7f4;border-radius:10px;padding:14px 16px;}
+.info-box-label{font-size:10px;font-weight:700;color:#6b8a78;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.info-box-value{font-size:14px;font-weight:700;color:#085041;}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
+.summary-card{border-radius:12px;padding:16px;color:#fff;text-align:center;}
+.summary-card.green{background:linear-gradient(135deg,#085041,#1D9E75);}
+.summary-card.gold{background:linear-gradient(135deg,#856404,#BA7517);}
+.summary-amount{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;}
+.summary-label{font-size:11px;color:rgba(255,255,255,0.8);margin-top:4px;}
+table{width:100%;border-collapse:collapse;margin-bottom:20px;}
+thead tr{background:#085041;color:#fff;}
+thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;}
+tbody tr:nth-child(even){background:#f7faf8;}
+tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;}
+.indoor{background:#E1F5EE;color:#085041;}
+.round{background:#fff3cd;color:#856404;}
+.accompany{background:#e8f4fd;color:#0c5c8a;}
+.comp{background:#f3e8fd;color:#6b3c8a;}
+.total-row{background:#E1F5EE!important;}
+.total-row td{font-weight:700;color:#085041;}
+.amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#085041;}
+.fee-box{background:#f7faf8;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
+.fee-box-title{font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;}
+.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;}
+.fee-row:last-child{border:none;font-weight:700;color:#085041;font-size:14px;padding-top:8px;}
+.fee-minus{color:#E24B4A;}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#6b8a78;text-align:center;line-height:1.8;}
+@media print{body{padding:20px;}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">My<span>Coach</span></div>
+    <div class="logo-sub">Golf Matching Service</div>
+  </div>
+  <div class="doc-title">
+    <h1>月次収入明細書</h1>
+    <p>${month}分　発行日：${now.toLocaleDateString('ja-JP')}</p>
+  </div>
+</div>
+
+<div class="info-grid">
+  <div class="info-box">
+    <div class="info-box-label">コーチ名</div>
+    <div class="info-box-value">${coachName}</div>
+  </div>
+  <div class="info-box">
+    <div class="info-box-label">所属店舗</div>
+    <div class="info-box-value">${storeName}</div>
+  </div>
+</div>
+
+<div class="summary">
+  <div class="summary-card green">
+    <div class="summary-amount">¥44,312</div>
+    <div class="summary-label">今月の手取り収入</div>
+  </div>
+  <div class="summary-card gold">
+    <div class="summary-amount">¥280,000</div>
+    <div class="summary-label">累計手取り収入</div>
+  </div>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>日付</th>
+      <th>お客様</th>
+      <th>種別</th>
+      <th>時間</th>
+      <th>請求額</th>
+      <th>手取り</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>4/10</td><td>山田 太郎</td><td><span class="badge indoor">インドア</span></td><td>50分</td><td class="amount">¥5,000</td><td class="amount">¥3,820</td></tr>
+    <tr><td>4/9</td><td>佐藤 花子</td><td><span class="badge round">ラウンド</span></td><td>1R</td><td class="amount">¥20,000</td><td class="amount">¥15,280</td></tr>
+    <tr><td>4/8</td><td>田中 次郎</td><td><span class="badge accompany">同伴</span></td><td>1R</td><td class="amount">¥15,000</td><td class="amount">¥11,460</td></tr>
+    <tr><td>4/7</td><td>鈴木 一郎</td><td><span class="badge indoor">インドア</span></td><td>90分</td><td class="amount">¥8,000</td><td class="amount">¥6,112</td></tr>
+    <tr><td>4/5</td><td>高橋 二郎</td><td><span class="badge comp">コンペ</span></td><td>1R</td><td class="amount">¥10,000</td><td class="amount">¥7,640</td></tr>
+    <tr class="total-row"><td colspan="4" style="text-align:right">合計</td><td class="amount">¥58,000</td><td class="amount">¥44,312</td></tr>
+  </tbody>
+</table>
+
+<div class="fee-box">
+  <div class="fee-box-title">手数料内訳（今月合計）</div>
+  <div class="fee-row"><span>お客様請求額合計</span><span class="amount">¥58,000</span></div>
+  <div class="fee-row"><span>決済手数料 (3.6%)</span><span class="fee-minus amount">▲¥2,088</span></div>
+  <div class="fee-row"><span>店舗使用料</span><span class="fee-minus amount">▲¥8,700</span></div>
+  <div class="fee-row"><span>本部手数料 (5%)</span><span class="fee-minus amount">▲¥2,900</span></div>
+  <div class="fee-row"><span>コーチ手取り合計</span><span class="amount">¥44,312</span></div>
+</div>
+
+<div class="footer">
+  本明細書はMyCoach（株式会社ケイエスケー）システムより自動発行されます。<br>
+  Golf Create tozuike ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー
+</div>
+
+<script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download=month+'_収入明細_'+coachName+'.txt';a.click();
-  URL.revokeObjectURL(url);showMsg('明細書をダウンロードしました！','success');
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=month+'_収入明細_'+coachName+'.html';
+  a.click();
+  URL.revokeObjectURL(url);
+  showMsg('明細書を開きました。印刷でPDF保存できます！','success');
 }
 
 /* ===== 保存 ===== */
