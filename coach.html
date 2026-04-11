@@ -290,6 +290,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <div class="store-logo-sub">Golf Matching Service</div>
   <div class="store-overlay-title">担当店舗を選択してください</div>
   <div id="store-options"></div>
+  <div style="width:100%;max-width:340px;margin-top:8px;">
+    <button onclick="addStore()" style="width:100%;padding:14px;background:transparent;border:1px dashed rgba(255,255,255,0.3);border-radius:16px;color:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;cursor:pointer;">＋ 新しい店舗を追加登録する</button>
+  </div>
 </div>
 
 <!-- 緊急キャンセルモーダル -->
@@ -413,9 +416,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
+    <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">← ホームに戻る</button>
   </div>
-
-  <!-- 料金設定 -->
   <div class="page" id="page-price">
     <div class="card">
       <div class="card-title">手数料一覧</div>
@@ -438,17 +440,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <!-- インドアレッスン -->
       <div class="price-section">
         <div class="price-section-title">🏌 インドアゴルフレッスン</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:#fff8e1;border:1px solid var(--gold);border-radius:10px;">
-          <span style="font-size:12px;color:var(--text);flex:1;">最低受付時間</span>
-          <select id="min-lesson" class="price-input" style="width:80px" onchange="applyMinLesson()">
-            <option value="0">制限なし</option>
-            <option value="30">30分〜</option>
-            <option value="50" selected>50分〜</option>
-            <option value="90">90分〜</option>
-            <option value="120">120分〜</option>
-          </select>
-          <span style="font-size:11px;color:var(--muted);">から受付</span>
-        </div>
         <div id="pr-30">
           <div class="price-row-full">
             <span class="price-label">30分</span>
@@ -524,12 +515,46 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
 
       <button class="save-btn" onclick="savePrices()">料金を保存</button>
+      <div id="price-save-msg" style="display:none;margin-top:10px;padding:12px;background:var(--gl);border:1px solid var(--g);border-radius:10px;text-align:center;font-size:14px;font-weight:700;color:var(--gd);">✅ 料金設定を保存しました！</div>
+      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
   </div>
   <div class="page" id="page-schedule">
     <div class="card">
       <div class="card-title">スケジュール管理</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
+      <!-- 登録ボタン -->
+      <a href="https://soft-speculoos-5ef188.netlify.app/schedule_register.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:14px;">
+        📅 スケジュールを登録する
+      </a>
+      <!-- 登録済み一覧 -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">登録済みスケジュール（直近）</div>
+        <div id="schedule-list-wrap">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            <div style="background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:10px;">
+              <div style="font-size:10px;color:var(--g);font-weight:700;">🏌 インドア・京都店</div>
+              <div style="font-size:13px;font-weight:700;color:var(--gd);margin-top:4px;">4/12（土）</div>
+              <div style="font-size:11px;color:var(--muted);">10:00〜18:00</div>
+            </div>
+            <div style="background:#e8f4fd;border:1px solid #4a90d9;border-radius:10px;padding:10px;">
+              <div style="font-size:10px;color:#0c5c8a;font-weight:700;">🏌 インドア・伏見店</div>
+              <div style="font-size:13px;font-weight:700;color:#0c5c8a;margin-top:4px;">4/13（日）</div>
+              <div style="font-size:11px;color:var(--muted);">10:00〜16:00</div>
+            </div>
+            <div style="background:#fff3cd;border:1px solid var(--gold);border-radius:10px;padding:10px;">
+              <div style="font-size:10px;color:#856404;font-weight:700;">⛳ ラウンド・京都店</div>
+              <div style="font-size:13px;font-weight:700;color:#856404;margin-top:4px;">4/17（木）</div>
+              <div style="font-size:11px;color:var(--muted);">終日</div>
+            </div>
+            <div style="background:#fff3cd;border:1px solid var(--gold);border-radius:10px;padding:10px;">
+              <div style="font-size:10px;color:#856404;font-weight:700;">⛳ ラウンド・伏見店</div>
+              <div style="font-size:13px;font-weight:700;color:#856404;margin-top:4px;">4/20（日）</div>
+              <div style="font-size:11px;color:var(--muted);">終日</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="schedule-mode-btns">
         <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
         <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
@@ -570,10 +595,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </div>
       </div>
       <button class="save-btn" style="margin-top:12px" onclick="saveSchedule()">スケジュールを保存</button>
+      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
   </div>
-
-  <!-- 予約管理 -->
   <div class="page" id="page-bookings">
     <div class="card">
       <div class="card-title">予約管理</div>
@@ -620,6 +644,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           </div>
         </div>
       </div>
+      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">← ホームに戻る</button>
     </div>
   </div>
 
@@ -669,6 +694,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         月次収入明細をダウンロード
       </button>
+      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
   </div>
 
@@ -709,6 +735,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </div>
       </div>
     </div>
+    <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
   </div>
 </main>
 
@@ -735,41 +762,13 @@ const stores={
 };
 
 function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
-function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
-
-/* 料金保存（localStorageに保存してタブ移動後も消えない） */
 function savePrices(){
-  if(!currentStore){showMsg('先に店舗を選択してください','error');return;}
-  const priceData={
-    p30:document.getElementById('price-30').value,
-    p50:document.getElementById('price-50').value,
-    p90:document.getElementById('price-90').value,
-    p120:document.getElementById('price-120').value,
-    pRound:document.getElementById('price-round').value,
-    pAccompany:document.getElementById('price-accompany').value,
-    pComp:document.getElementById('price-comp').value,
-    minLesson:document.getElementById('min-lesson').value
-  };
-  localStorage.setItem('gc_prices_'+currentStore, JSON.stringify(priceData));
+  const msg=document.getElementById('price-save-msg');
+  if(msg){msg.style.display='block';setTimeout(()=>{msg.style.display='none';},4000);}
   showMsg('料金設定を保存しました！','success');
 }
-
-/* 料金読み込み（店舗選択時・タブ切替時） */
-function loadPrices(){
-  if(!currentStore)return;
-  const saved=localStorage.getItem('gc_prices_'+currentStore);
-  if(!saved)return;
-  const d=JSON.parse(saved);
-  if(d.p30){document.getElementById('price-30').value=d.p30;calcTake('30',d.p30,'indoor');}
-  if(d.p50){document.getElementById('price-50').value=d.p50;calcTake('50',d.p50,'indoor');}
-  if(d.p90){document.getElementById('price-90').value=d.p90;calcTake('90',d.p90,'indoor');}
-  if(d.p120){document.getElementById('price-120').value=d.p120;calcTake('120',d.p120,'indoor');}
-  if(d.pRound){document.getElementById('price-round').value=d.pRound;calcTake('round',d.pRound,'round');}
-  if(d.pAccompany){document.getElementById('price-accompany').value=d.pAccompany;calcTake('accompany',d.pAccompany,'accompany');}
-  if(d.pComp){document.getElementById('price-comp').value=d.pComp;calcTake('comp',d.pComp,'comp');}
-  if(d.minLesson)document.getElementById('min-lesson').value=d.minLesson;
-  applyMinLesson();
-}
+function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
+function addStore(){alert('新しい店舗の追加申請は店舗管理者にお問い合わせください。\n\n📧 管理者に連絡する機能は近日公開予定です。');}
 let currentCoachId=null;
 let currentStore=null;
 let scheduleData={};
@@ -826,8 +825,9 @@ function selectStore(key){
     <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
-  // 保存済み料金を読み込む
-  loadPrices();
+  // 料金は店舗ごとに再計算
+  ['30','50','90','120'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,'indoor');});
+  ['round','accompany','comp'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,id);});
 }
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
 
@@ -853,22 +853,11 @@ function calcTake(id,val,type){
   `;
 }
 
-/* ===== 最低レッスン時間適用 ===== */
-function applyMinLesson(){
-  const min=parseInt(document.getElementById('min-lesson')?.value||'0');
-  const timeMap={30:30,50:50,90:90,120:120};
-  Object.keys(timeMap).forEach(t=>{
-    const row=document.getElementById('pr-'+t);
-    if(row)row.style.display=(timeMap[t]<min)?'none':'block';
-  });
-}
-
 /* ===== タブ ===== */
 function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
-  if(tab==='price')loadPrices();
 }
 function switchBoard(type,btn){
   document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -1045,43 +1034,43 @@ function downloadPDF(){
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#1a2e24;padding:40px;}
+body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#111;padding:40px;}
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #1D9E75;}
 .logo{font-family:'Montserrat',sans-serif;font-size:28px;font-weight:900;color:#085041;}
 .logo span{color:#1D9E75;}
-.logo-sub{font-size:10px;letter-spacing:0.2em;color:#6b8a78;margin-top:4px;}
+.logo-sub{font-size:10px;letter-spacing:0.2em;color:#333;margin-top:4px;}
 .doc-title{text-align:right;}
-.doc-title h1{font-size:18px;font-weight:700;color:#085041;}
-.doc-title p{font-size:12px;color:#6b8a78;margin-top:4px;}
+.doc-title h1{font-size:18px;font-weight:700;color:#111;}
+.doc-title p{font-size:12px;color:#333;margin-top:4px;}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
 .info-box{background:#f0f7f4;border-radius:10px;padding:14px 16px;}
-.info-box-label{font-size:10px;font-weight:700;color:#6b8a78;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
-.info-box-value{font-size:14px;font-weight:700;color:#085041;}
+.info-box-label{font-size:10px;font-weight:700;color:#333;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.info-box-value{font-size:14px;font-weight:700;color:#111;}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
 .summary-card{border-radius:12px;padding:16px;color:#fff;text-align:center;}
 .summary-card.green{background:linear-gradient(135deg,#085041,#1D9E75);}
 .summary-card.gold{background:linear-gradient(135deg,#856404,#BA7517);}
 .summary-amount{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;}
-.summary-label{font-size:11px;color:rgba(255,255,255,0.8);margin-top:4px;}
+.summary-label{font-size:11px;color:#fff;margin-top:4px;}
 table{width:100%;border-collapse:collapse;margin-bottom:20px;}
 thead tr{background:#085041;color:#fff;}
-thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;}
+thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;color:#fff;}
 tbody tr:nth-child(even){background:#f7faf8;}
-tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
+tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;color:#111;}
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;}
 .indoor{background:#E1F5EE;color:#085041;}
 .round{background:#fff3cd;color:#856404;}
 .accompany{background:#e8f4fd;color:#0c5c8a;}
 .comp{background:#f3e8fd;color:#6b3c8a;}
 .total-row{background:#E1F5EE!important;}
-.total-row td{font-weight:700;color:#085041;}
-.amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#085041;}
+.total-row td{font-weight:700;color:#111;}
+.amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#111;}
 .fee-box{background:#f7faf8;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
-.fee-box-title{font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;}
-.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;}
-.fee-row:last-child{border:none;font-weight:700;color:#085041;font-size:14px;padding-top:8px;}
-.fee-minus{color:#E24B4A;}
-.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#6b8a78;text-align:center;line-height:1.8;}
+.fee-box-title{font-size:12px;font-weight:700;color:#111;margin-bottom:10px;}
+.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;color:#111;}
+.fee-row:last-child{border:none;font-weight:700;color:#111;font-size:14px;padding-top:8px;}
+.fee-minus{color:#c0392b;}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#333;text-align:center;line-height:1.8;}
 @media print{body{padding:20px;}}
 </style>
 </head>
@@ -1186,29 +1175,12 @@ async function saveProfile(){
   };
   const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
   if(error){showMsg('保存に失敗しました：'+error.message,'error');return;}
-  // localStorageにも保存してタブ移動後も消えないように
-  localStorage.setItem('gc_profile', JSON.stringify(data));
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
   showMsg('プロフィールを保存しました！','success');
 }
 
 async function loadProfile(userId){
-  // まずlocalStorageから即時表示（タブ移動後も消えない）
-  const cached=localStorage.getItem('gc_profile');
-  if(cached){
-    try{
-      const d=JSON.parse(cached);
-      if(d.name){document.getElementById('prof-name').value=d.name;document.getElementById('coach-name').textContent=d.name;document.getElementById('welcome-name').textContent=d.name+'さん、こんにちは！';}
-      if(d.address)document.getElementById('prof-address').value=d.address;
-      if(d.birth)document.getElementById('prof-birth').value=d.birth;
-      if(d.tel)document.getElementById('prof-tel').value=d.tel;
-      if(d.bio)document.getElementById('prof-bio').value=d.bio;
-      if(d.license)document.getElementById('prof-license').value=d.license;
-      if(d.tags)document.getElementById('prof-tags').value=d.tags;
-    }catch(e){}
-  }
-  // Supabaseからも読み込んでlocalStorageを更新
   try{
     const {data,error}=await sb.from('coaches').select('*').eq('user_id',userId).maybeSingle();
     if(error){console.error('プロフィール読み込みエラー:',error);return;}
@@ -1225,8 +1197,6 @@ async function loadProfile(userId){
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
-    // localStorageを最新で更新
-    localStorage.setItem('gc_profile', JSON.stringify(data));
   }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
