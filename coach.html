@@ -153,6 +153,14 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
 /* ===== スケジュール ===== */
 .schedule-mode-btns{display:flex;gap:6px;margin-bottom:12px;}
+.sch-tab{padding:6px 14px;border-radius:16px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;color:var(--muted);}
+.sch-tab.active{background:var(--g);color:#fff;border-color:var(--g);}
+.sch-item{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.sch-item-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sch-item-info{flex:1;}
+.sch-item-date{font-size:13px;font-weight:700;color:var(--gd);}
+.sch-item-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.sch-item-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
 .mode-btn{flex:1;padding:8px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;}
 .mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
 .week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
@@ -518,49 +526,48 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
   <!-- スケジュール -->
   <div class="page" id="page-schedule">
+    <!-- 登録ボタン -->
+    <div style="background:linear-gradient(135deg,#085041,#1D9E75);border-radius:16px;padding:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="color:#fff;font-size:14px;font-weight:700;margin-bottom:4px;">スケジュールを登録する</div>
+        <div style="color:rgba(255,255,255,0.7);font-size:11px;">空き時間・ラウンド参加可能日を登録</div>
+      </div>
+      <a href="schedule_register.html" style="background:#fff;color:var(--gd);font-size:13px;font-weight:700;padding:10px 18px;border-radius:10px;text-decoration:none;white-space:nowrap;">＋ 登録する</a>
+    </div>
+
+    <!-- 登録済みスケジュール一覧 -->
     <div class="card">
-      <div class="card-title">スケジュール管理</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
-      <div class="schedule-mode-btns">
-        <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
-        <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:0;">登録済みスケジュール</div>
+        <a href="schedule_calendar.html" style="font-size:11px;color:var(--blue2);font-weight:700;text-decoration:none;">📅 カレンダーで見る</a>
       </div>
 
-      <!-- 週間ビュー -->
-      <div id="view-week">
-        <div class="week-nav">
-          <button class="week-nav-btn" onclick="moveWeek(-1)">‹</button>
-          <div class="week-nav-label" id="week-label"></div>
-          <button class="week-nav-btn" onclick="moveWeek(1)">›</button>
+      <!-- 凡例 -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:8px;background:#f7faf8;border-radius:8px;">
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
+          <div style="width:12px;height:12px;border-radius:2px;background:var(--gl);border:1px solid var(--g);"></div>京都店
         </div>
-        <div id="week-wrap" style="touch-action:pan-y;">
-          <div class="week-header-row" id="week-header"></div>
-          <div style="max-height:380px;overflow-y:auto;">
-            <div class="week-grid" id="week-grid"></div>
-          </div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
+          <div style="width:12px;height:12px;border-radius:2px;background:#E3F2FD;border:1px solid #1976D2;"></div>伏見店
         </div>
-        <div class="schedule-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb"></div>予約済み</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
+          <div style="width:12px;height:12px;border-radius:2px;background:#fff3cd;border:1px solid var(--gold);"></div>予約済み
+        </div>
+        <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);">
+          <div style="width:12px;height:12px;border-radius:2px;background:#f0f0f0;border:1px solid #ccc;"></div>キャンセル
         </div>
       </div>
 
-      <!-- 月間ビュー -->
-      <div id="view-month" style="display:none">
-        <div class="month-nav">
-          <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
-          <div class="month-nav-label" id="month-label"></div>
-          <button class="month-nav-btn" onclick="moveMonth(1)">›</button>
-        </div>
-        <div class="month-grid" id="month-header"></div>
-        <div class="month-grid" id="month-grid" style="margin-top:4px;"></div>
-        <div class="schedule-legend" style="margin-top:10px;">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き設定済み</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#fff3cd;border:1px solid var(--gold)"></div>予約あり</div>
-        </div>
+      <!-- タブ：直近 / インドア / ラウンド -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;">
+        <button class="sch-tab active" id="stab-upcoming" onclick="switchSchTab('upcoming',this)">直近の予定</button>
+        <button class="sch-tab" id="stab-indoor" onclick="switchSchTab('indoor',this)">インドア</button>
+        <button class="sch-tab" id="stab-round" onclick="switchSchTab('round',this)">ラウンド</button>
       </div>
-      <button class="save-btn" style="margin-top:12px" onclick="saveSchedule()">スケジュールを保存</button>
+
+      <div id="sch-list-wrap">
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">読み込み中...</div>
+      </div>
     </div>
   </div>
 
@@ -727,50 +734,134 @@ const stores={
 
 function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
 function savePrices(){showMsg('料金設定を保存しました！','success');}
-let isSavingSchedule=false;
+function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
 
-/* ===== 日付→YYYY-MM-DD変換 ===== */
-function toDateStr(d){
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+/* ===== スケジュールタブ新機能 ===== */
+let schTabMode='upcoming';
+let schData=[];
+
+function switchSchTab(mode, btn){
+  schTabMode=mode;
+  document.querySelectorAll('.sch-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderSchList();
 }
 
-/* ===== スケジュール：Supabaseから読み込み（全店舗共通） ===== */
-async function loadSchedule(){
-  if(!currentCoachId)return;
+async function loadScheduleList(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session) return;
+  const coachId=session.user.id;
   try{
-    const {data,error}=await sb.from('schedules').select('slot_date,slot_hour,status').eq('coach_id',currentCoachId);
-    if(error){console.error('スケジュール読み込みエラー:',error);return;}
-    scheduleData={};
-    (data||[]).forEach(row=>{
-      const key=row.slot_date+'_'+row.slot_hour;
-      scheduleData[key]=row.status;
+    const today=new Date();
+    const todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    const {data}=await sb.from('schedules')
+      .select('*')
+      .eq('coach_id',coachId)
+      .gte('slot_date',todayStr)
+      .order('slot_date',{ascending:true})
+      .order('slot_hour',{ascending:true})
+      .limit(100);
+    schData=data||[];
+    renderSchList();
+  }catch(e){console.error(e);}
+}
+
+function renderSchList(){
+  const wrap=document.getElementById('sch-list-wrap');
+  if(!wrap) return;
+  let items=schData;
+  if(schTabMode==='indoor') items=schData.filter(r=>r.lesson_type==='indoor');
+  else if(schTabMode==='round') items=schData.filter(r=>r.lesson_type==='round');
+  else{
+    // 直近：今日から7日間
+    const limit=new Date();limit.setDate(limit.getDate()+7);
+    const limitStr=limit.getFullYear()+'-'+String(limit.getMonth()+1).padStart(2,'0')+'-'+String(limit.getDate()).padStart(2,'0');
+    items=schData.filter(r=>r.slot_date<=limitStr);
+  }
+
+  if(items.length===0){
+    wrap.innerHTML=`<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">
+      ${schTabMode==='upcoming'?'直近7日間の登録はありません':'登録済みのスケジュールはありません'}
+      <br><a href="schedule_register.html" style="color:var(--g);font-weight:700;display:block;margin-top:8px;">＋ スケジュールを登録する</a>
+    </div>`;
+    return;
+  }
+
+  // 日付でグループ化
+  const grouped={};
+  items.forEach(r=>{
+    if(!grouped[r.slot_date]) grouped[r.slot_date]=[];
+    grouped[r.slot_date].push(r);
+  });
+
+  let html='';
+  const days=['日','月','火','水','木','金','土'];
+  Object.keys(grouped).sort().forEach(ds=>{
+    const d=new Date(ds+'T00:00:00');
+    const dayLabel=(d.getMonth()+1)+'/'+d.getDate()+'（'+days[d.getDay()]+'）';
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--muted);margin:10px 0 6px;padding-left:4px;">${dayLabel}</div>`;
+    // ラウンドを先に表示
+    const rounds=grouped[ds].filter(r=>r.lesson_type==='round');
+    const indoors=grouped[ds].filter(r=>r.lesson_type==='indoor');
+    rounds.forEach(r=>{
+      const dotColor=r.store_id==='kyoto'?'var(--g)':'#1976D2';
+      const storeName=r.store_id==='kyoto'?'🟢 京都店':'🔵 伏見店';
+      const statusBg=r.status==='booked'?'#fff3cd':r.status==='cancelled'?'#f0f0f0':'var(--gl)';
+      const statusColor=r.status==='booked'?'#5a3a00':r.status==='cancelled'?'#999':'var(--gd)';
+      const statusLabel=r.status==='booked'?'予約済':r.status==='cancelled'?'キャンセル':'空き';
+      html+=`<div class="sch-item">
+        <div class="sch-item-dot" style="background:${dotColor};"></div>
+        <div class="sch-item-info">
+          <div class="sch-item-date">⛳ ラウンド参加可能日</div>
+          <div class="sch-item-sub">${storeName}</div>
+        </div>
+        <span class="sch-item-badge" style="background:${statusBg};color:${statusColor};">${statusLabel}</span>
+      </div>`;
     });
-    buildWeekGrid();
-    buildMonthGrid();
-  }catch(e){console.error('スケジュール読み込み例外:',e);}
-}
-
-/* ===== スケジュール：Supabaseへ保存（全店舗共通） ===== */
-async function saveSchedule(){
-  if(!currentCoachId){showMsg('ログイン情報が取得できません','error');return;}
-  if(isSavingSchedule)return;
-  isSavingSchedule=true;
-  showMsg('保存中...','success');
-  try{
-    await sb.from('schedules').delete().eq('coach_id',currentCoachId);
-    const rows=Object.entries(scheduleData)
-      .filter(([,v])=>v==='available')
-      .map(([key])=>{
-        const [date,hour]=key.split('_');
-        return{coach_id:currentCoachId,slot_date:date,slot_hour:parseInt(hour),status:'available'};
-      });
-    if(rows.length>0){
-      const {error}=await sb.from('schedules').insert(rows);
-      if(error){showMsg('保存に失敗しました：'+error.message,'error');isSavingSchedule=false;return;}
+    // インドアは時間帯をまとめて表示
+    if(indoors.length>0){
+      const kyotoHours=indoors.filter(r=>r.store_id==='kyoto'&&r.status==='available').map(r=>r.slot_hour).sort((a,b)=>a-b);
+      const fushimiHours=indoors.filter(r=>r.store_id==='fushimi'&&r.status==='available').map(r=>r.slot_hour).sort((a,b)=>a-b);
+      const bookedCount=indoors.filter(r=>r.status==='booked').length;
+      if(kyotoHours.length>0){
+        const timeRange=kyotoHours[0]+':00〜'+(kyotoHours[kyotoHours.length-1]+1)+':00';
+        html+=`<div class="sch-item">
+          <div class="sch-item-dot" style="background:var(--g);"></div>
+          <div class="sch-item-info">
+            <div class="sch-item-date">🏌 インドアレッスン ${timeRange}</div>
+            <div class="sch-item-sub">🟢 京都店 · ${kyotoHours.length}コマ空き</div>
+          </div>
+          <span class="sch-item-badge" style="background:var(--gl);color:var(--gd);">空き</span>
+        </div>`;
+      }
+      if(fushimiHours.length>0){
+        const timeRange=fushimiHours[0]+':00〜'+(fushimiHours[fushimiHours.length-1]+1)+':00';
+        html+=`<div class="sch-item">
+          <div class="sch-item-dot" style="background:#1976D2;"></div>
+          <div class="sch-item-info">
+            <div class="sch-item-date">🏌 インドアレッスン ${timeRange}</div>
+            <div class="sch-item-sub">🔵 伏見店 · ${fushimiHours.length}コマ空き</div>
+          </div>
+          <span class="sch-item-badge" style="background:#E3F2FD;color:#1565C0;">空き</span>
+        </div>`;
+      }
+      if(bookedCount>0){
+        html+=`<div class="sch-item">
+          <div class="sch-item-dot" style="background:var(--gold);"></div>
+          <div class="sch-item-info">
+            <div class="sch-item-date">🏌 予約確定済み</div>
+            <div class="sch-item-sub">${bookedCount}コマ予約あり</div>
+          </div>
+          <span class="sch-item-badge" style="background:#fff3cd;color:#5a3a00;">予約済</span>
+        </div>`;
+      }
     }
-    showMsg('✅ スケジュールを保存しました！（京都店・伏見店 両方に反映）','success');
-  }catch(e){showMsg('保存中にエラーが発生しました','error');console.error(e);}
-  isSavingSchedule=false;
+  });
+
+  html+=`<div style="text-align:center;margin-top:12px;">
+    <a href="schedule_register.html" style="color:var(--g);font-size:12px;font-weight:700;text-decoration:none;">＋ スケジュールをさらに登録する</a>
+  </div>`;
+  wrap.innerHTML=html;
 }
 let currentCoachId=null;
 let currentStore=null;
@@ -789,8 +880,9 @@ let cancelTargetItem=null;
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
   buildStoreOptions();
+  buildWeekGrid();
+  buildMonthGrid();
   await loadProfile(user.id);
-  await loadSchedule();
 })();
 
 /* ===== 店舗選択 ===== */
@@ -860,6 +952,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
+  if(tab==='schedule') loadScheduleList();
 }
 function switchBoard(type,btn){
   document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -894,20 +987,14 @@ function buildWeekGrid(){
   const grid=document.getElementById('week-grid');grid.innerHTML='';
   for(let h=8;h<=20;h++){
     const tl=document.createElement('div');tl.className='week-time-label';tl.textContent=h+':00';grid.appendChild(tl);
-    for(let di=0;di<7;di++){
-      const dateStr=toDateStr(dates[di]);
-      const key=dateStr+'_'+h;
+    for(let d=0;d<7;d++){
+      const key=`${weekOffset}-${h}-${d}`;
       const slot=document.createElement('div');
       slot.className='week-slot'+(scheduleData[key]==='available'?' available':scheduleData[key]==='booked'?' booked':'');
       slot.onclick=function(){
         if(this.classList.contains('booked'))return;
-        if(this.classList.contains('available')){
-          this.classList.remove('available');
-          delete scheduleData[key];
-        }else{
-          this.classList.add('available');
-          scheduleData[key]='available';
-        }
+        if(this.classList.contains('available')){this.classList.remove('available');delete scheduleData[key];}
+        else{this.classList.add('available');scheduleData[key]='available';}
       };
       grid.appendChild(slot);
     }
@@ -935,21 +1022,14 @@ function buildMonthGrid(){
   for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='month-cell other-month';grid.appendChild(c);}
   for(let d=1;d<=last.getDate();d++){
     const cell=document.createElement('div');
-    const dateStr=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const dateKey=year+'-'+(month+1)+'-'+d;
     const isToday=new Date(year,month,d).toDateString()===today.toDateString();
     cell.className='month-cell'+(isToday?' today':'');
-    const hasSlot=Object.keys(scheduleData).some(k=>k.startsWith(dateStr+'_')&&scheduleData[k]==='available');
-    if(hasSlot)cell.classList.add('has-slots');
+    if(scheduleData['m-'+dateKey])cell.classList.add('has-slots');
     cell.innerHTML=`<div class="month-date">${d}</div>`;
     cell.onclick=function(){
-      const hasAny=Object.keys(scheduleData).some(k=>k.startsWith(dateStr+'_')&&scheduleData[k]==='available');
-      if(hasAny){
-        for(let h=8;h<=20;h++)delete scheduleData[dateStr+'_'+h];
-        cell.classList.remove('has-slots');
-      }else{
-        for(let h=8;h<=20;h++)scheduleData[dateStr+'_'+h]='available';
-        cell.classList.add('has-slots');
-      }
+      if(cell.classList.contains('has-slots')){cell.classList.remove('has-slots');delete scheduleData['m-'+dateKey];}
+      else{cell.classList.add('has-slots');scheduleData['m-'+dateKey]='available';}
     };
     grid.appendChild(cell);
   }
