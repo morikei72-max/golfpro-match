@@ -290,9 +290,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <div class="store-logo-sub">Golf Matching Service</div>
   <div class="store-overlay-title">担当店舗を選択してください</div>
   <div id="store-options"></div>
-  <div style="width:100%;max-width:340px;margin-top:8px;">
-    <button onclick="addStore()" style="width:100%;padding:14px;background:transparent;border:1px dashed rgba(255,255,255,0.3);border-radius:16px;color:rgba(255,255,255,0.5);font-family:inherit;font-size:13px;cursor:pointer;">＋ 新しい店舗を追加登録する</button>
-  </div>
 </div>
 
 <!-- 緊急キャンセルモーダル -->
@@ -416,8 +413,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
-    <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;">← ホームに戻る</button>
   </div>
+
+  <!-- 料金設定 -->
   <div class="page" id="page-price">
     <div class="card">
       <div class="card-title">手数料一覧</div>
@@ -440,17 +438,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <!-- インドアレッスン -->
       <div class="price-section">
         <div class="price-section-title">🏌 インドアゴルフレッスン</div>
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:10px 12px;background:#fff8e1;border:1px solid var(--gold);border-radius:10px;">
-          <span style="font-size:12px;font-weight:700;color:#633806;flex:1;">⏱ 最低受付時間</span>
-          <select id="min-lesson" style="padding:6px 10px;border:1px solid var(--gold);border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;color:#633806;background:#fff8e1;outline:none;" onchange="applyMinLesson()">
-            <option value="0">制限なし</option>
-            <option value="30">30分〜</option>
-            <option value="50" selected>50分〜</option>
-            <option value="90">90分〜</option>
-            <option value="120">120分〜</option>
-          </select>
-          <span style="font-size:11px;color:#633806;">から受付</span>
-        </div>
         <div id="pr-30">
           <div class="price-row-full">
             <span class="price-label">30分</span>
@@ -526,19 +513,15 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
 
       <button class="save-btn" onclick="savePrices()">料金を保存</button>
-      <div id="price-save-msg" style="display:none;margin-top:10px;padding:12px;background:var(--gl);border:1px solid var(--g);border-radius:10px;text-align:center;font-size:14px;font-weight:700;color:var(--gd);">✅ 料金設定を保存しました！</div>
-      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
   </div>
+
   <!-- スケジュール -->
   <div class="page" id="page-schedule">
     <div class="card">
       <div class="card-title">スケジュール管理</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;">カレンダー画面でスケジュールの登録・確認・削除ができます。</div>
-      <a href="https://soft-speculoos-5ef188.netlify.app/schedule_calendar.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:12px;box-shadow:0 4px 14px rgba(8,80,65,0.3);">
-        📅 スケジュールカレンダーを開く
-      </a>
-      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">← ホームに戻る</button>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">カレンダー画面でスケジュールの登録・確認・削除ができます。</p>
+      <button class="save-btn" onclick="openCalendar()">📅 スケジュールカレンダーを開く</button>
     </div>
   </div>
 
@@ -547,10 +530,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="card">
       <div class="card-title">予約管理</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="booking-store-label">店舗を選択してください</div>
+
+      <!-- キャンセルポリシー表示 -->
       <div class="cancel-policy-note">
         <strong>🚨 緊急キャンセルについて</strong>
         やむを得ない事情（病気・家族の緊急事態・事故等）の場合は「緊急キャンセル」ボタンを押してください。お客様・店舗へ自動通知されます。
       </div>
+
       <div class="filter-wrap">
         <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
         <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
@@ -558,9 +544,34 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
       </div>
       <div id="bookings-list">
-        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">読み込み中...</div>
+        <div class="booking-item" data-status="pending">
+          <div class="booking-header"><div class="booking-date">2026/04/15（水）11:00</div><span class="booking-status status-pending">承認待ち</span></div>
+          <div class="booking-customer">山田 太郎</div>
+          <div class="booking-detail">インドアゴルフレッスン・50分 ¥5,000</div>
+          <div class="booking-actions">
+            <button class="btn-approve" onclick="approveBooking(this)">承認する</button>
+            <button class="btn-decline" onclick="declineBooking(this)">断る</button>
+          </div>
+        </div>
+        <div class="booking-item" data-status="approved">
+          <div class="booking-header"><div class="booking-date">2026/04/12（日）10:00</div><span class="booking-status status-approved">承認済み</span></div>
+          <div class="booking-customer">田中 次郎</div>
+          <div class="booking-detail">インドアゴルフレッスン・90分 ¥8,000</div>
+          <div class="booking-actions">
+            <button class="btn-done" onclick="completeBooking(this)">完了</button>
+            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
+          </div>
+        </div>
+        <div class="booking-item" data-status="approved">
+          <div class="booking-header"><div class="booking-date">2026/04/18（土）ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
+          <div class="booking-customer">鈴木 花子</div>
+          <div class="booking-detail">ラウンドレッスン・1ラウンド ¥20,000</div>
+          <div class="booking-actions">
+            <button class="btn-done" onclick="completeBooking(this)">完了</button>
+            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
+          </div>
+        </div>
       </div>
-      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">← ホームに戻る</button>
     </div>
   </div>
 
@@ -610,7 +621,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         月次収入明細をダウンロード
       </button>
-      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
     </div>
   </div>
 
@@ -651,7 +661,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </div>
       </div>
     </div>
-    <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
   </div>
 </main>
 
@@ -660,7 +669,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <button class="tab-btn active" onclick="switchTab('home',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ホーム</button>
   <button class="tab-btn" onclick="switchTab('profile',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>プロフィール</button>
   <button class="tab-btn" onclick="switchTab('price',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>料金設定</button>
-  <button class="tab-btn" onclick="switchTab('schedule',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>スケジュール</button>
+  <button class="tab-btn" onclick="openCalendar()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>スケジュール</button>
   <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>予約管理</button>
   <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>収入</button>
   <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>掲示板</button>
@@ -678,13 +687,13 @@ const stores={
 };
 
 function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
-function savePrices(){
-  const msg=document.getElementById('price-save-msg');
-  if(msg){msg.style.display='block';setTimeout(()=>{msg.style.display='none';},4000);}
-  showMsg('料金設定を保存しました！','success');
-}
+function savePrices(){showMsg('料金設定を保存しました！','success');}
 function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
-function addStore(){alert('新しい店舗の追加申請は店舗管理者にお問い合わせください。\n\n📧 管理者に連絡する機能は近日公開予定です。');}
+function openCalendar(){
+  const store=currentStore||localStorage.getItem('gc_store')||'kyoto';
+  localStorage.setItem('gc_store',store);
+  window.location.href='schedule_calendar.html?store='+store;
+}
 let currentCoachId=null;
 let currentStore=null;
 let scheduleData={};
@@ -726,8 +735,6 @@ function selectStore(key){
   document.getElementById('store-overlay').classList.add('hidden');
   document.getElementById('store-badge').textContent=s.name;
   document.getElementById('welcome-store').textContent='📍 '+s.name;
-  // スケジュールは店舗間共有なので店舗名のみ更新
-  document.getElementById('schedule-store-label').textContent='📍 スケジュールは全店舗共通です';
   document.getElementById('booking-store-label').textContent='📍 '+s.name+' の予約';
   const coachPct=100-s.fees.indoor-s.hqFee-s.stripeFee;
   document.getElementById('fee-store-name').textContent=s.name+' の手数料';
@@ -774,75 +781,6 @@ function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
-  if(tab==='schedule')loadScheduleList();
-  if(tab==='bookings')loadBookings();
-}
-
-/* ===== 登録済みスケジュール一覧（Supabaseから取得） ===== */
-async function loadScheduleList(){
-  if(!currentCoachId)return;
-  const wrap=document.getElementById('schedule-list-wrap');
-  if(!wrap)return;
-  wrap.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">読み込み中...</div>';
-  const today=new Date().toISOString().split('T')[0];
-  const {data,error}=await sb.from('schedules').select('*')
-    .eq('coach_id',currentCoachId)
-    .gte('slot_date',today)
-    .order('slot_date',{ascending:true})
-    .limit(6);
-  if(error||!data||data.length===0){
-    wrap.innerHTML='<div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">登録済みスケジュールはありません</div>';
-    return;
-  }
-  // 日付でグループ化
-  const grouped={};
-  data.forEach(row=>{
-    if(!grouped[row.slot_date])grouped[row.slot_date]=[];
-    grouped[row.slot_date].push(row);
-  });
-  const storeNames={kyoto:'京都店',fushimi:'伏見店',both:'両店舗'};
-  const days=['日','月','火','水','木','金','土'];
-  let html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
-  Object.entries(grouped).slice(0,6).forEach(([date,rows])=>{
-    const d=new Date(date+'T00:00:00');
-    const dateLabel=(d.getMonth()+1)+'/'+(d.getDate())+'（'+days[d.getDay()]+'）';
-    // ラウンドとインドアを分けて表示
-    const rounds=rows.filter(r=>r.lesson_type==='round');
-    const indoors=rows.filter(r=>r.lesson_type==='indoor');
-    if(rounds.length>0){
-      const store=storeNames[rounds[0].store_id]||rounds[0].store_id;
-      html+=`<div style="background:#fff3cd;border:1px solid var(--gold);border-radius:10px;padding:10px;">
-        <div style="font-size:10px;color:#856404;font-weight:700;">⛳ ラウンド・${store}</div>
-        <div style="font-size:13px;font-weight:700;color:#856404;margin-top:4px;">${dateLabel}</div>
-        <div style="font-size:11px;color:var(--muted);">終日</div>
-      </div>`;
-    }
-    if(indoors.length>0){
-      const store=storeNames[indoors[0].store_id]||indoors[0].store_id;
-      const isFushimi=indoors[0].store_id==='fushimi';
-      const bg=isFushimi?'#e8f4fd':'var(--gl)';
-      const border=isFushimi?'#4a90d9':'var(--g)';
-      const color=isFushimi?'#0c5c8a':'var(--gd)';
-      const minH=Math.min(...indoors.map(r=>r.slot_hour));
-      const maxH=Math.max(...indoors.map(r=>r.slot_hour))+1;
-      html+=`<div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:10px;">
-        <div style="font-size:10px;color:${color};font-weight:700;">🏌 インドア・${store}</div>
-        <div style="font-size:13px;font-weight:700;color:${color};margin-top:4px;">${dateLabel}</div>
-        <div style="font-size:11px;color:var(--muted);">${minH}:00〜${maxH}:00（${indoors.length}枠）</div>
-      </div>`;
-    }
-  });
-  html+='</div>';
-  wrap.innerHTML=html;
-}
-function applyMinLesson(){
-  const sel=document.getElementById('min-lesson');
-  if(!sel)return;
-  const min=parseInt(sel.value||'0');
-  [{id:'pr-30',min:30},{id:'pr-50',min:50},{id:'pr-90',min:90},{id:'pr-120',min:120}].forEach(item=>{
-    const el=document.getElementById(item.id);
-    if(el)el.style.display=(item.min<min)?'none':'block';
-  });
 }
 function switchBoard(type,btn){
   document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -927,107 +865,25 @@ function buildMonthGrid(){
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
 /* ===== 予約操作 ===== */
-/* ===== 予約管理（Supabase連動） ===== */
-let allBookings=[];
-let currentBookingFilter='all';
-
-async function loadBookings(){
-  if(!currentCoachId)return;
-  const list=document.getElementById('bookings-list');
-  list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">読み込み中...</div>';
-  try{
-    const {data,error}=await sb.from('bookings')
-      .select('*, customers(name)')
-      .eq('coach_id',currentCoachId)
-      .order('lesson_date',{ascending:true});
-    if(error||!data){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">予約データを取得できませんでした</div>';return;}
-    allBookings=data;
-    renderBookings(currentBookingFilter);
-  }catch(e){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">エラーが発生しました</div>';console.error(e);}
+function approveBooking(btn){
+  const item=btn.closest('.booking-item');item.dataset.status='approved';
+  item.querySelector('.booking-status').className='booking-status status-approved';
+  item.querySelector('.booking-status').textContent='承認済み';
+  item.querySelector('.booking-actions').innerHTML='<button class="btn-done" onclick="completeBooking(this)">完了</button><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
 }
-
-function renderBookings(filter){
-  currentBookingFilter=filter;
-  const list=document.getElementById('bookings-list');
-  const items=filter==='all'?allBookings:allBookings.filter(b=>b.status===filter);
-  if(items.length===0){
-    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">予約はありません</div>';
-    return;
-  }
-  const WD=['日','月','火','水','木','金','土'];
-  list.innerHTML='';
-  items.forEach(b=>{
-    const d=new Date(b.lesson_date+'T00:00:00');
-    const dateStr=(d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）'+(b.lesson_hour>=0?' '+b.lesson_hour+':00':'');
-    const typeLabel=b.lesson_type==='indoor'?'インドアレッスン':b.lesson_type==='round'?'ラウンドレッスン':b.lesson_type==='accompany'?'同伴ラウンド':'コンペ参加';
-    const statusLabel=b.status==='pending'?'承認待ち':b.status==='approved'?'承認済み':'キャンセル';
-    const statusClass=b.status==='pending'?'status-pending':b.status==='approved'?'status-approved':'status-cancelled';
-    const customerName=b.customers?.name||'お客様';
-    const div=document.createElement('div');
-    div.className='booking-item';div.dataset.status=b.status;div.dataset.id=b.id;
-    let actions='';
-    if(b.status==='pending'){
-      actions=`<button class="btn-approve" onclick="approveBooking('${b.id}','${b.lesson_date}',${b.lesson_hour},this)">承認する</button>
-               <button class="btn-decline" onclick="declineBooking('${b.id}',this)">断る</button>`;
-    } else if(b.status==='approved'){
-      actions=`<button class="btn-done" onclick="completeBooking('${b.id}',this)">完了</button>
-               <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>`;
-    }
-    div.innerHTML=`
-      <div class="booking-header">
-        <div class="booking-date">${dateStr}</div>
-        <span class="booking-status ${statusClass}">${statusLabel}</span>
-      </div>
-      <div class="booking-customer">${customerName}</div>
-      <div class="booking-detail">${typeLabel}${b.duration_min?'・'+b.duration_min+'分':''}</div>
-      <div class="booking-actions">${actions}</div>`;
-    list.appendChild(div);
-  });
+function declineBooking(btn){
+  const item=btn.closest('.booking-item');item.dataset.status='cancelled';
+  item.querySelector('.booking-status').className='booking-status status-cancelled';
+  item.querySelector('.booking-status').textContent='キャンセル';
+  item.querySelector('.booking-actions').remove();
 }
-
-async function approveBooking(bookingId, lessonDate, lessonHour, btn){
-  btn.disabled=true; btn.textContent='処理中...';
-  try{
-    // 1. bookingsテーブルのstatusをapprovedに更新
-    const {error:e1}=await sb.from('bookings').update({status:'approved'}).eq('id',bookingId);
-    if(e1){alert('承認に失敗しました：'+e1.message);btn.disabled=false;btn.textContent='承認する';return;}
-    // 2. schedulesテーブルの該当スロットをbookedに更新（カレンダーに「確」マークが出る）
-    if(lessonHour>=0){
-      await sb.from('schedules').update({status:'booked'})
-        .eq('coach_id',currentCoachId)
-        .eq('slot_date',lessonDate)
-        .eq('slot_hour',lessonHour);
-    }
-    // 3. ローカルデータ更新→再描画
-    const booking=allBookings.find(b=>b.id===bookingId);
-    if(booking) booking.status='approved';
-    renderBookings(currentBookingFilter);
-    showMsg('✅ 承認しました！カレンダーに「確」マークが表示されます。','success');
-  }catch(e){alert('エラーが発生しました');console.error(e);}
+function completeBooking(btn){
+  const btn2=btn;btn2.textContent='完了済み';btn2.disabled=true;
+  btn2.style.background='var(--gl)';btn2.style.color='var(--gd)';
 }
-
-async function declineBooking(bookingId, btn){
-  if(!confirm('この予約を断りますか？'))return;
-  btn.disabled=true;
-  try{
-    const {error}=await sb.from('bookings').update({status:'cancelled'}).eq('id',bookingId);
-    if(error){alert('キャンセルに失敗しました：'+error.message);btn.disabled=false;return;}
-    const booking=allBookings.find(b=>b.id===bookingId);
-    if(booking) booking.status='cancelled';
-    renderBookings(currentBookingFilter);
-  }catch(e){alert('エラーが発生しました');console.error(e);}
-}
-
-async function completeBooking(bookingId, btn){
-  btn.textContent='完了済み';btn.disabled=true;
-  btn.style.background='var(--gl)';btn.style.color='var(--gd)';
-  await sb.from('bookings').update({status:'completed'}).eq('id',bookingId);
-}
-
 function filterBookings(status,btn){
-  document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderBookings(status);
+  document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.booking-item').forEach(item=>{item.style.display=(status==='all'||item.dataset.status===status)?'block':'none';});
 }
 function filterIncome(period,btn){
   document.querySelectorAll('#page-income .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -1101,43 +957,43 @@ function downloadPDF(){
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#111;padding:40px;}
+body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#1a2e24;padding:40px;}
 .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:20px;border-bottom:3px solid #1D9E75;}
 .logo{font-family:'Montserrat',sans-serif;font-size:28px;font-weight:900;color:#085041;}
 .logo span{color:#1D9E75;}
-.logo-sub{font-size:10px;letter-spacing:0.2em;color:#333;margin-top:4px;}
+.logo-sub{font-size:10px;letter-spacing:0.2em;color:#6b8a78;margin-top:4px;}
 .doc-title{text-align:right;}
-.doc-title h1{font-size:18px;font-weight:700;color:#111;}
-.doc-title p{font-size:12px;color:#333;margin-top:4px;}
+.doc-title h1{font-size:18px;font-weight:700;color:#085041;}
+.doc-title p{font-size:12px;color:#6b8a78;margin-top:4px;}
 .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
 .info-box{background:#f0f7f4;border-radius:10px;padding:14px 16px;}
-.info-box-label{font-size:10px;font-weight:700;color:#333;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
-.info-box-value{font-size:14px;font-weight:700;color:#111;}
+.info-box-label{font-size:10px;font-weight:700;color:#6b8a78;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
+.info-box-value{font-size:14px;font-weight:700;color:#085041;}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px;}
 .summary-card{border-radius:12px;padding:16px;color:#fff;text-align:center;}
 .summary-card.green{background:linear-gradient(135deg,#085041,#1D9E75);}
 .summary-card.gold{background:linear-gradient(135deg,#856404,#BA7517);}
 .summary-amount{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;}
-.summary-label{font-size:11px;color:#fff;margin-top:4px;}
+.summary-label{font-size:11px;color:rgba(255,255,255,0.8);margin-top:4px;}
 table{width:100%;border-collapse:collapse;margin-bottom:20px;}
 thead tr{background:#085041;color:#fff;}
-thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;color:#fff;}
+thead th{padding:10px 12px;font-size:12px;font-weight:700;text-align:left;}
 tbody tr:nth-child(even){background:#f7faf8;}
-tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;color:#111;}
+tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:6px;font-weight:700;}
 .indoor{background:#E1F5EE;color:#085041;}
 .round{background:#fff3cd;color:#856404;}
 .accompany{background:#e8f4fd;color:#0c5c8a;}
 .comp{background:#f3e8fd;color:#6b3c8a;}
 .total-row{background:#E1F5EE!important;}
-.total-row td{font-weight:700;color:#111;}
-.amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#111;}
+.total-row td{font-weight:700;color:#085041;}
+.amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#085041;}
 .fee-box{background:#f7faf8;border-radius:10px;padding:14px 16px;margin-bottom:20px;}
-.fee-box-title{font-size:12px;font-weight:700;color:#111;margin-bottom:10px;}
-.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;color:#111;}
-.fee-row:last-child{border:none;font-weight:700;color:#111;font-size:14px;padding-top:8px;}
-.fee-minus{color:#c0392b;}
-.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#333;text-align:center;line-height:1.8;}
+.fee-box-title{font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;}
+.fee-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #e0ece6;}
+.fee-row:last-child{border:none;font-weight:700;color:#085041;font-size:14px;padding-top:8px;}
+.fee-minus{color:#E24B4A;}
+.footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#6b8a78;text-align:center;line-height:1.8;}
 @media print{body{padding:20px;}}
 </style>
 </head>
@@ -1229,12 +1085,11 @@ async function saveProfile(){
   if(!currentCoachId){showMsg('ログイン情報が取得できません','error');return;}
   const name=document.getElementById('prof-name').value.trim();
   if(!name){showMsg('お名前は必須です','error');return;}
-  const birthRaw=document.getElementById('prof-birth').value;
   const data={
     user_id:currentCoachId,
     name:name,
     address:document.getElementById('prof-address').value.trim(),
-    birth:birthRaw||null,
+    birth:document.getElementById('prof-birth').value,
     tel:document.getElementById('prof-tel').value.trim(),
     bio:document.getElementById('prof-bio').value.trim(),
     license:document.getElementById('prof-license').value.trim(),
@@ -1243,33 +1098,12 @@ async function saveProfile(){
   };
   const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
   if(error){showMsg('保存に失敗しました：'+error.message,'error');return;}
-  // localStorageにも保存してタブ移動・店舗切替後も消えないように
-  localStorage.setItem('gc_profile_'+currentCoachId, JSON.stringify(data));
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
   showMsg('プロフィールを保存しました！','success');
 }
 
 async function loadProfile(userId){
-  // まずlocalStorageから即時復元（店舗切替・タブ移動後も消えない）
-  const cached=localStorage.getItem('gc_profile_'+userId);
-  if(cached){
-    try{
-      const d=JSON.parse(cached);
-      if(d.name){document.getElementById('prof-name').value=d.name;document.getElementById('coach-name').textContent=d.name;document.getElementById('welcome-name').textContent=d.name+'さん、こんにちは！';}
-      if(d.address)document.getElementById('prof-address').value=d.address;
-      // 生年月日：YYYY-MM-DD形式に正規化して設定
-      if(d.birth){
-        const b=d.birth.split('T')[0];
-        document.getElementById('prof-birth').value=b;
-      }
-      if(d.tel)document.getElementById('prof-tel').value=d.tel;
-      if(d.bio)document.getElementById('prof-bio').value=d.bio;
-      if(d.license)document.getElementById('prof-license').value=d.license;
-      if(d.tags)document.getElementById('prof-tags').value=d.tags;
-    }catch(e){}
-  }
-  // Supabaseからも読み込んでlocalStorageを最新に更新
   try{
     const {data,error}=await sb.from('coaches').select('*').eq('user_id',userId).maybeSingle();
     if(error){console.error('プロフィール読み込みエラー:',error);return;}
@@ -1280,18 +1114,12 @@ async function loadProfile(userId){
       document.getElementById('welcome-name').textContent=data.name+'さん、こんにちは！';
     }
     if(data.address)document.getElementById('prof-address').value=data.address;
-    // 生年月日：YYYY-MM-DD形式に正規化
-    if(data.birth){
-      const b=data.birth.split('T')[0];
-      document.getElementById('prof-birth').value=b;
-    }
+    if(data.birth)document.getElementById('prof-birth').value=data.birth;
     if(data.tel)document.getElementById('prof-tel').value=data.tel;
     if(data.bio)document.getElementById('prof-bio').value=data.bio;
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
-    // localStorageを最新で更新
-    localStorage.setItem('gc_profile_'+userId, JSON.stringify(data));
   }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
