@@ -121,6 +121,11 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .toast.show{opacity:1;}
 .btm{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:9px 14px;}
 .btmbtn{width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1.5px solid var(--g);border-radius:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.rule-card{border:2px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;}
+.rule-card.sel-r{border-color:var(--g);background:#f0faf5;}
+.rule-radio{width:16px;height:16px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;}
+.rule-radio.on-r{border-color:var(--g);background:var(--g);}
+.rr-dot{width:6px;height:6px;border-radius:50%;background:#fff;}
 </style>
 </head>
 <body>
@@ -146,6 +151,15 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
       <button class="wnbtn" onclick="moveWeek(1)">次 ›</button>
     </div>
     <div class="cal-scroll"><div id="cal-wrap"></div></div>
+    <div style="margin:10px 12px 0;background:#fff;border-radius:12px;padding:14px;">
+      <div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:4px;height:14px;background:var(--g);border-radius:2px;"></span>カレンダーの使い方</div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">👆</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">セルをタップして空き枠を登録</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">日付・時間のマスをタップすると、その時間にレッスンの空き枠を登録できます。登録した枠がお客様に公開されます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🏪</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">複数店舗を同時に登録OK</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">1つの時間帯に複数店舗の空き枠をまとめて登録できます。お客様には店舗ごとに左右並びで表示されます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#FFFBEB;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">⛳</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">ラウンドとレッスンの重複登録OK</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">同じ日にラウンドとインドアレッスンを両方登録できます。先に予約が確定した方が優先され、重複する枠は自動キャンセルされます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#FFEBEE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">✅</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">予約確定で自動キャンセル</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">お客様の予約が確定すると重複する枠は自動キャンセルされます。キャンセルのルールはコーチが事前に設定できます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📅</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">月ビューで全体を確認</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">上の「月ビュー」タブで月全体を確認できます。日付をタップするとその週の詳細ビューに切り替わります。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;"><div style="width:30px;height:30px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🗑️</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">登録済みの枠を削除するには</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">削除したい時間のマスをタップすると登録済みの枠が表示されます。「削除」ボタンで個別に削除できます。確定済みの枠は削除できません。</div></div></div>
+    </div>
   </div>
   <div id="view-month" style="display:none">
     <div class="month-wrap">
@@ -191,6 +205,54 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
         <select class="tsel" id="rs"></select>
         <span style="font-size:11px;font-weight:700;">〜 終了</span>
         <select class="tsel" id="re"></select>
+      </div>
+    </div>
+    <div id="sec-cancel-rule" style="display:none">
+      <div class="stl">🔧 予約確定時のキャンセルルール</div>
+      <p style="font-size:10px;color:var(--muted);margin-bottom:8px;">ラウンドに予約が入った時の自動処理を選んでください</p>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="rule-card sel-r" id="rc1" onclick="pickRule(1)">
+          <div class="rule-radio on-r" id="rr1"><div class="rr-dot"></div></div>
+          <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">他店舗の同日ラウンドを全キャンセル</div><div style="font-size:10px;color:#6b8a78;margin-top:2px;">確定した店舗以外の同日ラウンド枠を全てキャンセル</div></div>
+        </div>
+        <div class="rule-card" id="rc2" onclick="pickRule(2)">
+          <div class="rule-radio" id="rr2"></div>
+          <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">重複する時間帯のレッスンのみキャンセル</div><div style="font-size:10px;color:#6b8a78;margin-top:2px;">ラウンド時間と重なるレッスン枠だけキャンセル</div></div>
+        </div>
+        <div class="rule-card" id="rc3" onclick="pickRule(3)">
+          <div class="rule-radio" id="rr3"></div>
+          <div style="width:100%;">
+            <div style="font-size:11px;font-weight:700;color:#1a2e24;">前後◯時間分もキャンセル（自由設定）</div>
+            <div style="font-size:10px;color:#6b8a78;margin-top:2px;">移動時間を考慮して前後もキャンセル</div>
+            <div id="rule3-detail" style="display:none;margin-top:8px;background:#f8fbf9;border-radius:8px;padding:10px;">
+              <div style="font-size:10px;font-weight:700;color:#085041;margin-bottom:4px;">🏌 同店舗レッスン</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:10px;font-weight:700;">前</span>
+                <select class="tsel" id="r3-same-before"><option>0時間</option><option>1時間</option><option selected>2時間</option><option>3時間</option><option>4時間</option></select>
+                <span style="font-size:10px;font-weight:700;">後</span>
+                <select class="tsel" id="r3-same-after"><option>0時間</option><option>1時間</option><option selected>2時間</option><option>3時間</option><option>4時間</option></select>
+              </div>
+              <div style="border-top:1px dashed #e0ece6;padding-top:6px;margin-bottom:4px;font-size:10px;font-weight:700;color:#085041;">🏪 他店舗レッスン</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                <span style="font-size:10px;font-weight:700;">前</span>
+                <select class="tsel" id="r3-other-before"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
+                <span style="font-size:10px;font-weight:700;">後</span>
+                <select class="tsel" id="r3-other-after"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
+              </div>
+              <div style="border-top:1px dashed #e0ece6;padding-top:6px;margin-bottom:4px;font-size:10px;font-weight:700;color:#085041;">⛳ 他店舗ラウンド枠</div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:10px;font-weight:700;">前</span>
+                <select class="tsel" id="r3-round-before"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
+                <span style="font-size:10px;font-weight:700;">後</span>
+                <select class="tsel" id="r3-round-after"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="rule-card" id="rc4" onclick="pickRule(4)">
+          <div class="rule-radio" id="rr4"></div>
+          <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">キャンセルしない（手動対応）</div><div style="font-size:10px;color:#6b8a78;margin-top:2px;">自動キャンセルはしない。コーチが手動で対応</div></div>
+        </div>
       </div>
     </div>
     <button class="sbtn" onclick="saveSlot()">✅ 保存する</button>
@@ -472,6 +534,20 @@ function pickStore(k){
 function onTog(t,on){
   document.getElementById('sec-'+t).style.display=on?'block':'none';
   if(t==='i')buildHGrid();
+  if(t==='r')document.getElementById('sec-cancel-rule').style.display=on?'block':'none';
+}
+let selRule=1;
+function pickRule(n){
+  [1,2,3,4].forEach(i=>{
+    document.getElementById('rc'+i).className='rule-card';
+    document.getElementById('rr'+i).className='rule-radio';
+    document.getElementById('rr'+i).innerHTML='';
+  });
+  document.getElementById('rc'+n).className='rule-card sel-r';
+  document.getElementById('rr'+n).className='rule-radio on-r';
+  document.getElementById('rr'+n).innerHTML='<div class="rr-dot"></div>';
+  document.getElementById('rule3-detail').style.display=n===3?'block':'none';
+  selRule=n;
 }
 function buildHGrid(){
   const g=document.getElementById('hgrid');g.innerHTML='';
