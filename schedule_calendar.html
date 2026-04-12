@@ -8,7 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--accent:#5dd4a8;--gold:#F59E0B;--red:#E24B4A;--border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;--kyoto:#1D9E75;--fushimi:#1976D2;--round-bd:#F59E0B;--round-bg:#FFFBEB;}
+:root{
+  --g:#1D9E75;--gd:#085041;--gl:#E1F5EE;
+  --accent:#5dd4a8;--gold:#F59E0B;--red:#E24B4A;
+  --border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;
+  --kyoto:#1D9E75;--fushimi:#1976D2;
+  --round-bd:#F59E0B;--round-bg:#FFFBEB;
+}
 html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .hdr{background:#fff;border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
 .hdr-logo{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:var(--gd);}
@@ -23,6 +29,8 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .week-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#f0f7f4;}
 .wnbtn{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;color:var(--gd);}
 .wlbl{font-size:12px;font-weight:700;color:var(--gd);}
+
+/* カレンダー本体 */
 .cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;width:100%;}
 .cal{display:flex;min-width:560px;width:100%;}
 .tc-col{flex-shrink:0;width:34px;}
@@ -37,39 +45,51 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .cell{height:36px;border-bottom:1px solid var(--border);border-left:1px solid var(--border);padding:2px;background:#fff;cursor:pointer;overflow:hidden;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
 .cell.tdy{background:#fffef5;}
 .cell:active{background:#f0faf5;}
+
+/* スロット：左右並び */
 .sl{border-radius:3px;padding:2px 0;font-size:9px;font-weight:700;color:#fff;text-align:center;flex:1;min-width:0;position:relative;overflow:hidden;white-space:nowrap;}
 .ky{background:var(--kyoto);}
 .fu{background:var(--fushimi);}
 .sl.cfm{outline:1.5px solid var(--red);}
 .cfms{position:absolute;top:0;right:1px;background:var(--red);color:#fff;border-radius:50%;width:11px;height:11px;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:900;}
 .sl.cancelled{background:#ccc;color:#999;text-decoration:line-through;font-size:8px;flex:1;min-width:0;}
+
+/* ラウンド枠 */
 .rb{border:2px solid var(--round-bd);border-radius:8px;background:var(--round-bg);margin:0;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:100%;min-width:0;box-sizing:border-box;}
 .rb.cfm{border-color:var(--red);background:#FFF0F0;}
 .rcbdg{background:var(--red);color:#fff;border-radius:50%;width:11px;height:11px;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
 .rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
 .rc.cfm{border-bottom-color:rgba(226,75,74,0.15);background:#FFF5F5;}
 .rc:last-child{border-bottom:none;}
-.round-label-row{height:18px;background:var(--round-bg);border-bottom:1px solid var(--round-bd);display:flex;align-items:center;padding:0 4px;font-size:8px;font-weight:700;color:#92400E;white-space:nowrap;overflow:hidden;box-sizing:border-box;}
-.round-label-row.cfm{background:#FFF0F0;border-bottom-color:var(--red);color:var(--red);}
-.tc-round-label{height:18px;background:#f0f7f4;border-bottom:1px solid var(--border);box-sizing:border-box;}
-.empty-label-row{height:18px;border-bottom:1px solid var(--border);background:#fff;box-sizing:border-box;}
-.empty-label-row.tdy{background:#fffef5;}
+/* ラウンドラベル：day-hdrの下に表示 */
+.round-label-bar{height:20px;display:flex;align-items:center;padding:0 4px;font-size:8px;font-weight:700;color:#92400E;white-space:nowrap;overflow:hidden;background:var(--round-bg);border-bottom:1px solid var(--round-bd);box-sizing:border-box;border-left:1px solid var(--border);}
+.round-label-bar.cfm{background:#FFF0F0;border-bottom-color:var(--red);color:var(--red);}
+.tc-label-bar{height:20px;background:#f0f7f4;border-bottom:1px solid var(--border);box-sizing:border-box;}
+.empty-label-bar{height:20px;background:#fff;border-bottom:1px solid var(--border);border-left:1px solid var(--border);box-sizing:border-box;}
+.empty-label-bar.tdy{background:#fffef5;}
+
+/* 月ビュー */
 .month-wrap{padding:8px 12px 0;}
 .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .mnbtn{background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;color:var(--gd);}
 .mlbl{font-size:13px;font-weight:700;color:var(--gd);}
 .mgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
 .mdhdr{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0;}
-.mdhdr.sun{color:var(--red);}.mdhdr.sat{color:var(--fushimi);}
+.mdhdr.sun{color:var(--red);}
+.mdhdr.sat{color:var(--fushimi);}
 .mcell{min-height:52px;background:#fff;border-radius:7px;border:1px solid var(--border);padding:3px;cursor:pointer;transition:border-color .15s;}
 .mcell:hover{border-color:var(--g);}
 .mcell.today{border-color:var(--g);border-width:2px;}
 .mcell.other{opacity:.4;cursor:default;}
 .mdate{font-size:10px;font-weight:700;margin-bottom:2px;}
-.mcell.today .mdate{color:var(--g);}.mcell.sun .mdate{color:var(--red);}.mcell.sat .mdate{color:var(--fushimi);}
+.mcell.today .mdate{color:var(--g);}
+.mcell.sun .mdate{color:var(--red);}
+.mcell.sat .mdate{color:var(--fushimi);}
 .mdots{display:flex;gap:2px;flex-wrap:wrap;}
 .mdot{width:6px;height:6px;border-radius:50%;}
 .mhint{font-size:10px;color:var(--muted);text-align:center;margin-top:6px;}
+
+/* モーダル */
 .mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;align-items:flex-end;justify-content:center;}
 .mbg.open{display:flex;}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:18px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;}
@@ -105,10 +125,17 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .toast.show{opacity:1;}
 .btm{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:9px 14px;}
 .btmbtn{width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1.5px solid var(--g);border-radius:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.rule-card{border:2px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px;}
+.rule-card.sel-r{border-color:var(--g);background:#f0faf5;}
+.rule-radio{width:16px;height:16px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;}
+.rule-radio.on-r{border-color:var(--g);background:var(--g);}
+.rr-dot{width:6px;height:6px;border-radius:50%;background:#fff;}
 </style>
 </head>
 <body>
-<div class="hdr"><div class="hdr-logo">My<span>Coach</span></div></div>
+<div class="hdr">
+  <div class="hdr-logo">My<span>Coach</span></div>
+</div>
 <div class="view-tabs">
   <button class="view-tab active" id="tab-week" onclick="switchView('week')">週ビュー</button>
   <button class="view-tab" id="tab-month" onclick="switchView('month')">月ビュー</button>
@@ -123,25 +150,35 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 <div class="content">
   <div id="view-week">
     <div class="week-nav">
-      <button class="wnbtn" onclick="moveWeek(-1)">&#8249; 前</button>
+      <button class="wnbtn" onclick="moveWeek(-1)">‹ 前</button>
       <div class="wlbl" id="week-lbl"></div>
-      <button class="wnbtn" onclick="moveWeek(1)">次 &#8250;</button>
+      <button class="wnbtn" onclick="moveWeek(1)">次 ›</button>
     </div>
     <div class="cal-scroll"><div id="cal-wrap"></div></div>
+    <div style="margin:10px 12px 0;background:#fff;border-radius:12px;padding:14px;">
+      <div style="font-size:12px;font-weight:700;color:#085041;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:4px;height:14px;background:var(--g);border-radius:2px;"></span>カレンダーの使い方</div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">👆</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">セルをタップして空き枠を登録</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">日付・時間のマスをタップすると、その時間にレッスンの空き枠を登録できます。登録した枠がお客様に公開されます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🏪</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">複数店舗を同時に登録OK</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">1つの時間帯に複数店舗の空き枠をまとめて登録できます。お客様には店舗ごとに左右並びで表示されます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#FFFBEB;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">⛳</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">ラウンドとレッスンの重複登録OK</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">同じ日にラウンドとインドアレッスンを両方登録できます。先に予約が確定した方が優先され、重複する枠は自動キャンセルされます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#FFEBEE;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">✅</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">予約確定で自動キャンセル</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">お客様の予約が確定すると重複する枠は自動キャンセルされます。キャンセルのルールはコーチが事前に設定できます。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;"><div style="width:30px;height:30px;border-radius:8px;background:#f0f4ff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📅</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">月ビューで全体を確認</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">上の「月ビュー」タブで月全体を確認できます。日付をタップするとその週の詳細ビューに切り替わります。</div></div></div>
+      <div style="display:flex;gap:10px;padding:9px 0;"><div style="width:30px;height:30px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🗑️</div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;margin-bottom:2px;">登録済みの枠を削除するには</div><div style="font-size:10px;color:#6b8a78;line-height:1.6;">削除したい時間のマスをタップすると登録済みの枠が表示されます。「削除」ボタンで個別に削除できます。確定済みの枠は削除できません。</div></div></div>
+    </div>
   </div>
   <div id="view-month" style="display:none">
     <div class="month-wrap">
       <div class="month-nav">
-        <button class="mnbtn" onclick="moveMonth(-1)">&#8249;</button>
+        <button class="mnbtn" onclick="moveMonth(-1)">‹</button>
         <div class="mlbl" id="month-lbl"></div>
-        <button class="mnbtn" onclick="moveMonth(1)">&#8250;</button>
+        <button class="mnbtn" onclick="moveMonth(1)">›</button>
       </div>
       <div class="mgrid" id="month-hdr"></div>
       <div class="mgrid" id="month-grid" style="margin-top:2px;"></div>
-      <div class="mhint">日付タップ &#8594; その週の週ビューへ</div>
+      <div class="mhint">日付タップ → その週の週ビューへ</div>
     </div>
   </div>
 </div>
+
 <div class="mbg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="mttl">スケジュール設定</div>
@@ -176,16 +213,67 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
     </div>
     <button onclick="toggleCR()" id="cr-btn" style="width:100%;padding:10px;background:#f0f7f4;color:var(--gd);border:1.5px solid var(--g);border-radius:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:space-between;"><span>🔧 キャンセルルール設定</span><span id="cr-arrow">▼ 設定する</span></button>
     <div id="sec-cancel-rule" style="display:none;margin-top:8px;background:#f8fbf9;border-radius:10px;padding:12px;">
-      <div style="background:#fff0f0;border-radius:8px;padding:10px;margin-bottom:10px;"><div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:5px;">⚠️ ラウンド確定時に必ずキャンセルされます</div><div style="font-size:10px;color:var(--red);font-weight:700;line-height:1.8;">🔴 同日の全ラウンド枠（他店舗含む）<br>🔴 ラウンド時間と重複するレッスン枠（全店舗）</div></div>
-      <div style="background:#fff;border-radius:8px;padding:10px;margin-bottom:8px;">
-        <div style="font-size:11px;font-weight:700;color:var(--gd);margin-bottom:8px;">🏪 他店舗のレッスン枠　キャンセル設定</div>
-        <div style="display:flex;flex-direction:column;gap:6px;">
-          <div id="cr1" onclick="pickCR(1)" style="border:2px solid var(--g);background:#f0faf5;border-radius:8px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;"><div id="crr1" style="width:15px;height:15px;border-radius:50%;border:2px solid var(--g);background:var(--g);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;"><div style="width:5px;height:5px;border-radius:50%;background:#fff;"></div></div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;">他店舗レッスンを全てキャンセル</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">確定日の他店舗レッスン枠を全て削除します</div></div></div>
-          <div id="cr2" onclick="pickCR(2)" style="border:2px solid #e0ece6;border-radius:8px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;"><div id="crr2" style="width:15px;height:15px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:1px;"></div><div style="width:100%;"><div style="font-size:11px;font-weight:700;color:#1a2e24;">前後◯時間分をキャンセル（自由設定）</div><div id="cr2-detail" style="display:none;margin-top:8px;"><div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><span style="font-size:10px;font-weight:700;min-width:80px;">レッスン開始の前</span><select class="tsel" id="cr-other-before" onchange="updateCRExample()"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select></div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:10px;font-weight:700;min-width:80px;">レッスン終了の後</span><select class="tsel" id="cr-other-after" onchange="updateCRExample()"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select></div></div></div></div>
-          <div id="cr3" onclick="pickCR(3)" style="border:2px solid #e0ece6;border-radius:8px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;"><div id="crr3" style="width:15px;height:15px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:1px;"></div><div><div style="font-size:11px;font-weight:700;color:#1a2e24;">手動でキャンセル</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">自動キャンセルしない。コーチが自分で確認・対応します</div></div></div>
-        </div>
-        <div style="background:#f0f7f4;border-radius:8px;padding:8px;margin-top:10px;"><div style="font-size:10px;font-weight:700;color:var(--gd);margin-bottom:4px;">📋 例）8〜17時ラウンド確定の場合</div><div id="cr-example" style="font-size:10px;color:var(--muted);line-height:1.7;">・同日の全ラウンド枠をキャンセル<br>・他店舗の当日レッスン枠を全てキャンセル</div></div>
+
+      <!-- 説明文 -->
+      <div style="background:#fff;border-radius:8px;padding:10px;margin-bottom:10px;border-left:3px solid var(--g);">
+        <div style="font-size:11px;font-weight:700;color:var(--gd);margin-bottom:4px;">🔧 キャンセルルール設定とは？</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.7;">ラウンドの予約が確定した時に、他店舗の重複するレッスン・ラウンド枠を自動でキャンセルするルールを設定します。移動時間なども考慮してコーチが自由に設定できます。</div>
       </div>
+
+      <!-- 必ずキャンセル -->
+      <div style="background:#fff0f0;border-radius:8px;padding:10px;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:5px;">⚠️ ラウンド確定時に必ずキャンセルされます</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:5px;">以下は設定に関わらず、ラウンド確定と同時に自動でキャンセルされます。</div>
+        <div style="font-size:10px;color:var(--red);font-weight:700;line-height:1.8;">🔴 同日の全ラウンド枠（他店舗含む）<br>🔴 ラウンド時間と重複するレッスン枠（全店舗）</div>
+      </div>
+
+      <!-- 他店舗レッスン設定 -->
+      <div style="background:#fff;border-radius:8px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:11px;font-weight:700;color:var(--gd);margin-bottom:3px;">🏪 他店舗のレッスン枠　キャンセル設定</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:10px;">複数店舗を登録している場合、予約が入った店舗以外のレッスンをどう処理するかを設定します。</div>
+
+        <div style="display:flex;flex-direction:column;gap:6px;">
+
+          <!-- ルール1 -->
+          <div id="cr1" onclick="pickCR(1)" style="border:2px solid var(--g);background:#f0faf5;border-radius:8px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;">
+            <div id="crr1" style="width:15px;height:15px;border-radius:50%;border:2px solid var(--g);background:var(--g);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;"><div style="width:5px;height:5px;border-radius:50%;background:#fff;"></div></div>
+            <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">他店舗レッスンを全てキャンセル</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">確定日の他店舗レッスン枠を全て削除します</div></div>
+          </div>
+
+          <!-- ルール2 -->
+          <div id="cr2" onclick="pickCR(2)" style="border:2px solid #e0ece6;border-radius:8px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;">
+            <div id="crr2" style="width:15px;height:15px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:1px;"></div>
+            <div style="width:100%;">
+              <div style="font-size:11px;font-weight:700;color:#1a2e24;">前後◯時間分をキャンセル（自由設定）</div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px;">移動時間を考慮して前後の時間を設定します</div>
+              <div id="cr2-detail" style="display:none;margin-top:8px;">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                  <span style="font-size:10px;font-weight:700;min-width:80px;">レッスン開始の前</span>
+                  <select class="tsel" id="cr-other-before" onchange="updateCRExample()"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                  <span style="font-size:10px;font-weight:700;min-width:80px;">レッスン終了の後</span>
+                  <select class="tsel" id="cr-other-after" onchange="updateCRExample()"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ルール3 -->
+          <div id="cr3" onclick="pickCR(3)" style="border:2px solid #e0ece6;border-radius:8px;padding:9px 10px;cursor:pointer;display:flex;gap:8px;align-items:flex-start;">
+            <div id="crr3" style="width:15px;height:15px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:1px;"></div>
+            <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">手動でキャンセル</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">自動キャンセルしない。コーチが自分で確認・対応します</div></div>
+          </div>
+
+        </div>
+
+        <!-- 例 -->
+        <div style="background:#f0f7f4;border-radius:8px;padding:8px;margin-top:10px;">
+          <div style="font-size:10px;font-weight:700;color:var(--gd);margin-bottom:4px;">📋 例）8〜17時ラウンド確定の場合</div>
+          <div id="cr-example" style="font-size:10px;color:var(--muted);line-height:1.7;">・同日の全ラウンド枠をキャンセル<br>・他店舗の当日レッスン枠を全てキャンセル</div>
+        </div>
+      </div>
+
     </div>
     <button class="sbtn" onclick="saveSlot()">✅ 保存する</button>
     <button class="cbtn" onclick="closeModal()">閉じる</button>
@@ -193,6 +281,7 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 </div>
 <div class="toast" id="toast"></div>
 <div class="btm"><button class="btmbtn" onclick="location.href='coach.html'">← コーチ画面に戻る</button></div>
+
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -200,122 +289,473 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSess
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 const HOURS=[];for(let h=8;h<=22;h++)HOURS.push(h);
 let coachId=null,currentMonth=new Date(),allSlots=[],modalDate=null,selStore=null,selHours=[];
+// 表示中の週の日曜日を直接保持
 let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;})();
+
 (async()=>{
-  const us=new URLSearchParams(location.search).get('store');if(us)localStorage.setItem('gc_store',us);
+  const us=new URLSearchParams(location.search).get('store');
+  if(us)localStorage.setItem('gc_store',us);
   const targetDate=new URLSearchParams(location.search).get('date');
-  if(targetDate){const d=new Date(targetDate);d.setHours(0,0,0,0);currentWeekSun=new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());}
-  const{data:{session}}=await sb.auth.getSession();
+  if(targetDate){
+    const d=new Date(targetDate);
+    d.setHours(0,0,0,0);
+    currentWeekSun=new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());
+  }
+  const {data:{session}}=await sb.auth.getSession();
   if(!session){location.replace(BASE+'index.html');return;}
-  coachId=session.user.id;buildRoundOpts();await loadSlots();buildWeek();
+  coachId=session.user.id;
+  buildRoundOpts();
+  await loadSlots();
+  buildWeek();
 })();
-async function loadSlots(){try{const{data}=await sb.from('schedules').select('*').eq('coach_id',coachId);allSlots=data||[];}catch(e){allSlots=[];}}
-function switchView(v){document.getElementById('view-week').style.display=v==='week'?'block':'none';document.getElementById('view-month').style.display=v==='month'?'block':'none';document.getElementById('tab-week').classList.toggle('active',v==='week');document.getElementById('tab-month').classList.toggle('active',v==='month');if(v==='month')buildMonth();if(v==='week')buildWeek();}
+
+async function loadSlots(){
+  try{const {data}=await sb.from('schedules').select('*').eq('coach_id',coachId);allSlots=data||[];}
+  catch(e){allSlots=[];}
+}
+
+function switchView(v){
+  document.getElementById('view-week').style.display=v==='week'?'block':'none';
+  document.getElementById('view-month').style.display=v==='month'?'block':'none';
+  document.getElementById('tab-week').classList.toggle('active',v==='week');
+  document.getElementById('tab-month').classList.toggle('active',v==='month');
+  if(v==='month')buildMonth();
+  if(v==='week')buildWeek();
+}
+
 function fd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function gd(s){return s.date||s.slot_date||'';}function gs(s){return s.store_key||s.store_id||'kyoto';}function gh(s){return parseInt(s.start_time||s.slot_hour||0);}
+function gd(s){return s.date||s.slot_date||'';}
+function gs(s){return s.store_key||s.store_id||'kyoto';}
+function gh(s){return parseInt(s.start_time||s.slot_hour||0);}
+
 function buildWeek(){
   const today=new Date();today.setHours(0,0,0,0);
-  const dates=[];for(let i=0;i<7;i++){const d=new Date(currentWeekSun);d.setDate(currentWeekSun.getDate()+i);dates.push(d);}
+  const dates=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(currentWeekSun);
+    d.setDate(currentWeekSun.getDate()+i);
+    dates.push(d);
+  }
   const days=['日','月','火','水','木','金','土'];
-  document.getElementById('week-lbl').textContent=(dates[0].getMonth()+1)+'/'+dates[0].getDate()+'〜'+(dates[6].getMonth()+1)+'/'+dates[6].getDate();
-  const wrap=document.getElementById('cal-wrap');wrap.innerHTML='';
-  const cal=document.createElement('div');cal.className='cal';
+  document.getElementById('week-lbl').textContent=
+    (dates[0].getMonth()+1)+'/'+dates[0].getDate()+'〜'+(dates[6].getMonth()+1)+'/'+dates[6].getDate();
+
+  const wrap=document.getElementById('cal-wrap');
+  wrap.innerHTML='';
+  const cal=document.createElement('div');
+  cal.className='cal';
+
+  // 時間列
   const tcol=document.createElement('div');tcol.className='tc-col';
-  tcol.appendChild(Object.assign(document.createElement('div'),{className:'tc-hdr'}));
-  tcol.appendChild(Object.assign(document.createElement('div'),{className:'tc-round-label'}));
+  const thdr=document.createElement('div');thdr.className='tc-hdr';tcol.appendChild(thdr);
+  // ラベルバーの空白
+  const trl=document.createElement('div');trl.className='tc-label-bar';tcol.appendChild(trl);
   HOURS.forEach(h=>{const c=document.createElement('div');c.className='tc-cell';c.textContent=h+':00';tcol.appendChild(c);});
   cal.appendChild(tcol);
+
+  // 各日列
   dates.forEach((d,di)=>{
-    const ds=fd(d),isToday=d.toDateString()===today.toDateString(),dow=d.getDay();
+    const ds=fd(d);
+    const isToday=d.toDateString()===today.toDateString();
+    const dow=d.getDay();
     const col=document.createElement('div');col.className='day-col';
-    const hdr=document.createElement('div');hdr.className='day-hdr'+(isToday?' tdy':'')+(dow===0?' sun':dow===6?' sat':'');
-    hdr.innerHTML=days[di]+'<br>'+(isToday?'<div class="today-num">'+d.getDate()+'</div>':d.getDate());
+
+    // ヘッダー
+    const hdr=document.createElement('div');
+    hdr.className='day-hdr'+(isToday?' tdy':'')+(dow===0?' sun':dow===6?' sat':'');
+    const num=isToday?`<div class="today-num">${d.getDate()}</div>`:d.getDate();
+    hdr.innerHTML=days[di]+'<br>'+num;
     col.appendChild(hdr);
+
+    // この日のラウンド情報
     const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round');
+
+    // ラウンド時間帯の計算
     let roundFrom=-1,roundTo=-1,roundConfirmed=false,roundLabel='';
-    if(rounds.length>0){const r=rounds[0];roundFrom=parseInt(r.block_from||8);roundTo=parseInt(r.block_to||17);roundConfirmed=r.status==='booked';const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';roundLabel='⛳ '+sl+' '+roundFrom+'〜'+roundTo+'時';}
+    if(rounds.length>0){
+      const r=rounds[0];
+      roundFrom=parseInt(r.block_from||8);
+      roundTo=parseInt(r.block_to||17);
+      roundConfirmed=r.status==='booked';
+      const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';
+      roundLabel=`⛳ ${sl} ${roundFrom}〜${roundTo}時`;
+    }
+
     if(roundFrom>=0){
-      const labelRow=document.createElement('div');labelRow.className='round-label-row'+(roundConfirmed?' cfm':'');labelRow.textContent=roundLabel;
+      // ラベルバー（ラウンドあり）
+      const labelRow=document.createElement('div');
+      labelRow.className='round-label-bar'+(roundConfirmed?' cfm':'');
+      labelRow.textContent=roundLabel;
       if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelRow.appendChild(b);}
       col.appendChild(labelRow);
-      for(let h=HOURS[0];h<roundFrom;h++)col.appendChild(mkCell(ds,h,isToday));
-      const rb=document.createElement('div');rb.className='rb'+(roundConfirmed?' cfm':'');
+
+      // ラウンド前の通常セル
+      for(let h=HOURS[0];h<roundFrom;h++){
+        const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);
+      }
+      // ラウンド枠（大きな角丸枠）
+      const rb=document.createElement('div');
+      rb.className='rb'+(roundConfirmed?' cfm':'');
+      // ラウンド時間帯のセル
       for(let h=roundFrom;h<roundTo;h++){
-        const rc=document.createElement('div');rc.className='rc'+(roundConfirmed?' cfm':'');
+        const rc=document.createElement('div');
+        rc.className='rc'+(roundConfirmed?' cfm':'');
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
         const shown={kyoto:false,fushimi:false};
-        indoors.forEach(s=>{const keys=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];keys.forEach(k=>{if(shown[k])return;shown[k]=true;const el=document.createElement('div');if(roundConfirmed){el.className='sl cancelled';el.textContent=k==='kyoto'?'京':'伏';}else{el.className='sl '+(k==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');el.textContent=k==='kyoto'?'京':'伏';if(s.status==='booked'){const st=document.createElement('div');st.className='cfms';st.textContent='確';el.appendChild(st);}}rc.appendChild(el);});});
-        rc.onclick=()=>openModal(ds,h);rb.appendChild(rc);
+        indoors.forEach(s=>{
+          const keys=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];
+          keys.forEach(k=>{
+            if(shown[k])return;
+            shown[k]=true;
+            const el=document.createElement('div');
+            if(roundConfirmed){
+              el.className='sl cancelled';el.textContent=k==='kyoto'?'京':'伏';
+            } else {
+              el.className='sl '+(k==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');
+              el.textContent=k==='kyoto'?'京':'伏';
+              if(s.status==='booked'){const st=document.createElement('div');st.className='cfms';st.textContent='確';el.appendChild(st);}
+            }
+            rc.appendChild(el);
+          });
+        });
+        rc.onclick=()=>openModal(ds,h);
+        rb.appendChild(rc);
       }
       col.appendChild(rb);
-      for(let h=roundTo;h<=HOURS[HOURS.length-1];h++)col.appendChild(mkCell(ds,h,isToday));
-    }else{
-      const el=document.createElement('div');el.className='empty-label-row'+(isToday?' tdy':'');col.appendChild(el);
-      HOURS.forEach(h=>col.appendChild(mkCell(ds,h,isToday)));
+      // ラウンド後の通常セル
+      for(let h=roundTo;h<=HOURS[HOURS.length-1];h++){
+        const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);
+      }
+    } else {
+      // ラベルバー（ラウンドなし）
+      const emptyLabel=document.createElement('div');
+      emptyLabel.className='empty-label-bar'+(isToday?' tdy':'');
+      col.appendChild(emptyLabel);
+      HOURS.forEach(h=>{const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);});
     }
     cal.appendChild(col);
   });
   wrap.appendChild(cal);
 }
-function mkCell(ds,h,isToday){
-  const cell=document.createElement('div');cell.className='cell'+(isToday?' tdy':'');
+
+function mkCell(ds,h,isToday,inRound,roundCfm){
+  const cell=document.createElement('div');
+  cell.className='cell'+(isToday?' tdy':'');
   const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
+  // 重複防止：kyoto/fushimiそれぞれ1つだけ表示
   const shown={kyoto:false,fushimi:false};
-  indoors.forEach(s=>{const keys=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];keys.forEach(k=>{if(shown[k])return;shown[k]=true;const el=document.createElement('div');el.className='sl '+(k==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');el.textContent=k==='kyoto'?'京':'伏';if(s.status==='booked'){const st=document.createElement('div');st.className='cfms';st.textContent='確';el.appendChild(st);}cell.appendChild(el);});});
-  cell.onclick=()=>openModal(ds,h);return cell;
+  indoors.forEach(s=>{
+    const keys=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];
+    keys.forEach(k=>{
+      if(shown[k])return;
+      shown[k]=true;
+      const el=document.createElement('div');
+      el.className='sl '+(k==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');
+      el.textContent=k==='kyoto'?'京':'伏';
+      if(s.status==='booked'){const st=document.createElement('div');st.className='cfms';st.textContent='確';el.appendChild(st);}
+      cell.appendChild(el);
+    });
+  });
+  cell.onclick=()=>openModal(ds,h);
+  return cell;
 }
-function moveWeek(dir){currentWeekSun=new Date(currentWeekSun.getFullYear(),currentWeekSun.getMonth(),currentWeekSun.getDate()+dir*7);buildWeek();}
+
+function moveWeek(dir){
+  currentWeekSun=new Date(currentWeekSun.getFullYear(),currentWeekSun.getMonth(),currentWeekSun.getDate()+dir*7);
+  buildWeek();
+}
+
 function buildMonth(){
   const y=currentMonth.getFullYear(),m=currentMonth.getMonth();
   document.getElementById('month-lbl').textContent=y+'年'+(m+1)+'月';
   const days=['日','月','火','水','木','金','土'];
   const hdr=document.getElementById('month-hdr');hdr.innerHTML='';
-  days.forEach((d,i)=>{const el=document.createElement('div');el.className='mdhdr'+(i===0?' sun':i===6?' sat':'');el.textContent=d;hdr.appendChild(el);});
+  days.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.className='mdhdr'+(i===0?' sun':i===6?' sat':'');
+    el.textContent=d;hdr.appendChild(el);
+  });
   const grid=document.getElementById('month-grid');grid.innerHTML='';
   const first=new Date(y,m,1),last=new Date(y,m+1,0),today=new Date();
   for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='mcell other';grid.appendChild(c);}
   for(let d=1;d<=last.getDate();d++){
-    const date=new Date(y,m,d),ds=fd(date),dow=date.getDay();
-    const cell=document.createElement('div');cell.className='mcell'+(date.toDateString()===today.toDateString()?' today':'')+(dow===0?' sun':dow===6?' sat':'');
-    const slots=allSlots.filter(s=>gd(s)===ds),sks=slots.map(s=>gs(s));
+    const date=new Date(y,m,d),ds=fd(date);
+    const dow=date.getDay();
+    const cell=document.createElement('div');
+    cell.className='mcell'+(date.toDateString()===today.toDateString()?' today':'')+(dow===0?' sun':dow===6?' sat':'');
+    const slots=allSlots.filter(s=>gd(s)===ds);
+    const sks=slots.map(s=>gs(s));
     let dots='<div class="mdots">';
-    if(slots.some(s=>s.lesson_type==='indoor')&&(sks.includes('kyoto')||sks.includes('both')))dots+='<div class="mdot" style="background:var(--kyoto)"></div>';
-    if(slots.some(s=>s.lesson_type==='indoor')&&(sks.includes('fushimi')||sks.includes('both')))dots+='<div class="mdot" style="background:var(--fushimi)"></div>';
-    if(slots.some(s=>s.lesson_type==='round'))dots+='<div class="mdot" style="background:var(--round-bd)"></div>';
+    if(slots.some(s=>s.lesson_type==='indoor')&&(sks.includes('kyoto')||sks.includes('both')))
+      dots+=`<div class="mdot" style="background:var(--kyoto)"></div>`;
+    if(slots.some(s=>s.lesson_type==='indoor')&&(sks.includes('fushimi')||sks.includes('both')))
+      dots+=`<div class="mdot" style="background:var(--fushimi)"></div>`;
+    if(slots.some(s=>s.lesson_type==='round'))
+      dots+=`<div class="mdot" style="background:var(--round-bd)"></div>`;
     dots+='</div>';
-    cell.innerHTML='<div class="mdate">'+d+'</div>'+dots;
-    (function(cy,cm,cd){cell.onclick=()=>{const clicked=new Date(cy,cm,cd);clicked.setHours(0,0,0,0);const sun=new Date(clicked);sun.setDate(clicked.getDate()-clicked.getDay());currentWeekSun=sun;switchView('week');};})(y,m,d);
+    cell.innerHTML=`<div class="mdate">${d}</div>${dots}`;
+    // 月ビューの日付タップ → その週の週ビューへ
+    (function(cy,cm,cd){
+      cell.onclick=()=>{
+        const clicked=new Date(cy,cm,cd);
+        clicked.setHours(0,0,0,0);
+        // setDateで負の値も正しく前月に繰り上がる
+        const sun=new Date(clicked);
+        sun.setDate(clicked.getDate()-clicked.getDay());
+        currentWeekSun=sun;
+        switchView('week');
+      };
+    })(y,m,d);
     grid.appendChild(cell);
   }
 }
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonth();}
+
 function openModal(ds,hour){
-  modalDate=ds;const d=new Date(ds);
+  modalDate=ds;
+  const d=new Date(ds);
   document.getElementById('mdt').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日'+(hour!==undefined?' '+hour+':00':'');
+
+  // その時間・その枠だけ表示（hourが指定されている場合はその時間のスロットのみ）
   let existing;
-  if(hour!==undefined){existing=allSlots.filter(s=>gd(s)===ds&&((s.lesson_type==='indoor'&&gh(s)===hour)||(s.lesson_type==='round'&&parseInt(s.block_from||8)<=hour&&hour<parseInt(s.block_to||17))));}
-  else{existing=allSlots.filter(s=>gd(s)===ds);}
+  if(hour!==undefined){
+    existing=allSlots.filter(s=>gd(s)===ds&&(
+      (s.lesson_type==='indoor'&&gh(s)===hour)||
+      (s.lesson_type==='round'&&parseInt(s.block_from||8)<=hour&&hour<parseInt(s.block_to||17))
+    ));
+  } else {
+    existing=allSlots.filter(s=>gd(s)===ds);
+  }
+
   let html='';
-  if(existing.length){html='<div style="margin-bottom:10px;"><div class="stl" style="margin-top:0;">'+(hour!==undefined?hour+':00 の登録済み':'登録済み')+'</div>';existing.forEach(s=>{const cfm=s.status==='booked',sk=gs(s),sl=sk==='both'?'両店舗':sk==='kyoto'?'京都店':'伏見店';html+='<div class="erow"><div><div class="et">'+(s.lesson_type==='round'?'⛳ ラウンド':'🏌 インドア')+' '+sl+'</div><div class="ed">'+(s.lesson_type==='round'?(s.block_from||'8')+'〜'+(s.block_to||'17')+'時':gh(s)+'時')+'</div></div>'+(cfm?'<span style="font-size:10px;color:var(--red);font-weight:700;">確定済</span>':'<button class="dbtn" onclick="delSlot(&quot;'+s.id+'&quot;)">削除</button>')+'</div>';});html+='</div>';}
+  if(existing.length){
+    html='<div style="margin-bottom:10px;"><div class="stl" style="margin-top:0;">'+(hour!==undefined?hour+':00 の登録済み':'登録済み')+'</div>';
+    existing.forEach(s=>{
+      const cfm=s.status==='booked';
+      const sk=gs(s),sl=sk==='both'?'両店舗':sk==='kyoto'?'京都店':'伏見店';
+      html+=`<div class="erow"><div><div class="et">${s.lesson_type==='round'?'⛳ ラウンド':'🏌 インドア'} ${sl}</div><div class="ed">${s.lesson_type==='round'?(s.block_from||'8')+'〜'+(s.block_to||'17')+'時':gh(s)+'時'}</div></div>${cfm?'<span style="font-size:10px;color:var(--red);font-weight:700;">確定済</span>':`<button class="dbtn" onclick="delSlot('${s.id}')">削除</button>`}</div>`;
+    });
+    html+='</div>';
+  }
   document.getElementById('exist-wrap').innerHTML=html;
-  selStore=localStorage.getItem('gc_store')||null;selHours=hour!==undefined?[hour]:[];
-  document.getElementById('tog-i').checked=hour!==undefined;document.getElementById('tog-r').checked=false;
-  document.getElementById('sec-i').style.display=hour!==undefined?'block':'none';document.getElementById('sec-r').style.display='none';
-  ['kyoto','fushimi','both'].forEach(k=>{document.getElementById('chip-'+k).className='chip'+(selStore===k?' s'+(k==='kyoto'?'k':k==='fushimi'?'f':'b'):'');});
-  buildHGrid();document.getElementById('modal').classList.add('open');
+  selStore=localStorage.getItem('gc_store')||null;
+  selHours=hour!==undefined?[hour]:[];
+  document.getElementById('tog-i').checked=hour!==undefined;
+  document.getElementById('tog-r').checked=false;
+  document.getElementById('sec-i').style.display=hour!==undefined?'block':'none';
+  document.getElementById('sec-r').style.display='none';
+  ['kyoto','fushimi','both'].forEach(k=>{
+    document.getElementById('chip-'+k).className='chip'+(selStore===k?' s'+(k==='kyoto'?'k':k==='fushimi'?'f':'b'):'');
+  });
+  buildHGrid();
+  document.getElementById('modal').classList.add('open');
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
-function pickStore(k){selStore=k;['kyoto','fushimi','both'].forEach(id=>{document.getElementById('chip-'+id).className='chip'+(id===k?' s'+(id==='kyoto'?'k':id==='fushimi'?'f':'b'):'');});buildHGrid();}
-function onTog(t,on){document.getElementById('sec-'+t).style.display=on?'block':'none';if(t==='i')buildHGrid();}
+function pickStore(k){
+  selStore=k;
+  ['kyoto','fushimi','both'].forEach(id=>{
+    document.getElementById('chip-'+id).className='chip'+(id===k?' s'+(id==='kyoto'?'k':id==='fushimi'?'f':'b'):'');
+  });
+  buildHGrid();
+}
+function onTog(t,on){
+  document.getElementById('sec-'+t).style.display=on?'block':'none';
+  if(t==='i')buildHGrid();
+}
 let selCR=1;
-function toggleCR(){const sec=document.getElementById('sec-cancel-rule'),arrow=document.getElementById('cr-arrow'),isOpen=sec.style.display==='block';sec.style.display=isOpen?'none':'block';arrow.textContent=isOpen?'▼ 設定する':'▲ 閉じる';}
-function pickCR(n){if(selCR===n){const card=document.getElementById('cr'+n),radio=document.getElementById('crr'+n);card.style.border='2px solid #e0ece6';card.style.background='#fff';radio.style.background='';radio.style.borderColor='#ccc';radio.innerHTML='';if(n===2)document.getElementById('cr2-detail').style.display='none';selCR=0;updateCRExample();return;}[1,2,3].forEach(i=>{const card=document.getElementById('cr'+i),radio=document.getElementById('crr'+i);card.style.border='2px solid #e0ece6';card.style.background='#fff';radio.style.background='';radio.style.borderColor='#ccc';radio.innerHTML='';if(i===2)document.getElementById('cr2-detail').style.display='none';});const selCard=document.getElementById('cr'+n),selRadio=document.getElementById('crr'+n);selCard.style.border='2px solid var(--g)';selCard.style.background='#f0faf5';selRadio.style.background='var(--g)';selRadio.style.borderColor='var(--g)';selRadio.innerHTML='<div style="width:5px;height:5px;border-radius:50%;background:#fff;"></div>';if(n===2)document.getElementById('cr2-detail').style.display='block';selCR=n;updateCRExample();}
-function updateCRExample(){const rs=document.getElementById('rs'),re=document.getElementById('re'),from=rs?parseInt(rs.value):8,to=re?parseInt(re.value):17,ex=document.getElementById('cr-example');if(!ex)return;if(selCR===1){ex.innerHTML='・同日の全ラウンド枠をキャンセル<br>・他店舗の当日レッスン枠を全てキャンセル';}else if(selCR===2){const ob=parseInt(document.getElementById('cr-other-before')?.value||2),oa=parseInt(document.getElementById('cr-other-after')?.value||2);ex.innerHTML='・同日の全ラウンド枠をキャンセル<br>・他店舗レッスン '+Math.max(5,from-ob)+'〜'+Math.min(22,to+oa)+'時をキャンセル';}else{ex.innerHTML='・同日の全ラウンド枠をキャンセル<br>・他店舗レッスンはコーチが手動で対応';}}
-function buildHGrid(){const g=document.getElementById('hgrid');g.innerHTML='';for(let h=8;h<=21;h++){const c=document.createElement('div');const cfm=allSlots.some(s=>gd(s)===modalDate&&s.lesson_type==='indoor'&&gh(s)===h&&s.status==='booked');if(cfm){c.className='hchip cfmd';c.textContent=h+':00 確';}else{c.className='hchip'+(selHours.includes(h)?' sel':'');c.textContent=h+':00';c.onclick=()=>{if(!selStore){showToast('先に店舗を選んでください');return;}c.classList.toggle('sel');if(selHours.includes(h))selHours=selHours.filter(x=>x!==h);else selHours.push(h);};}g.appendChild(c);}}
-function buildRoundOpts(){const s=document.getElementById('rs'),e=document.getElementById('re');for(let h=5;h<=21;h++)s.innerHTML+='<option value="'+h+'">'+h+':00</option>';for(let h=6;h<=22;h++)e.innerHTML+='<option value="'+h+'">'+h+':00</option>';s.value=8;e.value=17;}
-async function saveSlot(){if(!selStore){showToast('店舗を選んでください');return;}const io=document.getElementById('tog-i').checked,ro=document.getElementById('tog-r').checked;if(!io&&!ro){showToast('インドアかラウンドをONに');return;}const saves=[];if(io){if(!selHours.length){showToast('時間を選んでください');return;}selHours.forEach(h=>saves.push({coach_id:coachId,date:modalDate,lesson_type:'indoor',store_key:selStore,start_time:String(h),status:'available'}));}if(ro){const rs2=parseInt(document.getElementById('rs').value),re2=parseInt(document.getElementById('re').value);if(re2<=rs2){showToast('終了は開始より後に');return;}saves.push({coach_id:coachId,date:modalDate,lesson_type:'round',store_key:selStore,block_from:String(rs2),block_to:String(re2),status:'available',cancel_rule:selCR,cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),cancel_other_after:parseInt(document.getElementById('cr-other-after')?.value||0)});}try{const{error}=await sb.from('schedules').insert(saves);if(error)throw error;await loadSlots();}catch(e){saves.forEach(s=>{s.id='local-'+Date.now()+Math.random();allSlots.push(s);});}showToast('保存しました！');closeModal();buildWeek();}
-async function delSlot(id){if(!confirm('削除しますか？'))return;try{await sb.from('schedules').delete().eq('id',id);}catch(e){}allSlots=allSlots.filter(s=>s.id!==id);closeModal();buildWeek();showToast('削除しました');}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);}
+function toggleCR(){
+  const sec=document.getElementById('sec-cancel-rule');
+  const arrow=document.getElementById('cr-arrow');
+  const isOpen=sec.style.display==='block';
+  sec.style.display=isOpen?'none':'block';
+  arrow.textContent=isOpen?'▼ 設定する':'▲ 閉じる';
+}
+function pickCR(n){
+  // トグル式：もう一度押すと解除
+  if(selCR===n){
+    // 解除
+    const card=document.getElementById('cr'+n);
+    const radio=document.getElementById('crr'+n);
+    card.style.border='2px solid #e0ece6';
+    card.style.background='#fff';
+    radio.style.background='';
+    radio.style.borderColor='#ccc';
+    radio.innerHTML='';
+    if(n===2)document.getElementById('cr2-detail').style.display='none';
+    selCR=0;
+    updateCRExample();
+    return;
+  }
+  // 全解除してから選択
+  [1,2,3].forEach(i=>{
+    const card=document.getElementById('cr'+i);
+    const radio=document.getElementById('crr'+i);
+    card.style.border='2px solid #e0ece6';
+    card.style.background='#fff';
+    radio.style.background='';
+    radio.style.borderColor='#ccc';
+    radio.innerHTML='';
+    if(i===2)document.getElementById('cr2-detail').style.display='none';
+  });
+  const selCard=document.getElementById('cr'+n);
+  const selRadio=document.getElementById('crr'+n);
+  selCard.style.border='2px solid var(--g)';
+  selCard.style.background='#f0faf5';
+  selRadio.style.background='var(--g)';
+  selRadio.style.borderColor='var(--g)';
+  selRadio.innerHTML='<div style="width:5px;height:5px;border-radius:50%;background:#fff;"></div>';
+  if(n===2)document.getElementById('cr2-detail').style.display='block';
+  selCR=n;
+  updateCRExample();
+}
+function updateCRExample(){
+  const rs=document.getElementById('rs');
+  const re=document.getElementById('re');
+  const from=rs?parseInt(rs.value):8;
+  const to=re?parseInt(re.value):17;
+  const ex=document.getElementById('cr-example');
+  if(!ex)return;
+  if(selCR===1){
+    ex.innerHTML='・同日の全ラウンド枠をキャンセル<br>・他店舗の当日レッスン枠を全てキャンセル';
+  } else if(selCR===2){
+    const ob=parseInt(document.getElementById('cr-other-before')?.value||2);
+    const oa=parseInt(document.getElementById('cr-other-after')?.value||2);
+    const oFrom=Math.max(5,from-ob),oTo=Math.min(22,to+oa);
+    ex.innerHTML='・同日の全ラウンド枠をキャンセル<br>・他店舗レッスン '+oFrom+'〜'+oTo+'時をキャンセル';
+  } else {
+    ex.innerHTML='・同日の全ラウンド枠をキャンセル<br>・他店舗レッスンはコーチが手動で対応';
+  }
+}
+
+function buildHGrid(){
+  const g=document.getElementById('hgrid');g.innerHTML='';
+  for(let h=8;h<=21;h++){
+    const c=document.createElement('div');
+    const cfm=allSlots.some(s=>gd(s)===modalDate&&s.lesson_type==='indoor'&&gh(s)===h&&s.status==='booked');
+    if(cfm){c.className='hchip cfmd';c.textContent=h+':00 確';}
+    else{
+      c.className='hchip'+(selHours.includes(h)?' sel':'');c.textContent=h+':00';
+      c.onclick=()=>{
+        if(!selStore){showToast('先に店舗を選んでください');return;}
+        c.classList.toggle('sel');
+        if(selHours.includes(h))selHours=selHours.filter(x=>x!==h);else selHours.push(h);
+      };
+    }
+    g.appendChild(c);
+  }
+}
+function buildRoundOpts(){
+  const s=document.getElementById('rs'),e=document.getElementById('re');
+  for(let h=5;h<=21;h++)s.innerHTML+=`<option value="${h}">${h}:00</option>`;
+  for(let h=6;h<=22;h++)e.innerHTML+=`<option value="${h}">${h}:00</option>`;
+  s.value=8;e.value=17;
+}
+async function saveSlot(){
+  if(!selStore){showToast('店舗を選んでください');return;}
+  const io=document.getElementById('tog-i').checked;
+  const ro=document.getElementById('tog-r').checked;
+  if(!io&&!ro){showToast('インドアかラウンドをONに');return;}
+  const saves=[];
+  if(io){
+    if(!selHours.length){showToast('時間を選んでください');return;}
+    selHours.forEach(h=>saves.push({coach_id:coachId,date:modalDate,lesson_type:'indoor',store_key:selStore,start_time:String(h),status:'available'}));
+  }
+  if(ro){
+    const rs2=parseInt(document.getElementById('rs').value);
+    const re2=parseInt(document.getElementById('re').value);
+    if(re2<=rs2){showToast('終了は開始より後に');return;}
+    saves.push({
+      coach_id:coachId,date:modalDate,lesson_type:'round',
+      store_key:selStore,block_from:String(rs2),block_to:String(re2),
+      status:'available',
+      cancel_rule:selCR,
+      cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
+      cancel_other_after:parseInt(document.getElementById('cr-other-after')?.value||0)
+    });
+  }
+  try{
+    const {error}=await sb.from('schedules').insert(saves);
+    if(error)throw error;await loadSlots();
+  }catch(e){saves.forEach(s=>{s.id='local-'+Date.now()+Math.random();allSlots.push(s);});}
+  showToast('保存しました！');closeModal();buildWeek();
+}
+
+// ラウンド確定時のキャンセル処理
+async function applyRoundCancelRule(roundSlot){
+  const date=gd(roundSlot);
+  const from=parseInt(roundSlot.block_from||8);
+  const to=parseInt(roundSlot.block_to||17);
+  const confirmedStore=gs(roundSlot);
+  const cancelRule=parseInt(roundSlot.cancel_rule||1); // 1:全キャンセル 2:前後時間 3:手動
+  const otherBefore=parseInt(roundSlot.cancel_other_before||0);
+  const otherAfter=parseInt(roundSlot.cancel_other_after||0);
+
+  const toDelete=[];
+  allSlots.forEach(s=>{
+    if(gd(s)!==date)return;
+    if(s.id===roundSlot.id)return;
+
+    // 同日の全ラウンド枠をキャンセル（必須）
+    if(s.lesson_type==='round'){toDelete.push(s.id);return;}
+
+    if(s.lesson_type==='indoor'){
+      const h=gh(s);
+      const skey=gs(s);
+      const isSameStore=(skey===confirmedStore||skey==='both'||confirmedStore==='both');
+
+      if(isSameStore){
+        // 同店舗：ラウンド時間と重複するレッスンは全店舗キャンセル（必須）
+        if(h>=from&&h<to)toDelete.push(s.id);
+      } else {
+        // 他店舗：ラウンド時間と重複するレッスンも必ずキャンセル
+        if(h>=from&&h<to){toDelete.push(s.id);return;}
+        // さらにキャンセルルールに従う
+        if(cancelRule===1){
+          // 全キャンセル
+          toDelete.push(s.id);
+        } else if(cancelRule===2){
+          // 前後時間設定
+          if(h>=from-otherBefore&&h<to+otherAfter)toDelete.push(s.id);
+        }
+        // cancelRule===3は手動なので何もしない
+      }
+    }
+  });
+
+  for(const id of toDelete){
+    try{if(!id.startsWith('local-'))await sb.from('schedules').delete().eq('id',id);}catch(e){}
+    allSlots=allSlots.filter(s=>s.id!==id);
+  }
+  return toDelete.length;
+}
+// ラウンド確定ボタン（予約管理から呼ばれる）
+async function confirmRound(id){
+  try{
+    await sb.from('schedules').update({status:'booked'}).eq('id',id);
+    await loadSlots();
+    const roundSlot=allSlots.find(s=>s.id===id);
+    if(roundSlot){
+      const cancelled=await applyRoundCancelRule(roundSlot);
+      showToast('ラウンド確定！'+cancelled+'件の枠をキャンセルしました');
+    }
+  }catch(e){
+    // ローカルのみ更新
+    const s=allSlots.find(s=>s.id===id);
+    if(s)s.status='booked';
+    if(s){const cancelled=await applyRoundCancelRule(s);showToast('確定（'+cancelled+'件キャンセル）');}
+  }
+  buildWeek();
+}
+
+async function delSlot(id){
+  if(!confirm('削除しますか？'))return;
+  try{await sb.from('schedules').delete().eq('id',id);}catch(e){}
+  allSlots=allSlots.filter(s=>s.id!==id);closeModal();buildWeek();showToast('削除しました');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
 </script>
 </body>
 </html>
