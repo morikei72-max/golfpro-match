@@ -61,14 +61,12 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
 .rc.cfm{border-bottom-color:rgba(226,75,74,0.15);background:#FFF5F5;}
 .rc:last-child{border-bottom:none;}
-/* ラウンドラベル行（時間軸の上に追加する薄い行） */
-.round-label-row{height:18px;background:var(--round-bg);border-bottom:1px solid var(--round-bd);display:flex;align-items:center;padding:0 4px;font-size:8px;font-weight:700;color:#92400E;white-space:nowrap;overflow:hidden;box-sizing:border-box;}
-.round-label-row.cfm{background:#FFF0F0;border-bottom-color:var(--red);color:var(--red);}
-/* 時間軸のラウンドラベル行（空白） */
-.tc-round-label{height:18px;background:#f0f7f4;border-bottom:1px solid var(--border);box-sizing:border-box;}
-/* ラウンドなし列のラベル行（空白） */
-.empty-label-row{height:18px;border-bottom:1px solid var(--border);background:#fff;box-sizing:border-box;}
-.empty-label-row.tdy{background:#fffef5;}
+/* ラウンドラベル：day-hdrの下に表示 */
+.round-label-bar{height:20px;display:flex;align-items:center;padding:0 4px;font-size:8px;font-weight:700;color:#92400E;white-space:nowrap;overflow:hidden;background:var(--round-bg);border-bottom:1px solid var(--round-bd);box-sizing:border-box;border-left:1px solid var(--border);}
+.round-label-bar.cfm{background:#FFF0F0;border-bottom-color:var(--red);color:var(--red);}
+.tc-label-bar{height:20px;background:#f0f7f4;border-bottom:1px solid var(--border);box-sizing:border-box;}
+.empty-label-bar{height:20px;background:#fff;border-bottom:1px solid var(--border);border-left:1px solid var(--border);box-sizing:border-box;}
+.empty-label-bar.tdy{background:#fffef5;}
 
 /* 月ビュー */
 .month-wrap{padding:8px 12px 0;}
@@ -350,8 +348,8 @@ function buildWeek(){
   // 時間列
   const tcol=document.createElement('div');tcol.className='tc-col';
   const thdr=document.createElement('div');thdr.className='tc-hdr';tcol.appendChild(thdr);
-  // ラウンドラベル行の空白
-  const trl=document.createElement('div');trl.className='tc-round-label';tcol.appendChild(trl);
+  // ラベルバーの空白
+  const trl=document.createElement('div');trl.className='tc-label-bar';tcol.appendChild(trl);
   HOURS.forEach(h=>{const c=document.createElement('div');c.className='tc-cell';c.textContent=h+':00';tcol.appendChild(c);});
   cal.appendChild(tcol);
 
@@ -384,9 +382,9 @@ function buildWeek(){
     }
 
     if(roundFrom>=0){
-      // ラウンドラベル行（上部の薄い行）
+      // ラベルバー（ラウンドあり）
       const labelRow=document.createElement('div');
-      labelRow.className='round-label-row'+(roundConfirmed?' cfm':'');
+      labelRow.className='round-label-bar'+(roundConfirmed?' cfm':'');
       labelRow.textContent=roundLabel;
       if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelRow.appendChild(b);}
       col.appendChild(labelRow);
@@ -429,9 +427,9 @@ function buildWeek(){
         const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);
       }
     } else {
-      // ラウンドなし：空白ラベル行を追加してから通常セル
+      // ラベルバー（ラウンドなし）
       const emptyLabel=document.createElement('div');
-      emptyLabel.className='empty-label-row'+(isToday?' tdy':'');
+      emptyLabel.className='empty-label-bar'+(isToday?' tdy':'');
       col.appendChild(emptyLabel);
       HOURS.forEach(h=>{const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);});
     }
