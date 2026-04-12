@@ -285,6 +285,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <div id="detail-content"></div>
       <button onclick="closeDateDetail();selectDateFromDetail(currentDetailDate)" style="width:100%;padding:12px;background:#1D9E75;color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">この日も選択する</button>
+      <button id="detail-add-indoor-btn" onclick="addIndoorFromDetail(currentDetailDate)" style="display:none;width:100%;padding:12px;background:#fff;color:#085041;border:2px solid #1D9E75;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">🏌 この日にインドアレッスンも追加登録する</button>
     </div>
   </div>
 </main>
@@ -495,7 +496,34 @@ function showDateDetail(ds,eb){
   if(eb['fushimi'])html+=`<div style="background:#E3F2FD;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#0C447C;margin-bottom:4px;">🔵 伏見店 · インドアレッスン</div><div style="font-size:11px;color:#6b8a78;">${eb['fushimi']}コマ登録済み</div></div>`;
   if(eb['round_kyoto'])html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 京都店 · ラウンド参加可能日</div></div>`;
   if(eb['round_fushimi'])html+=`<div style="background:#fff3cd;border-radius:10px;padding:10px 12px;margin-bottom:8px;"><div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:4px;">⛳ 伏見店 · ラウンド参加可能日</div></div>`;
-  document.getElementById('detail-content').innerHTML=html;document.getElementById('date-detail-overlay').style.display='flex';
+  document.getElementById('detail-content').innerHTML=html;
+  // ラウンド登録済みでインドア未登録の場合のみ「インドア追加」ボタンを表示
+  const hasRound=eb['round_kyoto']||eb['round_fushimi'];
+  const hasIndoor=eb['kyoto']||eb['fushimi'];
+  const indoorBtn=document.getElementById('detail-add-indoor-btn');
+  if(indoorBtn)indoorBtn.style.display=(hasRound&&!hasIndoor)?'block':'none';
+  document.getElementById('date-detail-overlay').style.display='flex';
+}
+
+/* ラウンド登録済みの日にインドアを追加登録する */
+function addIndoorFromDetail(ds){
+  if(!ds)return;
+  closeDateDetail();
+  // インドア登録モードで該当日付を選択した状態でSTEP4iへ
+  typeVal='indoor';
+  // 店舗は既存のラウンドと同じ店舗を推定
+  const eb=existingByDate[ds];
+  const hasKyoto=eb&&eb['round_kyoto'];
+  const hasFushimi=eb&&eb['round_fushimi'];
+  if(hasKyoto&&hasFushimi)storeVal='both';
+  else if(hasFushimi)storeVal='fushimi';
+  else storeVal='kyoto';
+  // 日付を選択済みにする
+  datesSet.clear();
+  datesSet.add(ds);
+  // STEP4i（時間選択）へ直接ジャンプ
+  goStep('4i');
+  showMsg('🏌 '+ds+' のインドアレッスン時間を選んでください','success');
 }
 function closeDateDetail(){document.getElementById('date-detail-overlay').style.display='none';currentDetailDate=null;}
 function selectDateFromDetail(ds){if(!ds)return;datesSet.add(ds);buildCalendar();const cnt=datesSet.size;document.getElementById('date-count').textContent=cnt+'日選択中';const btn=document.getElementById('next-btn');if(cnt>0){btn.textContent=cnt+'日選択 → 次へ →';btn.disabled=false;btn.style.opacity='1';}}
