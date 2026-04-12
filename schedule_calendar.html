@@ -57,10 +57,8 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 /* ラウンド枠 */
 .rb{border:2px solid var(--round-bd);border-radius:8px;background:var(--round-bg);margin:0 1px 0;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:100%;min-width:0;}
 .rb.cfm{border-color:var(--red);background:#FFF0F0;}
-.rl{font-size:8px;font-weight:700;color:#92400E;padding:2px 3px;display:flex;align-items:center;gap:2px;white-space:nowrap;overflow:hidden;height:36px;border-bottom:1px solid rgba(245,158,11,0.25);}
-.rl.cfm{color:var(--red);border-bottom-color:rgba(226,75,74,0.2);}
 .rcbdg{background:var(--red);color:#fff;border-radius:50%;width:11px;height:11px;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
-.rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;}
+.rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;position:relative;}
 .rc.cfm{border-bottom-color:rgba(226,75,74,0.15);background:#FFF5F5;}
 .rc:last-child{border-bottom:none;}
 
@@ -383,15 +381,20 @@ function buildWeek(){
       // ラウンド枠（大きな角丸枠）
       const rb=document.createElement('div');
       rb.className='rb'+(roundConfirmed?' cfm':'');
-      const rl=document.createElement('div');
-      rl.className='rl'+(roundConfirmed?' cfm':'');
-      rl.textContent=roundLabel;
-      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.textContent='確';rl.appendChild(b);}
-      rb.appendChild(rl);
-      // ラウンド時間帯のセル
+      // ラウンド時間帯のセル（ラベルは最初のrcの中に入れる）
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');
         rc.className='rc'+(roundConfirmed?' cfm':'');
+        rc.style.position='relative';
+        // 最初の行にラベルを重ねて表示
+        if(h===roundFrom){
+          const rl=document.createElement('div');
+          rl.className='rl'+(roundConfirmed?' cfm':'');
+          rl.style.cssText='position:absolute;top:2px;left:2px;right:2px;font-size:8px;font-weight:700;color:'+(roundConfirmed?'var(--red)':'#92400E')+';display:flex;align-items:center;gap:2px;pointer-events:none;z-index:1;white-space:nowrap;overflow:hidden;';
+          rl.textContent=roundLabel;
+          if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.textContent='確';rl.appendChild(b);}
+          rc.appendChild(rl);
+        }
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
         const shown={kyoto:false,fushimi:false};
         indoors.forEach(s=>{
