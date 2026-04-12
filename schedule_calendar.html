@@ -221,16 +221,17 @@ function buildWeek(){
 
   // ヘッダー
   const dhdr=document.getElementById('tl-dhdr');dhdr.innerHTML='';
-  days.forEach(({d,round,isToday},i)=>{
+  days.forEach(({d,rows,round,isToday},i)=>{
     const cell=document.createElement('div');cell.className='tl-dhdr-cell';
     const isSun=i===0,isSat=i===6;
     const wdCls='tl-wd'+(isSun?' sun':isSat?' sat':'');
     const dnCls='tl-dn'+(isToday?' today':isSun?' sun':isSat?' sat':'');
     let badge='';
-    if(round){
-      const from=round.block_from??8,to=round.block_to??17;
-      const store=round.store_id==='kyoto'?'京':'伏';
-      badge=`<div class="tl-badge">⛳${store} ${from}〜${to}時</div>`;
+    const rounds=rows.filter(r=>r.lesson_type==='round');
+    if(rounds.length>0){
+      const from=rounds[0].block_from??8,to=rounds[0].block_to??17;
+      const stores=rounds.map(r=>r.store_id==='kyoto'?'京':'伏').join('・');
+      badge=`<div class="tl-badge">⛳${stores} ${from}〜${to}時</div>`;
     }
     cell.innerHTML=`<div class="${wdCls}">${WD[d.getDay()]}</div><div class="${dnCls}">${d.getDate()}</div>${badge}`;
     dhdr.appendChild(cell);
@@ -257,16 +258,31 @@ function buildWeek(){
         }
       }
 
-      // インドアスロット
-      const slot=rows.find(r=>r.lesson_type==='indoor'&&r.slot_hour===h);
-      if(slot){
+      // インドアスロット（同じ時間に複数店舗ある場合も全て表示）
+      const slots=rows.filter(r=>r.lesson_type==='indoor'&&r.slot_hour===h);
+      if(slots.length===1){
+        const slot=slots[0];
         const s=document.createElement('div');
         s.className='tl-slot '+(slot.status==='booked'?'booked':slot.store_id==='kyoto'?'kyoto':'fushimi');
         s.textContent=slot.store_id==='kyoto'?'京都':'伏見';
-        s.onclick=()=>openPopup(ds,d);
+        s.onclick=(e)=>{e.stopPropagation();openPopup(ds,d);};
         cell.appendChild(s);
+      } else if(slots.length>=2){
+        // 2店舗同時：上半分・下半分に分割表示
+        const wrap=document.createElement('div');
+        wrap.style.cssText='position:absolute;inset:2px;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;gap:1px;z-index:2;cursor:pointer;';
+        wrap.onclick=(e)=>{e.stopPropagation();openPopup(ds,d);};
+        slots.forEach(slot=>{
+          const s=document.createElement('div');
+          s.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;border-radius:3px;';
+          s.style.background=slot.status==='booked'?'var(--red)':slot.store_id==='kyoto'?'var(--g)':'var(--blue)';
+          s.style.color='#fff';
+          s.textContent=slot.store_id==='kyoto'?'京都':'伏見';
+          wrap.appendChild(s);
+        });
+        cell.appendChild(wrap);
       }
-      cell.onclick=()=>{if(!slot)openPopup(ds,d);};
+      cell.onclick=()=>openPopup(ds,d);
       row.appendChild(cell);
     });
     trows.appendChild(row);
