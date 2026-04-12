@@ -3,166 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>MyCoach — スケジュールカレンダー</title>
+<title>スケジュール管理</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --g:#1D9E75;--gd:#085041;--gl:#E1F5EE;
-  --accent:#5dd4a8;--gold:#BA7517;--red:#E24B4A;
-  --border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;
-  --kyoto:#1D9E75;--fushimi:#1976D2;
-  --round-border:#f59e0b;--round-bg:#fffbeb;--round-active:#fff3cd;
-}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--accent:#5dd4a8;--gold:#BA7517;--red:#E24B4A;--border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;--kyoto-c:#1D9E75;--fushimi-c:#2563eb;--r-bdr:#f59e0b;--r-bg:#fffbeb;}
 html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;color:var(--text);}
-
-/* ヘッダー */
-.hdr{position:sticky;top:0;z-index:50;background:var(--gd);display:flex;align-items:center;padding:0 16px;height:52px;gap:12px;}
-.hbk{color:#fff;font-size:22px;background:none;border:none;cursor:pointer;padding:4px;line-height:1;}
-.htt{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:#fff;flex:1;}
-.htd{font-size:12px;color:var(--accent);font-weight:700;cursor:pointer;padding:5px 12px;border:1px solid var(--accent);border-radius:20px;}
-
-/* タブ */
+.header{position:sticky;top:0;z-index:100;background:var(--gd);display:flex;align-items:center;padding:0 16px;height:52px;gap:12px;}
+.hbtn{color:#fff;font-size:20px;cursor:pointer;padding:4px;background:none;border:none;line-height:1;}
+.htitle{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:700;color:#fff;flex:1;}
+.htoday{font-size:12px;color:var(--accent);font-weight:700;cursor:pointer;padding:5px 12px;border:1px solid var(--accent);border-radius:20px;}
 .vtabs{display:flex;background:#fff;border-bottom:2px solid var(--border);}
 .vtab{flex:1;padding:10px;font-size:13px;font-weight:700;color:var(--muted);border:none;background:none;cursor:pointer;}
 .vtab.on{color:var(--g);border-bottom:2px solid var(--g);margin-bottom:-2px;}
-
-/* ===== 月ビュー ===== */
 .mv{padding:12px;}
 .mv-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .mv-btn{background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;}
 .mv-lbl{font-size:16px;font-weight:700;}
-.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.doh{text-align:center;font-size:11px;font-weight:700;padding:4px 0;color:var(--muted);}
-.doh.su{color:var(--red);}.doh.sa{color:var(--fushimi);}
-.mdc{
-  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;position:relative;
-}
-.mdc:hover{background:var(--gl);}
-.mdc.td{background:var(--g);color:#fff;font-weight:700;}
-.mdc.om{color:#ccc;}
-.mdc.su{color:var(--red);}.mdc.sa{color:var(--fushimi);}
-.mdc.td.su,.mdc.td.sa{color:#fff;}
-.mdot{width:5px;height:5px;background:var(--g);border-radius:50%;position:absolute;bottom:3px;}
-.mdc.td .mdot{background:#fff;}
-
-/* ===== 週ビュー ===== */
-.wv-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-bottom:1px solid var(--border);}
-.wv-btn{background:#fff;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
-.wv-lbl{font-size:13px;font-weight:700;}
-
-/* カレンダー */
+.mg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dh{text-align:center;font-size:11px;font-weight:700;padding:4px 0;color:var(--muted);}
+.dh.s{color:var(--red);}.dh.sa{color:var(--fushimi-c);}
+.md{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;position:relative;}
+.md:hover{background:var(--gl);}
+.md.td{background:var(--g);color:#fff;font-weight:700;}
+.md.om{color:#ccc;}
+.md.su{color:var(--red);}.md.sa{color:var(--fushimi-c);}
+.md.td.su,.md.td.sa{color:#fff;}
+.dot{width:5px;height:5px;background:var(--g);border-radius:50%;position:absolute;bottom:3px;}
+.md.td .dot{background:#fff;}
+.wv{overflow:hidden;}
+.wn{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#fff;border-bottom:1px solid var(--border);}
+.wbtn{background:#fff;border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.wlbl{font-size:13px;font-weight:700;}
 .cw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.tl{display:flex;min-width:560px;position:relative;}
-
-/* 時間軸 */
-.tcol{
-  width:44px;flex-shrink:0;
-  display:flex;flex-direction:column;
-  position:sticky;left:0;z-index:20;
-}
-.tc-hdr{height:52px;background:#fff;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
-.tc-lbl{height:20px;background:#fafafa;border-right:1px solid var(--border);border-bottom:1px solid #eee;}
-.tc-cell{
-  height:36px;background:#fafafa;
-  border-right:1px solid var(--border);border-bottom:1px solid #eee;
-  display:flex;align-items:flex-start;justify-content:flex-end;
-  padding:2px 4px 0 0;font-size:10px;color:var(--muted);
-}
-
-/* 日付列 */
-.dcol{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;}
-
-/* 曜日ヘッダー */
-.dh2{
-  height:52px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);
-  text-align:center;font-size:11px;font-weight:700;background:#fff;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-}
-.dnum2{font-size:16px;font-weight:900;line-height:1;}
-.dh2.td .dnum2{
-  background:var(--g);color:#fff;border-radius:50%;
-  width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;
-}
-.dh2.su{color:var(--red);}.dh2.sa{color:var(--fushimi);}
+.cal{display:flex;min-width:560px;}
+.col-time{width:48px;flex-shrink:0;display:flex;flex-direction:column;position:sticky;left:0;z-index:20;background:#fafafa;}
+.tc-hdr{height:46px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;}
+.tc-lbl{height:20px;border-right:1px solid var(--border);border-bottom:1px solid #eee;background:#fafafa;}
+.tc{height:36px;border-right:1px solid var(--border);border-bottom:1px solid #eee;font-size:10px;color:var(--muted);display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 4px 0 0;background:#fafafa;}
+.col-day{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;}
+.dh2{height:46px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);text-align:center;font-size:11px;font-weight:700;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.3;}
+.dnum{font-size:16px;font-weight:900;line-height:1;}
+.dh2.td .dnum{background:var(--g);color:#fff;border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;}
+.dh2.su{color:var(--red);}.dh2.sa{color:var(--fushimi-c);}
 .dh2.td:not(.su):not(.sa){color:var(--g);}
-
-/* ラベル行 */
-.dlbl{
-  height:20px;border-right:1px solid var(--border);border-bottom:1px solid #eee;
-  font-size:9px;font-weight:700;overflow:hidden;white-space:nowrap;
-  display:flex;align-items:center;justify-content:center;
-}
-.dlbl.rndbg{background:var(--round-bg);color:var(--round-border);}
+.dlbl{height:20px;border-right:1px solid var(--border);border-bottom:1px solid #eee;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;white-space:nowrap;}
+.dlbl.rnd{background:var(--r-bg);color:var(--r-bdr);}
 .dlbl.empty{background:#fafafa;}
-
-/* 通常セル */
-.tl-cell{
-  height:36px;border-right:1px solid var(--border);border-bottom:1px solid #eee;
-  display:flex;align-items:center;padding:2px;gap:2px;cursor:pointer;transition:.1s;
-  position:relative;
-}
-.tl-cell:hover{background:#f0f9f5;}
-.tl-cell.round-active{background:var(--round-active);}
-.tl-cell.round-active:hover{background:#ffe8a0;}
-
-/* ラウンド枠線 */
-.tl-border{position:absolute;pointer-events:none;z-index:4;}
-.tl-border.top{top:0;left:0;right:0;height:2px;background:var(--round-border);}
-.tl-border.bottom{bottom:0;left:0;right:0;height:2px;background:var(--round-border);}
-.tl-border.left{top:0;bottom:0;left:0;width:2px;background:var(--round-border);}
-.tl-border.right{top:0;bottom:0;right:0;width:2px;background:var(--round-border);}
-/* 確定時は赤 */
-.tl-cell.cfm .tl-border{background:var(--red);}
-
-/* ラウンド角丸 */
-.rnd-top .tl-border.top,.rnd-top .tl-border.left,.rnd-top .tl-border.right{border-radius:8px 8px 0 0;}
-.rnd-bot .tl-border.bottom,.rnd-bot .tl-border.left,.rnd-bot .tl-border.right{border-radius:0 0 8px 8px;}
-
-/* スロット */
-.tl-slot{
-  flex:1;min-width:0;height:28px;border-radius:5px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;color:#fff;cursor:pointer;border:none;
-  position:relative;overflow:visible;
-}
-.tl-slot.kyoto{background:var(--kyoto);}
-.tl-slot.fushimi{background:var(--fushimi);}
-.tl-slot.cancelled{background:#bbb;text-decoration:line-through;color:#666;}
-
-/* 確マーク（スロット右上） */
-.tl-stamp{
-  position:absolute;top:2px;right:2px;
-  width:13px;height:13px;border-radius:50%;
-  background:var(--red);border:1.5px solid #fff;
-  font-size:8px;font-weight:900;color:#fff;
-  display:flex;align-items:center;justify-content:center;
-}
-
-/* ラウンド確定スタンプ（列ヘッダー右上） */
-.rnd-stamp{
-  position:absolute;top:3px;right:3px;
-  background:var(--red);color:#fff;border-radius:4px;
-  font-size:9px;font-weight:900;padding:1px 5px;z-index:6;pointer-events:none;
-}
-
-/* ===== モーダル ===== */
+.cell{height:36px;border-right:1px solid var(--border);border-bottom:1px solid #eee;display:flex;align-items:center;padding:2px;gap:2px;cursor:pointer;transition:.1s;}
+.cell:hover{background:#f0f9f5;}
+.rcell{height:36px;border-right:1px solid var(--border);border-bottom:1px solid rgba(245,158,11,0.25);display:flex;align-items:center;padding:2px;gap:2px;cursor:pointer;transition:.1s;background:var(--r-bg);}
+.rcell:hover{background:#fff3cd;}
+.rbox{position:absolute;left:1px;right:1px;border:2px solid var(--r-bdr);border-radius:8px;pointer-events:none;z-index:5;}
+.rbox.cfm{border-color:var(--red);}
+.kstamp{position:absolute;top:3px;right:4px;font-size:9px;font-weight:900;color:#fff;background:var(--red);border-radius:4px;padding:1px 5px;z-index:6;pointer-events:none;}
+.slot{flex:1;min-width:0;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;cursor:pointer;border:none;white-space:nowrap;overflow:hidden;}
+.slot.ky{background:var(--kyoto-c);}
+.slot.fu{background:var(--fushimi-c);}
+.slot.cx{background:#bbb;text-decoration:line-through;color:#666;}
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;}
 .ov.on{display:flex;}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
-.mt{font-size:15px;font-weight:700;margin-bottom:4px;}
-.ms{font-size:12px;color:var(--muted);margin-bottom:12px;}
+.mtitle{font-size:15px;font-weight:700;margin-bottom:4px;}
+.msub{font-size:12px;color:var(--muted);margin-bottom:12px;}
 .es{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;margin-bottom:8px;font-size:13px;font-weight:700;}
 .es.ky{background:#e8f5f1;color:var(--gd);}
 .es.fu{background:#eff6ff;color:#1e40af;}
-.es.rnd{background:var(--round-bg);color:#92400e;border:1px solid var(--round-border);}
+.es.rnd{background:var(--r-bg);color:#92400e;border:1px solid var(--r-bdr);}
 .es.cx{background:#f5f5f5;color:#999;}
 .del{background:var(--red);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;}
-
 .fsec{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
-.fst{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--gd);}
+.fsec-t{font-size:13px;font-weight:700;margin-bottom:10px;color:var(--gd);}
 .tgrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:11px;background:#f8faf9;border-radius:10px;}
 .tglbl{font-size:13px;font-weight:700;}
 .tgsub{font-size:11px;color:var(--muted);}
@@ -178,14 +90,12 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
 .trf select{flex:1;padding:7px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;}
 .sbtns{display:flex;gap:8px;margin-bottom:10px;}
 .sbtn{flex:1;padding:9px;border:2px solid var(--border);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;background:#fff;text-align:center;transition:.15s;}
-.sbtn.ky.on{border-color:var(--kyoto);background:#e8f5f1;color:var(--gd);}
-.sbtn.fu.on{border-color:var(--fushimi);background:#eff6ff;color:#1e40af;}
-
-/* キャンセルルール */
+.sbtn.ky.on{border-color:var(--kyoto-c);background:#e8f5f1;color:var(--gd);}
+.sbtn.fu.on{border-color:var(--fushimi-c);background:#eff6ff;color:#1e40af;}
 .crtoggle{width:100%;padding:10px;background:#fff;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;color:var(--text);margin-bottom:8px;display:none;}
 .crpanel{display:none;padding:14px;background:#f8faf9;border-radius:12px;border:1px solid var(--border);}
-.crt{font-size:13px;font-weight:700;margin-bottom:4px;}
-.crd{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;}
+.cr-t{font-size:13px;font-weight:700;margin-bottom:4px;}
+.cr-d{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;}
 .auto-box{background:#fff0f0;border:1px solid var(--red);border-radius:8px;padding:10px;margin-bottom:10px;font-size:11px;color:#991b1b;line-height:1.7;}
 .auto-box b{display:block;font-size:12px;margin-bottom:3px;}
 .rc-cards{display:flex;flex-direction:column;gap:7px;}
@@ -195,7 +105,7 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
 .rc-mark{width:18px;height:18px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:.15s;}
 .rc-card.on .rc-mark{border-color:var(--g);background:var(--g);}
 .rc-card.on .rc-mark::after{content:'✓';color:#fff;font-size:10px;font-weight:700;}
-.rc-txt{font-size:12px;font-weight:700;}
+.rc-text{font-size:12px;font-weight:700;}
 .rc-sub{font-size:11px;color:var(--muted);line-height:1.5;padding-left:26px;margin-top:3px;}
 .r3d{display:none;padding-left:26px;margin-top:8px;}
 .r3d.on{display:block;}
@@ -203,17 +113,9 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
 .r3r label{font-size:11px;color:var(--muted);min-width:110px;}
 .r3r select{flex:1;padding:6px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit;min-width:80px;}
 .r3ex{font-size:11px;color:var(--muted);background:#f0f0f0;border-radius:6px;padding:7px 10px;line-height:1.6;}
-
 .savebtn{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px;}
 .savebtn:hover{background:var(--gd);}
 .closebtn{width:100%;padding:11px;background:#f0f0f0;color:var(--muted);border:none;border-radius:12px;font-family:inherit;font-size:13px;cursor:pointer;margin-top:8px;}
-
-/* 凡例 */
-.legend{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--border);}
-.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
-.leg-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
-
-/* 使い方ガイド */
 .guide{padding:16px;margin:8px 12px 80px;background:#fff;border-radius:14px;border:1px solid var(--border);}
 .gt{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:10px;}
 .gi{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;}
@@ -223,20 +125,16 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
 </style>
 </head>
 <body>
-
-<div class="hdr">
-  <button class="hbk" onclick="history.back()">‹</button>
-  <span class="htt">スケジュール管理</span>
-  <button class="htd" onclick="goToday()">今日</button>
+<div class="header">
+  <button class="hbtn" onclick="history.back()">‹</button>
+  <span class="htitle">スケジュール管理</span>
+  <button class="htoday" onclick="goToday()">今日</button>
 </div>
-
 <div class="vtabs">
-  <button class="vtab" id="tabM" onclick="showV('month')">📅 月ビュー</button>
-  <button class="vtab on" id="tabW" onclick="showV('week')">📋 週ビュー</button>
+  <button class="vtab on" id="tabM" onclick="showV('month')">📅 月ビュー</button>
+  <button class="vtab" id="tabW" onclick="showV('week')">📋 週ビュー</button>
 </div>
-
-<!-- 月ビュー -->
-<div id="vMonth" class="mv" style="display:none;">
+<div id="vMonth" class="mv">
   <div class="mv-nav">
     <button class="mv-btn" onclick="mMove(-1)">‹ 前月</button>
     <span class="mv-lbl" id="mLbl"></span>
@@ -244,45 +142,30 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
   </div>
   <div class="mg" id="mGrid"></div>
 </div>
-
-<!-- 週ビュー -->
-<div id="vWeek">
-  <!-- 凡例 -->
-  <div class="legend">
-    <div class="leg"><div class="leg-dot" style="background:var(--kyoto);"></div>京都店・空き</div>
-    <div class="leg"><div class="leg-dot" style="background:var(--fushimi);"></div>伏見店・空き</div>
-    <div class="leg"><div class="leg-dot" style="background:var(--round-active);border:1px solid var(--round-border);"></div>ラウンド受付中</div>
-    <div class="leg"><div class="leg-dot" style="background:#bbb;"></div>キャンセル済</div>
-    <div class="leg"><div style="width:12px;height:12px;border-radius:3px;background:var(--g);position:relative;overflow:visible;"><div style="position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--red);border:1px solid #fff;font-size:6px;color:#fff;display:flex;align-items:center;justify-content:center;">確</div></div>確定済</div>
+<div id="vWeek" style="display:none;">
+  <div class="wn">
+    <button class="wbtn" onclick="wMove(-1)">‹ 前週</button>
+    <span class="wlbl" id="wLbl"></span>
+    <button class="wbtn" onclick="wMove(1)">次週 ›</button>
   </div>
-
-  <div class="wv-nav">
-    <button class="wv-btn" onclick="wMove(-1)">‹ 前週</button>
-    <span class="wv-lbl" id="wLbl"></span>
-    <button class="wv-btn" onclick="wMove(1)">次週 ›</button>
-  </div>
-  <div class="cw"><div class="tl" id="tlMain"></div></div>
-
-  <!-- ガイド -->
+  <div class="cw"><div class="cal" id="cal"></div></div>
   <div class="guide">
     <div class="gt">📖 スケジュールの使い方</div>
-    <div class="gi"><div class="gic">👆</div><div class="git"><b>セルをタップ</b>してその時間に空き枠を登録できます。インドアレッスン・ラウンドどちらも設定可能です。</div></div>
-    <div class="gi"><div class="gic">🏢</div><div class="git"><b>複数店舗を同時登録OK。</b>同じ時間に京都店・伏見店両方の枠を設定できます。スロットは左右に並びます。</div></div>
+    <div class="gi"><div class="gic">👆</div><div class="git"><b>セルをタップ</b>してその時間に空き枠を登録。インドアレッスン・ラウンドどちらも設定できます。</div></div>
+    <div class="gi"><div class="gic">🏢</div><div class="git"><b>複数店舗を同時登録OK。</b>同じ時間に京都店・伏見店両方の枠を設定できます。</div></div>
     <div class="gi"><div class="gic">⛳</div><div class="git"><b>ラウンドとレッスンの重複登録OK。</b>先着順でどちらかの予約が入ります。</div></div>
     <div class="gi"><div class="gic">✅</div><div class="git"><b>予約確定で自動キャンセル。</b>設定したルールに従い他の重複枠が処理されます。</div></div>
     <div class="gi"><div class="gic">📅</div><div class="git"><b>月ビューの日付をタップ</b>するとその週の週ビューに切り替わります。</div></div>
     <div class="gi"><div class="gic">🗑</div><div class="git"><b>登録済みの枠を削除</b>するには、そのセルをタップしてモーダルから削除できます。</div></div>
   </div>
 </div>
-
-<!-- モーダル -->
 <div class="ov" id="ov" onclick="ovClose(event)">
   <div class="modal">
-    <div class="mt" id="mTitle"></div>
-    <div class="ms">この時間のスケジュール設定</div>
+    <div class="mtitle" id="mTitle"></div>
+    <div class="msub">この時間のスケジュール設定</div>
     <div id="eSlots"></div>
     <div class="fsec" id="fSec">
-      <div class="fst">＋ 新しい枠を追加</div>
+      <div class="fsec-t">＋ 新しい枠を追加</div>
       <div class="tgrow">
         <div><div class="tglbl">🟢 インドアレッスン</div><div class="tgsub">店舗のインドア枠として登録</div></div>
         <label class="tg"><input type="checkbox" id="togI" onchange="togChange()"><span class="tgs"></span></label>
@@ -295,7 +178,7 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
         <div style="font-size:12px;font-weight:700;margin-bottom:8px;color:#92400e;">⛳ ラウンド受付時間</div>
         <div class="trf"><label>開始</label><select id="rS"></select><label>〜</label><select id="rE"></select></div>
       </div>
-      <div id="stArea" style="margin-bottom:10px;">
+      <div style="margin-bottom:10px;" id="stArea">
         <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">対象店舗</div>
         <div class="sbtns">
           <div class="sbtn ky" id="bKy" onclick="togSt('ky')">🟢 京都店</div>
@@ -304,31 +187,20 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
       </div>
       <button class="crtoggle" id="crBtn" onclick="togCR()">🔧 キャンセルルール設定 <span id="crArr">▼</span></button>
       <div class="crpanel" id="crPanel">
-        <div class="crt">🔧 キャンセルルール設定</div>
-        <div class="crd">ラウンドが確定した際に他の予約枠をどのようにキャンセルするかを設定します。複数店舗を登録している場合、予約が入った店舗以外のレッスンの処理方法も設定できます。</div>
-        <div class="auto-box">
-          <b>⚠️ 以下は必ずキャンセルされます（設定不要）</b>
-          ・同日の全ラウンド枠（他店舗含む）<br>・ラウンド時間と重複するレッスン枠（全店舗）
-        </div>
+        <div class="cr-t">🔧 キャンセルルール設定</div>
+        <div class="cr-d">ラウンドが確定した際に他の予約枠をどのようにキャンセルするかを設定します。</div>
+        <div class="auto-box"><b>⚠️ 以下は必ずキャンセルされます（設定不要）</b>・同日の全ラウンド枠（他店舗含む）<br>・ラウンド時間と重複するレッスン枠（全店舗）</div>
         <div style="font-size:12px;font-weight:700;margin-bottom:8px;">他店舗のレッスン枠の処理</div>
         <div class="rc-cards">
-          <div class="rc-card" id="rc1" onclick="pickR(1)">
-            <div class="rc-top"><div class="rc-mark"></div><div class="rc-txt">① 全キャンセル</div></div>
-            <div class="rc-sub">他店舗の当日レッスン枠をすべて削除します。</div>
-          </div>
-          <div class="rc-card" id="rc2" onclick="pickR(2)">
-            <div class="rc-top"><div class="rc-mark"></div><div class="rc-txt">② 前後◯時間分もキャンセル（自由設定）</div></div>
-            <div class="rc-sub">移動時間などを考慮して前後の時間も含めてキャンセルします。</div>
+          <div class="rc-card" id="rc1" onclick="pickR(1)"><div class="rc-top"><div class="rc-mark"></div><div class="rc-text">① 全キャンセル</div></div><div class="rc-sub">他店舗の当日レッスン枠をすべて削除します。</div></div>
+          <div class="rc-card" id="rc2" onclick="pickR(2)"><div class="rc-top"><div class="rc-mark"></div><div class="rc-text">② 前後◯時間分もキャンセル（自由設定）</div></div><div class="rc-sub">移動時間などを考慮して前後の時間も含めてキャンセルします。</div>
             <div class="r3d" id="r3d">
               <div class="r3r"><label>レッスン開始の前</label><select id="r3b" onchange="updR3()"><option value="0">0時間</option><option value="1" selected>1時間</option><option value="2">2時間</option><option value="3">3時間</option><option value="4">4時間</option></select></div>
               <div class="r3r"><label>レッスン終了の後</label><select id="r3a" onchange="updR3()"><option value="0">0時間</option><option value="1" selected>1時間</option><option value="2">2時間</option><option value="3">3時間</option><option value="4">4時間</option></select></div>
               <div class="r3ex" id="r3ex">例：ラウンド8〜17時確定 → 他店舗の7〜18時のレッスンをキャンセル</div>
             </div>
           </div>
-          <div class="rc-card" id="rc3" onclick="pickR(3)">
-            <div class="rc-top"><div class="rc-mark"></div><div class="rc-txt">③ 手動対応</div></div>
-            <div class="rc-sub">自動キャンセルしません。コーチが手動で対応します。</div>
-          </div>
+          <div class="rc-card" id="rc3" onclick="pickR(3)"><div class="rc-top"><div class="rc-mark"></div><div class="rc-text">③ 手動対応</div></div><div class="rc-sub">自動キャンセルしません。コーチが手動で対応します。</div></div>
         </div>
       </div>
       <button class="savebtn" onclick="saveSlot()">保存する</button>
@@ -336,63 +208,38 @@ html,body{height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-serif;c
     </div>
   </div>
 </div>
-
 <script>
 const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
-
+const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:window.localStorage}});
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
 const DOW=['日','月','火','水','木','金','土'];
 const HOURS=[];for(let h=8;h<=22;h++)HOURS.push(h);
-
 let coachId=null,slots=[];
 let mY=TODAY.getFullYear(),mM=TODAY.getMonth();
 let wSun=wkSun(TODAY);
 let mDate=null,mHour=null;
 let selSt={ky:false,fu:false},selR=0;
-
 function wkSun(d){const dt=new Date(d);dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-dt.getDay());return dt;}
 function addD(d,n){const dt=new Date(d);dt.setDate(dt.getDate()+n);return dt;}
 function dStr(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function sameD(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
-
-let storeSettings={lesson_start:null,lesson_end:null};
-
 async function init(){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){location.href='index.html';return;}
   coachId=session.user.id;
-  await loadStoreSettings();
-  await load();
-  bldMonth();bldWeek();bldTimeSels();
-}
-
-async function loadStoreSettings(){
-  const storeKey=localStorage.getItem('gc_store')||'kyoto';
-  try{
-    const{data}=await sb.from('store_settings').select('lesson_start,lesson_end').eq('store_key',storeKey).single();
-    if(data)storeSettings=data;
-  }catch(e){}
-}
-
-function isLessonAllowed(hour){
-  if(!storeSettings.lesson_start||!storeSettings.lesson_end)return true;
-  const start=parseInt(storeSettings.lesson_start.split(':')[0]);
-  const end=parseInt(storeSettings.lesson_end.split(':')[0]);
-  return hour>=start&&hour<end;
+  await load();bldMonth();bldWeek();buildTimeSels();
 }
 async function load(){
   const{data}=await sb.from('schedule_slots').select('*').eq('coach_id',coachId);
   slots=data||[];
 }
-function bldTimeSels(){
+function buildTimeSels(){
   let o='';for(let h=5;h<=23;h++)o+=`<option value="${h}"${h===8?' selected':''}>${h}:00</option>`;
   document.getElementById('rS').innerHTML=o;
   let o2='';for(let h=5;h<=23;h++)o2+=`<option value="${h}"${h===17?' selected':''}>${h}:00</option>`;
   document.getElementById('rE').innerHTML=o2;
 }
-
 function showV(v){
   document.getElementById('vMonth').style.display=v==='month'?'':'none';
   document.getElementById('vWeek').style.display=v==='week'?'':'none';
@@ -400,145 +247,95 @@ function showV(v){
   document.getElementById('tabW').classList.toggle('on',v==='week');
 }
 function goToday(){wSun=wkSun(TODAY);mY=TODAY.getFullYear();mM=TODAY.getMonth();bldMonth();bldWeek();}
-
-// ===== 月ビュー =====
 function mMove(d){mM+=d;if(mM>11){mM=0;mY++;}if(mM<0){mM=11;mY--;}bldMonth();}
 function bldMonth(){
   document.getElementById('mLbl').textContent=`${mY}年${mM+1}月`;
   const first=new Date(mY,mM,1),last=new Date(mY,mM+1,0),sd=first.getDay();
   let h='';
-  ['日','月','火','水','木','金','土'].forEach((d,i)=>{h+=`<div class="doh${i===0?' su':i===6?' sa':''}">${d}</div>`;});
-  for(let i=0;i<sd;i++)h+=`<div class="mdc om"></div>`;
+  ['日','月','火','水','木','金','土'].forEach((d,i)=>{h+=`<div class="dh${i===0?' s':i===6?' sa':''}">${d}</div>`;});
+  for(let i=0;i<sd;i++)h+=`<div class="md om"></div>`;
   for(let d=1;d<=last.getDate();d++){
     const dt=new Date(mY,mM,d),dow=dt.getDay(),isT=sameD(dt,TODAY),ds=dStr(dt);
     const hasDot=slots.some(s=>s.date===ds);
-    let c='mdc';if(isT)c+=' td';else{if(dow===0)c+=' su';if(dow===6)c+=' sa';}
-    h+=`<div class="${c}" onclick="jumpTo('${ds}')">${d}${hasDot?'<span class="mdot"></span>':''}</div>`;
+    let c='md';if(isT)c+=' td';else{if(dow===0)c+=' su';if(dow===6)c+=' sa';}
+    h+=`<div class="${c}" onclick="jumpTo('${ds}')">${d}${hasDot?'<span class="dot"></span>':''}</div>`;
   }
   document.getElementById('mGrid').innerHTML=h;
 }
-function jumpTo(ds){
-  const d=new Date(ds+'T00:00:00');wSun=wkSun(d);bldWeek();showV('week');
-}
-
-// ===== 週ビュー =====
+function jumpTo(ds){const d=new Date(ds+'T00:00:00');wSun=wkSun(d);bldWeek();showV('week');}
 function wMove(d){wSun=addD(wSun,d*7);bldWeek();}
-
 function bldWeek(){
   const days=[];for(let i=0;i<7;i++)days.push(addD(wSun,i));
   const s=days[0],e=days[6];
   document.getElementById('wLbl').textContent=`${s.getMonth()+1}/${s.getDate()} 〜 ${e.getMonth()+1}/${e.getDate()}`;
-
-  // ラウンドMap
   const rMap={};
   slots.filter(s=>s.type==='round').forEach(s=>{if(!rMap[s.date])rMap[s.date]=s;});
-
-  const tl=document.getElementById('tlMain');
-  tl.innerHTML='';
-
-  // 時間軸列
-  const tcol=document.createElement('div');tcol.className='tcol';
-  tcol.innerHTML=`<div class="tc-hdr"></div><div class="tc-lbl"></div>`
-    +HOURS.map(h=>`<div class="tc-cell">${h}:00</div>`).join('');
-  tl.appendChild(tcol);
-
-  // 日付列
-  days.forEach(d=>{
+  const cal=document.getElementById('cal');cal.innerHTML='';
+  const colT=document.createElement('div');colT.className='col-time';
+  colT.innerHTML=`<div class="tc-hdr"></div><div class="tc-lbl"></div>`+HOURS.map(h=>`<div class="tc">${h}:00</div>`).join('');
+  cal.appendChild(colT);
+  days.forEach((d)=>{
     const ds=dStr(d),dow=d.getDay(),isT=sameD(d,TODAY);
     const r=rMap[ds];
-    const rFrom=r?parseInt(r.round_start||8):null;
-    const rTo=r?parseInt(r.round_end||17):null;
+    const rStart=r?parseInt(r.round_start||8):null;
+    const rEnd=r?parseInt(r.round_end||17):null;
     const cfm=r&&r.status==='confirmed';
-
-    const col=document.createElement('div');col.className='dcol';
-
-    // 曜日ヘッダー
     let dhCls='dh2';if(isT)dhCls+=' td';else{if(dow===0)dhCls+=' su';if(dow===6)dhCls+=' sa';}
-    const dh=document.createElement('div');dh.className=dhCls;
-    dh.innerHTML=`<span class="dnum2">${d.getDate()}</span>${DOW[dow]}`;
-    // ラウンド確定スタンプ
-    if(cfm){const st=document.createElement('div');st.className='rnd-stamp';st.textContent='確';dh.style.position='relative';dh.appendChild(st);}
-    col.appendChild(dh);
-
-    // ラベル行
+    const col=document.createElement('div');col.className='col-day';
+    col.innerHTML=`<div class="${dhCls}"><span class="dnum">${d.getDate()}</span>${DOW[dow]}</div>`;
     const lbl=document.createElement('div');
-    if(r){lbl.className='dlbl rndbg';lbl.textContent=(cfm?'✅':'⛳')+(rFrom)+'〜'+(rTo)+'時';}
+    if(r){lbl.className='dlbl rnd';lbl.textContent=(cfm?'✅':'⛳')+(rStart)+'〜'+(rEnd)+'時';}
     else{lbl.className='dlbl empty';}
     col.appendChild(lbl);
-
-    // 時間セル
-    HOURS.forEach(h=>{
-      const inRound=r&&h>=rFrom&&h<rTo;
-      const isTop=inRound&&h===rFrom;
-      const isBot=inRound&&h===rTo-1;
-      const isMid=inRound&&h>rFrom&&h<rTo;
-
-      const cell=document.createElement('div');
-      cell.className='tl-cell'+(inRound?' round-active':'')+(cfm&&inRound?' cfm':'');
-
-      // ラウンド枠線
-      if(r&&inRound){
-        if(isTop){
-          ['top','left','right'].forEach(side=>{const b=document.createElement('div');b.className='tl-border '+side;cell.appendChild(b);});
-        } else if(isBot){
-          ['bottom','left','right'].forEach(side=>{const b=document.createElement('div');b.className='tl-border '+side;cell.appendChild(b);});
-        } else {
-          ['left','right'].forEach(side=>{const b=document.createElement('div');b.className='tl-border '+side;cell.appendChild(b);});
-        }
-      }
-
-      // インドアスロット
+    HOURS.forEach((h)=>{
+      const inRound=r&&h>=rStart&&h<rEnd;
       const cellSlots=slots.filter(s=>s.date===ds&&s.hour===h&&s.type==='indoor');
       const seen={};
-      cellSlots.forEach(s=>{
-        if(seen[s.store_key])return;seen[s.store_key]=true;
+      const uSlots=cellSlots.filter(s=>{if(seen[s.store_key])return false;seen[s.store_key]=true;return true;});
+      const cellDiv=document.createElement('div');cellDiv.className=inRound?'rcell':'cell';
+      uSlots.forEach(s=>{
         const isCx=s.status==='cancelled'||(cfm&&inRound);
-        const isBooked=s.status==='booked';
-        const sc=s.store_key==='kyoto'?'kyoto':'fushimi';
+        const sc=s.store_key==='kyoto'?'ky':'fu';
         const nm=s.store_key==='kyoto'?'京':'伏';
-        const btn=document.createElement('button');
-        btn.className='tl-slot '+(isCx?'cancelled':sc);
-        btn.textContent=isCx?'✕'+nm:nm;
-        if(isBooked&&!isCx){
-          const st=document.createElement('div');st.className='tl-stamp';st.textContent='確';btn.appendChild(st);
-        }
-        if(!isCx){btn.onclick=(e)=>{e.stopPropagation();openM(e,ds,h,s.id);};}
-        cell.appendChild(btn);
+        const btn=document.createElement('button');btn.className='slot '+(isCx?'cx':sc);btn.textContent=isCx?'✕'+nm:nm;
+        if(!isCx){const sid=s.id;btn.onclick=(e)=>{e.stopPropagation();openM(e,ds,h,sid);};}
+        cellDiv.appendChild(btn);
       });
-
-      cell.addEventListener('click',(e)=>{if(e.target===cell)openM(e,ds,h,null);});
-      col.appendChild(cell);
+      if(cfm&&inRound){const stmp=document.createElement('span');stmp.className='kstamp';stmp.textContent='確';cellDiv.appendChild(stmp);}
+      cellDiv.addEventListener('click',(e)=>{if(e.target===cellDiv)openM(e,ds,h,null);});
+      col.appendChild(cellDiv);
     });
-
-    tl.appendChild(col);
+    cal.appendChild(col);
+    if(r){
+      const HDR=46,LBL=20,CELL=36;
+      const top=HDR+LBL+(rStart-8)*CELL;
+      const height=(rEnd-rStart)*CELL;
+      const box=document.createElement('div');box.className='rbox'+(cfm?' cfm':'');
+      box.style.cssText=`top:${top}px;height:${height}px;`;
+      col.appendChild(box);
+    }
   });
 }
-
-// ===== モーダル =====
 function openM(e,ds,h,slotId){
   if(e)e.stopPropagation();
   mDate=ds;mHour=h;
   const d=new Date(ds+'T00:00:00');
   document.getElementById('mTitle').textContent=`${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}） ${h}:00〜${h+1}:00`;
-
   const rSlot=slots.find(s=>s.date===ds&&s.type==='round');
-  const iSlots=slots.filter(s=>s.date===ds&&s.hour===h&&s.type==='indoor');
+  const iSlots=slotId?slots.filter(s=>s.id===slotId):slots.filter(s=>s.date===ds&&s.hour===h&&s.type==='indoor');
   let eh='';
-  if(rSlot){
+  if(rSlot&&!slotId){
     const cfm=rSlot.status==='confirmed';
     const inR=h>=(rSlot.round_start||8)&&h<(rSlot.round_end||17);
-    if(inR){eh+=`<div class="es rnd">⛳ ラウンド ${rSlot.round_start||8}:00〜${rSlot.round_end||17}:00
-      ${cfm?'<span style="font-size:11px;color:var(--red)">（確定済）</span>':`<button class="del" onclick="delS('${rSlot.id}')">削除</button>`}</div>`;}
+    if(inR){eh+=`<div class="es rnd">⛳ ラウンド ${rSlot.round_start||8}:00〜${rSlot.round_end||17}:00 ${cfm?'<span style="font-size:11px;color:var(--red)">（確定済）</span>':`<button class="del" onclick="delS('${rSlot.id}')">削除</button>`}</div>`;}
   }
   iSlots.forEach(s=>{
     const sc=s.store_key==='kyoto'?'ky':'fu';
     const nm=s.store_key==='kyoto'?'🟢 京都店':'🔵 伏見店';
     const cx=s.status==='cancelled';
-    eh+=`<div class="es ${sc}${cx?' cx':''}">${nm} ${h}:00〜${h+1}:00
-      ${cx?'<span style="font-size:11px">（キャンセル済）</span>':`<button class="del" onclick="delS('${s.id}')">削除</button>`}</div>`;
+    eh+=`<div class="es ${sc}${cx?' cx':''}">${nm} ${h}:00〜${h+1}:00 ${cx?'<span style="font-size:11px">（キャンセル済）</span>':`<button class="del" onclick="delS('${s.id}')">削除</button>`}</div>`;
   });
   document.getElementById('eSlots').innerHTML=eh||'<div style="font-size:12px;color:var(--muted);margin-bottom:8px">登録なし</div>';
-
   document.getElementById('togI').checked=false;
   document.getElementById('togR').checked=false;
   selSt={ky:false,fu:false};selR=0;
@@ -605,16 +402,7 @@ async function delS(id){
   await sb.from('schedule_slots').delete().eq('id',id);
   await load();closeModal();bldWeek();bldMonth();
 }
-
-function showToastCal(msg){
-  const t=document.getElementById('cal-toast');
-  t.textContent=msg;t.style.opacity='1';
-  setTimeout(()=>{t.style.opacity='0';},2000);
-}
-
 init();
 </script>
-
-<div id="cal-toast" style="position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 18px;border-radius:16px;font-size:12px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;"></div>
 </body>
 </html>
