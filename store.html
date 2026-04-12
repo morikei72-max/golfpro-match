@@ -351,8 +351,8 @@ async function buildStoreCal(){
   try{
     const coachIds=coaches.map(c=>c.id).filter(Boolean);
     if(coachIds.length>0){
-      const{data}=await sb.from('schedule_slots').select('*,coaches(name)').in('coach_id',coachIds).gte('date',fd2(days[0])).lte('date',fd2(days[6]));
-      schedData=(data||[]).map(s=>({...s,start_time:String(s.hour||0),coach_name:s.coaches?.name||s.coach_name||'?'}));
+      const{data}=await sb.from('schedules').select('*,coaches(name)').in('coach_id',coachIds).in('store_key',[currentStore,'both']).gte('date',fd2(days[0])).lte('date',fd2(days[6]));
+      schedData=(data||[]).map(s=>({...s,start_time:String(s.start_time||0),coach_name:s.coaches?.name||s.coach_name||'?'}));
     }
   }catch(e){schedData=[];}
 
