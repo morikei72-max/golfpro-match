@@ -267,7 +267,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <div class="cal-grid" id="cal-hdr"></div>
       <div class="cal-grid" id="cal-grid" style="margin-top:3px;"></div>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">日付をタップ → 登録・編集</div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">📅 日付をタップ → その週の週ビューへ</div>
     </div>
   </div>
   <button class="back-home-btn" onclick="location.href='https://soft-speculoos-5ef188.netlify.app/coach.html'">← コーチ画面に戻る</button>
@@ -608,7 +608,7 @@ function buildMonth(){
       cell.appendChild(dotsEl);
     }
     const dateObj=new Date(year,month,d);
-    cell.onclick=()=>openModal(ds,dateObj);
+    cell.onclick=()=>jumpToWeek(dateObj);
     grid.appendChild(cell);
   }
 }
