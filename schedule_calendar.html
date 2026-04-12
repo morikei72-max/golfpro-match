@@ -394,8 +394,14 @@ function buildMonth(){
     cell.innerHTML=`<div class="mdate">${d}</div>${dots}`;
     // 月ビューの日付タップ → その週の週ビューへ
     cell.onclick=()=>{
-      const t=new Date(),s=new Date(t);s.setDate(t.getDate()-t.getDay());
-      weekOffset=Math.round((date-s)/604800000);
+      const today=new Date();
+      today.setHours(0,0,0,0);
+      const todaySun=new Date(today);
+      todaySun.setDate(today.getDate()-today.getDay());
+      const dateSun=new Date(date);
+      dateSun.setDate(date.getDate()-date.getDay());
+      dateSun.setHours(0,0,0,0);
+      weekOffset=Math.round((dateSun-todaySun)/604800000);
       switchView('week');
     };
     grid.appendChild(cell);
