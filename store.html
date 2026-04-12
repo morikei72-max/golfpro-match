@@ -349,17 +349,12 @@ async function buildStoreCal(){
 
   let schedData=[];
   try{
-    const{data}=await sb.from('schedules').select('*,coaches(name)').eq('store_key',currentStore).gte('date',fd2(days[0])).lte('date',fd2(days[6]));
-    schedData=(data||[]).map(s=>({...s,coach_name:s.coaches?.name||s.coach_name||s.coach_id||'?'}));
-  }catch(e){
-    coaches.forEach((c,ci)=>{
-      days.forEach(d=>{
-        [9,10,11,14,15,16].forEach(h=>{
-          if(Math.random()>0.5)schedData.push({coach_name:c.name,date:fd2(d),start_time:String(h),status:Math.random()>0.85?'booked':'available'});
-        });
-      });
-    });
-  }
+    const coachIds=coaches.map(c=>c.id).filter(Boolean);
+    if(coachIds.length>0){
+      const{data}=await sb.from('schedule_slots').select('*,coaches(name)').in('coach_id',coachIds).gte('date',fd2(days[0])).lte('date',fd2(days[6]));
+      schedData=(data||[]).map(s=>({...s,start_time:String(s.hour||0),coach_name:s.coaches?.name||s.coach_name||'?'}));
+    }
+  }catch(e){schedData=[];}
 
   const cal=document.getElementById('store-cal');cal.innerHTML='';
   const tc=document.createElement('div');tc.className='cal-tc';
@@ -610,8 +605,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .setting-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-bottom:8px;}
 .setting-grid .setting-row{margin-bottom:0;}
 .setting-grid .setting-row.full{grid-column:1/-1;}
-.si-card{background:var(--gl);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
-.si-card-title{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.si-card{background:#fff;border-radius:14px;border:1px solid var(--border);padding:16px;margin-bottom:12px;}
+.si-card-title{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 .setting-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;}
 .setting-input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;outline:none;}
 .setting-input:focus{border-color:var(--g);}
@@ -776,7 +771,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </button>
       <button class="bsub-tab" id="bsub-cal" onclick="switchBookingTab('cal',this)" style="padding:14px 8px;border-radius:12px;border:2px solid #e0ece6;background:#fff;cursor:pointer;font-family:inherit;text-align:center;">
         <div style="font-size:20px;margin-bottom:4px;">📅</div>
-        <div style="font-size:12px;font-weight:700;color:#1a2e24;">コーチ空き状況</div>
+        <div style="font-size:12px;font-weight:700;color:#1a2e24;">コーチ登録状況</div>
         <div style="font-size:10px;color:#6b8a78;margin-top:2px;">週・月カレンダー</div>
       </button>
     </div>
@@ -955,14 +950,16 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
   <!-- 売上・統計 -->
   <div class="page" id="page-sales">
+    <!-- 月別切替 -->
     <div class="sales-month">
       <button class="sales-nav" onclick="moveSalesMonth(-1)">‹ 前月</button>
       <div class="sales-label" id="sales-month-lbl"></div>
       <button class="sales-nav" onclick="moveSalesMonth(1)">次月 ›</button>
     </div>
+    <!-- 当月合計 -->
     <div class="sales-total">
       <div class="sales-total-num" id="sales-total-num">¥0</div>
-      <div class="sales-total-lbl">店舗手数料収入（合計）</div>
+      <div class="sales-total-lbl">店舗手数料収入（今月合計）</div>
     </div>
     <div class="sales-breakdown">
       <div class="sales-item">
@@ -982,6 +979,71 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="sales-item-lbl">👤 稼働コーチ</div>
       </div>
     </div>
+
+    <!-- 通算統計ボタン -->
+    <button onclick="toggleYearlyStats()" id="yearly-toggle-btn" style="width:100%;padding:12px;background:#fff;border:1px solid var(--border);border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;color:var(--gd);cursor:pointer;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;">
+      📊 通算統計・グラフを表示 ▼
+    </button>
+
+    <!-- 通算統計パネル -->
+    <div id="yearly-stats-panel" style="display:none;margin-top:8px;">
+      <!-- 累計カード -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+        <div style="background:linear-gradient(135deg,var(--gd),var(--g));border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.7);margin-bottom:4px;">累計売上</div>
+          <div id="total-all-sales" style="font-size:22px;font-weight:900;color:#fff;font-family:'Montserrat',sans-serif;">¥0</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px;">累計入会者数</div>
+          <div id="total-all-members" style="font-size:22px;font-weight:900;color:var(--gd);font-family:'Montserrat',sans-serif;">0名</div>
+        </div>
+      </div>
+
+      <!-- 月別グラフ -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">月別売上グラフ</div>
+        <div style="overflow-x:auto;">
+          <div id="sales-chart" style="min-width:320px;padding:8px 0;"></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);"><div style="width:10px;height:10px;border-radius:2px;background:var(--g);"></div>売上</div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);"><div style="width:10px;height:10px;border-radius:2px;background:#2563EB;"></div>入会者数</div>
+        </div>
+      </div>
+
+      <!-- 月別明細テーブル -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">月別明細</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead>
+              <tr style="border-bottom:2px solid var(--border);">
+                <th style="padding:8px 4px;text-align:left;color:var(--muted);font-weight:700;">月</th>
+                <th style="padding:8px 4px;text-align:right;color:var(--muted);font-weight:700;">売上</th>
+                <th style="padding:8px 4px;text-align:right;color:var(--muted);font-weight:700;">件数</th>
+                <th style="padding:8px 4px;text-align:right;color:var(--muted);font-weight:700;">入会者</th>
+                <th style="padding:8px 4px;text-align:right;color:var(--muted);font-weight:700;">前月比</th>
+              </tr>
+            </thead>
+            <tbody id="monthly-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 入会者数入力 -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-title">入会者数を記録する</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">月ごとの入会者数を手動で入力してください</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="member-input-month" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;background:#fafafa;"></select>
+          <input type="number" id="member-input-count" min="0" placeholder="人数" style="width:80px;padding:10px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;background:#fafafa;text-align:center;">
+          <span style="font-size:13px;color:var(--muted);">名</span>
+          <button onclick="saveMemberCount()" style="padding:10px 16px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- コーチ別売上 -->
     <div class="card" style="margin-top:12px;">
       <div class="card-title">コーチ別売上</div>
       <div id="coach-sales-list">
@@ -1036,23 +1098,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div id="si-company-card-preview" style="margin-top:6px;"></div>
         </div>
       </div>
-      <div class="setting-section">
-        <div class="setting-section-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          LINE・入会手続き
-        </div>
-        <div class="setting-row"><div class="setting-label">LINE公式アカウントURL</div><input class="setting-input" id="si-line-url" placeholder="https://lin.ee/..."></div>
-        <div class="setting-row"><div class="setting-label">LINE QRコード画像</div>
-          <input type="file" id="si-line-qr" accept="image/*" style="font-size:12px;color:var(--muted);margin-top:6px;">
-          <div id="si-line-qr-preview" style="margin-top:6px;"></div>
-        </div>
-        <div class="setting-row"><div class="setting-label">入会手続きの手順</div>
-          <textarea class="setting-textarea" id="si-join-steps" placeholder="①LINEで友達追加&#10;②体験予約フォームに入力&#10;③スタッフから確認連絡&#10;④入会契約" style="min-height:100px;"></textarea>
-        </div>
-        <div class="setting-row"><div class="setting-label">レッスンに必要な入会プラン</div>
-          <textarea class="setting-textarea" id="si-required-plan" placeholder="例：スタンダードプラン以上が必要です。体験レッスンは入会不要。"></textarea>
-        </div>
-      </div>
       <button class="save-btn" style="margin:0 0 12px;" onclick="saveCompanyInfo()">会社情報を保存する</button>
     </div>
 
@@ -1071,6 +1116,23 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="setting-row full"><div class="setting-label">店舗名刺・写真（画像/PDF）</div>
             <input type="file" id="si-store-card" accept="image/*,.pdf" style="font-size:12px;color:var(--muted);margin-top:6px;">
             <div id="si-store-card-preview" style="margin-top:6px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="si-card">
+        <div class="si-card-title">💬 LINE・入会手続き</div>
+        <div class="setting-grid">
+          <div class="setting-row"><div class="setting-label">LINE公式アカウントURL</div><input class="setting-input" id="si-line-url" placeholder="https://lin.ee/..."></div>
+          <div class="setting-row"><div class="setting-label">LINE QRコード画像</div>
+            <input type="file" id="si-line-qr" accept="image/*" style="font-size:12px;color:var(--muted);margin-top:6px;">
+            <div id="si-line-qr-preview" style="margin-top:6px;"></div>
+          </div>
+          <div class="setting-row full"><div class="setting-label">入会手続きの手順</div>
+            <textarea class="setting-textarea" id="si-join-steps" placeholder="①LINEで友達追加&#10;②体験予約フォームに入力&#10;③スタッフから確認連絡&#10;④入会契約" style="min-height:80px;"></textarea>
+          </div>
+          <div class="setting-row full"><div class="setting-label">レッスンに必要な入会プラン</div>
+            <textarea class="setting-textarea" id="si-required-plan" placeholder="例：スタンダードプラン以上が必要です。体験レッスンは入会不要。"></textarea>
           </div>
         </div>
       </div>
@@ -1549,6 +1611,117 @@ function renderSales(){
         </div>
       </div>`).join('')
     :'<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px;">データなし</div>';
+}
+
+// ===== 通算統計 =====
+let memberData={};
+try{const s=localStorage.getItem('gc_members_'+currentStore);if(s)memberData=JSON.parse(s);}catch(e){}
+
+function toggleYearlyStats(){
+  const panel=document.getElementById('yearly-stats-panel');
+  const btn=document.getElementById('yearly-toggle-btn');
+  const open=panel.style.display!=='none';
+  panel.style.display=open?'none':'block';
+  btn.innerHTML=open?'📊 通算統計・グラフを表示 ▼':'📊 通算統計・グラフを閉じる ▲';
+  if(!open){renderYearlyStats();}
+}
+
+function renderYearlyStats(){
+  const now=new Date();
+  const months=[];
+  for(let i=11;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({y:d.getFullYear(),m:d.getMonth()+1,label:d.getFullYear()+'/'+(d.getMonth()+1)});
+  }
+
+  // 月別売上（allBookingsから集計）
+  const monthlySales=months.map(mo=>{
+    const key=mo.y+'-'+String(mo.m).padStart(2,'0');
+    const bks=allBookings.filter(b=>b.status==='confirmed'&&(b.date||'').startsWith(key));
+    const total=bks.reduce((s,b)=>s+(b.amount||0),0);
+    const fees=STORES[currentStore]?.fees||{indoor:15,round:8};
+    const fee=bks.reduce((s,b)=>s+Math.floor((b.amount||0)*(b.lesson_type==='indoor'?fees.indoor:fees.round)/100),0);
+    return{...mo,total:fee,count:bks.length};
+  });
+
+  const memberKey='gc_members_'+currentStore;
+  try{const s=localStorage.getItem(memberKey);if(s)memberData=JSON.parse(s);}catch(e){}
+
+  // 累計
+  const totalAll=monthlySales.reduce((s,m)=>s+m.total,0);
+  const memberAll=Object.values(memberData).reduce((s,v)=>s+(parseInt(v)||0),0);
+  document.getElementById('total-all-sales').textContent='¥'+totalAll.toLocaleString();
+  document.getElementById('total-all-members').textContent=memberAll+'名';
+
+  // グラフ描画
+  const maxSales=Math.max(...monthlySales.map(m=>m.total),1);
+  const maxMember=Math.max(...months.map(mo=>{const k=mo.y+'-'+String(mo.m).padStart(2,'0');return parseInt(memberData[k]||0);}),1);
+  const chartH=120;
+  let chartHtml='<div style="display:flex;align-items:flex-end;gap:4px;height:'+(chartH+40)+'px;padding:0 4px;">';
+  months.forEach(mo=>{
+    const k=mo.y+'-'+String(mo.m).padStart(2,'0');
+    const ms=monthlySales.find(s=>s.y===mo.y&&s.m===mo.m);
+    const sH=ms&&ms.total>0?Math.max(Math.floor(ms.total/maxSales*chartH),4):2;
+    const mem=parseInt(memberData[k]||0);
+    const mH=mem>0?Math.max(Math.floor(mem/maxMember*chartH),4):2;
+    const isNow=mo.y===now.getFullYear()&&mo.m===now.getMonth()+1;
+    chartHtml+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div style="width:100%;display:flex;gap:1px;align-items:flex-end;height:${chartH}px;">
+        <div style="flex:1;height:${sH}px;background:${isNow?'var(--gd)':'var(--g)'};border-radius:3px 3px 0 0;transition:height .3s;" title="¥${(ms?.total||0).toLocaleString()}"></div>
+        <div style="flex:1;height:${mH}px;background:#2563EB;border-radius:3px 3px 0 0;opacity:0.7;" title="${mem}名"></div>
+      </div>
+      <div style="font-size:8px;color:var(--muted);text-align:center;white-space:nowrap;">${mo.m}月</div>
+    </div>`;
+  });
+  chartHtml+='</div>';
+  document.getElementById('sales-chart').innerHTML=chartHtml;
+
+  // 月別明細テーブル
+  const recentMonths=months.slice(-6).reverse();
+  let tableHtml='';
+  recentMonths.forEach((mo,i)=>{
+    const k=mo.y+'-'+String(mo.m).padStart(2,'0');
+    const ms=monthlySales.find(s=>s.y===mo.y&&s.m===mo.m);
+    const prev=monthlySales[monthlySales.length-1-i-1];
+    const mem=parseInt(memberData[k]||0);
+    let trend='—';
+    if(prev&&prev.total>0){
+      const diff=Math.round((ms.total-prev.total)/prev.total*100);
+      trend=`<span style="color:${diff>=0?'var(--g)':'var(--red)'}">${diff>=0?'▲':'▼'}${Math.abs(diff)}%</span>`;
+    }
+    const isNow=mo.y===now.getFullYear()&&mo.m===now.getMonth()+1;
+    tableHtml+=`<tr style="border-bottom:1px solid var(--border);${isNow?'background:var(--gl);':''}">
+      <td style="padding:8px 4px;font-weight:${isNow?'700':'400'};color:${isNow?'var(--gd)':'inherit'}">${mo.y}/${mo.m}</td>
+      <td style="padding:8px 4px;text-align:right;font-weight:700;color:var(--gd);">¥${(ms?.total||0).toLocaleString()}</td>
+      <td style="padding:8px 4px;text-align:right;color:var(--muted);">${ms?.count||0}件</td>
+      <td style="padding:8px 4px;text-align:right;">${mem}名</td>
+      <td style="padding:8px 4px;text-align:right;">${trend}</td>
+    </tr>`;
+  });
+  document.getElementById('monthly-table-body').innerHTML=tableHtml;
+
+  // 入会者数入力セレクト
+  let selHtml='';
+  months.slice().reverse().forEach(mo=>{
+    const k=mo.y+'-'+String(mo.m).padStart(2,'0');
+    selHtml+=`<option value="${k}">${mo.y}年${mo.m}月</option>`;
+  });
+  document.getElementById('member-input-month').innerHTML=selHtml;
+}
+
+function saveMemberCount(){
+  const k=document.getElementById('member-input-month').value;
+  const v=document.getElementById('member-input-count').value;
+  if(!k||v==='')return;
+  try{
+    const s=localStorage.getItem('gc_members_'+currentStore);
+    if(s)memberData=JSON.parse(s);
+  }catch(e){}
+  memberData[k]=parseInt(v)||0;
+  localStorage.setItem('gc_members_'+currentStore,JSON.stringify(memberData));
+  document.getElementById('member-input-count').value='';
+  renderYearlyStats();
+  showToast(k+'の入会者数を保存しました');
 }
 
 function switchTab(tab,btn){
