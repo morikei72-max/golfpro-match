@@ -207,53 +207,25 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
         <select class="tsel" id="re"></select>
       </div>
     </div>
-    <div id="sec-cancel-rule" style="display:none">
-      <div class="stl">🔧 予約確定時のキャンセルルール</div>
-      <p style="font-size:10px;color:var(--muted);margin-bottom:8px;">ラウンドに予約が入った時の自動処理を選んでください</p>
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <div class="rule-card sel-r" id="rc1" onclick="pickRule(1)">
-          <div class="rule-radio on-r" id="rr1"><div class="rr-dot"></div></div>
-          <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">他店舗の同日ラウンドを全キャンセル</div><div style="font-size:10px;color:#6b8a78;margin-top:2px;">確定した店舗以外の同日ラウンド枠を全てキャンセル</div></div>
-        </div>
-        <div class="rule-card" id="rc2" onclick="pickRule(2)">
-          <div class="rule-radio" id="rr2"></div>
-          <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">重複する時間帯のレッスンのみキャンセル</div><div style="font-size:10px;color:#6b8a78;margin-top:2px;">ラウンド時間と重なるレッスン枠だけキャンセル</div></div>
-        </div>
-        <div class="rule-card" id="rc3">
-          <div class="rule-radio" id="rr3" onclick="pickRule(3)" style="cursor:pointer;flex-shrink:0;"></div>
-          <div style="width:100%;">
-            <div style="font-size:11px;font-weight:700;color:#1a2e24;cursor:pointer;" onclick="pickRule(3)">前後◯時間分もキャンセル（自由設定）</div>
-            <div style="font-size:10px;color:#6b8a78;margin-top:2px;cursor:pointer;" onclick="pickRule(3)">移動時間を考慮して前後もキャンセル。同店舗・他店舗で別々に設定可能</div>
-            <div id="rule3-detail" style="display:none;margin-top:8px;background:#f8fbf9;border-radius:8px;padding:10px;">
-              <div style="font-size:10px;font-weight:700;color:#085041;margin-bottom:4px;">🏌 同店舗レッスン</div>
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:10px;font-weight:700;">前</span>
-                <select class="tsel" id="r3-same-before"><option>0時間</option><option>1時間</option><option selected>2時間</option><option>3時間</option><option>4時間</option></select>
-                <span style="font-size:10px;font-weight:700;">後</span>
-                <select class="tsel" id="r3-same-after"><option>0時間</option><option>1時間</option><option selected>2時間</option><option>3時間</option><option>4時間</option></select>
-              </div>
-              <div style="border-top:1px dashed #e0ece6;padding-top:6px;margin-bottom:4px;font-size:10px;font-weight:700;color:#085041;">🏪 他店舗レッスン</div>
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:10px;font-weight:700;">前</span>
-                <select class="tsel" id="r3-other-before"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
-                <span style="font-size:10px;font-weight:700;">後</span>
-                <select class="tsel" id="r3-other-after"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
-              </div>
-              <div style="border-top:1px dashed #e0ece6;padding-top:6px;margin-bottom:4px;font-size:10px;font-weight:700;color:#085041;">⛳ 他店舗ラウンド枠</div>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <span style="font-size:10px;font-weight:700;">前</span>
-                <select class="tsel" id="r3-round-before"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
-                <span style="font-size:10px;font-weight:700;">後</span>
-                <select class="tsel" id="r3-round-after"><option>0時間</option><option>1時間</option><option>2時間</option><option selected>3時間</option><option>4時間</option></select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="rule-card" id="rc4" onclick="pickRule(4)">
-          <div class="rule-radio" id="rr4"></div>
-          <div><div style="font-size:11px;font-weight:700;color:#1a2e24;">キャンセルしない（手動対応）</div><div style="font-size:10px;color:#6b8a78;margin-top:2px;">自動キャンセルはしない。コーチが手動で対応</div></div>
-        </div>
+    <button onclick="toggleCR()" id="cr-btn" style="width:100%;padding:10px;background:#f0f7f4;color:var(--gd);border:1.5px solid var(--g);border-radius:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:space-between;"><span>🔧 キャンセルルール設定</span><span id="cr-arrow">▼ 設定する</span></button>
+    <div id="sec-cancel-rule" style="display:none;margin-top:8px;background:#f8fbf9;border-radius:10px;padding:12px;">
+      <div style="font-size:10px;color:var(--red);font-weight:700;background:#fff0f0;border-radius:6px;padding:6px 8px;margin-bottom:10px;line-height:1.7;">⚠️ ラウンド確定時に<b>必ず</b>キャンセルされます：<br>・同日の<b>全ラウンド枠</b>（他店舗含む）<br>・ラウンド時間と<b>重複するレッスン枠</b></div>
+      <div style="font-size:10px;font-weight:700;color:var(--gd);margin-bottom:6px;">🏌 同店舗レッスン　追加キャンセル時間</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <span style="font-size:10px;font-weight:700;">前</span>
+        <select class="tsel" id="cr-same-before"><option value="0">0時間</option><option value="1" selected>1時間</option><option value="2">2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
+        <span style="font-size:10px;font-weight:700;">後</span>
+        <select class="tsel" id="cr-same-after"><option value="0">0時間</option><option value="1" selected>1時間</option><option value="2">2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
       </div>
+      <hr style="border:none;border-top:1px dashed #e0ece6;margin-bottom:10px;">
+      <div style="font-size:10px;font-weight:700;color:var(--gd);margin-bottom:6px;">🏪 他店舗レッスン　追加キャンセル時間</div>
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <span style="font-size:10px;font-weight:700;">前</span>
+        <select class="tsel" id="cr-other-before"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
+        <span style="font-size:10px;font-weight:700;">後</span>
+        <select class="tsel" id="cr-other-after"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
+      </div>
+      <div id="cr-example" style="font-size:10px;color:#6b8a78;background:#fff;border-radius:6px;padding:6px 8px;border:1px solid #e0ece6;line-height:1.7;"></div>
     </div>
     <button class="sbtn" onclick="saveSlot()">✅ 保存する</button>
     <button class="cbtn" onclick="closeModal()">閉じる</button>
@@ -534,21 +506,35 @@ function pickStore(k){
 function onTog(t,on){
   document.getElementById('sec-'+t).style.display=on?'block':'none';
   if(t==='i')buildHGrid();
-  if(t==='r')document.getElementById('sec-cancel-rule').style.display=on?'block':'none';
 }
-let selRule=1;
-function pickRule(n){
-  [1,2,3,4].forEach(i=>{
-    document.getElementById('rc'+i).className='rule-card';
-    document.getElementById('rr'+i).className='rule-radio';
-    document.getElementById('rr'+i).innerHTML='';
-  });
-  document.getElementById('rc'+n).className='rule-card sel-r';
-  document.getElementById('rr'+n).className='rule-radio on-r';
-  document.getElementById('rr'+n).innerHTML='<div class="rr-dot"></div>';
-  document.getElementById('rule3-detail').style.display=n===3?'block':'none';
-  selRule=n;
+function toggleCR(){
+  const sec=document.getElementById('sec-cancel-rule');
+  const arrow=document.getElementById('cr-arrow');
+  const isOpen=sec.style.display==='block';
+  sec.style.display=isOpen?'none':'block';
+  arrow.textContent=isOpen?'▼ 設定する':'▲ 閉じる';
+  if(!isOpen)updateCRExample();
 }
+function updateCRExample(){
+  const rs=document.getElementById('rs');
+  const re=document.getElementById('re');
+  const sb=parseInt(document.getElementById('cr-same-before').value);
+  const sa=parseInt(document.getElementById('cr-same-after').value);
+  const ob=parseInt(document.getElementById('cr-other-before').value);
+  const oa=parseInt(document.getElementById('cr-other-after').value);
+  const from=rs?parseInt(rs.value):8;
+  const to=re?parseInt(re.value):17;
+  const sFrom=Math.max(5,from-sb),sTo=Math.min(22,to+sa);
+  const oFrom=Math.max(5,from-ob),oTo=Math.min(22,to+oa);
+  const ex=document.getElementById('cr-example');
+  if(ex){
+    ex.innerHTML='<b style="color:#E24B4A;">例）'+from+'〜'+to+'時ラウンド確定の場合：</b><br>'
+      +'・同日の全ラウンド枠をキャンセル<br>'
+      +'・同店舗レッスン '+sFrom+'〜'+sTo+'時をキャンセル<br>'
+      +'・他店舗レッスン '+oFrom+'〜'+oTo+'時をキャンセル';
+  }
+}
+
 function buildHGrid(){
   const g=document.getElementById('hgrid');g.innerHTML='';
   for(let h=8;h<=21;h++){
@@ -586,7 +572,12 @@ async function saveSlot(){
     const rs2=parseInt(document.getElementById('rs').value);
     const re2=parseInt(document.getElementById('re').value);
     if(re2<=rs2){showToast('終了は開始より後に');return;}
-    saves.push({coach_id:coachId,date:modalDate,lesson_type:'round',store_key:selStore,block_from:String(rs2),block_to:String(re2),status:'available'});
+    saves.push({coach_id:coachId,date:modalDate,lesson_type:'round',store_key:selStore,block_from:String(rs2),block_to:String(re2),status:'available',
+      cancel_same_before:parseInt(document.getElementById('cr-same-before')?.value||0),
+      cancel_same_after:parseInt(document.getElementById('cr-same-after')?.value||0),
+      cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
+      cancel_other_after:parseInt(document.getElementById('cr-other-after')?.value||0)
+    });
   }
   try{
     const {error}=await sb.from('schedules').insert(saves);
@@ -594,6 +585,69 @@ async function saveSlot(){
   }catch(e){saves.forEach(s=>{s.id='local-'+Date.now()+Math.random();allSlots.push(s);});}
   showToast('保存しました！');closeModal();buildWeek();
 }
+
+// ラウンド確定時のキャンセル処理
+async function applyRoundCancelRule(roundSlot){
+  const date=gd(roundSlot);
+  const from=parseInt(roundSlot.block_from||8);
+  const to=parseInt(roundSlot.block_to||17);
+  const confirmedStore=gs(roundSlot);
+  const sameBefore=parseInt(roundSlot.cancel_same_before||0);
+  const sameAfter=parseInt(roundSlot.cancel_same_after||0);
+  const otherBefore=parseInt(roundSlot.cancel_other_before||0);
+  const otherAfter=parseInt(roundSlot.cancel_other_after||0);
+
+  const toDelete=[];
+  allSlots.forEach(s=>{
+    if(gd(s)!==date)return;
+    if(s.id===roundSlot.id)return;
+    // 同日の全ラウンド枠をキャンセル（必須）
+    if(s.lesson_type==='round'){
+      toDelete.push(s.id);return;
+    }
+    // インドアレッスンのキャンセル判定
+    if(s.lesson_type==='indoor'){
+      const h=gh(s);
+      const skey=gs(s);
+      const isSameStore=(skey===confirmedStore||skey==='both'||confirmedStore==='both');
+      if(isSameStore){
+        // 同店舗：ラウンド時間＋前後sameBefore/sameAfter時間をキャンセル
+        if(h>=from-sameBefore&&h<to+sameAfter)toDelete.push(s.id);
+      } else {
+        // 他店舗：ラウンド時間＋前後otherBefore/otherAfter時間をキャンセル
+        if(h>=from-otherBefore&&h<to+otherAfter)toDelete.push(s.id);
+      }
+    }
+  });
+
+  // Supabaseから一括削除
+  for(const id of toDelete){
+    try{
+      if(!id.startsWith('local-'))await sb.from('schedules').delete().eq('id',id);
+    }catch(e){}
+    allSlots=allSlots.filter(s=>s.id!==id);
+  }
+  return toDelete.length;
+}
+// ラウンド確定ボタン（予約管理から呼ばれる）
+async function confirmRound(id){
+  try{
+    await sb.from('schedules').update({status:'booked'}).eq('id',id);
+    await loadSlots();
+    const roundSlot=allSlots.find(s=>s.id===id);
+    if(roundSlot){
+      const cancelled=await applyRoundCancelRule(roundSlot);
+      showToast('ラウンド確定！'+cancelled+'件の枠をキャンセルしました');
+    }
+  }catch(e){
+    // ローカルのみ更新
+    const s=allSlots.find(s=>s.id===id);
+    if(s)s.status='booked';
+    if(s){const cancelled=await applyRoundCancelRule(s);showToast('確定（'+cancelled+'件キャンセル）');}
+  }
+  buildWeek();
+}
+
 async function delSlot(id){
   if(!confirm('削除しますか？'))return;
   try{await sb.from('schedules').delete().eq('id',id);}catch(e){}
