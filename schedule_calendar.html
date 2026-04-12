@@ -393,17 +393,19 @@ function buildMonth(){
     dots+='</div>';
     cell.innerHTML=`<div class="mdate">${d}</div>${dots}`;
     // 月ビューの日付タップ → その週の週ビューへ
-    cell.onclick=()=>{
-      const today=new Date();
-      today.setHours(0,0,0,0);
-      const todaySun=new Date(today);
-      todaySun.setDate(today.getDate()-today.getDay());
-      const dateSun=new Date(date);
-      dateSun.setDate(date.getDate()-date.getDay());
-      dateSun.setHours(0,0,0,0);
-      weekOffset=Math.round((dateSun-todaySun)/604800000);
-      switchView('week');
-    };
+    (function(clickedY,clickedM,clickedD){
+      cell.onclick=()=>{
+        const clicked=new Date(clickedY,clickedM,clickedD);
+        const today=new Date();
+        today.setHours(0,0,0,0);
+        // 今週の日曜
+        const todaySun=new Date(today.getFullYear(),today.getMonth(),today.getDate()-today.getDay());
+        // クリックした日の日曜
+        const clickedSun=new Date(clicked.getFullYear(),clicked.getMonth(),clicked.getDate()-clicked.getDay());
+        weekOffset=Math.round((clickedSun-todaySun)/604800000);
+        switchView('week');
+      };
+    })(y,m,d);
     grid.appendChild(cell);
   }
 }
