@@ -220,13 +220,13 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
       <div style="background:#fff0f0;border-radius:8px;padding:10px;margin-bottom:10px;">
         <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:5px;">⚠️ ラウンド確定時に必ずキャンセルされます</div>
         <div style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:5px;">以下は設定に関わらず、ラウンド確定と同時に自動でキャンセルされます。</div>
-        <div style="font-size:10px;color:var(--red);font-weight:700;line-height:1.8;">🔴 同日の全ラウンド枠（他店舗含む）<br>🔴 ラウンド時間と重複するレッスン枠（同店舗）</div>
+        <div style="font-size:10px;color:var(--red);font-weight:700;line-height:1.8;">🔴 同日の全ラウンド枠（他店舗含む）<br>🔴 ラウンド時間と重複するレッスン枠（全店舗）</div>
       </div>
 
       <!-- 他店舗レッスン設定 -->
       <div style="background:#fff;border-radius:8px;padding:10px;margin-bottom:8px;">
         <div style="font-size:11px;font-weight:700;color:var(--gd);margin-bottom:3px;">🏪 他店舗のレッスン枠　キャンセル設定</div>
-        <div style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:10px;">京都店でラウンド確定 → 伏見店のレッスンをどう処理するかを設定します。</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:10px;">複数店舗を登録している場合、予約が入った店舗以外のレッスンをどう処理するかを設定します。</div>
 
         <div style="display:flex;flex-direction:column;gap:6px;">
 
@@ -244,11 +244,11 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
               <div style="font-size:10px;color:var(--muted);margin-top:2px;">移動時間を考慮して前後の時間を設定します</div>
               <div id="cr2-detail" style="display:none;margin-top:8px;">
                 <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                  <span style="font-size:10px;font-weight:700;min-width:80px;">ラウンド開始の前</span>
+                  <span style="font-size:10px;font-weight:700;min-width:80px;">レッスン開始の前</span>
                   <select class="tsel" id="cr-other-before" onchange="updateCRExample()"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;">
-                  <span style="font-size:10px;font-weight:700;min-width:80px;">ラウンド終了の後</span>
+                  <span style="font-size:10px;font-weight:700;min-width:80px;">レッスン終了の後</span>
                   <select class="tsel" id="cr-other-after" onchange="updateCRExample()"><option value="0">0時間</option><option value="1">1時間</option><option value="2" selected>2時間</option><option value="3">3時間</option><option value="4">4時間</option></select>
                 </div>
               </div>
@@ -560,6 +560,22 @@ function toggleCR(){
   arrow.textContent=isOpen?'▼ 設定する':'▲ 閉じる';
 }
 function pickCR(n){
+  // トグル式：もう一度押すと解除
+  if(selCR===n){
+    // 解除
+    const card=document.getElementById('cr'+n);
+    const radio=document.getElementById('crr'+n);
+    card.style.border='2px solid #e0ece6';
+    card.style.background='#fff';
+    radio.style.background='';
+    radio.style.borderColor='#ccc';
+    radio.innerHTML='';
+    if(n===2)document.getElementById('cr2-detail').style.display='none';
+    selCR=0;
+    updateCRExample();
+    return;
+  }
+  // 全解除してから選択
   [1,2,3].forEach(i=>{
     const card=document.getElementById('cr'+i);
     const radio=document.getElementById('crr'+i);
@@ -677,10 +693,12 @@ async function applyRoundCancelRule(roundSlot){
       const isSameStore=(skey===confirmedStore||skey==='both'||confirmedStore==='both');
 
       if(isSameStore){
-        // 同店舗：ラウンド時間と重複するレッスンは必ずキャンセル
+        // 同店舗：ラウンド時間と重複するレッスンは全店舗キャンセル（必須）
         if(h>=from&&h<to)toDelete.push(s.id);
       } else {
-        // 他店舗：キャンセルルールに従う
+        // 他店舗：ラウンド時間と重複するレッスンも必ずキャンセル
+        if(h>=from&&h<to){toDelete.push(s.id);return;}
+        // さらにキャンセルルールに従う
         if(cancelRule===1){
           // 全キャンセル
           toDelete.push(s.id);
