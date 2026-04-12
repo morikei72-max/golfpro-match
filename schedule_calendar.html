@@ -315,9 +315,12 @@ function buildWeek(){
         const rc=document.createElement('div');
         rc.className='rc'+(roundConfirmed?' cfm':'');
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
+        const shown={kyoto:false,fushimi:false};
         indoors.forEach(s=>{
           const keys=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];
           keys.forEach(k=>{
+            if(shown[k])return;
+            shown[k]=true;
             const el=document.createElement('div');
             if(roundConfirmed){
               el.className='sl cancelled';el.textContent=k==='kyoto'?'京':'伏';
@@ -350,9 +353,13 @@ function mkCell(ds,h,isToday,inRound,roundCfm){
   const cell=document.createElement('div');
   cell.className='cell'+(isToday?' tdy':'');
   const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
+  // 重複防止：kyoto/fushimiそれぞれ1つだけ表示
+  const shown={kyoto:false,fushimi:false};
   indoors.forEach(s=>{
     const keys=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];
     keys.forEach(k=>{
+      if(shown[k])return;
+      shown[k]=true;
       const el=document.createElement('div');
       el.className='sl '+(k==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');
       el.textContent=k==='kyoto'?'京':'伏';
