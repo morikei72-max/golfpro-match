@@ -401,8 +401,11 @@ function buildMonth(){
     (function(cy,cm,cd){
       cell.onclick=()=>{
         const clicked=new Date(cy,cm,cd);
-        // クリックした日が含まれる週の日曜を計算
-        currentWeekSun=new Date(cy,cm,cd-clicked.getDay());
+        clicked.setHours(0,0,0,0);
+        // setDateで負の値も正しく前月に繰り上がる
+        const sun=new Date(clicked);
+        sun.setDate(clicked.getDate()-clicked.getDay());
+        currentWeekSun=sun;
         switchView('week');
       };
     })(y,m,d);
