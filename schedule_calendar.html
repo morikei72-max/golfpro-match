@@ -31,7 +31,8 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .wlbl{font-size:12px;font-weight:700;color:var(--gd);}
 
 /* カレンダー本体 */
-.cal{display:flex;width:100%;}
+.cal-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.cal{display:flex;min-width:480px;}
 .tc-col{flex-shrink:0;width:34px;}
 .tc-hdr{height:34px;border-bottom:1px solid var(--border);background:#f0f7f4;}
 .tc-cell{height:36px;border-bottom:1px solid var(--border);background:#f0f7f4;text-align:right;font-size:8px;color:var(--muted);padding:2px 3px 0;font-weight:600;}
@@ -144,7 +145,7 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
       <div class="wlbl" id="week-lbl"></div>
       <button class="wnbtn" onclick="moveWeek(1)">次 ›</button>
     </div>
-    <div id="cal-wrap"></div>
+    <div class="cal-scroll"><div id="cal-wrap"></div></div>
   </div>
   <div id="view-month" style="display:none">
     <div class="month-wrap">
@@ -406,10 +407,21 @@ function openModal(ds,hour){
   modalDate=ds;
   const d=new Date(ds);
   document.getElementById('mdt').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日'+(hour!==undefined?' '+hour+':00':'');
-  const existing=allSlots.filter(s=>gd(s)===ds);
+
+  // その時間・その枠だけ表示（hourが指定されている場合はその時間のスロットのみ）
+  let existing;
+  if(hour!==undefined){
+    existing=allSlots.filter(s=>gd(s)===ds&&(
+      (s.lesson_type==='indoor'&&gh(s)===hour)||
+      (s.lesson_type==='round'&&parseInt(s.block_from||8)<=hour&&hour<parseInt(s.block_to||17))
+    ));
+  } else {
+    existing=allSlots.filter(s=>gd(s)===ds);
+  }
+
   let html='';
   if(existing.length){
-    html='<div style="margin-bottom:10px;"><div class="stl" style="margin-top:0;">登録済み</div>';
+    html='<div style="margin-bottom:10px;"><div class="stl" style="margin-top:0;">'+(hour!==undefined?hour+':00 の登録済み':'登録済み')+'</div>';
     existing.forEach(s=>{
       const cfm=s.status==='booked';
       const sk=gs(s),sl=sk==='both'?'両店舗':sk==='kyoto'?'京都店':'伏見店';
