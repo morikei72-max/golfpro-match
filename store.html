@@ -4,7 +4,137 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MyCoach — 店舗管理</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+// ===== コーチカレンダー =====
+const COACH_COLORS=['#1D9E75','#1976D2','#7c3aed','#d97706','#db2777','#0891b2','#65a30d','#dc2626'];
+const HOURS_CAL=[];for(let h=8;h<=21;h++)HOURS_CAL.push(h);
+const DOW_CAL=['日','月','火','水','木','金','土'];
+let calWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;})();
+let coachColorMap={};
+
+function switchBookingTab(tab,btn){
+  document.querySelectorAll('.bsub-tab').forEach(b=>{
+    b.style.color='var(--muted)';b.style.borderBottom='none';b.classList.remove('active');
+  });
+  btn.style.color='var(--g)';btn.style.borderBottom='2px solid var(--g)';btn.classList.add('active');
+  document.getElementById('booking-list-view').style.display=tab==='list'?'block':'none';
+  document.getElementById('booking-cal-view').style.display=tab==='cal'?'block':'none';
+  if(tab==='cal'){buildStoreCal();}
+}
+
+function calMoveWeek(dir){
+  calWeekSun=new Date(calWeekSun.getFullYear(),calWeekSun.getMonth(),calWeekSun.getDate()+dir*7);
+  buildStoreCal();
+}
+
+function fd2(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+async function buildStoreCal(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const days=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(calWeekSun);d.setDate(calWeekSun.getDate()+i);days.push(d);
+  }
+  document.getElementById('cal-week-lbl').textContent=
+    (days[0].getMonth()+1)+'/'+days[0].getDate()+'〜'+(days[6].getMonth()+1)+'/'+days[6].getDate();
+
+  // コーチ色マップ
+  const coaches=[...new Set(allCoaches.filter(c=>c.status==='active').map(c=>c.name||c.id))];
+  coaches.forEach((name,i)=>{if(!coachColorMap[name])coachColorMap[name]=COACH_COLORS[i%COACH_COLORS.length];});
+
+  // 凡例
+  const leg=document.getElementById('coach-legend');
+  leg.innerHTML=coaches.map(name=>`
+    <div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted);">
+      <div style="width:9px;height:9px;border-radius:2px;background:${coachColorMap[name]};"></div>${name}
+    </div>`).join('')+
+    '<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted);"><div style="width:9px;height:9px;border-radius:2px;background:var(--red);"></div>予約確定</div>';
+
+  // スケジュールデータ取得
+  let schedData=[];
+  try{
+    const ds0=fd2(days[0]),ds6=fd2(days[6]);
+    const{data}=await sb.from('schedules').select('*')
+      .eq('store_key',currentStore)
+      .gte('date',ds0).lte('date',ds6);
+    schedData=data||[];
+  }catch(e){
+    // ダミーデータ
+    coaches.forEach((name,ci)=>{
+      days.forEach(d=>{
+        const ds=fd2(d);
+        const hours=[9,10,11,14,15];
+        hours.forEach(h=>{
+          if(Math.random()>0.4){
+            schedData.push({coach_name:name,date:ds,start_time:String(h),lesson_type:'indoor',
+              store_key:currentStore,status:Math.random()>0.85?'booked':'available'});
+          }
+        });
+      });
+    });
+  }
+
+  const cal=document.getElementById('store-cal');
+  cal.innerHTML='';
+
+  // 時間軸
+  const tc=document.createElement('div');tc.className='cal-tc';
+  tc.innerHTML='<div class="cal-th"></div>'+HOURS_CAL.map(h=>`<div class="cal-tc2">${h}:00</div>`).join('');
+  cal.appendChild(tc);
+
+  // 日付列
+  days.forEach(d=>{
+    const ds=fd2(d),dow=d.getDay(),isT=d.toDateString()===today.toDateString();
+    const col=document.createElement('div');col.className='cal-dc';
+    const dh=document.createElement('div');
+    dh.className='cal-dh'+(isT?' td':'')+(dow===0?' su':dow===6?' sa':'');
+    dh.innerHTML=`${DOW_CAL[dow]}<span class="cal-dn">${d.getDate()}</span>`;
+    col.appendChild(dh);
+
+    HOURS_CAL.forEach(h=>{
+      const cell=document.createElement('div');cell.className='cal-cell';
+      const slots=schedData.filter(s=>s.date===ds&&parseInt(s.start_time)===h);
+      const seen={};
+      let hasBooked=false;
+      slots.forEach(s=>{
+        const cname=s.coach_name||s.coach_id||'?';
+        if(seen[cname])return;seen[cname]=true;
+        const color=coachColorMap[cname]||'#888';
+        const sl=document.createElement('div');
+        sl.className='cal-sl'+(s.status==='booked'?' booked':'');
+        sl.style.background=color;
+        sl.textContent=cname.charAt(0);
+        cell.appendChild(sl);
+        if(s.status==='booked')hasBooked=true;
+      });
+      const visCount=Object.keys(seen).length;
+      if(visCount>0){
+        const cnt=document.createElement('div');
+        cnt.className='cal-cnt'+(hasBooked?' has-booked':'');
+        cnt.textContent=hasBooked?'確':visCount;
+        cell.appendChild(cnt);
+      }
+      col.appendChild(cell);
+    });
+    cal.appendChild(col);
+  });
+
+  // サマリー
+  const sumEl=document.getElementById('coach-summary');
+  sumEl.innerHTML=coaches.length?coaches.map(name=>{
+    const mySlots=schedData.filter(s=>(s.coach_name||s.coach_id)===name);
+    const open=mySlots.filter(s=>s.status==='available').length;
+    const booked=mySlots.filter(s=>s.status==='booked').length;
+    return `<div class="sum-row2">
+      <div class="sum-dot2" style="background:${coachColorMap[name]};"></div>
+      <div style="flex:1;font-size:12px;font-weight:700;">${name}</div>
+      <div style="font-size:11px;color:var(--muted);margin-right:10px;">空き ${open}枠</div>
+      <div style="font-size:11px;font-weight:700;color:var(--red);">確定 ${booked}件</div>
+    </div>`;
+  }).join(''):'<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px;">在籍コーチなし</div>';
+}
+
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -151,6 +281,26 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .modal-actions{display:flex;gap:8px;}
 .modal-btn-approve{flex:1;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .modal-btn-cancel{flex:1;padding:12px;background:#f0f0f0;color:var(--muted);border:none;border-radius:10px;font-family:inherit;font-size:13px;cursor:pointer;}
+
+/* ===== コーチカレンダー ===== */
+.bsub-tab.active{color:var(--g) !important;border-bottom:2px solid var(--g);margin-bottom:-2px;}
+.cal-tc{width:32px;flex-shrink:0;display:flex;flex-direction:column;background:#fafafa;position:sticky;left:0;z-index:10;}
+.cal-th{height:40px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;}
+.cal-tc2{height:32px;border-right:1px solid var(--border);border-bottom:1px solid #eee;display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 3px 0;font-size:8px;color:var(--muted);}
+.cal-dc{flex:1;min-width:0;display:flex;flex-direction:column;}
+.cal-dh{height:40px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text);gap:1px;}
+.cal-dn{font-size:12px;font-weight:900;line-height:1;}
+.cal-dh.td .cal-dn{background:var(--g);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
+.cal-dh.su{color:var(--red);}.cal-dh.sa{color:var(--fushimi);}
+.cal-cell{height:32px;border-right:1px solid var(--border);border-bottom:1px solid #eee;display:flex;align-items:center;padding:2px;gap:1px;position:relative;cursor:pointer;}
+.cal-cell:hover{background:#f0f9f5;}
+.cal-sl{flex:1;min-width:0;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap;}
+.cal-sl.booked{opacity:0.6;text-decoration:line-through;}
+.cal-cnt{position:absolute;top:1px;right:1px;min-width:14px;height:14px;border-radius:7px;background:var(--g);color:#fff;font-size:7px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 2px;}
+.cal-cnt.has-booked{background:var(--red);}
+.sum-row2{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
+.sum-row2:last-child{border-bottom:none;}
+.sum-dot2{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -255,19 +405,40 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
   <!-- 予約状況 -->
   <div class="page" id="page-bookings">
-    <div class="filter-wrap">
-      <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
-      <button class="filter-btn" onclick="filterBookings('confirmed',this)">確定</button>
-      <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
-      <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
+    <div style="display:flex;background:#fff;border-bottom:2px solid var(--border);">
+      <button class="bsub-tab active" id="bsub-list" onclick="switchBookingTab('list',this)" style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;">📋 予約一覧</button>
+      <button class="bsub-tab" id="bsub-cal" onclick="switchBookingTab('cal',this)" style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;">📅 コーチ空き状況</button>
     </div>
-    <div class="card">
-      <div class="card-title">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        予約一覧
+    <div id="booking-list-view">
+      <div class="filter-wrap" style="padding:10px 16px 0;">
+        <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
+        <button class="filter-btn" onclick="filterBookings('confirmed',this)">確定</button>
+        <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
+        <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
       </div>
-      <div id="booking-list">
-        <div style="font-size:12px;color:var(--muted);text-align:center;padding:20px;">読み込み中...</div>
+      <div class="card" style="margin:10px 12px;">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          予約一覧
+        </div>
+        <div id="booking-list">
+          <div style="font-size:12px;color:var(--muted);text-align:center;padding:20px;">読み込み中...</div>
+        </div>
+      </div>
+    </div>
+    <div id="booking-cal-view" style="display:none;">
+      <div id="coach-legend" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;background:#fff;border-bottom:1px solid var(--border);"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#fff;border-bottom:1px solid var(--border);">
+        <button onclick="calMoveWeek(-1)" style="background:#fff;border:1px solid var(--border);border-radius:7px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">‹ 前週</button>
+        <span id="cal-week-lbl" style="font-size:12px;font-weight:700;color:var(--gd);"></span>
+        <button onclick="calMoveWeek(1)" style="background:#fff;border:1px solid var(--border);border-radius:7px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">次週 ›</button>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <div id="store-cal" style="display:flex;min-width:520px;"></div>
+      </div>
+      <div class="card" style="margin:10px 12px 80px;">
+        <div class="card-title">今週のコーチ別集計</div>
+        <div id="coach-summary"></div>
       </div>
     </div>
   </div>
