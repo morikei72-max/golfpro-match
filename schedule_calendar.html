@@ -238,7 +238,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="leg"><div class="leg-dot" style="background:var(--g)"></div>京都・インドア</div>
       <div class="leg"><div class="leg-dot" style="background:var(--blue)"></div>伏見・インドア</div>
       <div class="leg"><div class="leg-dot" style="background:var(--gold)"></div>ラウンド</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--red)"></div>予約済み</div>
+      <div class="leg"><div style="width:12px;height:12px;border-radius:50%;border:2px solid var(--red);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:var(--red);flex-shrink:0;">確</div>予約確定</div>
     </div>
 
     <div id="view-week">
@@ -527,19 +527,33 @@ function buildWeek(){
       if(slots.length===1){
         const slot=slots[0];
         const s=document.createElement('div');
-        s.className='tl-slot '+(slot.status==='booked'?'booked':slot.store_id==='kyoto'?'kyoto':'fushimi');
+        s.className='tl-slot '+(slot.store_id==='kyoto'?'kyoto':'fushimi');
         s.textContent=slot.store_id==='kyoto'?'京都':'伏見';
         s.style.zIndex='4';
+        // 予約確定の場合「確」スタンプを右上に追加
+        if(slot.status==='booked'){
+          const stamp=document.createElement('div');
+          stamp.style.cssText='position:absolute;top:-4px;right:-4px;width:15px;height:15px;border-radius:50%;background:#fff;border:2px solid #E24B4A;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#E24B4A;z-index:6;';
+          stamp.textContent='確';
+          s.style.position='relative';
+          s.appendChild(stamp);
+        }
         cell.appendChild(s);
       } else if(slots.length>=2){
         const wrap=document.createElement('div');
         wrap.style.cssText='position:absolute;inset:2px;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;gap:1px;z-index:4;';
         slots.forEach(slot=>{
           const s=document.createElement('div');
-          s.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;border-radius:3px;';
-          s.style.background=slot.status==='booked'?'var(--red)':slot.store_id==='kyoto'?'var(--g)':'var(--blue)';
+          s.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;border-radius:3px;position:relative;';
+          s.style.background=slot.store_id==='kyoto'?'var(--g)':'var(--blue)';
           s.style.color='#fff';
           s.textContent=slot.store_id==='kyoto'?'京都':'伏見';
+          if(slot.status==='booked'){
+            const stamp=document.createElement('div');
+            stamp.style.cssText='position:absolute;top:-3px;right:-3px;width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid #E24B4A;display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700;color:#E24B4A;z-index:6;';
+            stamp.textContent='確';
+            s.appendChild(stamp);
+          }
           wrap.appendChild(s);
         });
         cell.appendChild(wrap);
