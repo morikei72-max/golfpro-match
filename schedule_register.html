@@ -216,22 +216,36 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   </div>
   <div id="v4r" style="display:none;">
     <div class="card">
-      <div class="card-title">⚙️ ラウンド当日のレッスン受付</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7;">ラウンドとレッスン両方の空き枠がある日の扱いを設定します。</div>
-      <div class="block-opt" id="bo-all" onclick="pickBlock('all_day')">
-        <div class="block-opt-row"><input type="radio" name="block" id="br-all"><div><div class="block-opt-title">🚫 一日中レッスン不可</div><div class="block-opt-desc">この日のレッスン枠をすべてブロックします</div></div></div>
-      </div>
-      <div class="block-opt" id="bo-range" onclick="pickBlock('time_range')">
-        <div class="block-opt-row"><input type="radio" name="block" id="br-range"><div><div class="block-opt-title">🕐 時間帯を指定してブロック</div><div class="block-opt-desc">ラウンド中の時間だけブロック。早朝・夜はレッスン可能</div></div></div>
-        <div class="time-range-row" id="time-range-row" style="display:none;">
-          <span style="font-size:12px;color:var(--muted);">ブロック時間：</span>
-          <select class="time-sel" id="block-from"><option value="6">6:00</option><option value="7">7:00</option><option value="8" selected>8:00</option><option value="9">9:00</option><option value="10">10:00</option><option value="11">11:00</option><option value="12">12:00</option></select>
-          <span style="font-size:12px;color:var(--muted);">〜</span>
-          <select class="time-sel" id="block-to"><option value="15">15:00</option><option value="16">16:00</option><option value="17" selected>17:00</option><option value="18">18:00</option><option value="19">19:00</option><option value="20">20:00</option></select>
+      <div class="card-title">⛳ ラウンドの時間帯を設定してください</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.7;">ラウンドの開始・終了時間を設定します。<br>この時間帯と重なるインドアレッスンの予約は先着優先でキャンセルされます。時間帯外（例：19時〜）のインドアレッスンはそのまま受け付けます。</div>
+
+      <!-- ラウンド時間設定 -->
+      <div style="background:#FFF8E7;border:1.5px solid var(--gold);border-radius:12px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:#5a3a00;margin-bottom:10px;">⛳ ラウンド時間帯</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#5a3a00;">開始：</span>
+          <select class="time-sel" id="round-start" style="border-color:var(--gold);color:#5a3a00;">
+            <option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option>
+            <option value="8" selected>8:00</option><option value="9">9:00</option><option value="10">10:00</option>
+            <option value="11">11:00</option><option value="12">12:00</option>
+          </select>
+          <span style="font-size:12px;color:#5a3a00;">〜 終了：</span>
+          <select class="time-sel" id="round-end" style="border-color:var(--gold);color:#5a3a00;">
+            <option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option>
+            <option value="16">16:00</option><option value="17" selected>17:00</option><option value="18">18:00</option>
+            <option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option>
+          </select>
         </div>
+        <div style="font-size:10px;color:#856404;margin-top:8px;line-height:1.7;">例：8:00〜17:00に設定 → 8〜17時のインドアと予約が競合した場合は先着優先。17時以降のインドアは競合しません。</div>
       </div>
-      <div class="block-opt" id="bo-none" onclick="pickBlock('none')">
-        <div class="block-opt-row"><input type="radio" name="block" id="br-none"><div><div class="block-opt-title">✅ レッスンもそのまま受け付ける</div><div class="block-opt-desc">先に予約が入った方を優先します</div></div></div>
+
+      <!-- インドアレッスンも受け付けるかどうか -->
+      <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">ラウンド時間帯中のインドアレッスン</div>
+      <div class="block-opt" id="bo-none" onclick="pickBlock('none')" style="margin-bottom:6px;">
+        <div class="block-opt-row"><input type="radio" name="block" id="br-none" checked><div><div class="block-opt-title">✅ インドアレッスンも受け付ける（先着優先）</div><div class="block-opt-desc">ラウンド時間帯でも受け付ける。先に予約が入った方を優先し、もう一方は自動キャンセル</div></div></div>
+      </div>
+      <div class="block-opt" id="bo-all" onclick="pickBlock('all_day')">
+        <div class="block-opt-row"><input type="radio" name="block" id="br-all"><div><div class="block-opt-title">🚫 ラウンド時間帯はレッスン不可</div><div class="block-opt-desc">ラウンド時間帯のインドア枠をブロック。時間帯外はそのまま</div></div></div>
       </div>
     </div>
   </div>
@@ -444,9 +458,12 @@ function buildConfirm(){
     if(storeVal==='both')h+=`<div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🟢 京都店のみ</span><span class="confirm-val">${ky}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">🔵 伏見店のみ</span><span class="confirm-val">${fu}コマ</span></div><div class="confirm-row"><span class="confirm-label" style="font-size:11px;">✅ 両店舗</span><span class="confirm-val">${bo}コマ</span></div>`;
   }
   if(typeVal==='round'||typeVal==='both'){
-    const bl={all_day:'🚫 一日中レッスン不可',time_range:'🕐 時間帯指定ブロック',none:'✅ レッスンもそのまま'};
+    const bf=document.getElementById('round-start')?.value||8;
+    const bt=document.getElementById('round-end')?.value||17;
     h+=`<div class="confirm-row" style="margin-top:8px;"><span class="confirm-label">ラウンド登録日数</span><span class="confirm-val" style="font-size:16px;color:var(--gold);">${datesSet.size}日</span></div>`;
-    h+=`<div class="confirm-row"><span class="confirm-label">レッスン受付</span><span class="confirm-val">${bl[blockVal]||'✅ 先着優先'}</span></div>`;
+    h+=`<div class="confirm-row"><span class="confirm-label">ラウンド時間帯</span><span class="confirm-val">${bf}:00〜${bt}:00</span></div>`;
+    const bl={none:'✅ インドアも受付（先着優先）',all_day:'🚫 ラウンド時間帯はレッスン不可'};
+    h+=`<div class="confirm-row"><span class="confirm-label">インドア受付</span><span class="confirm-val">${bl[blockVal]||'✅ 先着優先'}</span></div>`;
   }
   if(typeVal==='both'){
     h+=`<div style="background:#E1F5EE;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--gd);line-height:1.7;">🏆 先着優先ルール：インドアまたはラウンドのどちらかに予約が入った時点で、同じ時間帯のもう一方の枠は自動的にキャンセルされます。</div>`;
@@ -472,11 +489,10 @@ async function saveSchedule(){
     // ラウンドの登録
     if(typeVal==='round'||typeVal==='both'){
       await sb.from('schedules').delete().eq('coach_id',coachId).eq('lesson_type','round').eq('status','available').in('slot_date',[...datesSet]);
-      const bf=parseInt(document.getElementById('block-from')?.value||8);
-      const bt=parseInt(document.getElementById('block-to')?.value||17);
-      // bothの場合はblock_type=noneで先着優先
+      const bf=parseInt(document.getElementById('round-start')?.value||8);
+      const bt=parseInt(document.getElementById('round-end')?.value||17);
       const btype=typeVal==='both'?'none':blockVal;
-      datesSet.forEach(ds=>stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:ds,slot_hour:-1,status:'available',store_id:s,block_type:btype,block_from:btype==='time_range'?bf:null,block_to:btype==='time_range'?bt:null})));
+      datesSet.forEach(ds=>stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:ds,slot_hour:-1,status:'available',store_id:s,block_type:btype,block_from:bf,block_to:bt})));
     }
     if(rows.length>0){const {error}=await sb.from('schedules').insert(rows);if(error){showMsg('保存に失敗しました：'+error.message,'error');saving=false;btn.textContent='✅ 確定して登録する';btn.disabled=false;return;}}
     const sl=storeVal==='kyoto'?'🟢 京都店':storeVal==='fushimi'?'🔵 伏見店':'✅ 両店舗';
