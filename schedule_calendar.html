@@ -510,28 +510,30 @@ function buildWeek(){
     dhdr.appendChild(cell);
   });
   const trows=document.getElementById('tl-rows');trows.innerHTML='';
+
+  // パターンC：ラウンドカードをposition:absoluteで列全体に重ねる
+  // まず通常の行を描画し、後からラウンドカードをオーバーレイ
+  const rowEls=[];
   HOURS.forEach(h=>{
     const row=document.createElement('div');row.className='tl-row';
     days.forEach(({d,ds,rows,round})=>{
       const cell=document.createElement('div');cell.className='tl-cell';
       const from=round?.block_from??8,to=round?.block_to??17;
       const inRound=round&&h>=from&&h<to;
-      if(round){cell.classList.add(inRound?'round-active':'round-bg');}
-      if(round){
-        if(h===from){['top','left','right'].forEach(s=>{const b=document.createElement('div');b.className='tl-border '+s;cell.appendChild(b);});}
-        else if(h===to-1){['bottom','left','right'].forEach(s=>{const b=document.createElement('div');b.className='tl-border '+s;cell.appendChild(b);});}
-        else if(h>from&&h<to){['left','right'].forEach(s=>{const b=document.createElement('div');b.className='tl-border '+s;cell.appendChild(b);});}
-      }
+      if(round&&inRound) cell.style.background='#FFFBEB';
+      else if(round&&!inRound&&(h<from||h>=to)) cell.style.background='';
+
       const slots=rows.filter(r=>r.lesson_type==='indoor'&&r.slot_hour===h);
       if(slots.length===1){
         const slot=slots[0];
         const s=document.createElement('div');
         s.className='tl-slot '+(slot.status==='booked'?'booked':slot.store_id==='kyoto'?'kyoto':'fushimi');
         s.textContent=slot.store_id==='kyoto'?'京都':'伏見';
+        s.style.zIndex='4';
         cell.appendChild(s);
       } else if(slots.length>=2){
         const wrap=document.createElement('div');
-        wrap.style.cssText='position:absolute;inset:2px;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;gap:1px;z-index:2;';
+        wrap.style.cssText='position:absolute;inset:2px;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;gap:1px;z-index:4;';
         slots.forEach(slot=>{
           const s=document.createElement('div');
           s.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;border-radius:3px;';
@@ -546,6 +548,36 @@ function buildWeek(){
       row.appendChild(cell);
     });
     trows.appendChild(row);
+    rowEls.push(row);
+  });
+
+  // ラウンドカードオーバーレイ（各列ごとに1枚の丸みカードを重ねる）
+  const rowH=36; // 1行の高さ(px)
+  days.forEach(({round},colIdx)=>{
+    if(!round)return;
+    const from=round.block_from??8,to=round.block_to??17;
+    const startRow=HOURS.indexOf(from);
+    const endRow=HOURS.indexOf(to-1);
+    if(startRow<0)return;
+    const topPx=startRow*rowH+3;
+    const heightPx=(endRow-startRow+1)*rowH-6;
+    const colCount=7;
+    const colW=100/colCount;
+    const card=document.createElement('div');
+    card.style.cssText=`
+      position:absolute;
+      top:${topPx}px;
+      left:calc(${colIdx*colW}% + 3px);
+      width:calc(${colW}% - 6px);
+      height:${heightPx}px;
+      border:2px solid #F59E0B;
+      border-radius:14px;
+      background:#FEF9EC;
+      z-index:1;
+      pointer-events:none;
+    `;
+    trows.style.position='relative';
+    trows.appendChild(card);
   });
 }
 
