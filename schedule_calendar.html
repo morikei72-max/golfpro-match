@@ -206,18 +206,18 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 const HOURS=[];for(let h=8;h<=22;h++)HOURS.push(h);
-let coachId=null,weekOffset=0,currentMonth=new Date(),allSlots=[],modalDate=null,selStore=null,selHours=[];
+let coachId=null,currentMonth=new Date(),allSlots=[],modalDate=null,selStore=null,selHours=[];
+// 表示中の週の日曜日を直接保持
+let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;})();
 
 (async()=>{
   const us=new URLSearchParams(location.search).get('store');
   if(us)localStorage.setItem('gc_store',us);
-  // URLパラメータで指定日があればその週を表示
   const targetDate=new URLSearchParams(location.search).get('date');
   if(targetDate){
     const d=new Date(targetDate);
-    const today=new Date();
-    const sun=new Date(today);sun.setDate(today.getDate()-today.getDay());
-    weekOffset=Math.round((d-sun)/604800000);
+    d.setHours(0,0,0,0);
+    currentWeekSun=new Date(d.getFullYear(),d.getMonth(),d.getDate()-d.getDay());
   }
   const {data:{session}}=await sb.auth.getSession();
   if(!session){location.replace(BASE+'index.html');return;}
@@ -246,11 +246,13 @@ function gs(s){return s.store_key||s.store_id||'kyoto';}
 function gh(s){return parseInt(s.start_time||s.slot_hour||0);}
 
 function buildWeek(){
-  const today=new Date();
-  const sun=new Date(today);
-  sun.setDate(today.getDate()-today.getDay()+weekOffset*7);
+  const today=new Date();today.setHours(0,0,0,0);
   const dates=[];
-  for(let i=0;i<7;i++){const d=new Date(sun);d.setDate(sun.getDate()+i);dates.push(d);}
+  for(let i=0;i<7;i++){
+    const d=new Date(currentWeekSun);
+    d.setDate(currentWeekSun.getDate()+i);
+    dates.push(d);
+  }
   const days=['日','月','火','水','木','金','土'];
   document.getElementById('week-lbl').textContent=
     (dates[0].getMonth()+1)+'/'+dates[0].getDate()+'〜'+(dates[6].getMonth()+1)+'/'+dates[6].getDate();
@@ -361,7 +363,10 @@ function mkCell(ds,h,isToday,inRound,roundCfm){
   return cell;
 }
 
-function moveWeek(dir){weekOffset+=dir;buildWeek();}
+function moveWeek(dir){
+  currentWeekSun=new Date(currentWeekSun.getFullYear(),currentWeekSun.getMonth(),currentWeekSun.getDate()+dir*7);
+  buildWeek();
+}
 
 function buildMonth(){
   const y=currentMonth.getFullYear(),m=currentMonth.getMonth();
@@ -393,16 +398,11 @@ function buildMonth(){
     dots+='</div>';
     cell.innerHTML=`<div class="mdate">${d}</div>${dots}`;
     // 月ビューの日付タップ → その週の週ビューへ
-    (function(clickedY,clickedM,clickedD){
+    (function(cy,cm,cd){
       cell.onclick=()=>{
-        const clicked=new Date(clickedY,clickedM,clickedD);
-        const today=new Date();
-        today.setHours(0,0,0,0);
-        // 今週の日曜
-        const todaySun=new Date(today.getFullYear(),today.getMonth(),today.getDate()-today.getDay());
-        // クリックした日の日曜
-        const clickedSun=new Date(clicked.getFullYear(),clicked.getMonth(),clicked.getDate()-clicked.getDay());
-        weekOffset=Math.round((clickedSun-todaySun)/604800000);
+        const clicked=new Date(cy,cm,cd);
+        // クリックした日が含まれる週の日曜を計算
+        currentWeekSun=new Date(cy,cm,cd-clicked.getDay());
         switchView('week');
       };
     })(y,m,d);
