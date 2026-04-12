@@ -58,9 +58,17 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .rb{border:2px solid var(--round-bd);border-radius:8px;background:var(--round-bg);margin:0;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:100%;min-width:0;box-sizing:border-box;}
 .rb.cfm{border-color:var(--red);background:#FFF0F0;}
 .rcbdg{background:var(--red);color:#fff;border-radius:50%;width:11px;height:11px;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
-.rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;position:relative;box-sizing:border-box;}
+.rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
 .rc.cfm{border-bottom-color:rgba(226,75,74,0.15);background:#FFF5F5;}
 .rc:last-child{border-bottom:none;}
+/* ラウンドラベル行（時間軸の上に追加する薄い行） */
+.round-label-row{height:18px;background:var(--round-bg);border-bottom:1px solid var(--round-bd);display:flex;align-items:center;padding:0 4px;font-size:8px;font-weight:700;color:#92400E;white-space:nowrap;overflow:hidden;box-sizing:border-box;}
+.round-label-row.cfm{background:#FFF0F0;border-bottom-color:var(--red);color:var(--red);}
+/* 時間軸のラウンドラベル行（空白） */
+.tc-round-label{height:18px;background:#f0f7f4;border-bottom:1px solid var(--border);box-sizing:border-box;}
+/* ラウンドなし列のラベル行（空白） */
+.empty-label-row{height:18px;border-bottom:1px solid var(--border);background:#fff;box-sizing:border-box;}
+.empty-label-row.tdy{background:#fffef5;}
 
 /* 月ビュー */
 .month-wrap{padding:8px 12px 0;}
@@ -342,6 +350,8 @@ function buildWeek(){
   // 時間列
   const tcol=document.createElement('div');tcol.className='tc-col';
   const thdr=document.createElement('div');thdr.className='tc-hdr';tcol.appendChild(thdr);
+  // ラウンドラベル行の空白
+  const trl=document.createElement('div');trl.className='tc-round-label';tcol.appendChild(trl);
   HOURS.forEach(h=>{const c=document.createElement('div');c.className='tc-cell';c.textContent=h+':00';tcol.appendChild(c);});
   cal.appendChild(tcol);
 
@@ -374,6 +384,13 @@ function buildWeek(){
     }
 
     if(roundFrom>=0){
+      // ラウンドラベル行（上部の薄い行）
+      const labelRow=document.createElement('div');
+      labelRow.className='round-label-row'+(roundConfirmed?' cfm':'');
+      labelRow.textContent=roundLabel;
+      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelRow.appendChild(b);}
+      col.appendChild(labelRow);
+
       // ラウンド前の通常セル
       for(let h=HOURS[0];h<roundFrom;h++){
         const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);
@@ -381,20 +398,11 @@ function buildWeek(){
       // ラウンド枠（大きな角丸枠）
       const rb=document.createElement('div');
       rb.className='rb'+(roundConfirmed?' cfm':'');
-      // ラウンド時間帯のセル（ラベルは最初のrcの中に入れる）
+      // ラウンド時間帯のセル
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');
         rc.className='rc'+(roundConfirmed?' cfm':'');
-        rc.style.position='relative';
-        // 最初の行にラベルを重ねて表示
-        if(h===roundFrom){
-          const rl=document.createElement('div');
-          rl.className='rl'+(roundConfirmed?' cfm':'');
-          rl.style.cssText='position:absolute;top:2px;left:2px;right:2px;font-size:8px;font-weight:700;color:'+(roundConfirmed?'var(--red)':'#92400E')+';display:flex;align-items:center;gap:2px;pointer-events:none;z-index:1;white-space:nowrap;overflow:hidden;';
-          rl.textContent=roundLabel;
-          if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.textContent='確';rl.appendChild(b);}
-          rc.appendChild(rl);
-        }
+        if(false){// ラベルはもう上の行に表示済み
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
         const shown={kyoto:false,fushimi:false};
         indoors.forEach(s=>{
@@ -422,7 +430,10 @@ function buildWeek(){
         const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);
       }
     } else {
-      // ラウンドなし：全部通常セル
+      // ラウンドなし：空白ラベル行を追加してから通常セル
+      const emptyLabel=document.createElement('div');
+      emptyLabel.className='empty-label-row'+(isToday?' tdy':'');
+      col.appendChild(emptyLabel);
       HOURS.forEach(h=>{const cell=mkCell(ds,h,isToday,false,false);col.appendChild(cell);});
     }
     cal.appendChild(col);
