@@ -184,7 +184,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="section-header">
           <div>
             <div class="section-title">🏌 インドアレッスン</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">受け付ける時間をタップで選択</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">①店舗を選択 → ②時間をタップで選択</div>
           </div>
           <button class="toggle-btn" id="indoor-toggle" onclick="toggleSection('indoor')"></button>
         </div>
@@ -373,7 +373,7 @@ function pickStore(s){
   document.getElementById('sc-fushimi').className='store-chip'+(s==='fushimi'?' sel-fushimi':'');
   document.getElementById('sc-both').className='store-chip'+(s==='both'?' sel-both':'');
   selectedHours.clear();
-  buildHourGrid();
+  if(indoorOn) buildHourGrid();
 }
 
 function toggleSection(sec){
@@ -381,6 +381,7 @@ function toggleSection(sec){
     indoorOn=!indoorOn;
     document.getElementById('indoor-toggle').className='toggle-btn'+(indoorOn?' on':'');
     document.getElementById('indoor-body').style.display=indoorOn?'block':'none';
+    if(indoorOn) buildHourGrid();
   } else {
     roundOn=!roundOn;
     document.getElementById('round-toggle').className='toggle-btn'+(roundOn?' on':'');
@@ -400,7 +401,18 @@ function buildHourGrid(){
     chip.disabled=!!booked;
     if(!booked){
       chip.onclick=()=>{
-        if(!storeVal){showModalMsg('先に店舗を選んでください','error');return;}
+        if(!storeVal){
+          // 店舗選択を赤くフラッシュして促す
+          ['sc-kyoto','sc-fushimi','sc-both'].forEach(id=>{
+            const el=document.getElementById(id);
+            el.style.border='2px solid var(--red)';
+            setTimeout(()=>{el.style.border='';},1500);
+          });
+          showModalMsg('⬆️ 先に店舗（京都・伏見・両店舗）を選んでください','error');
+          // モーダルを店舗選択部分までスクロール
+          document.getElementById('sc-kyoto').scrollIntoView({behavior:'smooth',block:'center'});
+          return;
+        }
         if(selectedHours.has(h)){selectedHours.delete(h);chip.className='hour-chip';}
         else{selectedHours.set(h,storeVal);chip.className='hour-chip sel-'+(storeVal==='both'?'both':storeVal);}
       };
