@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MyCoach — 店舗管理</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 // ===== コーチカレンダー =====
 const COACH_COLORS=['#1D9E75','#1976D2','#7c3aed','#d97706','#db2777','#0891b2','#65a30d','#dc2626'];
 const HOURS_CAL=[];for(let h=8;h<=21;h++)HOURS_CAL.push(h);
@@ -14,12 +14,12 @@ let coachColorMap={};
 
 function switchBookingTab(tab,btn){
   document.querySelectorAll('.bsub-tab').forEach(b=>{
-    b.style.color='var(--muted)';b.style.borderBottom='none';b.classList.remove('active');
+    b.style.color='var(--muted)';b.style.borderBottom='none';
   });
-  btn.style.color='var(--g)';btn.style.borderBottom='2px solid var(--g)';btn.classList.add('active');
+  btn.style.color='var(--g)';btn.style.borderBottom='2px solid var(--g)';
   document.getElementById('booking-list-view').style.display=tab==='list'?'block':'none';
   document.getElementById('booking-cal-view').style.display=tab==='cal'?'block':'none';
-  if(tab==='cal'){buildStoreCal();}
+  if(tab==='cal')buildStoreCal();
 }
 
 function calMoveWeek(dir){
@@ -32,105 +32,70 @@ function fd2(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'
 async function buildStoreCal(){
   const today=new Date();today.setHours(0,0,0,0);
   const days=[];
-  for(let i=0;i<7;i++){
-    const d=new Date(calWeekSun);d.setDate(calWeekSun.getDate()+i);days.push(d);
-  }
-  document.getElementById('cal-week-lbl').textContent=
-    (days[0].getMonth()+1)+'/'+days[0].getDate()+'〜'+(days[6].getMonth()+1)+'/'+days[6].getDate();
+  for(let i=0;i<7;i++){const d=new Date(calWeekSun);d.setDate(calWeekSun.getDate()+i);days.push(d);}
+  document.getElementById('cal-week-lbl').textContent=(days[0].getMonth()+1)+'/'+days[0].getDate()+'〜'+(days[6].getMonth()+1)+'/'+days[6].getDate();
 
-  // コーチ色マップ
-  const coaches=[...new Set(allCoaches.filter(c=>c.status==='active').map(c=>c.name||c.id))];
-  coaches.forEach((name,i)=>{if(!coachColorMap[name])coachColorMap[name]=COACH_COLORS[i%COACH_COLORS.length];});
+  const coaches=allCoaches.filter(c=>c.status==='active');
+  coaches.forEach((c,i)=>{const n=c.name||c.id;if(!coachColorMap[n])coachColorMap[n]=COACH_COLORS[i%COACH_COLORS.length];});
 
-  // 凡例
   const leg=document.getElementById('coach-legend');
-  leg.innerHTML=coaches.map(name=>`
-    <div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted);">
-      <div style="width:9px;height:9px;border-radius:2px;background:${coachColorMap[name]};"></div>${name}
-    </div>`).join('')+
-    '<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted);"><div style="width:9px;height:9px;border-radius:2px;background:var(--red);"></div>予約確定</div>';
+  leg.innerHTML=coaches.map(c=>{const n=c.name||c.id;return '<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted);"><div style="width:9px;height:9px;border-radius:2px;background:'+coachColorMap[n]+';"></div>'+n+'</div>';}).join('')
+    +'<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:var(--muted);"><div style="width:9px;height:9px;border-radius:2px;background:var(--red);"></div>予約確定</div>';
 
-  // スケジュールデータ取得
   let schedData=[];
   try{
-    const ds0=fd2(days[0]),ds6=fd2(days[6]);
-    const{data}=await sb.from('schedules').select('*')
-      .eq('store_key',currentStore)
-      .gte('date',ds0).lte('date',ds6);
-    schedData=data||[];
+    const{data}=await sb.from('schedules').select('*,coaches(name)').eq('store_key',currentStore).gte('date',fd2(days[0])).lte('date',fd2(days[6]));
+    schedData=(data||[]).map(s=>({...s,coach_name:s.coaches?.name||s.coach_name||s.coach_id||'?'}));
   }catch(e){
-    // ダミーデータ
-    coaches.forEach((name,ci)=>{
+    coaches.forEach((c,ci)=>{
       days.forEach(d=>{
-        const ds=fd2(d);
-        const hours=[9,10,11,14,15];
-        hours.forEach(h=>{
-          if(Math.random()>0.4){
-            schedData.push({coach_name:name,date:ds,start_time:String(h),lesson_type:'indoor',
-              store_key:currentStore,status:Math.random()>0.85?'booked':'available'});
-          }
+        [9,10,11,14,15,16].forEach(h=>{
+          if(Math.random()>0.5)schedData.push({coach_name:c.name,date:fd2(d),start_time:String(h),status:Math.random()>0.85?'booked':'available'});
         });
       });
     });
   }
 
-  const cal=document.getElementById('store-cal');
-  cal.innerHTML='';
-
-  // 時間軸
+  const cal=document.getElementById('store-cal');cal.innerHTML='';
   const tc=document.createElement('div');tc.className='cal-tc';
-  tc.innerHTML='<div class="cal-th"></div>'+HOURS_CAL.map(h=>`<div class="cal-tc2">${h}:00</div>`).join('');
+  tc.innerHTML='<div class="cal-th"></div>'+HOURS_CAL.map(h=>'<div class="cal-tc2">'+h+':00</div>').join('');
   cal.appendChild(tc);
 
-  // 日付列
   days.forEach(d=>{
     const ds=fd2(d),dow=d.getDay(),isT=d.toDateString()===today.toDateString();
     const col=document.createElement('div');col.className='cal-dc';
     const dh=document.createElement('div');
     dh.className='cal-dh'+(isT?' td':'')+(dow===0?' su':dow===6?' sa':'');
-    dh.innerHTML=`${DOW_CAL[dow]}<span class="cal-dn">${d.getDate()}</span>`;
+    dh.innerHTML=DOW_CAL[dow]+'<span class="cal-dn">'+d.getDate()+'</span>';
     col.appendChild(dh);
-
     HOURS_CAL.forEach(h=>{
       const cell=document.createElement('div');cell.className='cal-cell';
-      const slots=schedData.filter(s=>s.date===ds&&parseInt(s.start_time)===h);
-      const seen={};
-      let hasBooked=false;
+      const slots=schedData.filter(s=>s.date===ds&&parseInt(s.start_time||0)===h);
+      const seen={};let hasBooked=false;
       slots.forEach(s=>{
-        const cname=s.coach_name||s.coach_id||'?';
-        if(seen[cname])return;seen[cname]=true;
-        const color=coachColorMap[cname]||'#888';
+        const n=s.coach_name||'?';
+        if(seen[n])return;seen[n]=true;
+        const color=coachColorMap[n]||'#888';
         const sl=document.createElement('div');
         sl.className='cal-sl'+(s.status==='booked'?' booked':'');
-        sl.style.background=color;
-        sl.textContent=cname.charAt(0);
+        sl.style.background=color;sl.textContent=n.charAt(0);
         cell.appendChild(sl);
         if(s.status==='booked')hasBooked=true;
       });
-      const visCount=Object.keys(seen).length;
-      if(visCount>0){
-        const cnt=document.createElement('div');
-        cnt.className='cal-cnt'+(hasBooked?' has-booked':'');
-        cnt.textContent=hasBooked?'確':visCount;
-        cell.appendChild(cnt);
-      }
+      const vc=Object.keys(seen).length;
+      if(vc>0){const cnt=document.createElement('div');cnt.className='cal-cnt'+(hasBooked?' has-booked':'');cnt.textContent=hasBooked?'確':vc;cell.appendChild(cnt);}
       col.appendChild(cell);
     });
     cal.appendChild(col);
   });
 
-  // サマリー
   const sumEl=document.getElementById('coach-summary');
-  sumEl.innerHTML=coaches.length?coaches.map(name=>{
-    const mySlots=schedData.filter(s=>(s.coach_name||s.coach_id)===name);
-    const open=mySlots.filter(s=>s.status==='available').length;
-    const booked=mySlots.filter(s=>s.status==='booked').length;
-    return `<div class="sum-row2">
-      <div class="sum-dot2" style="background:${coachColorMap[name]};"></div>
-      <div style="flex:1;font-size:12px;font-weight:700;">${name}</div>
-      <div style="font-size:11px;color:var(--muted);margin-right:10px;">空き ${open}枠</div>
-      <div style="font-size:11px;font-weight:700;color:var(--red);">確定 ${booked}件</div>
-    </div>`;
+  sumEl.innerHTML=coaches.length?coaches.map(c=>{
+    const n=c.name||c.id;
+    const my=schedData.filter(s=>s.coach_name===n);
+    const open=my.filter(s=>s.status!=='booked').length;
+    const booked=my.filter(s=>s.status==='booked').length;
+    return '<div class="sum-row2"><div class="sum-dot2" style="background:'+coachColorMap[n]+';"></div><div style="flex:1;font-size:12px;font-weight:700;">'+n+'</div><div style="font-size:11px;color:var(--muted);margin-right:10px;">空き '+open+'枠</div><div style="font-size:11px;font-weight:700;color:var(--red);">確定 '+booked+'件</div></div>';
   }).join(''):'<div style="font-size:12px;color:var(--muted);text-align:center;padding:16px;">在籍コーチなし</div>';
 }
 
@@ -282,7 +247,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .modal-btn-approve{flex:1;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .modal-btn-cancel{flex:1;padding:12px;background:#f0f0f0;color:var(--muted);border:none;border-radius:10px;font-family:inherit;font-size:13px;cursor:pointer;}
 
-/* ===== コーチカレンダー ===== */
 .bsub-tab.active{color:var(--g) !important;border-bottom:2px solid var(--g);margin-bottom:-2px;}
 .cal-tc{width:32px;flex-shrink:0;display:flex;flex-direction:column;background:#fafafa;position:sticky;left:0;z-index:10;}
 .cal-th{height:40px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;}
@@ -291,11 +255,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .cal-dh{height:40px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--text);gap:1px;}
 .cal-dn{font-size:12px;font-weight:900;line-height:1;}
 .cal-dh.td .cal-dn{background:var(--g);color:#fff;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;}
-.cal-dh.su{color:var(--red);}.cal-dh.sa{color:var(--fushimi);}
-.cal-cell{height:32px;border-right:1px solid var(--border);border-bottom:1px solid #eee;display:flex;align-items:center;padding:2px;gap:1px;position:relative;cursor:pointer;}
-.cal-cell:hover{background:#f0f9f5;}
+.cal-dh.su{color:var(--red);}.cal-dh.sa{color:#1976D2;}
+.cal-cell{height:32px;border-right:1px solid var(--border);border-bottom:1px solid #eee;display:flex;align-items:center;padding:2px;gap:1px;position:relative;}
 .cal-sl{flex:1;min-width:0;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;overflow:hidden;white-space:nowrap;}
-.cal-sl.booked{opacity:0.6;text-decoration:line-through;}
 .cal-cnt{position:absolute;top:1px;right:1px;min-width:14px;height:14px;border-radius:7px;background:var(--g);color:#fff;font-size:7px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 2px;}
 .cal-cnt.has-booked{background:var(--red);}
 .sum-row2{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);}
@@ -410,7 +372,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <button class="bsub-tab" id="bsub-cal" onclick="switchBookingTab('cal',this)" style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;">📅 コーチ空き状況</button>
     </div>
     <div id="booking-list-view">
-      <div class="filter-wrap" style="padding:10px 16px 0;">
+      <div class="filter-wrap" style="padding:10px 12px 0;">
         <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
         <button class="filter-btn" onclick="filterBookings('confirmed',this)">確定</button>
         <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
