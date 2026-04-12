@@ -534,60 +534,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <div class="page" id="page-schedule">
     <div class="card">
       <div class="card-title">スケジュール管理</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
-      <!-- 登録ボタン -->
-      <a href="https://soft-speculoos-5ef188.netlify.app/schedule_register.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:14px;">
-        📅 スケジュールを登録する
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.7;">カレンダー画面でスケジュールの登録・確認・削除ができます。</div>
+      <a href="https://soft-speculoos-5ef188.netlify.app/schedule_calendar.html" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;border:none;border-radius:14px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:12px;box-shadow:0 4px 14px rgba(8,80,65,0.3);">
+        📅 スケジュールカレンダーを開く
       </a>
-      <!-- 登録済み一覧（Supabaseから取得） -->
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">登録済みスケジュール（直近6件）</div>
-        <div id="schedule-list-wrap">
-          <div style="text-align:center;padding:16px;color:var(--muted);font-size:12px;">読み込み中...</div>
-        </div>
-      </div>
-      <div class="schedule-mode-btns">
-        <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
-        <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
-      </div>
-
-      <!-- 週間ビュー -->
-      <div id="view-week">
-        <div class="week-nav">
-          <button class="week-nav-btn" onclick="moveWeek(-1)">‹</button>
-          <div class="week-nav-label" id="week-label"></div>
-          <button class="week-nav-btn" onclick="moveWeek(1)">›</button>
-        </div>
-        <div id="week-wrap" style="touch-action:pan-y;">
-          <div class="week-header-row" id="week-header"></div>
-          <div style="max-height:380px;overflow-y:auto;">
-            <div class="week-grid" id="week-grid"></div>
-          </div>
-        </div>
-        <div class="schedule-legend">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb"></div>予約済み</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
-        </div>
-      </div>
-
-      <!-- 月間ビュー -->
-      <div id="view-month" style="display:none">
-        <div class="month-nav">
-          <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
-          <div class="month-nav-label" id="month-label"></div>
-          <button class="month-nav-btn" onclick="moveMonth(1)">›</button>
-        </div>
-        <div class="month-grid" id="month-header"></div>
-        <div class="month-grid" id="month-grid" style="margin-top:4px;"></div>
-        <div class="schedule-legend" style="margin-top:10px;">
-          <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き設定済み</div>
-          <div class="legend-item"><div class="legend-dot" style="background:#fff3cd;border:1px solid var(--gold)"></div>予約あり</div>
-        </div>
-      </div>
-      <button class="save-btn" style="margin-top:12px" onclick="saveSchedule()">スケジュールを保存</button>
-      <a href="https://soft-speculoos-5ef188.netlify.app/schedule_calendar.html" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;background:#fff;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;margin-top:8px;">📅 カレンダーで見る</a>
-      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;">← ホームに戻る</button>
+      <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">← ホームに戻る</button>
     </div>
   </div>
 
@@ -596,13 +547,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="card">
       <div class="card-title">予約管理</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="booking-store-label">店舗を選択してください</div>
-
-      <!-- キャンセルポリシー表示 -->
       <div class="cancel-policy-note">
         <strong>🚨 緊急キャンセルについて</strong>
         やむを得ない事情（病気・家族の緊急事態・事故等）の場合は「緊急キャンセル」ボタンを押してください。お客様・店舗へ自動通知されます。
       </div>
-
       <div class="filter-wrap">
         <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
         <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
@@ -610,33 +558,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
       </div>
       <div id="bookings-list">
-        <div class="booking-item" data-status="pending">
-          <div class="booking-header"><div class="booking-date">2026/04/15（水）11:00</div><span class="booking-status status-pending">承認待ち</span></div>
-          <div class="booking-customer">山田 太郎</div>
-          <div class="booking-detail">インドアゴルフレッスン・50分 ¥5,000</div>
-          <div class="booking-actions">
-            <button class="btn-approve" onclick="approveBooking(this)">承認する</button>
-            <button class="btn-decline" onclick="declineBooking(this)">断る</button>
-          </div>
-        </div>
-        <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/12（日）10:00</div><span class="booking-status status-approved">承認済み</span></div>
-          <div class="booking-customer">田中 次郎</div>
-          <div class="booking-detail">インドアゴルフレッスン・90分 ¥8,000</div>
-          <div class="booking-actions">
-            <button class="btn-done" onclick="completeBooking(this)">完了</button>
-            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
-          </div>
-        </div>
-        <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/18（土）ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
-          <div class="booking-customer">鈴木 花子</div>
-          <div class="booking-detail">ラウンドレッスン・1ラウンド ¥20,000</div>
-          <div class="booking-actions">
-            <button class="btn-done" onclick="completeBooking(this)">完了</button>
-            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
-          </div>
-        </div>
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">読み込み中...</div>
       </div>
       <button onclick="switchTab('home',document.querySelector('.tab-btn'))" style="width:100%;padding:11px;background:#f0f7f4;color:var(--gd);border:1px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:12px;">← ホームに戻る</button>
     </div>
@@ -853,6 +775,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
   if(tab==='schedule')loadScheduleList();
+  if(tab==='bookings')loadBookings();
 }
 
 /* ===== 登録済みスケジュール一覧（Supabaseから取得） ===== */
@@ -1004,25 +927,107 @@ function buildMonthGrid(){
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
 /* ===== 予約操作 ===== */
-function approveBooking(btn){
-  const item=btn.closest('.booking-item');item.dataset.status='approved';
-  item.querySelector('.booking-status').className='booking-status status-approved';
-  item.querySelector('.booking-status').textContent='承認済み';
-  item.querySelector('.booking-actions').innerHTML='<button class="btn-done" onclick="completeBooking(this)">完了</button><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
+/* ===== 予約管理（Supabase連動） ===== */
+let allBookings=[];
+let currentBookingFilter='all';
+
+async function loadBookings(){
+  if(!currentCoachId)return;
+  const list=document.getElementById('bookings-list');
+  list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">読み込み中...</div>';
+  try{
+    const {data,error}=await sb.from('bookings')
+      .select('*, customers(name)')
+      .eq('coach_id',currentCoachId)
+      .order('lesson_date',{ascending:true});
+    if(error||!data){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">予約データを取得できませんでした</div>';return;}
+    allBookings=data;
+    renderBookings(currentBookingFilter);
+  }catch(e){list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">エラーが発生しました</div>';console.error(e);}
 }
-function declineBooking(btn){
-  const item=btn.closest('.booking-item');item.dataset.status='cancelled';
-  item.querySelector('.booking-status').className='booking-status status-cancelled';
-  item.querySelector('.booking-status').textContent='キャンセル';
-  item.querySelector('.booking-actions').remove();
+
+function renderBookings(filter){
+  currentBookingFilter=filter;
+  const list=document.getElementById('bookings-list');
+  const items=filter==='all'?allBookings:allBookings.filter(b=>b.status===filter);
+  if(items.length===0){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">予約はありません</div>';
+    return;
+  }
+  const WD=['日','月','火','水','木','金','土'];
+  list.innerHTML='';
+  items.forEach(b=>{
+    const d=new Date(b.lesson_date+'T00:00:00');
+    const dateStr=(d.getMonth()+1)+'/'+d.getDate()+'（'+WD[d.getDay()]+'）'+(b.lesson_hour>=0?' '+b.lesson_hour+':00':'');
+    const typeLabel=b.lesson_type==='indoor'?'インドアレッスン':b.lesson_type==='round'?'ラウンドレッスン':b.lesson_type==='accompany'?'同伴ラウンド':'コンペ参加';
+    const statusLabel=b.status==='pending'?'承認待ち':b.status==='approved'?'承認済み':'キャンセル';
+    const statusClass=b.status==='pending'?'status-pending':b.status==='approved'?'status-approved':'status-cancelled';
+    const customerName=b.customers?.name||'お客様';
+    const div=document.createElement('div');
+    div.className='booking-item';div.dataset.status=b.status;div.dataset.id=b.id;
+    let actions='';
+    if(b.status==='pending'){
+      actions=`<button class="btn-approve" onclick="approveBooking('${b.id}','${b.lesson_date}',${b.lesson_hour},this)">承認する</button>
+               <button class="btn-decline" onclick="declineBooking('${b.id}',this)">断る</button>`;
+    } else if(b.status==='approved'){
+      actions=`<button class="btn-done" onclick="completeBooking('${b.id}',this)">完了</button>
+               <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>`;
+    }
+    div.innerHTML=`
+      <div class="booking-header">
+        <div class="booking-date">${dateStr}</div>
+        <span class="booking-status ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="booking-customer">${customerName}</div>
+      <div class="booking-detail">${typeLabel}${b.duration_min?'・'+b.duration_min+'分':''}</div>
+      <div class="booking-actions">${actions}</div>`;
+    list.appendChild(div);
+  });
 }
-function completeBooking(btn){
-  const btn2=btn;btn2.textContent='完了済み';btn2.disabled=true;
-  btn2.style.background='var(--gl)';btn2.style.color='var(--gd)';
+
+async function approveBooking(bookingId, lessonDate, lessonHour, btn){
+  btn.disabled=true; btn.textContent='処理中...';
+  try{
+    // 1. bookingsテーブルのstatusをapprovedに更新
+    const {error:e1}=await sb.from('bookings').update({status:'approved'}).eq('id',bookingId);
+    if(e1){alert('承認に失敗しました：'+e1.message);btn.disabled=false;btn.textContent='承認する';return;}
+    // 2. schedulesテーブルの該当スロットをbookedに更新（カレンダーに「確」マークが出る）
+    if(lessonHour>=0){
+      await sb.from('schedules').update({status:'booked'})
+        .eq('coach_id',currentCoachId)
+        .eq('slot_date',lessonDate)
+        .eq('slot_hour',lessonHour);
+    }
+    // 3. ローカルデータ更新→再描画
+    const booking=allBookings.find(b=>b.id===bookingId);
+    if(booking) booking.status='approved';
+    renderBookings(currentBookingFilter);
+    showMsg('✅ 承認しました！カレンダーに「確」マークが表示されます。','success');
+  }catch(e){alert('エラーが発生しました');console.error(e);}
 }
+
+async function declineBooking(bookingId, btn){
+  if(!confirm('この予約を断りますか？'))return;
+  btn.disabled=true;
+  try{
+    const {error}=await sb.from('bookings').update({status:'cancelled'}).eq('id',bookingId);
+    if(error){alert('キャンセルに失敗しました：'+error.message);btn.disabled=false;return;}
+    const booking=allBookings.find(b=>b.id===bookingId);
+    if(booking) booking.status='cancelled';
+    renderBookings(currentBookingFilter);
+  }catch(e){alert('エラーが発生しました');console.error(e);}
+}
+
+async function completeBooking(bookingId, btn){
+  btn.textContent='完了済み';btn.disabled=true;
+  btn.style.background='var(--gl)';btn.style.color='var(--gd)';
+  await sb.from('bookings').update({status:'completed'}).eq('id',bookingId);
+}
+
 function filterBookings(status,btn){
-  document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('.booking-item').forEach(item=>{item.style.display=(status==='all'||item.dataset.status===status)?'block':'none';});
+  document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBookings(status);
 }
 function filterIncome(period,btn){
   document.querySelectorAll('#page-income .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
