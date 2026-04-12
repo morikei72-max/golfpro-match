@@ -13,7 +13,7 @@ function openCoachDetail(id){
   if(c.photo_url){av.innerHTML='<img src="'+c.photo_url+'">';}
   else{av.textContent=(c.name||'C').charAt(0);}
   document.getElementById('cd-name').textContent=c.name||'名前未設定';
-  const statusLabel={active:'在籍中',pending:'承認待ち',rejected:'却下済み'}[c.status]||c.status;
+  const statusLabel={active:'在籍中',pending:'承認待ち',rejected:'却下済み'}[c.status]||(c.status||'不明');
   document.getElementById('cd-status-label').textContent=statusLabel+' / '+(c.invoice?'インボイス有':'インボイス無');
   document.getElementById('cd-license').textContent=c.license||'未登録';
   document.getElementById('cd-invoice').textContent=c.invoice?'✅ 登録済み':'⚠️ 未登録';
@@ -92,32 +92,87 @@ function jumpToWeekFromMonth(ds){
 
 // ===== 店舗設定保存 =====
 async function saveStoreInfo(){
+  const g=id=>document.getElementById(id);
   const data={
     store_key:currentStore,
-    name:document.getElementById('si-name').value,
-    addr:document.getElementById('si-addr').value,
-    tel:document.getElementById('si-tel').value,
-    map_url:document.getElementById('si-map').value,
-    desc:document.getElementById('si-desc').value,
-    open_time:document.getElementById('si-open').value,
-    close_time:document.getElementById('si-close').value,
-    lesson_start:document.getElementById('si-lesson-start').value,
-    lesson_end:document.getElementById('si-lesson-end').value,
-    holiday:document.getElementById('si-holiday').value,
-    right_bays:document.getElementById('si-right').value,
-    left_bays:document.getElementById('si-left').value,
-    simulator:document.getElementById('si-sim').value,
-    parking:document.getElementById('si-parking').value,
-    rental_club:document.getElementById('si-rental').checked,
-    rental_shoes:document.getElementById('si-shoes').checked,
-    locker:document.getElementById('si-locker').checked,
-    shower:document.getElementById('si-shower').checked,
-    kids_space:document.getElementById('si-kids').checked,
-    drink_service:document.getElementById('si-drink').checked,
+    // 会社情報
+    company_name:g('si-company-name').value,
+    company_addr:g('si-company-addr').value,
+    company_tel:g('si-company-tel').value,
+    company_rep:g('si-company-rep').value,
+    company_staff:g('si-company-staff').value,
+    // 店舗基本
+    name:g('si-name').value,
+    addr:g('si-addr').value,
+    tel:g('si-tel').value,
+    map_url:g('si-map').value,
+    desc:g('si-desc').value,
+    // 営業時間
+    open_time:g('si-open').value,
+    close_time:g('si-close').value,
+    lesson_start:g('si-lesson-start').value,
+    lesson_end:g('si-lesson-end').value,
+    holiday:g('si-holiday').value,
+    staffed_start:g('si-staffed-start').value,
+    staffed_end:g('si-staffed-end').value,
+    unstaffed_start:g('si-unstaffed-start').value,
+    unstaffed_end:g('si-unstaffed-end').value,
+    // 設備
+    right_bays:g('si-right').value,
+    left_bays:g('si-left').value,
+    simulator:g('si-sim').value,
+    parking:g('si-parking').value,
+    rental_club:g('si-rental').checked,
+    rental_shoes:g('si-shoes').checked,
+    locker:g('si-locker').checked,
+    shower:g('si-shower').checked,
+    kids_space:g('si-kids').checked,
+    drink_service:g('si-drink').checked,
+    // コーチへのメッセージ
+    msg_title:g('si-msg-title').value,
+    msg_body:g('si-msg-body').value,
   };
-  try{await sb.from('store_settings').upsert(data);}catch(e){}
+  try{
+    await sb.from('store_settings').upsert(data);
+    // コーチへのメッセージがある場合は掲示板に自動投稿
+    if(data.msg_title&&data.msg_body){
+      await sb.from('board_posts').insert({
+        type:'notice',
+        title:data.msg_title,
+        body:data.msg_body,
+        store_key:currentStore,
+        created_at:new Date().toISOString().split('T')[0]
+      });
+    }
+  }catch(e){}
+  // 名刺画像アップロード
+  const companyCard=g('si-company-card').files[0];
+  const storeCard=g('si-store-card').files[0];
+  if(companyCard){
+    try{await sb.storage.from('images').upload('cards/company_'+currentStore+'_'+Date.now(),companyCard);}catch(e){}
+  }
+  if(storeCard){
+    try{await sb.storage.from('images').upload('cards/store_'+currentStore+'_'+Date.now(),storeCard);}catch(e){}
+  }
   showToast('店舗情報を保存しました！');
 }
+
+// 名刺プレビュー
+function setupCardPreview(inputId,previewId){
+  const inp=document.getElementById(inputId);
+  if(!inp)return;
+  inp.onchange=function(){
+    const file=this.files[0];
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      document.getElementById(previewId).innerHTML=
+        '<img src="'+e.target.result+'" style="max-width:100%;border-radius:8px;border:1px solid var(--border);margin-top:4px;">';
+    };
+    reader.readAsDataURL(file);
+  };
+}
+
 
 </script><script>
 // ===== コーチカレンダー =====
@@ -786,17 +841,59 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 </div>
   <!-- 店舗設定 -->
   <div class="page" id="page-storeinfo">
+
+    <!-- 会社情報 -->
     <div class="setting-section">
       <div class="setting-section-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-        基本情報
+        会社情報
+      </div>
+      <div class="setting-row"><div class="setting-label">会社名</div><input class="setting-input" id="si-company-name" placeholder="例：株式会社ケイエスケー"></div>
+      <div class="setting-row"><div class="setting-label">会社住所</div><input class="setting-input" id="si-company-addr" placeholder="例：京都府八幡市〇〇町1-1"></div>
+      <div class="setting-row"><div class="setting-label">会社電話番号</div><input class="setting-input" id="si-company-tel" placeholder="例：075-000-0000" type="tel"></div>
+      <div class="setting-row"><div class="setting-label">代表者名</div><input class="setting-input" id="si-company-rep" placeholder="例：森下啓介"></div>
+      <div class="setting-row">
+        <div class="setting-label">従業員数</div>
+        <select class="setting-input" id="si-company-staff">
+          <option value="">選択してください</option>
+          <option value="1">1名（個人）</option>
+          <option value="2-5">2〜5名</option>
+          <option value="6-10">6〜10名</option>
+          <option value="11-30">11〜30名</option>
+          <option value="31-50">31〜50名</option>
+          <option value="51+">51名以上</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">会社名刺・会社ロゴ</div>
+        <div style="margin-top:6px;">
+          <input type="file" id="si-company-card" accept="image/*" style="font-size:12px;color:var(--muted);">
+          <div id="si-company-card-preview" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 店舗基本情報 -->
+    <div class="setting-section">
+      <div class="setting-section-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 3H8l-2 4h12z"/></svg>
+        店舗基本情報
       </div>
       <div class="setting-row"><div class="setting-label">店舗名</div><input class="setting-input" id="si-name" placeholder="例：Golf Create tozuike 京都店"></div>
-      <div class="setting-row"><div class="setting-label">住所</div><input class="setting-input" id="si-addr" placeholder="例：京都府京都市〇〇区〇〇町1-1"></div>
-      <div class="setting-row"><div class="setting-label">電話番号</div><input class="setting-input" id="si-tel" placeholder="例：075-000-0000" type="tel"></div>
+      <div class="setting-row"><div class="setting-label">店舗住所</div><input class="setting-input" id="si-addr" placeholder="例：京都府京都市〇〇区〇〇町1-1"></div>
+      <div class="setting-row"><div class="setting-label">店舗電話番号</div><input class="setting-input" id="si-tel" placeholder="例：075-000-0000" type="tel"></div>
       <div class="setting-row"><div class="setting-label">GoogleマップURL</div><input class="setting-input" id="si-map" placeholder="https://maps.google.com/..."></div>
       <div class="setting-row"><div class="setting-label">店舗説明</div><textarea class="setting-textarea" id="si-desc" placeholder="店舗の特徴・アクセスなど"></textarea></div>
+      <div class="setting-row">
+        <div class="setting-label">店舗名刺・店舗写真</div>
+        <div style="margin-top:6px;">
+          <input type="file" id="si-store-card" accept="image/*" style="font-size:12px;color:var(--muted);">
+          <div id="si-store-card-preview" style="margin-top:8px;"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- 営業時間 -->
     <div class="setting-section">
       <div class="setting-section-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -805,11 +902,22 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="setting-row"><div class="setting-label">営業時間</div>
         <div class="setting-row2"><input class="setting-input" id="si-open" type="time"><span style="display:flex;align-items:center;font-size:13px;color:var(--muted);">〜</span><input class="setting-input" id="si-close" type="time"></div>
       </div>
-      <div class="setting-row"><div class="setting-label">レッスン可能時間</div>
+      <div class="setting-row"><div class="setting-label" style="color:var(--g);font-weight:700;">レッスン可能時間 ★コーチ枠に反映</div>
         <div class="setting-row2"><input class="setting-input" id="si-lesson-start" type="time"><span style="display:flex;align-items:center;font-size:13px;color:var(--muted);">〜</span><input class="setting-input" id="si-lesson-end" type="time"></div>
+        <div style="font-size:11px;color:var(--g);margin-top:4px;">※この時間外はコーチがレッスン枠を登録できません</div>
       </div>
       <div class="setting-row"><div class="setting-label">定休日</div><input class="setting-input" id="si-holiday" placeholder="例：毎週月曜日・年末年始"></div>
+      <div class="setting-row">
+        <div class="setting-label">有人営業時間（スタッフあり）</div>
+        <div class="setting-row2"><input class="setting-input" id="si-staffed-start" type="time"><span style="display:flex;align-items:center;font-size:13px;color:var(--muted);">〜</span><input class="setting-input" id="si-staffed-end" type="time"></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">無人営業時間（スタッフ不在）</div>
+        <div class="setting-row2"><input class="setting-input" id="si-unstaffed-start" type="time"><span style="display:flex;align-items:center;font-size:13px;color:var(--muted);">〜</span><input class="setting-input" id="si-unstaffed-end" type="time"></div>
+      </div>
     </div>
+
+    <!-- 打席・設備 -->
     <div class="setting-section">
       <div class="setting-section-title">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
@@ -817,7 +925,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <div class="setting-row"><div class="setting-label">右打席数</div><input class="setting-input" id="si-right" placeholder="例：8" type="number" min="0"></div>
       <div class="setting-row"><div class="setting-label">左打席数</div><input class="setting-input" id="si-left" placeholder="例：2" type="number" min="0"></div>
-      <div class="setting-row"><div class="setting-label">シミュレーター機種</div><input class="setting-input" id="si-sim" placeholder="例：トラックマン、GDR等"></div>
+      <div class="setting-row"><div class="setting-label">シミュレーター機種</div><input class="setting-input" id="si-sim" placeholder="例：トラックマン、GDR、ブライトレーザー等"></div>
       <div class="setting-row"><div class="setting-label">駐車場台数</div><input class="setting-input" id="si-parking" placeholder="例：10台（無料）"></div>
       <div style="margin-top:4px;">
         <div class="toggle-row2"><div><div class="toggle-lbl2">レンタルクラブ</div><div class="toggle-sub2">クラブの貸し出しサービス</div></div><label class="tg2"><input type="checkbox" id="si-rental"><span class="tgs2"></span></label></div>
@@ -828,9 +936,23 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="toggle-row2"><div><div class="toggle-lbl2">ドリンクサービス</div><div class="toggle-sub2">飲み物の提供あり</div></div><label class="tg2"><input type="checkbox" id="si-drink"><span class="tgs2"></span></label></div>
       </div>
     </div>
+
+    <!-- コーチへのメッセージ -->
+    <div class="setting-section">
+      <div class="setting-section-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        コーチへのメッセージ・要望
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.7;">店舗からコーチ全員へのお願い・注意事項・要望を記入してください。コーチのアプリ内掲示板に表示されます。</div>
+      <div class="setting-row"><div class="setting-label">件名</div><input class="setting-input" id="si-msg-title" placeholder="例：服装規定について・レッスン時の注意事項"></div>
+      <div class="setting-row"><div class="setting-label">メッセージ内容</div><textarea class="setting-textarea" id="si-msg-body" placeholder="コーチへのお願い・ルール・要望など自由に記入してください" style="min-height:120px;"></textarea></div>
+      <div style="font-size:11px;color:var(--muted);background:var(--gl);border-radius:8px;padding:10px;line-height:1.7;">
+        📢 保存すると、この店舗に所属する全コーチのアプリ掲示板「お知らせ」に自動投稿されます
+      </div>
+    </div>
+
     <button class="save-btn" style="margin:0 12px 80px;width:calc(100% - 24px);" onclick="saveStoreInfo()">店舗情報を保存する</button>
   </div>
-
 
 <!-- タブバー -->
 <div class="tab-bar">
@@ -895,6 +1017,8 @@ let pendingApproveId=null;
   if(saved&&STORES[saved]){selectStore(saved);}
 
   updateSalesLabel();
+  setupCardPreview("si-company-card","si-company-card-preview");
+  setupCardPreview("si-store-card","si-store-card-preview");
 })();
 
 function selectStore(key){
@@ -995,19 +1119,20 @@ function renderHome(){
 }
 
 function coachItemHtml(c){
-  const statusLabel={active:'在籍中',pending:'承認待ち',rejected:'却下'}[c.status]||c.status;
+  const statusLabel={active:'在籍中',pending:'承認待ち',rejected:'却下'}[c.status]||(c.status||'不明');
   const statusCls={active:'status-active',pending:'status-pending',rejected:'status-rejected'}[c.status]||'';
   const invoiceTag=c.invoice?
     '<span class="invoice-tag invoice-yes">インボイス有</span>':
     '<span class="invoice-tag invoice-no">インボイス無</span>';
-  const clickEvt='openCoachDetail(\''+c.id+'\')';const actions=c.status==='pending'?
+  const actions=c.status==='pending'?
     `<div class="coach-actions">
-      <button class="btn-approve" onclick="approveCoach('${c.id}',${c.invoice})">採用</button>
-      <button class="btn-reject" onclick="rejectCoach('${c.id}')">却下</button>
+      <button class="btn-approve" onclick="event.stopPropagation();approveCoach('${c.id}',${c.invoice})">採用</button>
+      <button class="btn-reject" onclick="event.stopPropagation();rejectCoach('${c.id}')">却下</button>
     </div>`:'';
+  const avatarHtml=c.photo_url?`<img src="${c.photo_url}">`:(c.name||'C').charAt(0);
   return `
-    <div class="coach-item">
-      <div class="coach-avatar">${c.photo_url?`<img src="${c.photo_url}">`:(c.name||'C').charAt(0)}</div>
+    <div class="coach-item" style="cursor:pointer;" onclick="openCoachDetail('${c.id}')">
+      <div class="coach-avatar">${avatarHtml}</div>
       <div class="coach-info">
         <div class="coach-name">${c.name||'名前未設定'}${invoiceTag}</div>
         <div class="coach-meta">${c.license||'資格なし'}</div>
@@ -1169,6 +1294,8 @@ function updateSalesLabel(){
 function moveSalesMonth(dir){
   salesMonthOffset+=dir;
   updateSalesLabel();
+  setupCardPreview("si-company-card","si-company-card-preview");
+  setupCardPreview("si-store-card","si-store-card-preview");
   renderSales();
 }
 function renderSales(){
