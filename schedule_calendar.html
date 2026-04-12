@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyCoach — スケジュールカレンダー</title>
+<title>MyCoach — スケジュール管理</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
@@ -21,9 +21,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .back-btn{font-size:12px;color:var(--g);background:var(--gl);border:1px solid var(--g);padding:5px 12px;border-radius:20px;cursor:pointer;text-decoration:none;}
 .main{margin-top:56px;padding:14px;padding-bottom:80px;}
 .card{background:#fff;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 8px rgba(0,0,0,0.06);}
+
+/* タブ */
 .view-tabs{display:flex;gap:6px;margin-bottom:12px;}
 .view-tab{flex:1;padding:8px;border:1px solid var(--border);border-radius:10px;background:#fff;font-family:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;}
 .view-tab.active{background:var(--g);color:#fff;border-color:var(--g);}
+
+/* 凡例 */
 .legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;padding:7px 10px;background:var(--bg);border-radius:8px;}
 .leg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text);}
 .leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
@@ -40,7 +44,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .tl-time-cell{height:36px;display:flex;align-items:flex-start;justify-content:flex-end;padding:2px 4px 0 0;font-size:9px;color:var(--muted);}
 .tl-days{flex:1;overflow:hidden;}
 .tl-dhdr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:52px;border-bottom:1px solid var(--border);}
-.tl-dhdr-cell{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-right:1px solid var(--border);}
+.tl-dhdr-cell{text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-right:1px solid var(--border);cursor:pointer;transition:background .15s;}
+.tl-dhdr-cell:hover{background:var(--gl);}
 .tl-dhdr-cell:last-child{border-right:none;}
 .tl-wd{font-size:9px;font-weight:700;color:var(--muted);}
 .tl-wd.sun{color:var(--red);}
@@ -53,7 +58,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .tl-rows{}
 .tl-row{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));height:36px;border-bottom:1px solid var(--border);}
 .tl-row:last-child{border-bottom:none;}
-.tl-cell{border-right:1px solid var(--border);position:relative;}
+.tl-cell{border-right:1px solid var(--border);position:relative;cursor:pointer;transition:background .1s;}
+.tl-cell:hover{filter:brightness(0.95);}
 .tl-cell:last-child{border-right:none;}
 .tl-cell.round-bg{background:#fffdf0;}
 .tl-cell.round-active{background:#FFF3CD;}
@@ -79,24 +85,66 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .cal-dots{display:flex;flex-wrap:wrap;gap:2px;margin-top:3px;}
 .cal-dot{width:7px;height:7px;border-radius:50%;}
 
-/* ポップアップ */
-.popup-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center;}
-.popup-overlay.open{display:flex;}
-.popup{background:#fff;border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:480px;max-height:75vh;overflow-y:auto;}
-.popup-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:12px;}
-.popup-item{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
-.popup-type{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;display:inline-block;margin-bottom:4px;}
-.pt-kyoto{background:var(--gl);color:var(--gd);}
-.pt-fushimi{background:var(--lb);color:var(--blue);}
-.pt-round-k{background:#fff3cd;color:var(--gold);}
-.pt-round-f{background:#f3e8fd;color:#7c3aed;}
-.pt-booked{background:#ffe0e0;color:var(--red);}
-.popup-time{font-size:13px;font-weight:700;color:var(--text);}
-.btn-delete{width:100%;padding:7px;background:#fff0f0;color:var(--red);border:1px solid var(--red);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;}
-.popup-close{width:100%;padding:11px;background:#f0f0f0;color:var(--muted);border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;}
+/* ===== 日付設定モーダル ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:0;width:100%;max-width:480px;max-height:88vh;overflow-y:auto;}
+.modal-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:10;}
+.modal-title{font-size:16px;font-weight:700;color:var(--gd);}
+.modal-close{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;padding:0 4px;}
+.modal-body{padding:16px 20px;}
 
-.register-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;margin-bottom:12px;}
+/* セクション */
+.section{margin-bottom:16px;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.section-title{font-size:13px;font-weight:700;color:var(--gd);}
+.toggle-btn{position:relative;width:44px;height:24px;border-radius:12px;background:#ccc;border:none;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle-btn.on{background:var(--g);}
+.toggle-btn::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s;}
+.toggle-btn.on::after{left:22px;}
+
+/* 時間レンジ選択 */
+.time-range-select{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+.time-sel{padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:#fff;color:var(--text);}
+.time-sel:disabled{opacity:0.4;}
+
+/* 時間グリッド */
+.hour-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.hour-chip{padding:8px 4px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:11px;text-align:center;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s;}
+.hour-chip.sel-kyoto{background:var(--gl);border-color:var(--g);color:var(--gd);font-weight:700;}
+.hour-chip.sel-fushimi{background:var(--lb);border-color:var(--blue);color:var(--blue);font-weight:700;}
+.hour-chip.sel-both{background:linear-gradient(135deg,var(--gl) 50%,var(--lb) 50%);border-color:var(--g);color:var(--gd);font-weight:700;}
+.hour-chip.booked{background:#f0f0f0;border-color:#ccc;color:#aaa;cursor:not-allowed;}
+.hour-chip:disabled{pointer-events:none;}
+
+/* 既存スロット */
+.existing-slot{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;margin-bottom:5px;}
+.existing-slot.kyoto{background:var(--gl);border:1px solid var(--g);}
+.existing-slot.fushimi{background:var(--lb);border:1px solid var(--blue);}
+.existing-slot.round{background:#FFF8E7;border:1px solid var(--gold);}
+.existing-slot.booked{background:#fff0f0;border:1px solid var(--red);}
+.slot-label{font-size:12px;font-weight:700;}
+.slot-label.kyoto{color:var(--gd);}
+.slot-label.fushimi{color:var(--blue);}
+.slot-label.round{color:#5a3a00;}
+.slot-label.booked{color:var(--red);}
+.del-btn{font-size:10px;padding:3px 8px;background:#fff0f0;color:var(--red);border:1px solid var(--red);border-radius:6px;cursor:pointer;font-family:inherit;}
+
+/* ボタン */
+.save-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;}
+.save-btn:disabled{opacity:0.4;cursor:not-allowed;}
 .back-home-btn{width:100%;padding:12px;background:#f0f7f4;color:var(--gd);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
+
+/* 店舗選択チップ */
+.store-chips{display:flex;gap:6px;margin-bottom:10px;}
+.store-chip{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-family:inherit;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;}
+.store-chip.sel-kyoto{background:var(--gl);border-color:var(--g);color:var(--gd);}
+.store-chip.sel-fushimi{background:var(--lb);border-color:var(--blue);color:var(--blue);}
+.store-chip.sel-both{background:linear-gradient(135deg,var(--gl) 50%,var(--lb) 50%);border-color:var(--g);color:var(--gd);}
+
+.msg{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:10px;display:none;}
+.msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
+.msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
 </style>
 </head>
 <body>
@@ -105,16 +153,82 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <a href="https://soft-speculoos-5ef188.netlify.app/coach.html" class="back-btn">← コーチ画面</a>
 </div>
 
-<div class="popup-overlay" id="popup-overlay">
-  <div class="popup">
-    <div class="popup-title" id="popup-title"></div>
-    <div id="popup-items"></div>
-    <button class="popup-close" onclick="closePopup()">✕ 閉じる</button>
+<!-- 日付設定モーダル -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">📅 4月17日（金）</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="modal-msg" class="msg"></div>
+
+      <!-- 既存登録 -->
+      <div class="section" id="existing-section" style="display:none;">
+        <div class="section-title" style="margin-bottom:8px;">📋 登録済み</div>
+        <div id="existing-list"></div>
+      </div>
+
+      <!-- 店舗選択 -->
+      <div class="section">
+        <div class="section-title" style="margin-bottom:8px;">📍 店舗を選択</div>
+        <div class="store-chips">
+          <div class="store-chip" id="sc-kyoto" onclick="pickStore('kyoto')">🟢 京都店</div>
+          <div class="store-chip" id="sc-fushimi" onclick="pickStore('fushimi')">🔵 伏見店</div>
+          <div class="store-chip" id="sc-both" onclick="pickStore('both')">✅ 両店舗</div>
+        </div>
+      </div>
+
+      <!-- インドアレッスン -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">🏌 インドアレッスン</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">受け付ける時間をタップで選択</div>
+          </div>
+          <button class="toggle-btn" id="indoor-toggle" onclick="toggleSection('indoor')"></button>
+        </div>
+        <div id="indoor-body" style="display:none;">
+          <div class="hour-grid" id="hour-grid"></div>
+        </div>
+      </div>
+
+      <!-- ラウンド -->
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">⛳ ラウンド</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">ラウンドの時間帯を設定</div>
+          </div>
+          <button class="toggle-btn" id="round-toggle" onclick="toggleSection('round')"></button>
+        </div>
+        <div id="round-body" style="display:none;">
+          <div class="time-range-select">
+            <span style="font-size:12px;color:var(--muted);">開始：</span>
+            <select class="time-sel" id="round-from">
+              <option value="5">5:00</option><option value="6">6:00</option><option value="7">7:00</option>
+              <option value="8" selected>8:00</option><option value="9">9:00</option><option value="10">10:00</option>
+              <option value="11">11:00</option><option value="12">12:00</option>
+            </select>
+            <span style="font-size:12px;color:var(--muted);">〜 終了：</span>
+            <select class="time-sel" id="round-to">
+              <option value="13">13:00</option><option value="14">14:00</option><option value="15">15:00</option>
+              <option value="16">16:00</option><option value="17" selected>17:00</option><option value="18">18:00</option>
+              <option value="19">19:00</option><option value="20">20:00</option><option value="21">21:00</option>
+            </select>
+          </div>
+          <div style="background:#FFF8E7;border-radius:8px;padding:8px 10px;font-size:10px;color:#5a3a00;line-height:1.7;">
+            ⚠️ インドアレッスンと重なった場合は先着優先。ラウンド時間帯外のインドア枠はそのまま残ります。
+          </div>
+        </div>
+      </div>
+
+      <button class="save-btn" id="save-btn" onclick="saveDay()">✅ 保存する</button>
+    </div>
   </div>
 </div>
 
 <div class="main">
-  <a href="https://soft-speculoos-5ef188.netlify.app/schedule_register.html" class="register-btn">📝 スケジュールを登録する</a>
   <div class="card">
     <div class="view-tabs">
       <button class="view-tab active" id="tab-week" onclick="switchView('week')">週ビュー</button>
@@ -127,7 +241,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="leg"><div class="leg-dot" style="background:var(--red)"></div>予約済み</div>
     </div>
 
-    <!-- 週ビュー -->
     <div id="view-week">
       <div class="week-nav">
         <button class="week-nav-btn" onclick="moveWeek(-1)">‹ 前</button>
@@ -146,7 +259,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
     </div>
 
-    <!-- 月ビュー -->
     <div id="view-month" style="display:none;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <button class="week-nav-btn" onclick="moveMonth(-1)">‹</button>
@@ -155,7 +267,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <div class="cal-grid" id="cal-hdr"></div>
       <div class="cal-grid" id="cal-grid" style="margin-top:3px;"></div>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">日付をタップ → その週の週ビューへ</div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">日付をタップ → 登録・編集</div>
     </div>
   </div>
   <button class="back-home-btn" onclick="location.href='https://soft-speculoos-5ef188.netlify.app/coach.html'">← コーチ画面に戻る</button>
@@ -175,6 +287,12 @@ const HOURS=[];for(let h=8;h<=22;h++)HOURS.push(h);
 let coachId=null,scheduleMap={},currentView='week';
 let currentWeekStart=getWeekStart(new Date());
 let currentMonth=new Date();
+
+// モーダル状態
+let modalDate=null,modalDS=null;
+let storeVal=null;
+let indoorOn=false,roundOn=false;
+let selectedHours=new Map(); // key=hour, val=storeId
 
 function getWeekStart(d){const d2=new Date(d);d2.setDate(d2.getDate()-d2.getDay());d2.setHours(0,0,0,0);return d2;}
 function toDS(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -198,18 +316,162 @@ async function loadSchedules(){
   });
 }
 
+/* ===== モーダル ===== */
+function openModal(ds, d){
+  modalDate=d; modalDS=ds;
+  storeVal=null; indoorOn=false; roundOn=false; selectedHours.clear();
+  const rows=scheduleMap[ds]||[];
+
+  // タイトル
+  document.getElementById('modal-title').textContent='📅 '+(d.getMonth()+1)+'月'+d.getDate()+'日（'+WD[d.getDay()]+'）';
+  document.getElementById('modal-msg').className='msg';
+
+  // 既存登録表示
+  const existSec=document.getElementById('existing-section');
+  const existList=document.getElementById('existing-list');
+  existList.innerHTML='';
+  if(rows.length>0){
+    existSec.style.display='block';
+    const rounds=rows.filter(r=>r.lesson_type==='round');
+    const indoors=rows.filter(r=>r.lesson_type==='indoor').sort((a,b)=>a.slot_hour-b.slot_hour);
+    rounds.forEach(row=>{
+      const el=document.createElement('div');
+      el.className='existing-slot round';
+      const store=row.store_id==='kyoto'?'京都店':'伏見店';
+      const from=row.block_from??8,to=row.block_to??17;
+      el.innerHTML=`<span class="slot-label round">⛳ ${store}・ラウンド ${from}〜${to}時</span>${row.status!=='booked'?`<button class="del-btn" onclick="deleteSlot('${row.id}','${ds}')">削除</button>`:''}`;
+      existList.appendChild(el);
+    });
+    indoors.forEach(row=>{
+      const el=document.createElement('div');
+      const cls=row.status==='booked'?'booked':row.store_id==='kyoto'?'kyoto':'fushimi';
+      el.className='existing-slot '+cls;
+      const store=row.store_id==='kyoto'?'京都店':'伏見店';
+      el.innerHTML=`<span class="slot-label ${cls}">🏌 ${store} ${row.slot_hour}:00〜${row.slot_hour+1}:00${row.status==='booked'?' [予約済み]':''}}</span>${row.status!=='booked'?`<button class="del-btn" onclick="deleteSlot('${row.id}','${ds}')">削除</button>`:''}`;
+      existList.appendChild(el);
+    });
+  } else {
+    existSec.style.display='none';
+  }
+
+  // トグルリセット
+  document.getElementById('indoor-toggle').className='toggle-btn';
+  document.getElementById('round-toggle').className='toggle-btn';
+  document.getElementById('indoor-body').style.display='none';
+  document.getElementById('round-body').style.display='none';
+  ['sc-kyoto','sc-fushimi','sc-both'].forEach(id=>document.getElementById(id).className='store-chip');
+
+  document.getElementById('modal-overlay').classList.add('open');
+  buildHourGrid();
+}
+
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+
+function pickStore(s){
+  storeVal=s;
+  document.getElementById('sc-kyoto').className='store-chip'+(s==='kyoto'?' sel-kyoto':'');
+  document.getElementById('sc-fushimi').className='store-chip'+(s==='fushimi'?' sel-fushimi':'');
+  document.getElementById('sc-both').className='store-chip'+(s==='both'?' sel-both':'');
+  selectedHours.clear();
+  buildHourGrid();
+}
+
+function toggleSection(sec){
+  if(sec==='indoor'){
+    indoorOn=!indoorOn;
+    document.getElementById('indoor-toggle').className='toggle-btn'+(indoorOn?' on':'');
+    document.getElementById('indoor-body').style.display=indoorOn?'block':'none';
+  } else {
+    roundOn=!roundOn;
+    document.getElementById('round-toggle').className='toggle-btn'+(roundOn?' on':'');
+    document.getElementById('round-body').style.display=roundOn?'block':'none';
+  }
+}
+
+function buildHourGrid(){
+  const grid=document.getElementById('hour-grid');
+  grid.innerHTML='';
+  const existRows=scheduleMap[modalDS]||[];
+  HOURS.forEach(h=>{
+    const booked=existRows.find(r=>r.lesson_type==='indoor'&&r.slot_hour===h&&r.status==='booked');
+    const chip=document.createElement('button');
+    chip.className='hour-chip'+(booked?' booked':'');
+    chip.textContent=h+':00';
+    chip.disabled=!!booked;
+    if(!booked){
+      chip.onclick=()=>{
+        if(!storeVal){showModalMsg('先に店舗を選んでください','error');return;}
+        if(selectedHours.has(h)){selectedHours.delete(h);chip.className='hour-chip';}
+        else{selectedHours.set(h,storeVal);chip.className='hour-chip sel-'+(storeVal==='both'?'both':storeVal);}
+      };
+    }
+    grid.appendChild(chip);
+  });
+}
+
+function showModalMsg(txt,type){
+  const el=document.getElementById('modal-msg');el.textContent=txt;el.className='msg '+type;
+  if(type==='success')setTimeout(()=>{el.className='msg';},3000);
+}
+
+async function saveDay(){
+  if(!storeVal&&!indoorOn&&!roundOn){showModalMsg('店舗を選択してください','error');return;}
+  if(indoorOn&&selectedHours.size===0&&!roundOn){showModalMsg('時間を選択するかラウンドをONにしてください','error');return;}
+  const btn=document.getElementById('save-btn');btn.disabled=true;btn.textContent='保存中...';
+  try{
+    let rows=[];
+    const stores=storeVal==='both'?['kyoto','fushimi']:[storeVal||'kyoto'];
+
+    // インドア保存
+    if(indoorOn&&selectedHours.size>0){
+      selectedHours.forEach((store,hour)=>{
+        const ss=store==='both'?['kyoto','fushimi']:[store];
+        ss.forEach(s=>rows.push({coach_id:coachId,lesson_type:'indoor',slot_date:modalDS,slot_hour:hour,status:'available',store_id:s}));
+      });
+    }
+
+    // ラウンド保存
+    if(roundOn){
+      const from=parseInt(document.getElementById('round-from').value||8);
+      const to=parseInt(document.getElementById('round-to').value||17);
+      stores.forEach(s=>rows.push({coach_id:coachId,lesson_type:'round',slot_date:modalDS,slot_hour:-1,status:'available',store_id:s,block_type:'none',block_from:from,block_to:to}));
+    }
+
+    if(rows.length>0){
+      const {error}=await sb.from('schedules').insert(rows);
+      if(error){showModalMsg('保存に失敗しました：'+error.message,'error');btn.disabled=false;btn.textContent='✅ 保存する';return;}
+    }
+
+    // ローカル更新
+    await loadSchedules();
+    showModalMsg('✅ 保存しました！','success');
+    setTimeout(()=>{
+      closeModal();
+      if(currentView==='week')buildWeek();else buildMonth();
+    },800);
+  }catch(e){showModalMsg('エラーが発生しました','error');console.error(e);}
+  btn.disabled=false;btn.textContent='✅ 保存する';
+}
+
+async function deleteSlot(id,ds){
+  if(!confirm('このスケジュールを削除しますか？'))return;
+  const {error}=await sb.from('schedules').delete().eq('id',id);
+  if(error){alert('削除に失敗しました：'+error.message);return;}
+  if(scheduleMap[ds])scheduleMap[ds]=scheduleMap[ds].filter(r=>r.id!==id);
+  closeModal();
+  if(currentView==='week')buildWeek();else buildMonth();
+  // 再度モーダルを開く
+  const d=new Date(ds+'T00:00:00');
+  setTimeout(()=>openModal(ds,d),100);
+}
+
 /* ===== 週ビュー ===== */
 function buildWeek(){
   const end=new Date(currentWeekStart);end.setDate(end.getDate()+6);
   document.getElementById('week-label').textContent=fmtRange(currentWeekStart,end);
   const today=new Date();today.setHours(0,0,0,0);
-
-  // 時間ラベル
-  const tlabels=document.getElementById('tl-time-labels');
-  tlabels.innerHTML='';
+  const tlabels=document.getElementById('tl-time-labels');tlabels.innerHTML='';
   HOURS.forEach(h=>{const d=document.createElement('div');d.className='tl-time-cell';d.textContent=h+':00';tlabels.appendChild(d);});
-
-  // 各日のデータ収集
   const days=[];
   for(let i=0;i<7;i++){
     const d=new Date(currentWeekStart);d.setDate(d.getDate()+i);
@@ -218,60 +480,46 @@ function buildWeek(){
     const round=rows.find(r=>r.lesson_type==='round');
     days.push({d,ds,rows,round,isToday:d.toDateString()===today.toDateString()});
   }
-
-  // ヘッダー
   const dhdr=document.getElementById('tl-dhdr');dhdr.innerHTML='';
   days.forEach(({d,rows,round,isToday},i)=>{
     const cell=document.createElement('div');cell.className='tl-dhdr-cell';
     const isSun=i===0,isSat=i===6;
     const wdCls='tl-wd'+(isSun?' sun':isSat?' sat':'');
     const dnCls='tl-dn'+(isToday?' today':isSun?' sun':isSat?' sat':'');
-    let badge='';
     const rounds=rows.filter(r=>r.lesson_type==='round');
+    let badge='';
     if(rounds.length>0){
       const from=rounds[0].block_from??8,to=rounds[0].block_to??17;
       const stores=rounds.map(r=>r.store_id==='kyoto'?'京':'伏').join('・');
       badge=`<div class="tl-badge">⛳${stores} ${from}〜${to}時</div>`;
     }
     cell.innerHTML=`<div class="${wdCls}">${WD[d.getDay()]}</div><div class="${dnCls}">${d.getDate()}</div>${badge}`;
+    cell.onclick=()=>openModal(toDS(d),d);
     dhdr.appendChild(cell);
   });
-
-  // 時間行
   const trows=document.getElementById('tl-rows');trows.innerHTML='';
   HOURS.forEach(h=>{
     const row=document.createElement('div');row.className='tl-row';
-    days.forEach(({d,ds,rows,round},col)=>{
+    days.forEach(({d,ds,rows,round})=>{
       const cell=document.createElement('div');cell.className='tl-cell';
       const from=round?.block_from??8,to=round?.block_to??17;
-      const inRound=round && h>=from && h<to;
+      const inRound=round&&h>=from&&h<to;
       if(round){cell.classList.add(inRound?'round-active':'round-bg');}
-
-      // ラウンドの枠線（オレンジ）
       if(round){
-        if(h===from){
-          ['top','left','right'].forEach(side=>{const b=document.createElement('div');b.className='tl-border '+side;cell.appendChild(b);});
-        } else if(h===to-1){
-          ['bottom','left','right'].forEach(side=>{const b=document.createElement('div');b.className='tl-border '+side;cell.appendChild(b);});
-        } else if(h>from && h<to){
-          ['left','right'].forEach(side=>{const b=document.createElement('div');b.className='tl-border '+side;cell.appendChild(b);});
-        }
+        if(h===from){['top','left','right'].forEach(s=>{const b=document.createElement('div');b.className='tl-border '+s;cell.appendChild(b);});}
+        else if(h===to-1){['bottom','left','right'].forEach(s=>{const b=document.createElement('div');b.className='tl-border '+s;cell.appendChild(b);});}
+        else if(h>from&&h<to){['left','right'].forEach(s=>{const b=document.createElement('div');b.className='tl-border '+s;cell.appendChild(b);});}
       }
-
-      // インドアスロット（同じ時間に複数店舗ある場合も全て表示）
       const slots=rows.filter(r=>r.lesson_type==='indoor'&&r.slot_hour===h);
       if(slots.length===1){
         const slot=slots[0];
         const s=document.createElement('div');
         s.className='tl-slot '+(slot.status==='booked'?'booked':slot.store_id==='kyoto'?'kyoto':'fushimi');
         s.textContent=slot.store_id==='kyoto'?'京都':'伏見';
-        s.onclick=(e)=>{e.stopPropagation();openPopup(ds,d);};
         cell.appendChild(s);
       } else if(slots.length>=2){
-        // 2店舗同時：上半分・下半分に分割表示
         const wrap=document.createElement('div');
-        wrap.style.cssText='position:absolute;inset:2px;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;gap:1px;z-index:2;cursor:pointer;';
-        wrap.onclick=(e)=>{e.stopPropagation();openPopup(ds,d);};
+        wrap.style.cssText='position:absolute;inset:2px;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;gap:1px;z-index:2;';
         slots.forEach(slot=>{
           const s=document.createElement('div');
           s.style.cssText='flex:1;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;border-radius:3px;';
@@ -282,7 +530,7 @@ function buildWeek(){
         });
         cell.appendChild(wrap);
       }
-      cell.onclick=()=>openPopup(ds,d);
+      cell.onclick=()=>openModal(ds,d);
       row.appendChild(cell);
     });
     trows.appendChild(row);
@@ -315,19 +563,13 @@ function buildMonth(){
       if(rows.some(r=>r.lesson_type==='indoor'&&r.store_id==='fushimi')){const dot=document.createElement('div');dot.className='cal-dot';dot.style.background='var(--blue)';dotsEl.appendChild(dot);}
       cell.appendChild(dotsEl);
     }
-    // タップで週ビューへ飛ぶ
-    cell.onclick=()=>jumpToWeek(new Date(year,month,d));
+    const dateObj=new Date(year,month,d);
+    cell.onclick=()=>openModal(ds,dateObj);
     grid.appendChild(cell);
   }
 }
 
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonth();}
-
-/* 月ビューの日付タップ → その週の週ビューへ */
-function jumpToWeek(date){
-  currentWeekStart=getWeekStart(date);
-  switchView('week');
-}
 
 function switchView(v){
   currentView=v;
@@ -335,48 +577,10 @@ function switchView(v){
   document.getElementById('view-month').style.display=v==='month'?'block':'none';
   document.getElementById('tab-week').className='view-tab'+(v==='week'?' active':'');
   document.getElementById('tab-month').className='view-tab'+(v==='month'?' active':'');
-  if(v==='month')buildMonth();
-  else buildWeek();
+  if(v==='month')buildMonth();else buildWeek();
 }
 
-/* ===== ポップアップ ===== */
-function openPopup(dateStr,d){
-  const rows=scheduleMap[dateStr]||[];
-  document.getElementById('popup-title').textContent='📅 '+(d.getMonth()+1)+'月'+d.getDate()+'日（'+WD[d.getDay()]+'）';
-  const container=document.getElementById('popup-items');container.innerHTML='';
-  if(rows.length===0){container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">登録なし</div>';return;}
-  const rounds=rows.filter(r=>r.lesson_type==='round');
-  const indoors=rows.filter(r=>r.lesson_type==='indoor').sort((a,b)=>a.slot_hour-b.slot_hour);
-  rounds.forEach(row=>{
-    const div=document.createElement('div');div.className='popup-item';
-    const store=row.store_id==='kyoto'?'京都店':'伏見店';
-    const typeClass=row.store_id==='kyoto'?'pt-round-k':'pt-round-f';
-    const from=row.block_from??8,to=row.block_to??17;
-    div.innerHTML=`<span class="popup-type ${typeClass}">⛳ ${store}・ラウンド</span>
-      <div class="popup-time">ラウンド時間帯：${from}:00〜${to}:00</div>
-      ${row.status!=='booked'?`<button class="btn-delete" onclick="deleteSchedule('${row.id}','${dateStr}')">🗑️ 削除</button>`:'<div style="font-size:11px;color:var(--red);margin-top:6px;">予約済み・変更不可</div>'}`;
-    container.appendChild(div);
-  });
-  indoors.forEach(row=>{
-    const div=document.createElement('div');div.className='popup-item';
-    const store=row.store_id==='kyoto'?'京都店':'伏見店';
-    const typeClass=row.status==='booked'?'pt-booked':row.store_id==='kyoto'?'pt-kyoto':'pt-fushimi';
-    div.innerHTML=`<span class="popup-type ${typeClass}">🏌 ${store}・インドア${row.status==='booked'?' [予約済み]':''}</span>
-      <div class="popup-time">⏰ ${row.slot_hour}:00〜${row.slot_hour+1}:00</div>
-      ${row.status!=='booked'?`<button class="btn-delete" onclick="deleteSchedule('${row.id}','${dateStr}')">🗑️ 削除</button>`:'<div style="font-size:11px;color:var(--red);margin-top:6px;">予約済み・変更不可</div>'}`;
-    container.appendChild(div);
-  });
-  document.getElementById('popup-overlay').classList.add('open');
-}
-function closePopup(){document.getElementById('popup-overlay').classList.remove('open');}
-async function deleteSchedule(id,dateStr){
-  if(!confirm('このスケジュールを削除しますか？'))return;
-  const {error}=await sb.from('schedules').delete().eq('id',id);
-  if(error){alert('削除に失敗しました：'+error.message);return;}
-  if(scheduleMap[dateStr])scheduleMap[dateStr]=scheduleMap[dateStr].filter(r=>r.id!==id);
-  closePopup();
-  if(currentView==='week')buildWeek();else buildMonth();
-}
+function jumpToWeek(date){currentWeekStart=getWeekStart(date);switchView('week');}
 </script>
 </body>
 </html>
