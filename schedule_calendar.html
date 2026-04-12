@@ -238,6 +238,7 @@ function switchView(v){
   document.getElementById('tab-week').classList.toggle('active',v==='week');
   document.getElementById('tab-month').classList.toggle('active',v==='month');
   if(v==='month')buildMonth();
+  if(v==='week')buildWeek();
 }
 
 function fd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
