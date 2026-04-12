@@ -12,7 +12,14 @@ function switchStoreTab(tab,btn){
     const el=document.getElementById('ss-'+t);
     const tb=document.getElementById('sstab-'+t);
     if(el)el.style.display=t===tab?'block':'none';
-    if(tb){tb.style.background=t===tab?'#1D9E75':'#fff';tb.style.color=t===tab?'#fff':'#6b8a78';tb.style.border=t===tab?'none':'1px solid #e0ece6';}
+    if(tb){
+      tb.style.background=t===tab?'#1D9E75':'#fff';
+      tb.style.borderColor=t===tab?'#1D9E75':'#e0ece6';
+      const nameEl=tb.querySelector('div:nth-child(2)');
+      const subEl=tb.querySelector('div:nth-child(3)');
+      if(nameEl)nameEl.style.color=t===tab?'#fff':'#1a2e24';
+      if(subEl)subEl.style.color=t===tab?'rgba(255,255,255,0.75)':'#6b8a78';
+    }
   });
 }
 async function saveCompanyInfo(){
@@ -164,8 +171,15 @@ let calMonthDate=new Date();
 
 function switchCalView(mode,btn){
   calViewMode=mode;
-  document.querySelectorAll('.cal-vtab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
+  ['week','month'].forEach(m=>{
+    const tb=document.getElementById('cvtab-'+m);
+    if(tb){
+      tb.style.background=m===mode?'#1D9E75':'#fff';
+      tb.style.borderColor=m===mode?'#1D9E75':'#e0ece6';
+      const nameEl=tb.querySelector('div');
+      if(nameEl)nameEl.style.color=m===mode?'#fff':'#1a2e24';
+    }
+  });
   document.getElementById('store-cal-week-wrap').style.display=mode==='week'?'block':'none';
   document.getElementById('store-cal-month-wrap').style.display=mode==='month'?'block':'none';
   if(mode==='week'){buildStoreCal();}
@@ -303,9 +317,11 @@ let coachColorMap={};
 
 function switchBookingTab(tab,btn){
   document.querySelectorAll('.bsub-tab').forEach(b=>{
-    b.style.color='var(--muted)';b.style.borderBottom='none';
+    b.style.background='#fff';b.style.borderColor='#e0ece6';
+    b.querySelector('div:nth-child(2)').style.color='#1a2e24';
   });
-  btn.style.color='var(--g)';btn.style.borderBottom='2px solid var(--g)';
+  btn.style.background='#1D9E75';btn.style.borderColor='#1D9E75';
+  btn.querySelector('div:nth-child(2)').style.color='#fff';
   document.getElementById('booking-list-view').style.display=tab==='list'?'block':'none';
   document.getElementById('booking-cal-view').style.display=tab==='cal'?'block':'none';
   if(tab==='cal')buildStoreCal();
@@ -747,9 +763,17 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
   <!-- 予約状況 -->
   <div class="page" id="page-bookings">
-    <div style="display:flex;background:#fff;border-bottom:2px solid var(--border);">
-      <button class="bsub-tab active" id="bsub-list" onclick="switchBookingTab('list',this)" style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;">📋 予約一覧</button>
-      <button class="bsub-tab" id="bsub-cal" onclick="switchBookingTab('cal',this)" style="flex:1;padding:10px;font-size:12px;font-weight:700;border:none;background:none;cursor:pointer;color:var(--muted);font-family:inherit;">📅 コーチ空き状況</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:#f0f7f4;">
+      <button class="bsub-tab" id="bsub-list" onclick="switchBookingTab('list',this)" style="padding:14px 8px;border-radius:12px;border:2px solid #1D9E75;background:#1D9E75;cursor:pointer;font-family:inherit;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">📋</div>
+        <div style="font-size:12px;font-weight:700;color:#fff;">予約一覧</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">確定・承認待ち</div>
+      </button>
+      <button class="bsub-tab" id="bsub-cal" onclick="switchBookingTab('cal',this)" style="padding:14px 8px;border-radius:12px;border:2px solid #e0ece6;background:#fff;cursor:pointer;font-family:inherit;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">📅</div>
+        <div style="font-size:12px;font-weight:700;color:#1a2e24;">コーチ空き状況</div>
+        <div style="font-size:10px;color:#6b8a78;margin-top:2px;">週・月カレンダー</div>
+      </button>
     </div>
     <div id="booking-list-view">
       <div class="filter-wrap" style="padding:10px 12px 0;">
@@ -769,9 +793,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
     </div>
     <div id="booking-cal-view" style="display:none;">
-      <div class="cal-view-tabs">
-        <button class="cal-vtab on" id="cvtab-week" onclick="switchCalView('week',this)">📋 週ビュー</button>
-        <button class="cal-vtab" id="cvtab-month" onclick="switchCalView('month',this)">📅 月ビュー</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px;background:#f0f7f4;border-bottom:1px solid var(--border);">
+        <button id="cvtab-week" onclick="switchCalView('week',this)" style="padding:10px 8px;border-radius:10px;border:2px solid #1D9E75;background:#1D9E75;cursor:pointer;font-family:inherit;text-align:center;">
+          <div style="font-size:12px;font-weight:700;color:#fff;">📋 週ビュー</div>
+        </button>
+        <button id="cvtab-month" onclick="switchCalView('month',this)" style="padding:10px 8px;border-radius:10px;border:2px solid #e0ece6;background:#fff;cursor:pointer;font-family:inherit;text-align:center;">
+          <div style="font-size:12px;font-weight:700;color:#1a2e24;">📅 月ビュー</div>
+        </button>
       </div>
       <div id="coach-legend" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;background:#fff;border-bottom:1px solid var(--border);"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:#fff;border-bottom:1px solid var(--border);">
@@ -960,11 +988,23 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 </div>
   <!-- 店舗設定 -->
   <div class="page" id="page-storeinfo">
-    <!-- サブタブ（3タブ） -->
-    <div style="display:flex;background:#e8f5f1;border-bottom:2px solid #9FE1CB;padding:6px 10px;gap:6px;">
-      <button id="sstab-company" onclick="switchStoreTab('company',this)" style="flex:1;padding:8px 4px;font-size:11px;font-weight:700;border:none;border-radius:9px;cursor:pointer;background:#1D9E75;color:#fff;font-family:inherit;">🏢 会社情報</button>
-      <button id="sstab-info" onclick="switchStoreTab('info',this)" style="flex:1;padding:8px 4px;font-size:11px;font-weight:700;border:none;border-radius:9px;cursor:pointer;background:#fff;color:#6b8a78;border:1px solid #e0ece6;font-family:inherit;">🏪 店舗情報</button>
-      <button id="sstab-rule" onclick="switchStoreTab('rule',this)" style="flex:1;padding:8px 4px;font-size:11px;font-weight:700;border:none;border-radius:9px;cursor:pointer;background:#fff;color:#6b8a78;border:1px solid #e0ece6;font-family:inherit;">📋 コーチルール</button>
+    <!-- サブタブ：案Aカードタブ型 -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:#f0f7f4;">
+      <button id="sstab-company" onclick="switchStoreTab('company',this)" style="padding:14px 8px;border-radius:12px;border:2px solid #1D9E75;background:#1D9E75;cursor:pointer;font-family:inherit;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🏢</div>
+        <div style="font-size:12px;font-weight:700;color:#fff;">会社情報</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">基本・LINE</div>
+      </button>
+      <button id="sstab-info" onclick="switchStoreTab('info',this)" style="padding:14px 8px;border-radius:12px;border:2px solid #e0ece6;background:#fff;cursor:pointer;font-family:inherit;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">🏪</div>
+        <div style="font-size:12px;font-weight:700;color:#1a2e24;">店舗情報</div>
+        <div style="font-size:10px;color:#6b8a78;margin-top:2px;">設備・時間</div>
+      </button>
+      <button id="sstab-rule" onclick="switchStoreTab('rule',this)" style="padding:14px 8px;border-radius:12px;border:2px solid #e0ece6;background:#fff;cursor:pointer;font-family:inherit;text-align:center;">
+        <div style="font-size:20px;margin-bottom:4px;">📋</div>
+        <div style="font-size:12px;font-weight:700;color:#1a2e24;">コーチルール</div>
+        <div style="font-size:10px;color:#6b8a78;margin-top:2px;">要望・設定</div>
+      </button>
     </div>
 
     <!-- 会社情報 -->
