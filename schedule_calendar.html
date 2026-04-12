@@ -402,7 +402,6 @@ function buildWeek(){
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');
         rc.className='rc'+(roundConfirmed?' cfm':'');
-        if(false){// ラベルはもう上の行に表示済み
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
         const shown={kyoto:false,fushimi:false};
         indoors.forEach(s=>{
