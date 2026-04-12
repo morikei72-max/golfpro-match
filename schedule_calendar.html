@@ -506,9 +506,7 @@ function bldWeek(){
         cell.appendChild(btn);
       });
 
-      const allowed=isLessonAllowed(h);
-      if(!allowed){cell.classList.add('disabled');cell.style.background='#f0f0f0';cell.style.cursor='not-allowed';}
-      else{cell.addEventListener('click',(e)=>{if(e.target===cell)openM(e,ds,h,null);});}
+      cell.addEventListener('click',(e)=>{if(e.target===cell)openM(e,ds,h,null);});
       col.appendChild(cell);
     });
 
@@ -524,9 +522,7 @@ function openM(e,ds,h,slotId){
   document.getElementById('mTitle').textContent=`${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}） ${h}:00〜${h+1}:00`;
 
   const rSlot=slots.find(s=>s.date===ds&&s.type==='round');
-  const iSlots=slotId
-    ? slots.filter(s=>s.id===slotId)
-    : slots.filter(s=>s.date===ds&&s.hour===h&&s.type==='indoor');
+  const iSlots=slots.filter(s=>s.date===ds&&s.hour===h&&s.type==='indoor');
   let eh='';
   if(rSlot){
     const cfm=rSlot.status==='confirmed';
