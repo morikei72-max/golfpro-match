@@ -222,42 +222,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-
-  <!-- 確認モーダル -->
-  <div class="confirm-overlay hidden" id="confirm-overlay" onclick="closeConfirmModal(event)">
-    <div class="confirm-sheet" id="confirm-sheet">
-      <div class="confirm-handle"></div>
-      <div class="confirm-title">依頼内容の確認</div>
-      <div class="confirm-coach-card" id="confirm-coach-card">
-        <div class="confirm-coach-photo-placeholder" id="confirm-coach-photo-wrap">&#x1F464;</div>
-        <div>
-          <div class="confirm-coach-name" id="confirm-coach-name-text">コーチ未選択</div>
-          <div class="confirm-coach-rating" id="confirm-coach-rating-text"></div>
-        </div>
-      </div>
-      <div class="confirm-detail-row">
-        <span class="confirm-detail-label">レッスン種類</span>
-        <span class="confirm-detail-value" id="confirm-type-text">—</span>
-      </div>
-      <div class="confirm-detail-row">
-        <span class="confirm-detail-label">希望日</span>
-        <span class="confirm-detail-value" id="confirm-date-text">—</span>
-      </div>
-      <div class="confirm-detail-row">
-        <span class="confirm-detail-label">希望時間</span>
-        <span class="confirm-detail-value" id="confirm-time-text">—</span>
-      </div>
-      <div class="confirm-detail-row">
-        <span class="confirm-detail-label">場所</span>
-        <span class="confirm-detail-value" id="confirm-store-text">—</span>
-      </div>
-      <div class="confirm-btn-row">
-        <button class="confirm-cancel-btn" onclick="closeConfirmModal()">戻る</button>
-        <button class="confirm-ok-btn" onclick="proceedToRequest()">この内容で進む →</button>
-      </div>
-    </div>
-  </div>
-
   <!-- 依頼する -->
   <div class="screen" id="s-request">
     <div class="stepbar">
@@ -942,5 +906,42 @@ async function saveMyProfile(){
 }
 
 </script>
+
+
+
+  <!-- 確認モーダル -->
+  <div class="confirm-overlay hidden" id="confirm-overlay" onclick="closeConfirmModal(event)">
+    <div class="confirm-sheet" id="confirm-sheet">
+      <div class="confirm-handle"></div>
+      <div class="confirm-title">依頼内容の確認</div>
+      <div class="confirm-coach-card" id="confirm-coach-card">
+        <div class="confirm-coach-photo-placeholder" id="confirm-coach-photo-wrap">&#x1F464;</div>
+        <div>
+          <div class="confirm-coach-name" id="confirm-coach-name-text">コーチ未選択</div>
+          <div class="confirm-coach-rating" id="confirm-coach-rating-text"></div>
+        </div>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">レッスン種類</span>
+        <span class="confirm-detail-value" id="confirm-type-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">希望日</span>
+        <span class="confirm-detail-value" id="confirm-date-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">希望時間</span>
+        <span class="confirm-detail-value" id="confirm-time-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">場所</span>
+        <span class="confirm-detail-value" id="confirm-store-text">—</span>
+      </div>
+      <div class="confirm-btn-row">
+        <button class="confirm-cancel-btn" onclick="closeConfirmModal()">戻る</button>
+        <button class="confirm-ok-btn" onclick="proceedToRequest()">この内容で進む →</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
