@@ -601,9 +601,17 @@ function selectMonthDay(ds){
   selectedTime=null;
   selectedCoachId=null;
   selectedCoachName=null;
-  renderMonthCal();
-  // renderMonthCal後に必ずslot-areaを表示
-  setTimeout(function(){showTimeCoachList(ds);},10);
+  // 選択状態だけ更新（再描画なし）
+  document.querySelectorAll('#cal-body .month-day').forEach(function(el){
+    el.classList.remove('selected');
+  });
+  var cells=document.querySelectorAll('#cal-body .month-day');
+  cells.forEach(function(el){
+    if(el.getAttribute('onclick')&&el.getAttribute('onclick').indexOf(ds)>=0){
+      el.classList.add('selected');
+    }
+  });
+  showTimeCoachList(ds);
 }
 
 function showTimeCoachList(ds){
