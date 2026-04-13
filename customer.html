@@ -217,9 +217,40 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:12px;">依頼内容を入力</div>
-      <div class="form-group"><label>依頼の種類</label>
-        <select id="req-type"><option value="indoor">⛳ インドアゴルフレッスン（時間制）</option><option value="round">🏌 ラウンドレッスン（1ラウンド）</option><option value="accompany">🤝 同伴ラウンド（1ラウンド）</option><option value="comp">🏆 コンペ参加（1ラウンド）</option></select>
+
+      <!-- 確定済みカード（変更不可） -->
+      <div style="background:#E1F5EE;border:1px solid #1D9E75;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #9FE1CB;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#1D9E75" stroke-width="2" fill="none"/></svg>
+          <span style="font-size:12px;font-weight:500;color:#085041;">カレンダーから選択済み（変更不可）</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;">
+          <span style="font-size:12px;color:#0F6E56;">レッスン種類</span>
+          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-type-disp">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;">
+          <span style="font-size:12px;color:#0F6E56;">希望日</span>
+          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-date-disp">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;">
+          <span style="font-size:12px;color:#0F6E56;">希望時間</span>
+          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-time-disp">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;" id="req-coach-info">
+          <span style="font-size:12px;color:#0F6E56;">担当コーチ</span>
+          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-coach-name">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;">
+          <span style="font-size:12px;color:#0F6E56;">場所</span>
+          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-store-display">—</span>
+        </div>
       </div>
+      <input type="hidden" id="req-date">
+      <input type="hidden" id="req-time">
+      <input type="hidden" id="req-store">
+      <input type="hidden" id="req-type">
+
+      <!-- 入力項目 -->
       <div class="form-group"><label>会員種別</label>
         <select id="req-member-type" onchange="checkMemberType()">
           <option value="Create会員">Create会員 ¥4,950/月</option>
@@ -230,19 +261,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         </select>
         <div id="member-type-warning" style="display:none;color:#E24B4A;font-size:11px;margin-top:4px;">⚠ ナイト会員はレッスン予約できません</div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date" readonly style="background:#f0f7f4;"></div>
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="text" id="req-time" readonly style="background:#f0f7f4;" placeholder="カレンダーから選択"></div>
-      </div>
-      <div class="form-group" id="req-coach-info" style="display:none;"><label>担当コーチ</label>
-        <div id="req-coach-name" style="font-size:13px;font-weight:700;color:var(--gd);padding:8px;background:var(--gl);border-radius:8px;"></div>
-      </div>
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
         <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
-      </div>
-      <div class="form-group"><label>場所</label>
-        <div id="req-store-display" style="font-size:13px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#f0f7f4;"></div>
-        <input type="hidden" id="req-store">
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
         <select><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -799,21 +819,24 @@ function goToRequest(){
     tab(btn,'s-request');
     return;
   }
-  var sel=document.getElementById('req-type');
-  for(var i=0;i<sel.options.length;i++){
-    if(sel.options[i].value===currentType){sel.selectedIndex=i;break;}
-  }
-  document.getElementById('req-date').value=selectedDate;
-  if(selectedTime) document.getElementById('req-time').value=selectedTime;
-  document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
   var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
   var storeNames={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
+  // 確定カードに表示
+  document.getElementById('req-type-disp').textContent=typeNames[currentType]||currentType;
+  document.getElementById('req-date-disp').textContent=selectedDate?selectedDate.replace(/-/g,'/'):'—';
+  document.getElementById('req-time-disp').textContent=selectedTime||'—';
   document.getElementById('req-store-display').textContent=storeNames[storeKey]||storeKey;
+  // hidden inputにセット
+  document.getElementById('req-type').value=currentType;
+  document.getElementById('req-date').value=selectedDate;
+  if(selectedTime) document.getElementById('req-time').value=selectedTime;
   document.getElementById('req-store').value=storeKey;
+  document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
   var coachArea=document.getElementById('req-coach-info');
   var coachNameEl=document.getElementById('req-coach-name');
   if(selectedCoachName){
-    coachArea.style.display='block';
+    coachArea.style.display='flex';
     coachNameEl.textContent=selectedCoachName;
   } else {
     coachArea.style.display='none';
