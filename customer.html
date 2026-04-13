@@ -374,22 +374,20 @@ var availCache={};
 
 async function fetchAvailDates(){
   try{
-    var{data,error}=await sb.from('schedules').select('*').eq('status','available').gte('date',fmt(new Date()));
+    var{data,error}=await sb.from('coach_schedules').select('*').gte('date',fmt(new Date()));
     if(!error&&data){
       availCache={};
       data.forEach(function(row){
         if(!availCache[row.date]) availCache[row.date]={};
-        var ltype=row.lesson_type||'indoor';
-        if(!availCache[row.date][ltype]) availCache[row.date][ltype]={times:[],coaches:[]};
-        if(ltype==='indoor'&&row.start_time){
-          var t=String(row.start_time).padStart(2,'0')+':00';
-          if(availCache[row.date][ltype].times.indexOf(t)<0){
-            availCache[row.date][ltype].times.push(t);
-          }
+        if(!availCache[row.date][row.lesson_type]) availCache[row.date][row.lesson_type]={times:[],coaches:[]};
+        if(row.times&&row.times.length>0){
+          row.times.forEach(function(t){
+            if(availCache[row.date][row.lesson_type].times.indexOf(t)<0){
+              availCache[row.date][row.lesson_type].times.push(t);
+            }
+          });
         }
-        if(availCache[row.date][ltype].coaches.indexOf(row.coach_id)<0){
-          availCache[row.date][ltype].coaches.push(row.coach_id);
-        }
+        availCache[row.date][row.lesson_type].coaches.push(row.coach_id);
       });
     }
   }catch(e){}
