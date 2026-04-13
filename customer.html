@@ -404,8 +404,13 @@ var coachCache={};// coach_id -> {name, photo_url}
 async function fetchCoaches(){
   try{
     var{data}=await sb.from('coaches').select('id,name,photo_url');
-    if(data) data.forEach(function(c){coachCache[c.id]={name:c.name,photo_url:c.photo_url};});
+    if(data) data.forEach(function(c){
+      coachCache[c.id]={name:c.name,photo_url:c.photo_url};
+    });
   }catch(e){}
+  // schedulesのcoach_idがcoachesに存在しない場合のフォールバック
+  coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']=
+    coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']||{name:'森下コーチ',photo_url:null};
 }
 
 async function fetchAvailDates(){
@@ -422,7 +427,7 @@ async function fetchAvailDates(){
         if(!availCache[ds][ltype]) availCache[ds][ltype]={times:[],coaches:[],timeCoach:{}};
         // 時間を文字列に変換（例：10 → "10:00"）
         var hour=row.slot_hour||row.start_time||null;
-        if(hour!==null&&hour!==undefined){
+        if(hour!==null&&hour!==undefined&&parseInt(hour)>=0){
           var t=String(parseInt(hour)).padStart(2,'0')+':00';
           if(availCache[ds][ltype].times.indexOf(t)<0){
             availCache[ds][ltype].times.push(t);
