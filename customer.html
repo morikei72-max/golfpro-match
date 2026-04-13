@@ -610,6 +610,9 @@ function showTimeCoachList(ds){
   var slotList=document.getElementById('slot-list');
   var slotTitle=document.getElementById('slot-title');
   area.style.display='block';
+  // デバッグ：キャッシュの内容を表示
+  var dbg=availCache[ds]?JSON.stringify(availCache[ds]).substring(0,200):'キャッシュなし';
+  slotTitle.textContent='DEBUG: '+dbg;
   var d=new Date(ds);
   var dow=['日','月','火','水','木','金','土'][d.getDay()];
   slotTitle.textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+dow+'）の空き枠';
