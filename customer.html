@@ -429,12 +429,12 @@ async function fetchCoaches(){
   try{
     var{data}=await sb.from('coaches').select('id,name,photo_url');
     if(data) data.forEach(function(c){
-      coachCache[c.id]={name:c.name,photo_url:c.photo_url};
+      coachCache[c.id]={name:(c.name||'').replace(/コーチ$/,'').trim(),photo_url:c.photo_url};
     });
   }catch(e){}
   // schedulesのcoach_idがcoachesに存在しない場合のフォールバック
   coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']=
-    coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']||{name:'森下コーチ',photo_url:null};
+    coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']||{name:'森下',photo_url:null};
 }
 
 async function fetchAvailDates(){
