@@ -53,6 +53,41 @@ function selCarPolicy(val,btn){
   });
 }
 
+// ===== 会員種別管理 =====
+let memberTypes=[
+  {id:'mt-1',name:'Create会員',price:'4950',lesson:true},
+  {id:'mt-2',name:'シルバー会員',price:'12100',lesson:true},
+  {id:'mt-3',name:'ゴールド会員',price:'18700',lesson:true},
+  {id:'mt-4',name:'平日デイ会員',price:'9900',lesson:true},
+  {id:'mt-5',name:'ナイト会員',price:'9900',lesson:false}
+];
+function renderMemberTypes(){
+  const el=document.getElementById('member-type-list');
+  if(!el)return;
+  el.innerHTML=memberTypes.map(m=>`
+    <div style="background:#f8faf9;border-radius:10px;padding:10px;margin-bottom:8px;border:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gd);">会員種別</div>
+        <button onclick="delMemberType('${m.id}')" style="background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;font-family:inherit;">削除</button>
+      </div>
+      <input class="setting-input" style="margin-bottom:6px;" placeholder="会員種別名（例：ゴールド会員）" value="${m.name}" oninput="updMemberType('${m.id}','name',this.value)">
+      <input class="setting-input" style="margin-bottom:6px;" placeholder="月額（円）" type="number" value="${m.price}" oninput="updMemberType('${m.id}','price',this.value)">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+          <input type="checkbox" ${m.lesson?'checked':''} onchange="updMemberType('${m.id}','lesson',this.checked)">
+          <span>レッスン予約可能</span>
+        </label>
+      </div>
+    </div>`).join('');
+}
+function addMemberType(){
+  const id='mt-'+Date.now();
+  memberTypes.push({id,name:'',price:'',lesson:true});
+  renderMemberTypes();
+}
+function delMemberType(id){memberTypes=memberTypes.filter(m=>m.id!==id);renderMemberTypes();}
+function updMemberType(id,key,val){const m=memberTypes.find(m=>m.id===id);if(m)m[key]=val;}
+
 // ===== プラン追加 =====
 let plans=[];
 function addPlan(){
@@ -264,6 +299,7 @@ async function saveStoreInfo(){
     // コーチへのメッセージ
     msg_title:g('si-msg-title').value,
     msg_body:g('si-msg-body').value,
+    member_types:JSON.stringify(memberTypes),
   };
   try{
     await sb.from('store_settings').upsert(data);
@@ -1183,6 +1219,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
 
       <div class="si-card">
+        <div class="si-card-title">👤 会員種別設定</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">レッスン予約可能かどうかを会員種別ごとに設定できます。ナイト会員など予約不可の種別はチェックを外してください。</div>
+        <div id="member-type-list"></div>
+        <button onclick="addMemberType()" style="width:100%;padding:10px;background:rgba(29,158,117,0.1);color:var(--gd);border:1px dashed var(--g);border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;">＋ 会員種別を追加</button>
+      </div>
+
+      <div class="si-card">
         <div class="si-card-title">📋 プラン・料金</div>
         <div id="plan-list"></div>
         <button onclick="addPlan()" style="width:100%;padding:10px;background:rgba(29,158,117,0.1);color:var(--gd);border:1px dashed var(--g);border-radius:10px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;">＋ プランを追加</button>
@@ -1323,12 +1366,33 @@ function showStoreOverlay(){
 }
 
 async function loadAll(){
-  await Promise.all([loadCoaches(),loadBookings(),loadPosts()]);
+  await Promise.all([loadCoaches(),loadBookings(),loadPosts(),loadStoreSettings()]);
   renderHome();
   renderCoaches('all');
   renderBookings('all');
   renderPosts('notice');
   renderSales();
+}
+
+async function loadStoreSettings(){
+  try{
+    const{data}=await sb.from('store_settings').select('*').eq('store_key',currentStore).single();
+    if(data){
+      const g=id=>document.getElementById(id);
+      if(g('si-open')&&data.open_time) g('si-open').value=data.open_time;
+      if(g('si-close')&&data.close_time) g('si-close').value=data.close_time;
+      if(g('si-lesson-start')&&data.lesson_start) g('si-lesson-start').value=data.lesson_start;
+      if(g('si-lesson-end')&&data.lesson_end) g('si-lesson-end').value=data.lesson_end;
+      if(data.member_types){
+        try{memberTypes=JSON.parse(data.member_types);}catch(e){}
+        renderMemberTypes();
+      } else {
+        renderMemberTypes();
+      }
+    } else {
+      renderMemberTypes();
+    }
+  }catch(e){renderMemberTypes();}
 }
 
 async function loadCoaches(){
