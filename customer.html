@@ -219,15 +219,29 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="form-group"><label>依頼の種類</label>
         <select id="req-type"><option value="indoor">⛳ インドアゴルフレッスン（時間制）</option><option value="round">🏌 ラウンドレッスン（1ラウンド）</option><option value="accompany">🤝 同伴ラウンド（1ラウンド）</option><option value="comp">🏆 コンペ参加（1ラウンド）</option></select>
       </div>
+      <div class="form-group"><label>会員種別</label>
+        <select id="req-member-type" onchange="checkMemberType()">
+          <option value="Create会員">Create会員 ¥4,950/月</option>
+          <option value="シルバー会員">シルバー会員 ¥12,100/月</option>
+          <option value="ゴールド会員">ゴールド会員 ¥18,700/月</option>
+          <option value="平日デイ会員">平日デイ会員 ¥9,900/月</option>
+          <option value="ナイト会員">ナイト会員 ¥9,900/月（レッスン不可）</option>
+        </select>
+        <div id="member-type-warning" style="display:none;color:#E24B4A;font-size:11px;margin-top:4px;">⚠ ナイト会員はレッスン予約できません</div>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date"></div>
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" id="req-time" value="10:00"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date" readonly style="background:#f0f7f4;"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="text" id="req-time" readonly style="background:#f0f7f4;" placeholder="カレンダーから選択"></div>
+      </div>
+      <div class="form-group" id="req-coach-info" style="display:none;"><label>担当コーチ</label>
+        <div id="req-coach-name" style="font-size:13px;font-weight:700;color:var(--gd);padding:8px;background:var(--gl);border-radius:8px;"></div>
       </div>
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
-        <select><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
+        <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
       </div>
       <div class="form-group"><label>場所</label>
-        <select><option>Golf Create 京都店</option><option>Golf Create 伏見店</option></select>
+        <div id="req-store-display" style="font-size:13px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#f0f7f4;"></div>
+        <input type="hidden" id="req-store">
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
         <select><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -339,6 +353,18 @@ sb.auth.onAuthStateChange(function(event,session){
   if(event==='SIGNED_OUT'){window.location.href='index.html';}
 });
 
+// 会員種別変更時チェック
+function checkMemberType(){
+  var mt=document.getElementById('req-member-type');
+  var warn=document.getElementById('member-type-warning');
+  if(mt&&warn){
+    var isNight=mt.value==='ナイト会員';
+    warn.style.display=isNight?'block':'none';
+    var reqBtn=document.getElementById('req-btn');
+    if(reqBtn) reqBtn.disabled=isNight;
+  }
+}
+
 // タブ切替
 function tab(btn,id){
   document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});
@@ -351,6 +377,7 @@ function tab(btn,id){
 var currentType='indoor';
 var selectedDate=null;
 var selectedTime=null;
+var selectedCoachName=null;
 
 // カード選択
 function selType(card,type){
@@ -583,8 +610,15 @@ function showCoachInfo(){
 // 依頼するページへ遷移
 function goToRequest(){
   if(!selectedDate) return;
+  // 会員種別チェック
+  var mt=document.getElementById('req-member-type');
+  if(mt&&mt.value==='ナイト会員'){
+    document.getElementById('member-type-warning').style.display='block';
+    var btn=document.getElementById('snb-request');
+    tab(btn,'s-request');
+    return;
+  }
   // フォームにセット
-  var typeMap={indoor:'indoor',round:'round',accompany:'accompany',comp:'comp'};
   var sel=document.getElementById('req-type');
   for(var i=0;i<sel.options.length;i++){
     if(sel.options[i].value===currentType){sel.selectedIndex=i;break;}
@@ -592,6 +626,20 @@ function goToRequest(){
   document.getElementById('req-date').value=selectedDate;
   if(selectedTime) document.getElementById('req-time').value=selectedTime;
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
+  // 店舗を自動セット
+  var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
+  var storeNames={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
+  document.getElementById('req-store-display').textContent=storeNames[storeKey]||storeKey;
+  document.getElementById('req-store').value=storeKey;
+  // コーチ情報表示
+  var coachArea=document.getElementById('req-coach-info');
+  var coachName=document.getElementById('req-coach-name');
+  if(selectedCoachName){
+    coachArea.style.display='block';
+    coachName.textContent=selectedCoachName;
+  } else {
+    coachArea.style.display='none';
+  }
   // タブ切替
   var btn=document.getElementById('snb-request');
   tab(btn,'s-request');
