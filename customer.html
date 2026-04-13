@@ -57,7 +57,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 
 /* 時間スロット */
 .slot-title{font-size:12px;color:#666;margin-bottom:8px;font-weight:500;}
-.slots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.slots{display:block;margin-bottom:12px;max-height:320px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .slot{font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;border:1px solid var(--border);color:#ccc;background:#f5f5f5;transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .slot.avail{border-color:var(--g);color:var(--gd);background:var(--gl);font-weight:500;}
 .slot.sel{background:var(--g);color:#fff;border-color:var(--g);}
@@ -195,7 +195,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div id="cal-body"></div>
       <div id="slot-area" style="margin-top:12px;display:none;">
         <div class="slot-title" id="slot-title"></div>
-        <div class="slots" id="slot-list"></div>
+        <div class="slots" id="slot-list" style="border:1px solid #e0ece6;border-radius:10px;padding:4px 8px;"></div>
       </div>
       <div id="coach-info-area" style="display:none;">
         <div class="coach-info-bar" id="coach-info-text"></div>
