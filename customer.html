@@ -465,11 +465,11 @@ async function fetchAvailDates(){
       var ds=fmt(d);
       if(!availCache[ds]) availCache[ds]={};
       if(dow>=1&&dow<=5){
-        availCache[ds].indoor={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample']};
+        availCache[ds].indoor={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample'],timeCoach:{'10:00':['sample'],'11:00':['sample'],'13:00':['sample'],'14:00':['sample'],'15:00':['sample']}};
       }else if(dow===6||dow===0){
-        availCache[ds].round={times:[],coaches:['sample']};
-        availCache[ds].accompany={times:[],coaches:['sample']};
-        availCache[ds].comp={times:[],coaches:['sample']};
+        availCache[ds].round={times:['09:00'],coaches:['sample'],timeCoach:{'09:00':['sample']}};
+        availCache[ds].accompany={times:['09:00'],coaches:['sample'],timeCoach:{'09:00':['sample']}};
+        availCache[ds].comp={times:['09:00'],coaches:['sample'],timeCoach:{'09:00':['sample']}};
       }
     }
   }
@@ -705,7 +705,7 @@ function showTimeCoachList(ds){
   });
   slotList.innerHTML=html;
   document.getElementById('coach-info-area').style.display='none';
-  document.getElementById('btn-to-request').style.display='none';
+  document.getElementById('btn-to-request').style.display='block';
 }
 
 // 時間・コーチ選択
