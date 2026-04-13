@@ -602,7 +602,8 @@ function selectMonthDay(ds){
   selectedCoachId=null;
   selectedCoachName=null;
   renderMonthCal();
-  showTimeCoachList(ds);
+  // renderMonthCal後に必ずslot-areaを表示
+  setTimeout(function(){showTimeCoachList(ds);},10);
 }
 
 function showTimeCoachList(ds){
