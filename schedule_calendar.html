@@ -289,6 +289,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSess
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 const HOURS=[];for(let h=8;h<=22;h++)HOURS.push(h);
 let coachId=null,currentMonth=new Date(),allSlots=[],modalDate=null,selStore=null,selHours=[];
+let storeSettings={kyoto:{lesson_start:8,lesson_end:22},fushimi:{lesson_start:8,lesson_end:22}};
 // 表示中の週の日曜日を直接保持
 let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;})();
 
@@ -305,13 +306,27 @@ let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(
   if(!session){location.replace(BASE+'index.html');return;}
   coachId=session.user.id;
   buildRoundOpts();
-  await loadSlots();
+  await Promise.all([loadSlots(),loadStoreSettings()]);
   buildWeek();
 })();
 
 async function loadSlots(){
   try{const {data}=await sb.from('schedules').select('*').eq('coach_id',coachId);allSlots=data||[];}
   catch(e){allSlots=[];}
+}
+
+async function loadStoreSettings(){
+  try{
+    const{data}=await sb.from('store_settings').select('store_key,lesson_start,lesson_end').in('store_key',['kyoto','fushimi']);
+    if(data&&data.length){
+      data.forEach(s=>{
+        const k=s.store_key;
+        const start=s.lesson_start?parseInt(s.lesson_start.split(':')[0]):8;
+        const end=s.lesson_end?parseInt(s.lesson_end.split(':')[0]):22;
+        storeSettings[k]={lesson_start:start,lesson_end:end};
+      });
+    }
+  }catch(e){}
 }
 
 function switchView(v){
@@ -629,7 +644,10 @@ function updateCRExample(){
 
 function buildHGrid(){
   const g=document.getElementById('hgrid');g.innerHTML='';
-  for(let h=8;h<=21;h++){
+  const ss=storeSettings[selStore]||storeSettings['kyoto'];
+  const hStart=ss.lesson_start||8;
+  const hEnd=(ss.lesson_end||22)-1;
+  for(let h=hStart;h<=hEnd;h++){
     const c=document.createElement('div');
     const cfm=allSlots.some(s=>gd(s)===modalDate&&s.lesson_type==='indoor'&&gh(s)===h&&s.status==='booked');
     if(cfm){c.className='hchip cfmd';c.textContent=h+':00 確';}
