@@ -210,6 +210,21 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
         <span style="font-size:11px;font-weight:700;">〜 終了</span>
         <select class="tsel" id="re"></select>
       </div>
+      <p style="font-size:11px;font-weight:700;color:var(--gd);margin-top:10px;margin-bottom:6px;">種別を選択（複数可）</p>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;">
+          <input type="checkbox" id="chk-round" checked style="width:16px;height:16px;accent-color:var(--g);">
+          <span style="font-size:13px;font-weight:700;color:var(--gd);">⛳ ラウンドレッスン</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;">
+          <input type="checkbox" id="chk-accompany" style="width:16px;height:16px;accent-color:var(--g);">
+          <span style="font-size:13px;font-weight:700;color:var(--gd);">🚶 同伴ラウンド</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;">
+          <input type="checkbox" id="chk-comp" style="width:16px;height:16px;accent-color:var(--g);">
+          <span style="font-size:13px;font-weight:700;color:var(--gd);">🏆 コンペ参加</span>
+        </label>
+      </div>
     </div>
     <button onclick="toggleCR()" id="cr-btn" style="width:100%;padding:10px;background:#f0f7f4;color:var(--gd);border:1.5px solid var(--g);border-radius:9px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:space-between;"><span>🔧 キャンセルルール設定</span><span id="cr-arrow">▼ 設定する</span></button>
     <div id="sec-cancel-rule" style="display:none;margin-top:8px;background:#f8fbf9;border-radius:10px;padding:12px;">
@@ -682,14 +697,21 @@ async function saveSlot(){
     const rs2=parseInt(document.getElementById('rs').value);
     const re2=parseInt(document.getElementById('re').value);
     if(re2<=rs2){showToast('終了は開始より後に');return;}
-    saves.push({
-      coach_id:coachId,date:modalDate,lesson_type:'round',
+    const chkRound=document.getElementById('chk-round').checked;
+    const chkAccompany=document.getElementById('chk-accompany').checked;
+    const chkComp=document.getElementById('chk-comp').checked;
+    if(!chkRound&&!chkAccompany&&!chkComp){showToast('種別を1つ以上選んでください');return;}
+    const roundBase={
+      coach_id:coachId,date:modalDate,
       store_key:selStore,block_from:String(rs2),block_to:String(re2),
       status:'available',
       cancel_rule:selCR,
       cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
       cancel_other_after:parseInt(document.getElementById('cr-other-after')?.value||0)
-    });
+    };
+    if(chkRound)saves.push({...roundBase,lesson_type:'round'});
+    if(chkAccompany)saves.push({...roundBase,lesson_type:'accompany'});
+    if(chkComp)saves.push({...roundBase,lesson_type:'comp'});
   }
   try{
     const {error}=await sb.from('schedules').insert(saves);
