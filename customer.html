@@ -620,6 +620,22 @@ function selectMonthDay(ds){
       el.classList.add('selected');
     }
   });
+  // デバッグ：availCacheの内容をalertで確認
+  var cacheInfo=availCache[ds]?JSON.stringify(Object.keys(availCache[ds])):'キャッシュなし';
+  document.getElementById('slot-title').textContent='DEBUG: '+ds+' cache='+cacheInfo;
+  document.getElementById('slot-area').style.display='block';
+  document.getElementById('btn-to-request').style.display='block';
+  // 強制的にコーチカードを表示（テスト）
+  var slotList=document.getElementById('slot-list');
+  slotList.innerHTML='';
+  var testCard=document.createElement('div');
+  testCard.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#E1F5EE;border:2px solid #1D9E75;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:700;color:#085041;';
+  testCard.textContent='👤 テストコーチ（データ読込中）';
+  testCard.onclick=function(){selectTimeCoach('10:00','test','テストコーチ');};
+  slotList.appendChild(testCard);
+  // 実際のデータも表示
+  showTimeCoachList(ds);
+  return;
   // slot-areaを強制表示
   var area=document.getElementById('slot-area');
   area.style.display='block';
