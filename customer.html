@@ -240,6 +240,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           <span style="font-size:12px;color:#0F6E56;">担当コーチ</span>
           <span style="font-size:13px;font-weight:500;color:#085041;" id="req-coach-name">—</span>
         </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;" id="req-duration-row" style="display:none;">
+          <span style="font-size:12px;color:#0F6E56;">レッスン時間</span>
+          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-duration-disp">—</span>
+        </div>
         <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;">
           <span style="font-size:12px;color:#0F6E56;">場所</span>
           <span style="font-size:13px;font-weight:500;color:#085041;" id="req-store-display">—</span>
@@ -833,6 +837,15 @@ function goToRequest(){
   if(selectedTime) document.getElementById('req-time').value=selectedTime;
   document.getElementById('req-store').value=storeKey;
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
+  var durRow=document.getElementById('req-duration-row');
+  var durDisp=document.getElementById('req-duration-disp');
+  if(currentType==='indoor'){
+    durRow.style.display='flex';
+    var durSel=document.getElementById('req-duration');
+    durDisp.textContent=durSel.options[durSel.selectedIndex].text;
+  } else {
+    durRow.style.display='none';
+  }
   var coachArea=document.getElementById('req-coach-info');
   var coachNameEl=document.getElementById('req-coach-name');
   if(selectedCoachName){
