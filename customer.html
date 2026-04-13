@@ -327,21 +327,29 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 });
 
 // セッション確認
+var sessionChecked=false;
+sb.auth.onAuthStateChange(function(event,session){
+  if(sessionChecked) return;
+  if(session){
+    sessionChecked=true;
+    var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
+    document.getElementById('user-name').textContent=name+'さん';
+    localStorage.setItem('gc_login_time',Date.now().toString());
+    fetchAvailDates();
+  }else if(event==='SIGNED_OUT'){
+    window.location.href='index.html';
+  }
+});
 sb.auth.getSession().then(function(res){
+  if(sessionChecked) return;
   var session=res.data.session;
   if(!session){
-    var redirectTimer=setTimeout(function(){window.location.href='index.html';},2000);
-    sb.auth.onAuthStateChange(function(event,newSession){
-      if(newSession){
-        clearTimeout(redirectTimer);
-        var name=newSession.user.user_metadata&&newSession.user.user_metadata.name?newSession.user.user_metadata.name:newSession.user.email;
-        document.getElementById('user-name').textContent=name+'さん';
-        localStorage.setItem('gc_login_time',Date.now().toString());
-        fetchAvailDates();
-      }
-    });
+    setTimeout(function(){
+      if(!sessionChecked) window.location.href='index.html';
+    },3000);
     return;
   }
+  sessionChecked=true;
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
