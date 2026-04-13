@@ -79,6 +79,25 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 
 .coach-info-bar{background:var(--gl);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gd);}
 .btn-to-request{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
+/* 確認モーダル */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
+.confirm-overlay.hidden{display:none;}
+.confirm-sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-width:480px;animation:slideUp .25s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.confirm-handle{width:36px;height:4px;border-radius:2px;background:#e0e0e0;margin:0 auto 16px;}
+.confirm-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:14px;text-align:center;}
+.confirm-coach-card{display:flex;align-items:center;gap:12px;background:var(--gl);border-radius:12px;padding:12px;margin-bottom:14px;}
+.confirm-coach-photo{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--g);flex-shrink:0;}
+.confirm-coach-photo-placeholder{width:56px;height:56px;border-radius:50%;background:#c8e6c9;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;border:2px solid var(--g);}
+.confirm-coach-name{font-size:15px;font-weight:700;color:var(--gd);}
+.confirm-coach-rating{font-size:12px;color:var(--gold);margin-top:2px;}
+.confirm-detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.confirm-detail-row:last-of-type{border-bottom:none;}
+.confirm-detail-label{font-size:12px;color:#888;}
+.confirm-detail-value{font-size:13px;font-weight:700;color:#1a1a1a;}
+.confirm-btn-row{display:flex;gap:10px;margin-top:16px;}
+.confirm-cancel-btn{flex:1;padding:13px;background:#f5f5f5;color:#666;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
+.confirm-ok-btn{flex:2;padding:13px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
 
 /* FORM */
 .form-group{margin-bottom:12px;}
@@ -200,6 +219,42 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="coach-info-bar" id="coach-info-text"></div>
       </div>
       <button class="btn-to-request" id="btn-to-request" style="display:none;" onclick="goToRequest()">この日程で依頼する →</button>
+    </div>
+  </div>
+
+
+  <!-- 確認モーダル -->
+  <div class="confirm-overlay hidden" id="confirm-overlay" onclick="closeConfirmModal(event)">
+    <div class="confirm-sheet" id="confirm-sheet">
+      <div class="confirm-handle"></div>
+      <div class="confirm-title">依頼内容の確認</div>
+      <div class="confirm-coach-card" id="confirm-coach-card">
+        <div class="confirm-coach-photo-placeholder" id="confirm-coach-photo-wrap">&#x1F464;</div>
+        <div>
+          <div class="confirm-coach-name" id="confirm-coach-name-text">コーチ未選択</div>
+          <div class="confirm-coach-rating" id="confirm-coach-rating-text"></div>
+        </div>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">レッスン種類</span>
+        <span class="confirm-detail-value" id="confirm-type-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">希望日</span>
+        <span class="confirm-detail-value" id="confirm-date-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">希望時間</span>
+        <span class="confirm-detail-value" id="confirm-time-text">—</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">場所</span>
+        <span class="confirm-detail-value" id="confirm-store-text">—</span>
+      </div>
+      <div class="confirm-btn-row">
+        <button class="confirm-cancel-btn" onclick="closeConfirmModal()">戻る</button>
+        <button class="confirm-ok-btn" onclick="proceedToRequest()">この内容で進む →</button>
+      </div>
     </div>
   </div>
 
@@ -720,6 +775,66 @@ function showCoachInfo(){
 // 依頼するページへ遷移
 function goToRequest(){
   if(!selectedDate) return;
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
+  var storeNames={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
+  // モーダルに内容セット
+  document.getElementById('confirm-type-text').textContent=typeNames[currentType]||currentType;
+  document.getElementById('confirm-date-text').textContent=selectedDate?selectedDate.replace(/-/g,'/'):'—';
+  document.getElementById('confirm-time-text').textContent=selectedTime||'—';
+  document.getElementById('confirm-store-text').textContent=storeNames[storeKey]||storeKey;
+  // コーチ情報
+  var nameEl=document.getElementById('confirm-coach-name-text');
+  var ratingEl=document.getElementById('confirm-coach-rating-text');
+  var photoWrap=document.getElementById('confirm-coach-photo-wrap');
+  if(selectedCoachId&&coachCache[selectedCoachId]){
+    var c=coachCache[selectedCoachId];
+    nameEl.textContent=c.name||'コーチ';
+    ratingEl.textContent='';
+    photoWrap.innerHTML='';
+    if(c.photo_url){
+      var img=document.createElement('img');
+      img.src=c.photo_url;
+      img.className='confirm-coach-photo';
+      img.alt=c.name||'コーチ';
+      photoWrap.appendChild(img);
+      photoWrap.className='';
+    } else {
+      photoWrap.textContent='\u{1F464}';
+      photoWrap.className='confirm-coach-photo-placeholder';
+    }
+    // レビュー評価を取得して表示
+    (async function(){
+      try{
+        var{data}=await sb.from('reviews').select('rating').eq('coach_id',selectedCoachId);
+        if(data&&data.length>0){
+          var avg=(data.reduce(function(s,r){return s+r.rating;},0)/data.length).toFixed(1);
+          ratingEl.textContent='★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg))+' '+avg+'（'+data.length+'件）';
+        } else {
+          ratingEl.textContent='レビューなし';
+        }
+      }catch(e){ratingEl.textContent='';}
+    })();
+  } else {
+    nameEl.textContent='コーチ未選択';
+    ratingEl.textContent='';
+    photoWrap.textContent='\u{1F464}';
+    photoWrap.className='confirm-coach-photo-placeholder';
+  }
+  // モーダル表示
+  document.getElementById('confirm-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function closeConfirmModal(e){
+  if(e&&e.target!==document.getElementById('confirm-overlay')) return;
+  document.getElementById('confirm-overlay').classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+function proceedToRequest(){
+  document.getElementById('confirm-overlay').classList.add('hidden');
+  document.body.style.overflow='';
   // 会員種別チェック
   var mt=document.getElementById('req-member-type');
   if(mt&&mt.value==='ナイト会員'){
@@ -736,24 +851,23 @@ function goToRequest(){
   document.getElementById('req-date').value=selectedDate;
   if(selectedTime) document.getElementById('req-time').value=selectedTime;
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
-  // 店舗を自動セット
   var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
   var storeNames={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
   document.getElementById('req-store-display').textContent=storeNames[storeKey]||storeKey;
   document.getElementById('req-store').value=storeKey;
-  // コーチ情報表示
   var coachArea=document.getElementById('req-coach-info');
-  var coachName=document.getElementById('req-coach-name');
+  var coachNameEl=document.getElementById('req-coach-name');
   if(selectedCoachName){
     coachArea.style.display='block';
-    coachName.textContent=selectedCoachName;
+    coachNameEl.textContent=selectedCoachName;
   } else {
     coachArea.style.display='none';
   }
-  // タブ切替
   var btn=document.getElementById('snb-request');
   tab(btn,'s-request');
 }
+
+
 
 // カレンダーナビ
 function calPrev(){
