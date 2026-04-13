@@ -608,23 +608,73 @@ function renderMonthCal(){
 }
 
 function selectMonthDay(ds){
-  var avail=getAvailDates(currentType);
-  if(!avail[ds]) return;
   selectedDate=ds;
   selectedTime=null;
   selectedCoachId=null;
   selectedCoachName=null;
-  // 選択状態だけ更新（再描画なし）
   document.querySelectorAll('#cal-body .month-day').forEach(function(el){
     el.classList.remove('selected');
   });
-  var cells=document.querySelectorAll('#cal-body .month-day');
-  cells.forEach(function(el){
+  document.querySelectorAll('#cal-body .month-day').forEach(function(el){
     if(el.getAttribute('onclick')&&el.getAttribute('onclick').indexOf(ds)>=0){
       el.classList.add('selected');
     }
   });
-  showTimeCoachList(ds);
+  // slot-areaを強制表示
+  var area=document.getElementById('slot-area');
+  area.style.display='block';
+  var d=new Date(ds);
+  var dow=['日','月','火','水','木','金','土'][d.getDay()];
+  document.getElementById('slot-title').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+dow+'）の空き枠';
+  var cache=availCache[ds]&&availCache[ds][currentType];
+  var slotList=document.getElementById('slot-list');
+  slotList.innerHTML='';
+  if(!cache){
+    slotList.innerHTML='<div style="font-size:12px;color:#888;padding:8px;">この日は空き枠がありません</div>';
+    document.getElementById('btn-to-request').style.display='none';
+    return;
+  }
+  var times=(cache.times&&cache.times.length>0)?cache.times.slice().sort():[];
+  var coachIds=cache.coaches||[];
+  var html='';
+  if(times.length>0){
+    times.forEach(function(t){
+      var cids=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:coachIds;
+      cids.forEach(function(cid){
+        var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
+        var card=document.createElement('div');
+        card.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#fff;border:2px solid #e0e0e0;border-radius:10px;margin-bottom:8px;cursor:pointer;';
+        card.innerHTML='<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">&#x1F464;</div>'
+          +'<div><div style="font-size:13px;font-weight:700;color:#085041;">'+coach.name+'</div>'
+          +'<div style="font-size:12px;color:#888;margin-top:2px;">&#x1F550; '+t+'〜</div></div>';
+        card.setAttribute('data-t',t);
+        card.setAttribute('data-cid',cid);
+        card.setAttribute('data-cname',coach.name);
+        card.addEventListener('click',function(){
+          selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
+        });
+        slotList.appendChild(card);
+      });
+    });
+  } else {
+    coachIds.forEach(function(cid){
+      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
+      var card=document.createElement('div');
+      card.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#fff;border:2px solid #e0e0e0;border-radius:10px;margin-bottom:8px;cursor:pointer;';
+      card.innerHTML='<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">&#x1F464;</div>'
+        +'<div><div style="font-size:13px;font-weight:700;color:#085041;">'+coach.name+'</div>'
+        +'<div style="font-size:12px;color:#888;margin-top:2px;">この日対応可</div></div>';
+      card.setAttribute('data-t','');
+      card.setAttribute('data-cid',cid);
+      card.setAttribute('data-cname',coach.name);
+      card.addEventListener('click',function(){
+        selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
+      });
+      slotList.appendChild(card);
+    });
+  }
+  document.getElementById('coach-info-area').style.display='none';
+  document.getElementById('btn-to-request').style.display='block'
 }
 
 function showTimeCoachList(ds){
