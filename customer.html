@@ -81,7 +81,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .btn-to-request{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
 /* 確認モーダル */
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;display:flex;align-items:flex-end;justify-content:center;}
-.confirm-overlay.hidden{display:none;}
+.confirm-overlay{display:none;}.confirm-overlay.show{display:flex!important;}
 .confirm-sheet{background:#fff;border-radius:20px 20px 0 0;padding:20px 16px 32px;width:100%;max-width:480px;animation:slideUp .25s ease;}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
 .confirm-handle{width:36px;height:4px;border-radius:2px;background:#e0e0e0;margin:0 auto 16px;}
@@ -742,62 +742,23 @@ function goToRequest(){
   var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
   var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
   var storeNames={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
-  // モーダルに内容セット
   document.getElementById('confirm-type-text').textContent=typeNames[currentType]||currentType;
-  document.getElementById('confirm-date-text').textContent=selectedDate?selectedDate.replace(/-/g,'/'):'—';
-  document.getElementById('confirm-time-text').textContent=selectedTime||'—';
+  document.getElementById('confirm-date-text').textContent=selectedDate.replace(/-/g,'/');
+  document.getElementById('confirm-time-text').textContent=selectedTime||'時間未選択';
   document.getElementById('confirm-store-text').textContent=storeNames[storeKey]||storeKey;
-  // コーチ情報
-  var nameEl=document.getElementById('confirm-coach-name-text');
-  var ratingEl=document.getElementById('confirm-coach-rating-text');
-  var photoWrap=document.getElementById('confirm-coach-photo-wrap');
-  if(selectedCoachId&&coachCache[selectedCoachId]){
-    var c=coachCache[selectedCoachId];
-    nameEl.textContent=c.name||'コーチ';
-    ratingEl.textContent='';
-    photoWrap.innerHTML='';
-    if(c.photo_url){
-      var img=document.createElement('img');
-      img.src=c.photo_url;
-      img.className='confirm-coach-photo';
-      img.alt=c.name||'コーチ';
-      photoWrap.appendChild(img);
-      photoWrap.className='';
-    } else {
-      photoWrap.textContent='👤';
-      photoWrap.className='confirm-coach-photo-placeholder';
-    }
-    // レビュー評価を取得して表示
-    (async function(){
-      try{
-        var{data}=await sb.from('reviews').select('rating').eq('coach_id',selectedCoachId);
-        if(data&&data.length>0){
-          var avg=(data.reduce(function(s,r){return s+r.rating;},0)/data.length).toFixed(1);
-          ratingEl.textContent='★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg))+' '+avg+'（'+data.length+'件）';
-        } else {
-          ratingEl.textContent='レビューなし';
-        }
-      }catch(e){ratingEl.textContent='';}
-    })();
-  } else {
-    nameEl.textContent='コーチ未選択';
-    ratingEl.textContent='';
-    photoWrap.textContent='👤';
-    photoWrap.className='confirm-coach-photo-placeholder';
-  }
-  // モーダル表示
-  document.getElementById('confirm-overlay').classList.remove('hidden');
+  document.getElementById('confirm-coach-name-text').textContent=selectedCoachName||'コーチ未選択';
+  var overlay=document.getElementById('confirm-overlay');
+  overlay.classList.add('show');
   document.body.style.overflow='hidden';
 }
-
 function closeConfirmModal(e){
   if(e&&e.target!==document.getElementById('confirm-overlay')) return;
-  document.getElementById('confirm-overlay').classList.add('hidden');
+  document.getElementById('confirm-overlay').classList.remove('show');
   document.body.style.overflow='';
 }
 
 function proceedToRequest(){
-  document.getElementById('confirm-overlay').classList.add('hidden');
+  document.getElementById('confirm-overlay').classList.remove('show');
   document.body.style.overflow='';
   // 会員種別チェック
   var mt=document.getElementById('req-member-type');
@@ -910,7 +871,7 @@ async function saveMyProfile(){
 
 
   <!-- 確認モーダル -->
-  <div class="confirm-overlay hidden" id="confirm-overlay" onclick="closeConfirmModal(event)">
+  <div class="confirm-overlay" id="confirm-overlay" onclick="closeConfirmModal(event)">
     <div class="confirm-sheet" id="confirm-sheet">
       <div class="confirm-handle"></div>
       <div class="confirm-title">依頼内容の確認</div>
