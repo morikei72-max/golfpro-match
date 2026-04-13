@@ -677,40 +677,69 @@ function selectMonthDay(ds){
   var times=(cache.times&&cache.times.length>0)?cache.times.slice().sort():[];
   var coachIds=cache.coaches||[];
   var html='';
+  // D形式：時間ごとにグループ化、コーチを横並びボタンで表示
   if(times.length>0){
     times.forEach(function(t){
       var cids=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:coachIds;
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0ece6;';
+      var timeLabel=document.createElement('div');
+      timeLabel.style.cssText='width:52px;font-size:13px;font-weight:700;color:#6b8a78;flex-shrink:0;';
+      timeLabel.textContent=t;
+      row.appendChild(timeLabel);
+      var btnWrap=document.createElement('div');
+      btnWrap.style.cssText='display:flex;flex-wrap:wrap;gap:6px;';
       cids.forEach(function(cid){
         var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
-        var card=document.createElement('div');
-        card.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#fff;border:2px solid #e0e0e0;border-radius:10px;margin-bottom:8px;cursor:pointer;';
-        card.innerHTML='<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">&#x1F464;</div>'
-          +'<div><div style="font-size:13px;font-weight:700;color:#085041;">'+coach.name+'</div>'
-          +'<div style="font-size:12px;color:#888;margin-top:2px;">&#x1F550; '+t+'〜</div></div>';
-        card.setAttribute('data-t',t);
-        card.setAttribute('data-cid',cid);
-        card.setAttribute('data-cname',coach.name);
-        card.addEventListener('click',function(){
+        var btn=document.createElement('button');
+        var photoHtml=coach.photo_url
+          ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
+          :'<span style="margin-right:4px;">👤</span>';
+        btn.innerHTML=photoHtml+coach.name;
+        btn.style.cssText='display:inline-flex;align-items:center;padding:6px 12px;background:#E1F5EE;color:#085041;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
+        btn.setAttribute('data-t',t);
+        btn.setAttribute('data-cid',cid);
+        btn.setAttribute('data-cname',coach.name);
+        btn.addEventListener('click',function(){
+          // 選択状態をリセットしてハイライト
+          slotList.querySelectorAll('button[data-t]').forEach(function(b){
+            b.style.background='#E1F5EE';b.style.color='#085041';
+          });
+          btn.style.background='#1D9E75';btn.style.color='#fff';
           selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
         });
-        slotList.appendChild(card);
+        btnWrap.appendChild(btn);
       });
+      row.appendChild(btnWrap);
+      slotList.appendChild(row);
     });
   } else {
     coachIds.forEach(function(cid){
       var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
-      var card=document.createElement('div');
-      card.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#fff;border:2px solid #e0e0e0;border-radius:10px;margin-bottom:8px;cursor:pointer;';
-      card.innerHTML='<div style="width:36px;height:36px;border-radius:50%;background:#E1F5EE;margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">&#x1F464;</div>'
-        +'<div><div style="font-size:13px;font-weight:700;color:#085041;">'+coach.name+'</div>'
-        +'<div style="font-size:12px;color:#888;margin-top:2px;">この日対応可</div></div>';
-      card.setAttribute('data-t','');
-      card.setAttribute('data-cid',cid);
-      card.setAttribute('data-cname',coach.name);
-      card.addEventListener('click',function(){
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0ece6;';
+      var timeLabel=document.createElement('div');
+      timeLabel.style.cssText='width:52px;font-size:13px;font-weight:700;color:#6b8a78;flex-shrink:0;';
+      timeLabel.textContent='終日';
+      row.appendChild(timeLabel);
+      var btn=document.createElement('button');
+      var photoHtml=coach.photo_url
+        ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
+        :'<span style="margin-right:4px;">👤</span>';
+      btn.innerHTML=photoHtml+coach.name;
+      btn.style.cssText='display:inline-flex;align-items:center;padding:6px 12px;background:#E1F5EE;color:#085041;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
+      btn.setAttribute('data-t','');
+      btn.setAttribute('data-cid',cid);
+      btn.setAttribute('data-cname',coach.name);
+      btn.addEventListener('click',function(){
+        slotList.querySelectorAll('button[data-t]').forEach(function(b){
+          b.style.background='#E1F5EE';b.style.color='#085041';
+        });
+        btn.style.background='#1D9E75';btn.style.color='#fff';
         selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
       });
-      slotList.appendChild(card);
+      row.appendChild(btn);
+      slotList.appendChild(row);
     });
   }
   document.getElementById('coach-info-area').style.display='none';
@@ -757,28 +786,31 @@ function showTimeCoachList(ds){
     document.getElementById('btn-to-request').style.display='block';
     return;
   }
+  // D形式：時間ごとにグループ化、コーチを横並びボタン
   times.forEach(function(t){
     var coachIds=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:cache.coaches||[];
+    var safeT=t.replace(/'/g,"\'");
+    var coachBtns='';
     coachIds.forEach(function(cid){
       var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
       var isSelected=(selectedTime===t&&selectedCoachId===cid);
+      var safeCid=String(cid).replace(/'/g,"\'");
+      var safeName=(coach.name||'コーチ').replace(/'/g,"\'");
       var photoHtml=coach.photo_url
-        ?'<img src="'+coach.photo_url+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid var(--g);">'
-        :'<div style="width:36px;height:36px;border-radius:50%;background:var(--gl);margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>';
-      var safeT=t.replace(/'/g,"\\'");
-      var safeCid=String(cid).replace(/'/g,"\\'");
-      var safeName=coach.name.replace(/'/g,"\\'");
-      var bg=isSelected?'var(--gl)':'#fff';
-      var bd=isSelected?'var(--g)':'var(--border)';
-      html+='<div class="coach-slot-card'+(isSelected?' selected':'')+'"'
-        +' onclick="selectTimeCoach(\''+safeT+'\',\''+safeCid+'\',\''+safeName+'\')'+'"'
-        +' style="display:flex;align-items:center;padding:10px 12px;background:'+bg+';border:2px solid '+bd+';border-radius:10px;margin-bottom:8px;cursor:pointer;">'
-        +photoHtml
-        +'<div><div style="font-size:13px;font-weight:700;color:var(--gd);">'+coach.name+'</div>'
-        +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">🕐 '+t+'〜</div></div>'
-        +'<div style="margin-left:auto;font-size:11px;font-weight:700;color:'+(isSelected?'var(--g)':'#ccc')+';">'+(isSelected?'✓ 選択中':'')+'</div>'
-        +'</div>';
+        ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
+        :'<span style="margin-right:4px;">👤</span>';
+      var bg=isSelected?'var(--g)':'var(--gl)';
+      var col=isSelected?'#fff':'var(--gd)';
+      coachBtns+='<button data-t="'+safeT+'" data-cid="'+safeCid+'" data-cname="'+safeName+'"'
+        +' onclick="var b=this;document.querySelectorAll(\'.slot-coach-btn\').forEach(function(x){x.style.background=\'#E1F5EE\';x.style.color=\'#085041\';});b.style.background=\'#1D9E75\';b.style.color=\'#fff\';selectTimeCoach(b.getAttribute(\'data-t\'),b.getAttribute(\'data-cid\'),b.getAttribute(\'data-cname\'));"'
+        +' class="slot-coach-btn"'
+        +' style="display:inline-flex;align-items:center;padding:6px 12px;background:'+bg+';color:'+col+';border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">'
+        +photoHtml+(coach.name||'コーチ')+'</button>';
     });
+    html+='<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">'
+      +'<div style="width:52px;font-size:13px;font-weight:700;color:var(--muted);flex-shrink:0;">'+t+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;">'+coachBtns+'</div>'
+      +'</div>';
   });
   slotList.innerHTML=html;
   document.getElementById('coach-info-area').style.display='none';
