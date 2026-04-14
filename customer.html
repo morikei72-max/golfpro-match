@@ -465,7 +465,6 @@ async function fetchAvailDates(){
             availCache[ds][ltype].timeCoach[t].push(row.coach_id);
           }
         }
-        // coaches配列は常に追加（ラウンド系slot_hour=-1も含む）
         if(availCache[ds][ltype].coaches.indexOf(row.coach_id)<0){
           availCache[ds][ltype].coaches.push(row.coach_id);
         }
