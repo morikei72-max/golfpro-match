@@ -288,7 +288,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <h4>第8条（準拠法・管轄）</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
       </div>
       <label class="agree-row"><input type="checkbox" id="agreeChk" onchange="checkAgree()">利用規約をすべて読み、内容に同意してサービスを利用します</label>
-      <button class="btn-confirm" id="req-btn" disabled onclick="submitBooking()">同意して依頼を確定する →</button>
+      <button class="btn-confirm" id="req-btn" disabled>同意して依頼を確定する →</button>
     </div>
   </div>
 
@@ -454,12 +454,9 @@ async function fetchAvailDates(){
         if(!availCache[ds]) availCache[ds]={};
         if(!availCache[ds][ltype]) availCache[ds][ltype]={times:[],coaches:[],timeCoach:{}};
         // 時間を文字列に変換（例：10 → "10:00"）
-        // slot_hour=-1はラウンド系（終日）のため時間登録しない
-        var hour=row.slot_hour;
-        if(hour===null||hour===undefined) hour=row.start_time;
-        var hourNum=parseInt(hour);
-        if(!isNaN(hourNum)&&hourNum>=0){
-          var t=String(hourNum).padStart(2,'0')+':00';
+        var hour=row.slot_hour||row.start_time||null;
+        if(hour!==null&&hour!==undefined&&parseInt(hour)>=0){
+          var t=String(parseInt(hour)).padStart(2,'0')+':00';
           if(availCache[ds][ltype].times.indexOf(t)<0){
             availCache[ds][ltype].times.push(t);
           }
@@ -468,7 +465,6 @@ async function fetchAvailDates(){
             availCache[ds][ltype].timeCoach[t].push(row.coach_id);
           }
         }
-        // coaches配列は常に追加（ラウンド系終日表示にも使用）
         if(availCache[ds][ltype].coaches.indexOf(row.coach_id)<0){
           availCache[ds][ltype].coaches.push(row.coach_id);
         }
@@ -652,7 +648,205 @@ function selectMonthDay(ds){
       el.classList.add('selected');
     }
   });
+  // デバッグ：availCacheの内容をalertで確認
+  var cacheInfo=availCache[ds]?JSON.stringify(Object.keys(availCache[ds])):'キャッシュなし';
+  document.getElementById('slot-title').textContent='DEBUG: '+ds+' cache='+cacheInfo;
+  document.getElementById('slot-area').style.display='block';
+  document.getElementById('btn-to-request').style.display='block';
+  // 強制的にコーチカードを表示（テスト）
+  var slotList=document.getElementById('slot-list');
+  slotList.innerHTML='';
+  var testCard=document.createElement('div');
+  testCard.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#E1F5EE;border:2px solid #1D9E75;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:700;color:#085041;';
+  testCard.textContent='👤 テストコーチ（データ読込中）';
+  testCard.onclick=function(){selectTimeCoach('10:00','test','テストコーチ');};
+  slotList.appendChild(testCard);
+  // 実際のデータも表示
   showTimeCoachList(ds);
+  return;
+  // slot-areaを強制表示
+  var area=document.getElementById('slot-area');
+  area.style.display='block';
+  var d=new Date(ds);
+  var dow=['日','月','火','水','木','金','土'][d.getDay()];
+  document.getElementById('slot-title').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+dow+'）の空き枠';
+  var cache=availCache[ds]&&availCache[ds][currentType];
+  var slotList=document.getElementById('slot-list');
+  slotList.innerHTML='';
+  if(!cache){
+    slotList.innerHTML='<div style="font-size:12px;color:#888;padding:8px;">この日は空き枠がありません</div>';
+    document.getElementById('btn-to-request').style.display='none';
+    return;
+  }
+  var times=(cache.times&&cache.times.length>0)?cache.times.slice().sort():[];
+  var coachIds=cache.coaches||[];
+  var html='';
+  // D形式：時間ごとにグループ化、コーチを横並びボタンで表示
+  if(times.length>0){
+    times.forEach(function(t){
+      var cids=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:coachIds;
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0ece6;';
+      var timeLabel=document.createElement('div');
+      timeLabel.style.cssText='width:52px;font-size:13px;font-weight:700;color:#6b8a78;flex-shrink:0;';
+      timeLabel.textContent=t;
+      row.appendChild(timeLabel);
+      var btnWrap=document.createElement('div');
+      btnWrap.style.cssText='display:flex;flex-wrap:wrap;gap:6px;';
+      cids.forEach(function(cid){
+        var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
+        var btn=document.createElement('button');
+        var photoHtml=coach.photo_url
+          ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
+          :'<span style="margin-right:4px;">👤</span>';
+        btn.innerHTML=photoHtml+coach.name;
+        btn.style.cssText='display:inline-flex;align-items:center;padding:6px 12px;background:#E1F5EE;color:#085041;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
+        btn.setAttribute('data-t',t);
+        btn.setAttribute('data-cid',cid);
+        btn.setAttribute('data-cname',coach.name);
+        btn.addEventListener('click',function(){
+          // 選択状態をリセットしてハイライト
+          slotList.querySelectorAll('button[data-t]').forEach(function(b){
+            b.style.background='#E1F5EE';b.style.color='#085041';
+          });
+          btn.style.background='#1D9E75';btn.style.color='#fff';
+          selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
+        });
+        btnWrap.appendChild(btn);
+      });
+      row.appendChild(btnWrap);
+      slotList.appendChild(row);
+    });
+  } else {
+    coachIds.forEach(function(cid){
+      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
+      var row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0ece6;';
+      var timeLabel=document.createElement('div');
+      timeLabel.style.cssText='width:52px;font-size:13px;font-weight:700;color:#6b8a78;flex-shrink:0;';
+      timeLabel.textContent='終日';
+      row.appendChild(timeLabel);
+      var btn=document.createElement('button');
+      var photoHtml=coach.photo_url
+        ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
+        :'<span style="margin-right:4px;">👤</span>';
+      btn.innerHTML=photoHtml+coach.name;
+      btn.style.cssText='display:inline-flex;align-items:center;padding:6px 12px;background:#E1F5EE;color:#085041;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
+      btn.setAttribute('data-t','');
+      btn.setAttribute('data-cid',cid);
+      btn.setAttribute('data-cname',coach.name);
+      btn.addEventListener('click',function(){
+        slotList.querySelectorAll('button[data-t]').forEach(function(b){
+          b.style.background='#E1F5EE';b.style.color='#085041';
+        });
+        btn.style.background='#1D9E75';btn.style.color='#fff';
+        selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
+      });
+      row.appendChild(btn);
+      slotList.appendChild(row);
+    });
+  }
+  document.getElementById('coach-info-area').style.display='none';
+  document.getElementById('btn-to-request').style.display='block'
+}
+
+function showTimeCoachList(ds){
+  var area=document.getElementById('slot-area');
+  var slotList=document.getElementById('slot-list');
+  var slotTitle=document.getElementById('slot-title');
+  area.style.display='block';
+  // デバッグ：キャッシュの内容を表示
+  var dbg=availCache[ds]?JSON.stringify(availCache[ds]).substring(0,200):'キャッシュなし';
+  slotTitle.textContent='DEBUG: '+dbg;
+  var d=new Date(ds);
+  var dow=['日','月','火','水','木','金','土'][d.getDay()];
+  slotTitle.textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+dow+'）の空き枠';
+  
+  var cache=availCache[ds]&&availCache[ds][currentType];
+  if(!cache){
+    slotList.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">この日は空き枠がありません</div>';
+    document.getElementById('coach-info-area').style.display='none';
+    document.getElementById('btn-to-request').style.display='none';
+    return;
+  }
+  
+  var times=(cache.times&&cache.times.length>0)?cache.times.slice().sort():[];
+  var html='';
+  // timesがない場合はcoachesだけ表示
+  if(times.length===0){
+    var coachIds=cache.coaches||[];
+    coachIds.forEach(function(cid){
+      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
+      var photoHtml=coach.photo_url
+        ?'<img src="'+coach.photo_url+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid var(--g);">'        :'<div style="width:36px;height:36px;border-radius:50%;background:var(--gl);margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>';
+      html+='<div onclick="selectTimeCoach(\'\',\''+cid+'\',\''+coach.name+'\')"'
+        +' style="display:flex;align-items:center;padding:10px 12px;background:#fff;border:2px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;">'
+        +photoHtml
+        +'<div><div style="font-size:13px;font-weight:700;color:var(--gd);">'+coach.name+'</div>'
+        +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">この日対応可</div></div></div>';
+    });
+    slotList.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:8px;">この日は空き枠がありません</div>';
+    document.getElementById('coach-info-area').style.display='none';
+    document.getElementById('btn-to-request').style.display='block';
+    return;
+  }
+  // D形式：時間ごとにグループ化、コーチを横並びボタン
+  times.forEach(function(t){
+    var coachIds=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:cache.coaches||[];
+    var safeT=t.replace(/'/g,"\'");
+    var coachBtns='';
+    coachIds.forEach(function(cid){
+      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
+      var isSelected=(selectedTime===t&&selectedCoachId===cid);
+      var safeCid=String(cid).replace(/'/g,"\'");
+      var safeName=(coach.name||'コーチ').replace(/'/g,"\'");
+      var photoHtml=coach.photo_url
+        ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
+        :'<span style="margin-right:4px;">👤</span>';
+      var bg=isSelected?'var(--g)':'var(--gl)';
+      var col=isSelected?'#fff':'var(--gd)';
+      coachBtns+='<button data-t="'+safeT+'" data-cid="'+safeCid+'" data-cname="'+safeName+'"'
+        +' onclick="var b=this;document.querySelectorAll(\'.slot-coach-btn\').forEach(function(x){x.style.background=\'#E1F5EE\';x.style.color=\'#085041\';});b.style.background=\'#1D9E75\';b.style.color=\'#fff\';selectTimeCoach(b.getAttribute(\'data-t\'),b.getAttribute(\'data-cid\'),b.getAttribute(\'data-cname\'));"'
+        +' class="slot-coach-btn"'
+        +' style="display:inline-flex;align-items:center;padding:6px 12px;background:'+bg+';color:'+col+';border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">'
+        +photoHtml+(coach.name||'コーチ')+'</button>';
+    });
+    html+='<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">'
+      +'<div style="width:52px;font-size:13px;font-weight:700;color:var(--muted);flex-shrink:0;">'+t+'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;">'+coachBtns+'</div>'
+      +'</div>';
+  });
+  slotList.innerHTML=html;
+  document.getElementById('coach-info-area').style.display='none';
+  document.getElementById('btn-to-request').style.display='block';
+}
+
+// 時間・コーチ選択
+function selectTimeCoach(t,cid,cname){
+  selectedTime=t;
+  selectedCoachId=cid;
+  selectedCoachName=cname;
+  // 再描画
+  showTimeCoachList(selectedDate);
+  // 依頼ボタン表示
+  var area=document.getElementById('coach-info-area');
+  area.style.display='block';
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  document.getElementById('coach-info-text').textContent=
+    selectedDate.replace(/-/g,'/')+' '+t+' '+cname+' 【'+typeNames[currentType]+'】';
+  document.getElementById('btn-to-request').style.display='block';
+}
+
+// コーチ情報表示＆依頼ボタン表示
+function showCoachInfo(){
+  var area=document.getElementById('coach-info-area');
+  area.style.display='block';
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  var msg=selectedDate?selectedDate.replace(/-/g,'/'):'';
+  if(selectedTime) msg+=' '+selectedTime;
+  msg+=' 【'+typeNames[currentType]+'】';
+  document.getElementById('coach-info-text').textContent='選択中：'+msg;
+  document.getElementById('btn-to-request').style.display='block';
 }
 
 // 依頼するページへ遷移
@@ -750,68 +944,6 @@ async function doLogout(){
   localStorage.removeItem('gc_login_time');
   await sb.auth.signOut();
   window.location.href='index.html';
-}
-
-async function submitBooking(){
-  var btn=document.getElementById('req-btn');
-  btn.disabled=true;
-  btn.textContent='送信中...';
-  try{
-    var res=await sb.auth.getSession();
-    var session=res.data.session;
-    if(!session){alert('ログインが必要です');btn.disabled=false;btn.textContent='同意して依頼を確定する →';return;}
-    var uid=session.user.id;
-    // お客様情報取得
-    var custRes=await sb.from('customers').select('name,furigana,phone,member_type').eq('user_id',uid).maybeSingle();
-    var custName=(custRes.data&&custRes.data.name)?custRes.data.name:'';
-    var custPhone=(custRes.data&&custRes.data.phone)?custRes.data.phone:'';
-    var custMember=document.getElementById('req-member-type').value||'';
-    // フォーム値取得
-    var lessonType=document.getElementById('req-type').value;
-    var date=document.getElementById('req-date').value;
-    var time=document.getElementById('req-time').value||null;
-    var storeKey=document.getElementById('req-store').value;
-    var durSel=document.getElementById('req-duration');
-    var duration=(lessonType==='indoor'&&durSel)?durSel.options[durSel.selectedIndex].text:null;
-    var payload={
-      customer_id:uid,
-      customer_name:custName,
-      customer_phone:custPhone,
-      member_type:custMember,
-      coach_id:selectedCoachId||null,
-      coach_name:selectedCoachName||null,
-      lesson_type:lessonType,
-      date:date,
-      time:time,
-      duration:duration,
-      store_key:storeKey,
-      status:'pending',
-      created_at:new Date().toISOString()
-    };
-    var{error}=await sb.from('bookings').insert(payload);
-    if(error){
-      console.error('booking insert error:',error);
-      alert('予約の送信に失敗しました。もう一度お試しください。');
-      btn.disabled=false;
-      btn.textContent='同意して依頼を確定する →';
-      return;
-    }
-    // 完了画面へ
-    var completeDiv=document.getElementById('s-request');
-    if(completeDiv){
-      completeDiv.innerHTML='<div style="text-align:center;padding:40px 20px;">'
-        +'<div style="font-size:48px;margin-bottom:16px;">✅</div>'
-        +'<div style="font-size:18px;font-weight:700;color:var(--gd);margin-bottom:8px;">予約依頼を送信しました</div>'
-        +'<div style="font-size:13px;color:var(--muted);margin-bottom:24px;">コーチの承認をお待ちください</div>'
-        +'<button onclick="location.reload()" style="padding:12px 24px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">トップへ戻る</button>'
-        +'</div>';
-    }
-  }catch(e){
-    console.error('submitBooking error:',e);
-    alert('エラーが発生しました');
-    btn.disabled=false;
-    btn.textContent='同意して依頼を確定する →';
-  }
 }
 
 async function saveMyProfile(){
