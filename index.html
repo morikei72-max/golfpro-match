@@ -99,14 +99,14 @@ const {createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
-// 既存セッション確認
+// 既存セッション確認（index.htmlにいる場合のみリダイレクト）
 sb.auth.getSession().then(function(res){
   var session=res.data.session;
   if(session){
     var role=session.user.user_metadata&&session.user.user_metadata.role?session.user.user_metadata.role:'customer';
     if(role==='coach') window.location.href='coach.html';
     else if(role==='store') window.location.href='store.html';
-    else window.location.href='customer.html';
+    // お客様はindex.htmlから自動遷移しない（ログインボタンで遷移）
   }
 });
 let currentType='customer';
