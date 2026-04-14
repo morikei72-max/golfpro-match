@@ -288,7 +288,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <h4>第8条（準拠法・管轄）</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
       </div>
       <label class="agree-row"><input type="checkbox" id="agreeChk" onchange="checkAgree()">利用規約をすべて読み、内容に同意してサービスを利用します</label>
-      <button class="btn-confirm" id="req-btn" disabled>同意して依頼を確定する →</button>
+      <button class="btn-confirm" id="req-btn" disabled onclick="submitBooking()">同意して依頼を確定する →</button>
     </div>
   </div>
 
@@ -750,6 +750,68 @@ async function doLogout(){
   localStorage.removeItem('gc_login_time');
   await sb.auth.signOut();
   window.location.href='index.html';
+}
+
+async function submitBooking(){
+  var btn=document.getElementById('req-btn');
+  btn.disabled=true;
+  btn.textContent='送信中...';
+  try{
+    var res=await sb.auth.getSession();
+    var session=res.data.session;
+    if(!session){alert('ログインが必要です');btn.disabled=false;btn.textContent='同意して依頼を確定する →';return;}
+    var uid=session.user.id;
+    // お客様情報取得
+    var custRes=await sb.from('customers').select('name,furigana,phone,member_type').eq('user_id',uid).maybeSingle();
+    var custName=(custRes.data&&custRes.data.name)?custRes.data.name:'';
+    var custPhone=(custRes.data&&custRes.data.phone)?custRes.data.phone:'';
+    var custMember=document.getElementById('req-member-type').value||'';
+    // フォーム値取得
+    var lessonType=document.getElementById('req-type').value;
+    var date=document.getElementById('req-date').value;
+    var time=document.getElementById('req-time').value||null;
+    var storeKey=document.getElementById('req-store').value;
+    var durSel=document.getElementById('req-duration');
+    var duration=(lessonType==='indoor'&&durSel)?durSel.options[durSel.selectedIndex].text:null;
+    var payload={
+      customer_id:uid,
+      customer_name:custName,
+      customer_phone:custPhone,
+      member_type:custMember,
+      coach_id:selectedCoachId||null,
+      coach_name:selectedCoachName||null,
+      lesson_type:lessonType,
+      date:date,
+      time:time,
+      duration:duration,
+      store_key:storeKey,
+      status:'pending',
+      created_at:new Date().toISOString()
+    };
+    var{error}=await sb.from('bookings').insert(payload);
+    if(error){
+      console.error('booking insert error:',error);
+      alert('予約の送信に失敗しました。もう一度お試しください。');
+      btn.disabled=false;
+      btn.textContent='同意して依頼を確定する →';
+      return;
+    }
+    // 完了画面へ
+    var completeDiv=document.getElementById('s-request');
+    if(completeDiv){
+      completeDiv.innerHTML='<div style="text-align:center;padding:40px 20px;">'
+        +'<div style="font-size:48px;margin-bottom:16px;">✅</div>'
+        +'<div style="font-size:18px;font-weight:700;color:var(--gd);margin-bottom:8px;">予約依頼を送信しました</div>'
+        +'<div style="font-size:13px;color:var(--muted);margin-bottom:24px;">コーチの承認をお待ちください</div>'
+        +'<button onclick="location.reload()" style="padding:12px 24px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">トップへ戻る</button>'
+        +'</div>';
+    }
+  }catch(e){
+    console.error('submitBooking error:',e);
+    alert('エラーが発生しました');
+    btn.disabled=false;
+    btn.textContent='同意して依頼を確定する →';
+  }
 }
 
 async function saveMyProfile(){
