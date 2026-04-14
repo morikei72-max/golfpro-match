@@ -648,7 +648,35 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <button class="filter-btn" onclick="filterBookings('approved',this)">承認済み</button>
         <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
       </div>
-      <div id="bookings-list"><div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">読み込み中...</div></div>
+      <div id="bookings-list">
+        <div class="booking-item" data-status="pending">
+          <div class="booking-header"><div class="booking-date">2026/04/15（水）11:00</div><span class="booking-status status-pending">承認待ち</span></div>
+          <div class="booking-customer">山田 太郎</div>
+          <div class="booking-detail">インドアゴルフレッスン・50分 ¥5,000</div>
+          <div class="booking-actions">
+            <button class="btn-approve" onclick="approveBooking(this)">承認する</button>
+            <button class="btn-decline" onclick="declineBooking(this)">断る</button>
+          </div>
+        </div>
+        <div class="booking-item" data-status="approved">
+          <div class="booking-header"><div class="booking-date">2026/04/12（日）10:00</div><span class="booking-status status-approved">承認済み</span></div>
+          <div class="booking-customer">田中 次郎</div>
+          <div class="booking-detail">インドアゴルフレッスン・90分 ¥8,000</div>
+          <div class="booking-actions">
+            <button class="btn-done" onclick="completeBooking(this)">完了</button>
+            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
+          </div>
+        </div>
+        <div class="booking-item" data-status="approved">
+          <div class="booking-header"><div class="booking-date">2026/04/18（土）ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
+          <div class="booking-customer">鈴木 花子</div>
+          <div class="booking-detail">ラウンドレッスン・1ラウンド ¥20,000</div>
+          <div class="booking-actions">
+            <button class="btn-done" onclick="completeBooking(this)">完了</button>
+            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -804,6 +832,7 @@ function buildStoreOptions(){
 
 function selectStore(key){
   currentStore=key;const s=stores[key];
+  localStorage.setItem('gc_store',key);
   document.getElementById('store-overlay').classList.add('hidden');
   document.getElementById('store-badge').textContent=s.name;
   document.getElementById('welcome-store').textContent='📍 '+s.name;
@@ -852,7 +881,6 @@ function calcTake(id,val,type){
 
 /* ===== タブ ===== */
 function switchTab(tab,btn){
-  if(tab==='bookings') loadBookings();
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
@@ -939,89 +967,24 @@ function buildMonthGrid(){
 }
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
-/* ===== 予約一覧取得 ===== */
-var currentFilterStatus='all';
-
-async function loadBookings(){
-  const list=document.getElementById('bookings-list');
-  list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">読み込み中...</div>';
-  try{
-    const res=await sb.auth.getSession();
-    const session=res.data.session;
-    if(!session){list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;">ログインしてください</div>';return;}
-    const uid=session.user.id;
-    // coachesテーブルからcoach_idを取得
-    const coachRes=await sb.from('coaches').select('id').eq('user_id',uid).maybeSingle();
-    const coachId=coachRes.data?coachRes.data.id:null;
-    let query=sb.from('bookings').select('*').order('created_at',{ascending:false});
-    if(coachId) query=query.eq('coach_id',coachId);
-    const{data,error}=await query;
-    if(error){list.innerHTML='<div style="font-size:12px;color:#c00;padding:12px;">取得エラー</div>';return;}
-    if(!data||data.length===0){list.innerHTML='<div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">予約はまだありません</div>';return;}
-    renderBookings(data);
-  }catch(e){
-    console.error('loadBookings error:',e);
-    list.innerHTML='<div style="font-size:12px;color:#c00;padding:12px;">エラーが発生しました</div>';
-  }
-}
-
-function renderBookings(data){
-  const typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
-  const list=document.getElementById('bookings-list');
-  let html='';
-  data.forEach(function(b){
-    const show=(currentFilterStatus==='all'||b.status===currentFilterStatus);
-    const display=show?'block':'none';
-    const dStr=b.date?b.date.replace(/-/g,'/'):'';
-    const tStr=b.time?(' '+b.time):'';
-    const typeName=typeNames[b.lesson_type]||b.lesson_type||'';
-    const detail=typeName+(b.duration?' ・'+b.duration:'')+(b.lesson_type==='indoor'?'':' ・1ラウンド');
-    let statusCls='status-pending',statusTxt='承認待ち';
-    if(b.status==='approved'){statusCls='status-approved';statusTxt='承認済み';}
-    else if(b.status==='cancelled'){statusCls='status-cancelled';statusTxt='キャンセル';}
-    else if(b.status==='completed'){statusCls='status-approved';statusTxt='完了';}
-    let actions='';
-    if(b.status==='pending'){
-      actions='<button class="btn-approve" onclick="approveBooking(this,&quot;'+b.id+'&quot;)">承認する</button>'
-             +'<button class="btn-decline" onclick="declineBooking(this,&quot;'+b.id+'&quot;)">断る</button>';
-    }else if(b.status==='approved'){
-      actions='<button class="btn-done" onclick="completeBooking(this,&quot;'+b.id+'&quot;)">完了</button>'
-             +'<button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
-    }
-    html+='<div class="booking-item" data-status="'+b.status+'" data-id="'+b.id+'" style="display:'+display+';">'
-      +'<div class="booking-header"><div class="booking-date">'+dStr+tStr+'</div><span class="booking-status '+statusCls+'">'+statusTxt+'</span></div>'
-      +'<div class="booking-customer">'+(b.customer_name||'お客様')+'</div>'
-      +'<div class="booking-detail">'+detail+'</div>'
-      +(actions?'<div class="booking-actions">'+actions+'</div>':'')
-      +'</div>';
-  });
-  list.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">予約はありません</div>';
-}
-
 /* ===== 予約操作 ===== */
-async function approveBooking(btn,id){
-  const item=btn.closest('.booking-item');
-  await sb.from('bookings').update({status:'approved'}).eq('id',id);
-  item.dataset.status='approved';
+function approveBooking(btn){
+  const item=btn.closest('.booking-item');item.dataset.status='approved';
   item.querySelector('.booking-status').className='booking-status status-approved';
   item.querySelector('.booking-status').textContent='承認済み';
-  item.querySelector('.booking-actions').innerHTML='<button class="btn-done" onclick="completeBooking(this,&quot;'+id+'&quot;)">完了</button><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
+  item.querySelector('.booking-actions').innerHTML='<button class="btn-done" onclick="completeBooking(this)">完了</button><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
 }
-async function declineBooking(btn,id){
-  const item=btn.closest('.booking-item');
-  await sb.from('bookings').update({status:'cancelled'}).eq('id',id);
-  item.dataset.status='cancelled';
+function declineBooking(btn){
+  const item=btn.closest('.booking-item');item.dataset.status='cancelled';
   item.querySelector('.booking-status').className='booking-status status-cancelled';
   item.querySelector('.booking-status').textContent='キャンセル';
   item.querySelector('.booking-actions').remove();
 }
-async function completeBooking(btn,id){
-  if(id) await sb.from('bookings').update({status:'completed'}).eq('id',id);
-  btn.textContent='完了済み';btn.disabled=true;
-  btn.style.background='var(--gl)';btn.style.color='var(--gd)';
+function completeBooking(btn){
+  const btn2=btn;btn2.textContent='完了済み';btn2.disabled=true;
+  btn2.style.background='var(--gl)';btn2.style.color='var(--gd)';
 }
 function filterBookings(status,btn){
-  currentFilterStatus=status;
   document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
   document.querySelectorAll('.booking-item').forEach(item=>{item.style.display=(status==='all'||item.dataset.status===status)?'block':'none';});
 }
