@@ -106,7 +106,7 @@ sb.auth.getSession().then(function(res){
     var role=session.user.user_metadata&&session.user.user_metadata.role?session.user.user_metadata.role:'customer';
     if(role==='coach') window.location.href='coach.html';
     else if(role==='store') window.location.href='store.html';
-    else window.location.href='customer.html';
+    // customerはindex.htmlに留まる（チカチカ防止）
   }
 });
 let currentType='customer';
