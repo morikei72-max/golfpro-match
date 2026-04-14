@@ -368,14 +368,14 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 // セッション確認
 sb.auth.getSession().then(function(res){
   var session=res.data.session;
-  if(!session){window.location.href='index.html';return;}
+  if(!session){console.log('no session');return;}
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
 });
 sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_OUT'){window.location.href='index.html';}
+  if(event==='SIGNED_OUT'){console.log('signed out');}
 });
 
 // 会員種別変更時チェック
