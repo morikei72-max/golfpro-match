@@ -440,7 +440,11 @@ async function fetchCoaches(){
 async function fetchAvailDates(){
   try{
     var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
-    var{data,error}=await sb.from('schedules').select('*').eq('status','available').eq('store_key',storeKey);
+    var currentLtype=currentType||'indoor';
+    var query=sb.from('schedules').select('*').eq('status','available');
+    // indoorは店舗絞り込み、ラウンド系は全店舗表示
+    if(currentLtype==='indoor') query=query.eq('store_key',storeKey);
+    var{data,error}=await query;
     if(!error&&data){
       console.log('schedules data count:',data.length);
       if(data.length>0) console.log('sample row:',JSON.stringify(data[0]));
