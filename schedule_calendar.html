@@ -691,7 +691,7 @@ async function saveSlot(){
   const saves=[];
   if(io){
     if(!selHours.length){showToast('時間を選んでください');return;}
-    selHours.forEach(h=>saves.push({coach_id:coachId,date:modalDate,lesson_type:'indoor',store_key:selStore,start_time:String(h),status:'available'}));
+    selHours.forEach(h=>saves.push({coach_id:coachId,slot_date:modalDate,lesson_type:'indoor',store_key:selStore,slot_hour:h,status:'available'}));
   }
   if(ro){
     const rs2=parseInt(document.getElementById('rs').value);
@@ -702,7 +702,7 @@ async function saveSlot(){
     const chkComp=document.getElementById('chk-comp').checked;
     if(!chkRound&&!chkAccompany&&!chkComp){showToast('種別を1つ以上選んでください');return;}
     const roundBase={
-      coach_id:coachId,date:modalDate,
+      coach_id:coachId,slot_date:modalDate,slot_hour:-1,
       store_key:selStore,block_from:String(rs2),block_to:String(re2),
       status:'available',
       cancel_rule:selCR,
