@@ -490,8 +490,11 @@ function mkCell(ds,h,isToday,inRound,roundCfm){
     const hEnd=(ss.lesson_end||22)-1;
     if(!allowedDays.includes(dow)||h<hStart||h>hEnd) blocked=true;
   }
+  // 確定済みスロットがある場合はブロックしない
+  const hasBooked=allSlots.some(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h&&s.status==='booked');
+  if(hasBooked) blocked=false;
   cell.className='cell'+(isToday?' tdy':'')+(blocked?' blocked':'');
-  if(blocked){cell.style.background='#f0f0f0';cell.style.cursor='not-allowed';}
+  if(blocked){cell.style.background='#d0d0d0';cell.style.cursor='not-allowed';cell.style.opacity='0.6';}
   const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h);
   // 重複防止：kyoto/fushimiそれぞれ1つだけ表示
   const shown={kyoto:false,fushimi:false};
