@@ -442,8 +442,10 @@ async function fetchAvailDates(){
     var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
     var currentLtype=currentType||'indoor';
     var query=sb.from('schedules').select('*').eq('status','available');
-    // indoorは店舗絞り込み、ラウンド系は全店舗表示
-    if(currentLtype==='indoor') query=query.eq('store_key',storeKey);
+    // store_key: 'kyoto','fushimi','both' 全て対象（bothは両店舗共通）
+    if(currentLtype==='indoor'){
+      query=query.in('store_key',[storeKey,'both']);
+    }
     var{data,error}=await query;
     if(!error&&data){
       console.log('schedules data count:',data.length);
@@ -466,6 +468,16 @@ async function fetchAvailDates(){
           if(!availCache[ds][ltype].timeCoach[t]) availCache[ds][ltype].timeCoach[t]=[];
           if(availCache[ds][ltype].timeCoach[t].indexOf(row.coach_id)<0){
             availCache[ds][ltype].timeCoach[t].push(row.coach_id);
+          }
+        } else if(ltype!=='indoor'){
+          // ラウンド系はhourなしでも日付だけ登録
+          var bt=row.block_from?String(row.block_from).padStart(2,'0')+':00':'09:00';
+          if(availCache[ds][ltype].times.indexOf(bt)<0){
+            availCache[ds][ltype].times.push(bt);
+          }
+          if(!availCache[ds][ltype].timeCoach[bt]) availCache[ds][ltype].timeCoach[bt]=[];
+          if(availCache[ds][ltype].timeCoach[bt].indexOf(row.coach_id)<0){
+            availCache[ds][ltype].timeCoach[bt].push(row.coach_id);
           }
         }
         if(availCache[ds][ltype].coaches.indexOf(row.coach_id)<0){
