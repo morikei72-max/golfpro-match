@@ -454,9 +454,12 @@ async function fetchAvailDates(){
         if(!availCache[ds]) availCache[ds]={};
         if(!availCache[ds][ltype]) availCache[ds][ltype]={times:[],coaches:[],timeCoach:{}};
         // 時間を文字列に変換（例：10 → "10:00"）
-        var hour=row.slot_hour||row.start_time||null;
-        if(hour!==null&&hour!==undefined&&parseInt(hour)>=0){
-          var t=String(parseInt(hour)).padStart(2,'0')+':00';
+        // slot_hour=-1はラウンド系（終日）のため時間登録しない
+        var hour=row.slot_hour;
+        if(hour===null||hour===undefined) hour=row.start_time;
+        var hourNum=parseInt(hour);
+        if(!isNaN(hourNum)&&hourNum>=0){
+          var t=String(hourNum).padStart(2,'0')+':00';
           if(availCache[ds][ltype].times.indexOf(t)<0){
             availCache[ds][ltype].times.push(t);
           }
@@ -465,6 +468,7 @@ async function fetchAvailDates(){
             availCache[ds][ltype].timeCoach[t].push(row.coach_id);
           }
         }
+        // coaches配列は常に追加（ラウンド系終日表示にも使用）
         if(availCache[ds][ltype].coaches.indexOf(row.coach_id)<0){
           availCache[ds][ltype].coaches.push(row.coach_id);
         }
