@@ -702,8 +702,8 @@ async function saveSlot(){
     const chkComp=document.getElementById('chk-comp').checked;
     if(!chkRound&&!chkAccompany&&!chkComp){showToast('種別を1つ以上選んでください');return;}
     const roundBase={
-      coach_id:coachId,slot_date:modalDate,slot_hour:-1,
-      store_key:selStore,block_from:String(rs2),block_to:String(re2),
+      coach_id:coachId,slot_date:modalDate,
+      store_key:selStore,block_from:rs2,block_to:re2,
       status:'available',
       cancel_rule:selCR,
       cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
