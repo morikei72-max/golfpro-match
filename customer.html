@@ -362,20 +362,20 @@ const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const{createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
 // セッション確認
 sb.auth.getSession().then(function(res){
   var session=res.data.session;
-  if(!session){console.log('no session');return;}
+  if(!session){window.location.href='index.html';return;}
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
 });
 sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_OUT'){console.log('signed out');}
+  if(event==='SIGNED_OUT'){window.location.href='index.html';}
 });
 
 // 会員種別変更時チェック
@@ -439,23 +439,22 @@ async function fetchCoaches(){
 
 async function fetchAvailDates(){
   try{
-    // schedulesテーブルを直接読む
-    var{data,error}=await sb.from('schedules').select('*').eq('status','available');
+    var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
+    var{data,error}=await sb.from('schedules').select('*').eq('status','available').eq('store_key',storeKey);
     if(!error&&data){
       console.log('schedules data count:',data.length);
       if(data.length>0) console.log('sample row:',JSON.stringify(data[0]));
       availCache={};
       var today=fmt(new Date());
       data.forEach(function(row){
-        var ds=row.date||row.slot_date||'';
-        if(ds<today) return;// 過去日除外
+        var ds=row.slot_date||row.date||'';
+        if(!ds||ds<today) return;
         var ltype=row.lesson_type||'indoor';
-        if(!ds) return;
         if(!availCache[ds]) availCache[ds]={};
         if(!availCache[ds][ltype]) availCache[ds][ltype]={times:[],coaches:[],timeCoach:{}};
-        // 時間を文字列に変換（例：10 → "10:00"）
-        var hour=row.slot_hour||row.start_time||null;
-        if(hour!==null&&hour!==undefined&&parseInt(hour)>=0){
+        var hour=(row.slot_hour!==null&&row.slot_hour!==undefined)?row.slot_hour:
+                 (row.start_time!==null&&row.start_time!==undefined)?parseInt(row.start_time):null;
+        if(hour!==null&&parseInt(hour)>=0){
           var t=String(parseInt(hour)).padStart(2,'0')+':00';
           if(availCache[ds][ltype].times.indexOf(t)<0){
             availCache[ds][ltype].times.push(t);
@@ -471,23 +470,6 @@ async function fetchAvailDates(){
       });
     }
   }catch(e){console.log('fetchAvailDates error:',e);}
-  // データがなければサンプルデータを使用
-  if(Object.keys(availCache).length===0){
-    var today=new Date();
-    for(var i=1;i<=21;i++){
-      var d=new Date(today);d.setDate(d.getDate()+i);
-      var dow=d.getDay();
-      var ds=fmt(d);
-      if(!availCache[ds]) availCache[ds]={};
-      if(dow>=1&&dow<=5){
-        availCache[ds].indoor={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample'],timeCoach:{'10:00':['sample'],'11:00':['sample'],'13:00':['sample'],'14:00':['sample'],'15:00':['sample']}};
-      }else if(dow===6||dow===0){
-        availCache[ds].round={times:['09:00'],coaches:['sample'],timeCoach:{'09:00':['sample']}};
-        availCache[ds].accompany={times:['09:00'],coaches:['sample'],timeCoach:{'09:00':['sample']}};
-        availCache[ds].comp={times:['09:00'],coaches:['sample'],timeCoach:{'09:00':['sample']}};
-      }
-    }
-  }
   await fetchCoaches();
   renderMonthCal();
 }
