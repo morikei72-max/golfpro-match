@@ -454,7 +454,7 @@ async function fetchAvailDates(){
         if(!availCache[ds]) availCache[ds]={};
         if(!availCache[ds][ltype]) availCache[ds][ltype]={times:[],coaches:[],timeCoach:{}};
         // 時間を文字列に変換（例：10 → "10:00"）
-        var hour=(row.slot_hour!==null&&row.slot_hour!==undefined)?row.slot_hour:(row.start_time||null);
+        var hour=row.slot_hour||row.start_time||null;
         if(hour!==null&&hour!==undefined&&parseInt(hour)>=0){
           var t=String(parseInt(hour)).padStart(2,'0')+':00';
           if(availCache[ds][ltype].times.indexOf(t)<0){
