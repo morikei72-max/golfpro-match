@@ -362,34 +362,20 @@ const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const{createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
 // セッション確認
 sb.auth.getSession().then(function(res){
   var session=res.data.session;
-  if(!session){
-    // セッションなし→ログイン画面へ（ループ防止のため直接遷移しない）
-    document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;gap:16px;">'
-      +'<div style="font-size:18px;font-weight:700;color:#085041;">MyCoach</div>'
-      +'<div style="font-size:14px;color:#666;">ログインが必要です</div>'
-      +'<a href="index.html" style="padding:12px 32px;background:#1D9E75;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">ログインページへ</a>'
-      +'</div>';
-    return;
-  }
+  if(!session){window.location.href='index.html';return;}
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
 });
 sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_OUT'){
-    document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:sans-serif;gap:16px;">'
-      +'<div style="font-size:18px;font-weight:700;color:#085041;">MyCoach</div>'
-      +'<div style="font-size:14px;color:#666;">ログアウトしました</div>'
-      +'<a href="index.html" style="padding:12px 32px;background:#1D9E75;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">ログインページへ</a>'
-      +'</div>';
-  }
+  if(event==='SIGNED_OUT'){window.location.href='index.html';}
 });
 
 // 会員種別変更時チェック
