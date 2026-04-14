@@ -923,8 +923,10 @@ function rate(n){
 }
 
 async function doLogout(){
-  localStorage.removeItem('gc_login_time');
-  await sb.auth.signOut();
+  try{
+    localStorage.clear();
+    await sb.auth.signOut();
+  }catch(e){}
   window.location.href='index.html';
 }
 
