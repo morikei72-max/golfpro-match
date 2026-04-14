@@ -320,6 +320,15 @@ let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(
   const {data:{session}}=await sb.auth.getSession();
   if(!session){location.replace(BASE+'index.html');return;}
   coachId=session.user.id;
+  // localStorageから店舗を復元
+  const savedStore=localStorage.getItem('gc_store');
+  if(savedStore){
+    selStore=savedStore;
+    ['kyoto','fushimi','both'].forEach(id=>{
+      const el=document.getElementById('chip-'+id);
+      if(el)el.className='chip'+(id===savedStore?' s'+(id==='kyoto'?'k':id==='fushimi'?'f':'b'):'');
+    });
+  }
   buildRoundOpts();
   await Promise.all([loadSlots(),loadStoreSettings()]);
   buildWeek();
@@ -605,10 +614,12 @@ function openModal(ds,hour){
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 function pickStore(k){
   selStore=k;
+  localStorage.setItem('gc_store',k);
   ['kyoto','fushimi','both'].forEach(id=>{
     document.getElementById('chip-'+id).className='chip'+(id===k?' s'+(id==='kyoto'?'k':id==='fushimi'?'f':'b'):'');
   });
   buildHGrid();
+  buildWeek();// 店舗変更時にグレーアウトを再描画
 }
 function onTog(t,on){
   document.getElementById('sec-'+t).style.display=on?'block':'none';
