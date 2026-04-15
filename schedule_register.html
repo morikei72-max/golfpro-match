@@ -71,8 +71,8 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .sl.cancelled{background:#ccc;color:#999;text-decoration:line-through;font-size:8px;flex:1;min-width:0;}
 
 /* ラウンド枠 */
-.rb{border:2px solid var(--round-bd);border-radius:8px;background:var(--round-bg);margin:0;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:100%;min-width:0;box-sizing:border-box;}
-.rb.cfm{border-color:var(--red);background:#FFF0F0;}
+.rb{border:2.5px solid var(--round-bd);border-radius:10px;background:var(--round-bg);margin:1px 2px;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:calc(100% - 4px);min-width:0;box-sizing:border-box;box-shadow:0 0 0 0;}
+.rb.cfm{border-color:var(--red);border-width:2.5px;background:#FFF0F0;}
 .rcbdg{background:var(--red);color:#fff;border-radius:50%;width:11px;height:11px;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
 .rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
 .rc.cfm{border-bottom-color:rgba(226,75,74,0.15);background:#FFF5F5;}
@@ -588,14 +588,19 @@ function buildWeek(){
     }
 
     if(roundFrom>=0){
-      const labelRow=document.createElement('div');
-      labelRow.className='round-label-bar'+(roundConfirmed?' cfm':'');
-      labelRow.textContent=roundLabel;
-      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelRow.appendChild(b);}
-      col.appendChild(labelRow);
+      const emptyLabelEl=document.createElement('div');
+      emptyLabelEl.className='empty-label-bar'+(isToday?' tdy':'');
+      col.appendChild(emptyLabelEl);
 
       for(let h=HOURS[0];h<roundFrom;h++)col.appendChild(mkCell(ds,h,isToday));
       const rb=document.createElement('div');rb.className='rb'+(roundConfirmed?' cfm':'');
+      // ラウンドラベルをrb内の先頭に
+      const labelRow=document.createElement('div');
+      labelRow.className='round-label-bar'+(roundConfirmed?' cfm':'');
+      labelRow.style.cssText='border-radius:8px 8px 0 0;border-left:none;border-right:none;border-top:none;';
+      labelRow.textContent=roundLabel;
+      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelRow.appendChild(b);}
+      rb.appendChild(labelRow);
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');rc.className='rc'+(roundConfirmed?' cfm':'');
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h&&(gs(s)===currentStore||gs(s)==='both'));
@@ -824,7 +829,18 @@ async function saveSlot(){
     if(chkComp)saves.push({...base,lesson_type:'comp'});
   }
   try{
-    const{error}=await sb.from('schedules').insert(saves);
+    // 重複チェック：既存スロットと重複するものを除外
+    const newSaves=saves.filter(s=>{
+      if(s.lesson_type!=='indoor')return true;
+      return !allSlots.some(ex=>
+        gd(ex)===s.slot_date&&
+        gs(ex)===s.store_key&&
+        gh(ex)===s.slot_hour&&
+        ex.lesson_type==='indoor'
+      );
+    });
+    if(!newSaves.length){showToast('すでに登録済みです');closeModal();return;}
+    const{error}=await sb.from('schedules').insert(newSaves);
     if(error){showToast('保存失敗: '+error.message);return;}
     await loadSlots();
     showToast('保存しました！');closeModal();buildWeek();
