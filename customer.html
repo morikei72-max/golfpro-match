@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" sizes="192x192" href="mycoach_icon_192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="mycoach_icon_192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="mycoach_icon_512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<meta name="theme-color" content="#064e3b">
 <title>GolfCoach — お客様画面</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -57,7 +64,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 
 /* 時間スロット */
 .slot-title{font-size:12px;color:#666;margin-bottom:8px;font-weight:500;}
-.slots{display:block;margin-bottom:12px;max-height:320px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.slots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
 .slot{font-size:12px;padding:6px 12px;border-radius:8px;cursor:pointer;border:1px solid var(--border);color:#ccc;background:#f5f5f5;transition:all .15s;-webkit-tap-highlight-color:transparent;}
 .slot.avail{border-color:var(--g);color:var(--gd);background:var(--gl);font-weight:500;}
 .slot.sel{background:var(--g);color:#fff;border-color:var(--g);}
@@ -79,7 +86,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 
 .coach-info-bar{background:var(--gl);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gd);}
 .btn-to-request{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
-
 
 /* FORM */
 .form-group{margin-bottom:12px;}
@@ -195,7 +201,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div id="cal-body"></div>
       <div id="slot-area" style="margin-top:12px;display:none;">
         <div class="slot-title" id="slot-title"></div>
-        <div class="slots" id="slot-list" style="border:1px solid #e0ece6;border-radius:10px;padding:4px 8px;"></div>
+        <div class="slots" id="slot-list"></div>
       </div>
       <div id="coach-info-area" style="display:none;">
         <div class="coach-info-bar" id="coach-info-text"></div>
@@ -217,56 +223,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:12px;">依頼内容を入力</div>
-
-      <!-- 確定済みカード（変更不可） -->
-      <div style="background:#E1F5EE;border:1px solid #1D9E75;border-radius:10px;padding:12px 14px;margin-bottom:14px;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;padding-bottom:8px;border-bottom:0.5px solid #9FE1CB;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#1D9E75" stroke-width="2" fill="none"/></svg>
-          <span style="font-size:12px;font-weight:500;color:#085041;">カレンダーから選択済み（変更不可）</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;">
-          <span style="font-size:12px;color:#0F6E56;">レッスン種類</span>
-          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-type-disp">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;">
-          <span style="font-size:12px;color:#0F6E56;">希望日</span>
-          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-date-disp">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;">
-          <span style="font-size:12px;color:#0F6E56;">希望時間</span>
-          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-time-disp">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;" id="req-coach-info">
-          <span style="font-size:12px;color:#0F6E56;">担当コーチ</span>
-          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-coach-name">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid #9FE1CB;" id="req-duration-row" style="display:none;">
-          <span style="font-size:12px;color:#0F6E56;">レッスン時間</span>
-          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-duration-disp">—</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;">
-          <span style="font-size:12px;color:#0F6E56;">場所</span>
-          <span style="font-size:13px;font-weight:500;color:#085041;" id="req-store-display">—</span>
-        </div>
+      <div class="form-group"><label>依頼の種類</label>
+        <select id="req-type"><option value="indoor">⛳ インドアゴルフレッスン（時間制）</option><option value="round">🏌 ラウンドレッスン（1ラウンド）</option><option value="accompany">🤝 同伴ラウンド（1ラウンド）</option><option value="comp">🏆 コンペ参加（1ラウンド）</option></select>
       </div>
-      <input type="hidden" id="req-date">
-      <input type="hidden" id="req-time">
-      <input type="hidden" id="req-store">
-      <input type="hidden" id="req-type">
-
-      <!-- 入力項目 -->
-      <div class="form-group"><label>会員種別</label>
-        <select id="req-member-type" onchange="checkMemberType()">
-          <option value="Create会員">Create会員 ¥4,950/月</option>
-          <option value="シルバー会員">シルバー会員 ¥12,100/月</option>
-          <option value="ゴールド会員">ゴールド会員 ¥18,700/月</option>
-          <option value="平日デイ会員">平日デイ会員 ¥9,900/月</option>
-          <option value="ナイト会員">ナイト会員 ¥9,900/月（レッスン不可）</option>
-        </select>
-        <div id="member-type-warning" style="display:none;color:#E24B4A;font-size:11px;margin-top:4px;">⚠ ナイト会員はレッスン予約できません</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" id="req-time" value="10:00"></div>
       </div>
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
-        <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
+        <select><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
+      </div>
+      <div class="form-group"><label>場所</label>
+        <select><option>Golf Create 京都店</option><option>Golf Create 伏見店</option></select>
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
         <select><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -362,7 +330,7 @@ const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const{createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
 // セッション確認
@@ -374,21 +342,6 @@ sb.auth.getSession().then(function(res){
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
 });
-sb.auth.onAuthStateChange(function(event,session){
-  if(event==='SIGNED_OUT'){window.location.href='index.html';}
-});
-
-// 会員種別変更時チェック
-function checkMemberType(){
-  var mt=document.getElementById('req-member-type');
-  var warn=document.getElementById('member-type-warning');
-  if(mt&&warn){
-    var isNight=mt.value==='ナイト会員';
-    warn.style.display=isNight?'block':'none';
-    var reqBtn=document.getElementById('req-btn');
-    if(reqBtn) reqBtn.disabled=isNight;
-  }
-}
 
 // タブ切替
 function tab(btn,id){
@@ -402,8 +355,6 @@ function tab(btn,id){
 var currentType='indoor';
 var selectedDate=null;
 var selectedTime=null;
-var selectedCoachName=null;
-var selectedCoachId=null;
 
 // カード選択
 function selType(card,type){
@@ -418,75 +369,53 @@ function selType(card,type){
   document.getElementById('cal-box').scrollIntoView({behavior:'smooth',block:'start'});
   var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ'};
   document.getElementById('cal-type-label').textContent=labels[type]||type;
-  renderMonthCal();
+  if(type==='indoor'){
+    renderWeekCal();
+  }else{
+    renderMonthCal();
+  }
 }
 
 // ========== 空き日データ（Supabaseから取得）==========
 var availCache={};
-var coachCache={};// coach_id -> {name, photo_url}
-
-async function fetchCoaches(){
-  try{
-    var{data}=await sb.from('coaches').select('id,name,photo_url');
-    if(data) data.forEach(function(c){
-      coachCache[c.id]={name:(c.name||'').replace(/コーチ$/,'').trim(),photo_url:c.photo_url};
-    });
-  }catch(e){}
-  // schedulesのcoach_idがcoachesに存在しない場合のフォールバック
-  coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']=
-    coachCache['48f47262-8ea1-43f7-b667-3267d41812ae']||{name:'森下',photo_url:null};
-}
 
 async function fetchAvailDates(){
   try{
-    var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
-    var currentLtype=currentType||'indoor';
-    var query=sb.from('schedules').select('*').eq('status','available');
-    // store_key: 'kyoto','fushimi','both' 全て対象（bothは両店舗共通）
-    if(currentLtype==='indoor'){
-      query=query.in('store_key',[storeKey,'both']);
-    }
-    var{data,error}=await query;
+    var{data,error}=await sb.from('coach_schedules').select('*').gte('date',fmt(new Date()));
     if(!error&&data){
-      console.log('schedules data count:',data.length);
-      if(data.length>0) console.log('sample row:',JSON.stringify(data[0]));
       availCache={};
-      var today=fmt(new Date());
       data.forEach(function(row){
-        var ds=row.slot_date||row.date||'';
-        if(!ds||ds<today) return;
-        var ltype=row.lesson_type||'indoor';
-        if(!availCache[ds]) availCache[ds]={};
-        if(!availCache[ds][ltype]) availCache[ds][ltype]={times:[],coaches:[],timeCoach:{}};
-        var hour=(row.slot_hour!==null&&row.slot_hour!==undefined)?row.slot_hour:
-                 (row.start_time!==null&&row.start_time!==undefined)?parseInt(row.start_time):null;
-        if(hour!==null&&parseInt(hour)>=0){
-          var t=String(parseInt(hour)).padStart(2,'0')+':00';
-          if(availCache[ds][ltype].times.indexOf(t)<0){
-            availCache[ds][ltype].times.push(t);
-          }
-          if(!availCache[ds][ltype].timeCoach[t]) availCache[ds][ltype].timeCoach[t]=[];
-          if(availCache[ds][ltype].timeCoach[t].indexOf(row.coach_id)<0){
-            availCache[ds][ltype].timeCoach[t].push(row.coach_id);
-          }
-        } else if(ltype!=='indoor'){
-          // ラウンド系はhourなしでも日付だけ登録
-          var bt=row.block_from?String(row.block_from).padStart(2,'0')+':00':'09:00';
-          if(availCache[ds][ltype].times.indexOf(bt)<0){
-            availCache[ds][ltype].times.push(bt);
-          }
-          if(!availCache[ds][ltype].timeCoach[bt]) availCache[ds][ltype].timeCoach[bt]=[];
-          if(availCache[ds][ltype].timeCoach[bt].indexOf(row.coach_id)<0){
-            availCache[ds][ltype].timeCoach[bt].push(row.coach_id);
-          }
+        if(!availCache[row.date]) availCache[row.date]={};
+        if(!availCache[row.date][row.lesson_type]) availCache[row.date][row.lesson_type]={times:[],coaches:[]};
+        if(row.times&&row.times.length>0){
+          row.times.forEach(function(t){
+            if(availCache[row.date][row.lesson_type].times.indexOf(t)<0){
+              availCache[row.date][row.lesson_type].times.push(t);
+            }
+          });
         }
-        if(availCache[ds][ltype].coaches.indexOf(row.coach_id)<0){
-          availCache[ds][ltype].coaches.push(row.coach_id);
-        }
+        availCache[row.date][row.lesson_type].coaches.push(row.coach_id);
       });
     }
-  }catch(e){console.log('fetchAvailDates error:',e);}
-  await fetchCoaches();
+  }catch(e){}
+  // データがなければサンプルデータを使用
+  if(Object.keys(availCache).length===0){
+    var today=new Date();
+    for(var i=1;i<=21;i++){
+      var d=new Date(today);d.setDate(d.getDate()+i);
+      var dow=d.getDay();
+      var ds=fmt(d);
+      if(!availCache[ds]) availCache[ds]={};
+      if(dow>=1&&dow<=5){
+        availCache[ds].indoor={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample']};
+      }else if(dow===6||dow===0){
+        availCache[ds].round={times:[],coaches:['sample']};
+        availCache[ds].accompany={times:[],coaches:['sample']};
+        availCache[ds].comp={times:[],coaches:['sample']};
+      }
+    }
+  }
+  renderWeekCal();
   renderMonthCal();
 }
 
@@ -631,208 +560,16 @@ function renderMonthCal(){
   }
   html+='</div>';
   document.getElementById('cal-body').innerHTML=html;
+  document.getElementById('slot-area').style.display='none';
 }
 
 function selectMonthDay(ds){
+  var avail=getAvailDates(currentType);
+  if(!avail[ds]) return;
   selectedDate=ds;
   selectedTime=null;
-  selectedCoachId=null;
-  selectedCoachName=null;
-  document.querySelectorAll('#cal-body .month-day').forEach(function(el){
-    el.classList.remove('selected');
-  });
-  document.querySelectorAll('#cal-body .month-day').forEach(function(el){
-    if(el.getAttribute('onclick')&&el.getAttribute('onclick').indexOf(ds)>=0){
-      el.classList.add('selected');
-    }
-  });
-  // デバッグ：availCacheの内容をalertで確認
-  var cacheInfo=availCache[ds]?JSON.stringify(Object.keys(availCache[ds])):'キャッシュなし';
-  document.getElementById('slot-title').textContent='DEBUG: '+ds+' cache='+cacheInfo;
-  document.getElementById('slot-area').style.display='block';
-  document.getElementById('btn-to-request').style.display='block';
-  // 強制的にコーチカードを表示（テスト）
-  var slotList=document.getElementById('slot-list');
-  slotList.innerHTML='';
-  var testCard=document.createElement('div');
-  testCard.style.cssText='display:flex;align-items:center;padding:10px 12px;background:#E1F5EE;border:2px solid #1D9E75;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:13px;font-weight:700;color:#085041;';
-  testCard.textContent='👤 テストコーチ（データ読込中）';
-  testCard.onclick=function(){selectTimeCoach('10:00','test','テストコーチ');};
-  slotList.appendChild(testCard);
-  // 実際のデータも表示
-  showTimeCoachList(ds);
-  return;
-  // slot-areaを強制表示
-  var area=document.getElementById('slot-area');
-  area.style.display='block';
-  var d=new Date(ds);
-  var dow=['日','月','火','水','木','金','土'][d.getDay()];
-  document.getElementById('slot-title').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+dow+'）の空き枠';
-  var cache=availCache[ds]&&availCache[ds][currentType];
-  var slotList=document.getElementById('slot-list');
-  slotList.innerHTML='';
-  if(!cache){
-    slotList.innerHTML='<div style="font-size:12px;color:#888;padding:8px;">この日は空き枠がありません</div>';
-    document.getElementById('btn-to-request').style.display='none';
-    return;
-  }
-  var times=(cache.times&&cache.times.length>0)?cache.times.slice().sort():[];
-  var coachIds=cache.coaches||[];
-  var html='';
-  // D形式：時間ごとにグループ化、コーチを横並びボタンで表示
-  if(times.length>0){
-    times.forEach(function(t){
-      var cids=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:coachIds;
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0ece6;';
-      var timeLabel=document.createElement('div');
-      timeLabel.style.cssText='width:52px;font-size:13px;font-weight:700;color:#6b8a78;flex-shrink:0;';
-      timeLabel.textContent=t;
-      row.appendChild(timeLabel);
-      var btnWrap=document.createElement('div');
-      btnWrap.style.cssText='display:flex;flex-wrap:wrap;gap:6px;';
-      cids.forEach(function(cid){
-        var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
-        var btn=document.createElement('button');
-        var photoHtml=coach.photo_url
-          ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
-          :'<span style="margin-right:4px;">👤</span>';
-        btn.innerHTML=photoHtml+coach.name;
-        btn.style.cssText='display:inline-flex;align-items:center;padding:6px 12px;background:#E1F5EE;color:#085041;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
-        btn.setAttribute('data-t',t);
-        btn.setAttribute('data-cid',cid);
-        btn.setAttribute('data-cname',coach.name);
-        btn.addEventListener('click',function(){
-          // 選択状態をリセットしてハイライト
-          slotList.querySelectorAll('button[data-t]').forEach(function(b){
-            b.style.background='#E1F5EE';b.style.color='#085041';
-          });
-          btn.style.background='#1D9E75';btn.style.color='#fff';
-          selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
-        });
-        btnWrap.appendChild(btn);
-      });
-      row.appendChild(btnWrap);
-      slotList.appendChild(row);
-    });
-  } else {
-    coachIds.forEach(function(cid){
-      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #e0ece6;';
-      var timeLabel=document.createElement('div');
-      timeLabel.style.cssText='width:52px;font-size:13px;font-weight:700;color:#6b8a78;flex-shrink:0;';
-      timeLabel.textContent='終日';
-      row.appendChild(timeLabel);
-      var btn=document.createElement('button');
-      var photoHtml=coach.photo_url
-        ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
-        :'<span style="margin-right:4px;">👤</span>';
-      btn.innerHTML=photoHtml+coach.name;
-      btn.style.cssText='display:inline-flex;align-items:center;padding:6px 12px;background:#E1F5EE;color:#085041;border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;';
-      btn.setAttribute('data-t','');
-      btn.setAttribute('data-cid',cid);
-      btn.setAttribute('data-cname',coach.name);
-      btn.addEventListener('click',function(){
-        slotList.querySelectorAll('button[data-t]').forEach(function(b){
-          b.style.background='#E1F5EE';b.style.color='#085041';
-        });
-        btn.style.background='#1D9E75';btn.style.color='#fff';
-        selectTimeCoach(this.getAttribute('data-t'),this.getAttribute('data-cid'),this.getAttribute('data-cname'));
-      });
-      row.appendChild(btn);
-      slotList.appendChild(row);
-    });
-  }
-  document.getElementById('coach-info-area').style.display='none';
-  document.getElementById('btn-to-request').style.display='block'
-}
-
-function showTimeCoachList(ds){
-  var area=document.getElementById('slot-area');
-  var slotList=document.getElementById('slot-list');
-  var slotTitle=document.getElementById('slot-title');
-  area.style.display='block';
-  // デバッグ：キャッシュの内容を表示
-  var dbg=availCache[ds]?JSON.stringify(availCache[ds]).substring(0,200):'キャッシュなし';
-  slotTitle.textContent='DEBUG: '+dbg;
-  var d=new Date(ds);
-  var dow=['日','月','火','水','木','金','土'][d.getDay()];
-  slotTitle.textContent=(d.getMonth()+1)+'月'+d.getDate()+'日（'+dow+'）の空き枠';
-  
-  var cache=availCache[ds]&&availCache[ds][currentType];
-  if(!cache){
-    slotList.innerHTML='<div style="font-size:12px;color:var(--muted);padding:8px;">この日は空き枠がありません</div>';
-    document.getElementById('coach-info-area').style.display='none';
-    document.getElementById('btn-to-request').style.display='none';
-    return;
-  }
-  
-  var times=(cache.times&&cache.times.length>0)?cache.times.slice().sort():[];
-  var html='';
-  // timesがない場合はcoachesだけ表示
-  if(times.length===0){
-    var coachIds=cache.coaches||[];
-    coachIds.forEach(function(cid){
-      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
-      var photoHtml=coach.photo_url
-        ?'<img src="'+coach.photo_url+'" style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-right:8px;border:2px solid var(--g);">'        :'<div style="width:36px;height:36px;border-radius:50%;background:var(--gl);margin-right:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">👤</div>';
-      html+='<div onclick="selectTimeCoach(\'\',\''+cid+'\',\''+coach.name+'\')"'
-        +' style="display:flex;align-items:center;padding:10px 12px;background:#fff;border:2px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;">'
-        +photoHtml
-        +'<div><div style="font-size:13px;font-weight:700;color:var(--gd);">'+coach.name+'</div>'
-        +'<div style="font-size:12px;color:var(--muted);margin-top:2px;">この日対応可</div></div></div>';
-    });
-    slotList.innerHTML=html||'<div style="font-size:12px;color:var(--muted);padding:8px;">この日は空き枠がありません</div>';
-    document.getElementById('coach-info-area').style.display='none';
-    document.getElementById('btn-to-request').style.display='block';
-    return;
-  }
-  // D形式：時間ごとにグループ化、コーチを横並びボタン
-  times.forEach(function(t){
-    var coachIds=cache.timeCoach&&cache.timeCoach[t]?cache.timeCoach[t]:cache.coaches||[];
-    var safeT=t.replace(/'/g,"\'");
-    var coachBtns='';
-    coachIds.forEach(function(cid){
-      var coach=coachCache[cid]||{name:'コーチ',photo_url:null};
-      var isSelected=(selectedTime===t&&selectedCoachId===cid);
-      var safeCid=String(cid).replace(/'/g,"\'");
-      var safeName=(coach.name||'コーチ').replace(/'/g,"\'");
-      var photoHtml=coach.photo_url
-        ?'<img src="'+coach.photo_url+'?width=56&quality=70&resize=cover" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:6px;vertical-align:middle;">'
-        :'<span style="margin-right:4px;">👤</span>';
-      var bg=isSelected?'var(--g)':'var(--gl)';
-      var col=isSelected?'#fff':'var(--gd)';
-      coachBtns+='<button data-t="'+safeT+'" data-cid="'+safeCid+'" data-cname="'+safeName+'"'
-        +' onclick="var b=this;document.querySelectorAll(\'.slot-coach-btn\').forEach(function(x){x.style.background=\'#E1F5EE\';x.style.color=\'#085041\';});b.style.background=\'#1D9E75\';b.style.color=\'#fff\';selectTimeCoach(b.getAttribute(\'data-t\'),b.getAttribute(\'data-cid\'),b.getAttribute(\'data-cname\'));"'
-        +' class="slot-coach-btn"'
-        +' style="display:inline-flex;align-items:center;padding:6px 12px;background:'+bg+';color:'+col+';border:none;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;">'
-        +photoHtml+(coach.name||'コーチ')+'</button>';
-    });
-    html+='<div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">'
-      +'<div style="width:52px;font-size:13px;font-weight:700;color:var(--muted);flex-shrink:0;">'+t+'</div>'
-      +'<div style="display:flex;flex-wrap:wrap;gap:6px;">'+coachBtns+'</div>'
-      +'</div>';
-  });
-  slotList.innerHTML=html;
-  document.getElementById('coach-info-area').style.display='none';
-  document.getElementById('btn-to-request').style.display='block';
-}
-
-// 時間・コーチ選択
-function selectTimeCoach(t,cid,cname){
-  selectedTime=t;
-  selectedCoachId=cid;
-  selectedCoachName=cname;
-  // 再描画
-  showTimeCoachList(selectedDate);
-  // 依頼ボタン表示
-  var area=document.getElementById('coach-info-area');
-  area.style.display='block';
-  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
-  document.getElementById('coach-info-text').textContent=
-    selectedDate.replace(/-/g,'/')+' '+t+' '+cname+' 【'+typeNames[currentType]+'】';
-  document.getElementById('btn-to-request').style.display='block';
+  renderMonthCal();
+  showCoachInfo();
 }
 
 // コーチ情報表示＆依頼ボタン表示
@@ -850,49 +587,19 @@ function showCoachInfo(){
 // 依頼するページへ遷移
 function goToRequest(){
   if(!selectedDate) return;
-  var mt=document.getElementById('req-member-type');
-  if(mt&&mt.value==='ナイト会員'){
-    document.getElementById('member-type-warning').style.display='block';
-    var btn=document.getElementById('snb-request');
-    tab(btn,'s-request');
-    return;
+  // フォームにセット
+  var typeMap={indoor:'indoor',round:'round',accompany:'accompany',comp:'comp'};
+  var sel=document.getElementById('req-type');
+  for(var i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===currentType){sel.selectedIndex=i;break;}
   }
-  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
-  var storeKey=localStorage.getItem('gc_customer_store')||'kyoto';
-  var storeNames={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
-  // 確定カードに表示
-  document.getElementById('req-type-disp').textContent=typeNames[currentType]||currentType;
-  document.getElementById('req-date-disp').textContent=selectedDate?selectedDate.replace(/-/g,'/'):'—';
-  document.getElementById('req-time-disp').textContent=selectedTime||'—';
-  document.getElementById('req-store-display').textContent=storeNames[storeKey]||storeKey;
-  // hidden inputにセット
-  document.getElementById('req-type').value=currentType;
   document.getElementById('req-date').value=selectedDate;
   if(selectedTime) document.getElementById('req-time').value=selectedTime;
-  document.getElementById('req-store').value=storeKey;
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
-  var durRow=document.getElementById('req-duration-row');
-  var durDisp=document.getElementById('req-duration-disp');
-  if(currentType==='indoor'){
-    durRow.style.display='flex';
-    var durSel=document.getElementById('req-duration');
-    durDisp.textContent=durSel.options[durSel.selectedIndex].text;
-  } else {
-    durRow.style.display='none';
-  }
-  var coachArea=document.getElementById('req-coach-info');
-  var coachNameEl=document.getElementById('req-coach-name');
-  if(selectedCoachName){
-    coachArea.style.display='flex';
-    coachNameEl.textContent=selectedCoachName;
-  } else {
-    coachArea.style.display='none';
-  }
+  // タブ切替
   var btn=document.getElementById('snb-request');
   tab(btn,'s-request');
 }
-
-
 
 // カレンダーナビ
 function calPrev(){
@@ -939,10 +646,8 @@ function rate(n){
 }
 
 async function doLogout(){
-  try{
-    localStorage.clear();
-    await sb.auth.signOut();
-  }catch(e){}
+  localStorage.removeItem('gc_login_time');
+  await sb.auth.signOut();
   window.location.href='index.html';
 }
 

@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" sizes="192x192" href="mycoach_icon_192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="mycoach_icon_192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="mycoach_icon_512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<meta name="theme-color" content="#064e3b">
 <title>MyCoach — スケジュールカレンダー</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
@@ -466,7 +473,7 @@ function buildWeek(){
       roundTo=parseInt(r.block_to||17);
       roundConfirmed=r.status==='booked';
       const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';
-      roundLabel=`⛳ ${sl} ${roundFrom}〜${roundTo}時`;
+      roundLabel=`⛳ ${sl} ${String(roundFrom).padStart(2,'0')}:00〜${String(roundTo).padStart(2,'0')}:00`;
     }
 
     if(roundFrom>=0){

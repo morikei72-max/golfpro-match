@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" sizes="192x192" href="mycoach_icon_192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="mycoach_icon_192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="mycoach_icon_512.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<meta name="theme-color" content="#064e3b">
 <title>GolfCoach — ログイン</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -97,17 +104,7 @@ const SUPABASE_URL = 'https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const {createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
-});
-// 既存セッション確認
-sb.auth.getSession().then(function(res){
-  var session=res.data.session;
-  if(session){
-    var role=session.user.user_metadata&&session.user.user_metadata.role?session.user.user_metadata.role:'customer';
-    if(role==='coach') window.location.href='coach.html';
-    else if(role==='store') window.location.href='store.html';
-    else window.location.href='customer.html';
-  }
+  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
 let currentType='customer';
 const typeLabels={customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください'},coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください'},store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください'}};
