@@ -601,36 +601,25 @@ function buildWeek(){
       roundLabel=`⛳ ${roundFrom}〜${roundTo}時`;
     }
 
+    // ラベルバー（全列・固定高さ20px）
+    const labelBar=document.createElement('div');
     if(roundFrom>=0){
-      // ラベルバーをday-hdrの直下に固定（全列同じ高さを保つ）
-      const rlabel=document.createElement('div');
-      rlabel.className='round-label-bar'+(roundConfirmed?' cfm':'');
-      rlabel.textContent=roundLabel;
-      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';rlabel.appendChild(b);}
-      col.appendChild(rlabel);
-      for(let h=HOURS[0];h<roundFrom;h++)col.appendChild(mkCell(ds,h,isToday));
-      const rb=document.createElement('div');rb.className='rb'+(roundConfirmed?' cfm':'');
-      for(let h=roundFrom;h<roundTo;h++){
-        const rc=document.createElement('div');rc.className='rc'+(roundConfirmed?' cfm':'');
-        const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h&&(gs(s)===currentStore||gs(s)==='both'||currentStore==='both'));
-        indoors.forEach(s=>{
-          const el=document.createElement('div');
-          el.className=roundConfirmed?'sl cancelled':'sl '+(currentStore==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');
-          el.textContent=currentStore==='kyoto'?'京':'伏';
-          if(s.status==='booked'&&!roundConfirmed){const st=document.createElement('div');st.className='cfms';st.textContent='確';el.appendChild(st);}
-          rc.appendChild(el);
-        });
-        rc.onclick=()=>openModal(ds,h);
-        rb.appendChild(rc);
-      }
-      col.appendChild(rb);
-      for(let h=roundTo;h<=HOURS[HOURS.length-1];h++)col.appendChild(mkCell(ds,h,isToday));
+      labelBar.className='round-label-bar'+(roundConfirmed?' cfm':'');
+      labelBar.textContent=roundLabel;
+      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelBar.appendChild(b);}
     } else {
-      const emptyLabel=document.createElement('div');
-      emptyLabel.className='empty-label-bar'+(isToday?' tdy':'');
-      col.appendChild(emptyLabel);
-      HOURS.forEach(h=>col.appendChild(mkCell(ds,h,isToday)));
+      labelBar.className='empty-label-bar'+(isToday?' tdy':'');
     }
+    col.appendChild(labelBar);
+    // 全時間帯を通常セルで表示（ラウンド時間帯は背景色で区別）
+    HOURS.forEach(h=>{
+      const cell=mkCell(ds,h,isToday);
+      if(roundFrom>=0&&h>=roundFrom&&h<roundTo){
+        cell.style.background=roundConfirmed?'#FFF0F0':'#FFFBEB';
+        cell.style.borderLeft=roundConfirmed?'2px solid var(--red)':'2px solid var(--round-bd)';
+      }
+      col.appendChild(cell);
+    });
     cal.appendChild(col);
   });
   wrap.appendChild(cal);
