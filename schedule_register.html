@@ -26,6 +26,7 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .store-tab{flex:1;padding:12px 8px;font-size:13px;font-weight:700;text-align:center;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;font-family:inherit;transition:all .2s;}
 .store-tab.active-k{color:var(--kyoto);border-bottom-color:var(--kyoto);}
 .store-tab.active-f{color:var(--fushimi);border-bottom-color:var(--fushimi);}
+.store-tab.active-all{color:var(--text);border-bottom-color:var(--text);}
 
 /* ビュータブ */
 .view-tabs{display:flex;gap:5px;padding:7px 12px;background:#f0f7f4;}
@@ -274,6 +275,22 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
   </div>
 </div>
 
+<div id="view-all" style="display:none;">
+  <div class="week-nav">
+    <button class="wnbtn" onclick="moveWeekAll(-1)">‹ 前</button>
+    <div class="wlbl" id="week-lbl-all"></div>
+    <button class="wnbtn" onclick="moveWeekAll(1)">次 ›</button>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;padding:6px 12px;background:#fff;border-bottom:1px solid var(--border);font-size:10px;align-items:center;">
+    <div class="leg"><div class="ld" style="background:var(--kyoto)"></div>京都</div>
+    <div class="leg"><div class="ld" style="background:var(--fushimi)"></div>伏見</div>
+    <div class="leg"><div class="ld" style="background:var(--round-bd)"></div>ラウンド受付中</div>
+    <div class="leg"><div class="ld" style="background:var(--red)"></div>ラウンド確定</div>
+    <div class="leg"><div class="ld" style="background:#ccc"></div>キャンセル</div>
+    <span style="font-size:10px;color:var(--muted);margin-left:4px;">確認・削除のみ</span>
+  </div>
+  <div class="cal-scroll"><div id="cal-wrap-all"></div></div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="btm"><button class="btmbtn" onclick="location.href='coach.html'">← コーチ画面に戻る</button></div>
 
@@ -345,29 +362,42 @@ function buildStoreTabs(){
   const tabsEl=document.getElementById('store-tabs');
   tabsEl.innerHTML='';
   const keys=Object.keys(stores);
-  // 保存済み店舗を復元
   const saved=localStorage.getItem('gc_reg_store');
-  currentStore=saved&&stores[saved]?saved:keys[0];
+  currentStore=(saved&&(stores[saved]||saved==='all'))?saved:keys[0];
   keys.forEach(k=>{
     const btn=document.createElement('button');
     btn.className='store-tab'+(k===currentStore?' active-'+(k==='kyoto'?'k':'f'):'');
     btn.textContent=stores[k].name||k;
-    btn.onclick=()=>selectStore(k);
+    btn.dataset.key=k;btn.onclick=()=>selectStore(k);
     tabsEl.appendChild(btn);
   });
-  updateStoreInfoBar();
+  const allBtn=document.createElement('button');
+  allBtn.className='store-tab'+(currentStore==='all'?' active-all':'');
+  allBtn.textContent='全体';allBtn.dataset.key='all';
+  allBtn.onclick=()=>selectStore('all');
+  tabsEl.appendChild(allBtn);
+  applyStoreView();
 }
 
 function selectStore(k){
   currentStore=k;
   localStorage.setItem('gc_reg_store',k);
-  // タブ更新
-  document.querySelectorAll('.store-tab').forEach((btn,i)=>{
-    const key=Object.keys(stores)[i];
-    btn.className='store-tab'+(key===k?' active-'+(key==='kyoto'?'k':'f'):'');
+  document.querySelectorAll('.store-tab').forEach(btn=>{
+    const key=btn.dataset.key;
+    if(key==='all')btn.className='store-tab'+(k==='all'?' active-all':'');
+    else btn.className='store-tab'+(key===k?' active-'+(key==='kyoto'?'k':'f'):'');
   });
-  updateStoreInfoBar();
-  buildWeek();
+  applyStoreView();
+}
+
+function applyStoreView(){
+  const isAll=currentStore==='all';
+  document.getElementById('view-all').style.display=isAll?'block':'none';
+  document.getElementById('store-info-bar').style.display=isAll?'none':'block';
+  document.querySelector('.view-tabs').style.display=isAll?'none':'flex';
+  document.querySelector('.legend').style.display=isAll?'none':'flex';
+  if(isAll){buildWeekAll();}
+  else{updateStoreInfoBar();switchView('week');}
 }
 
 function updateStoreInfoBar(){
@@ -387,6 +417,102 @@ function switchView(v){
   document.getElementById('tab-month').classList.toggle('active',v==='month');
   if(v==='month')buildMonth();
   if(v==='week')buildWeek();
+}
+
+let currentWeekSunAll=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;})();
+function moveWeekAll(dir){
+  currentWeekSunAll=new Date(currentWeekSunAll.getFullYear(),currentWeekSunAll.getMonth(),currentWeekSunAll.getDate()+dir*7);
+  buildWeekAll();
+}
+function buildWeekAll(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const dates=[];
+  for(let i=0;i<7;i++){const d=new Date(currentWeekSunAll);d.setDate(currentWeekSunAll.getDate()+i);dates.push(d);}
+  document.getElementById('week-lbl-all').textContent=(dates[0].getMonth()+1)+'/'+dates[0].getDate()+'〜'+(dates[6].getMonth()+1)+'/'+dates[6].getDate();
+  const wrap=document.getElementById('cal-wrap-all');wrap.innerHTML='';
+  const cal=document.createElement('div');cal.className='cal';
+  const tcol=document.createElement('div');tcol.className='tc-col';
+  tcol.appendChild(Object.assign(document.createElement('div'),{className:'tc-hdr'}));
+  tcol.appendChild(Object.assign(document.createElement('div'),{className:'tc-label-bar'}));
+  HOURS.forEach(h=>{const c=document.createElement('div');c.className='tc-cell';c.textContent=h+':00';tcol.appendChild(c);});
+  cal.appendChild(tcol);
+  dates.forEach(d=>{
+    const ds=fd(d),isToday=d.toDateString()===today.toDateString(),dow=d.getDay();
+    const col=document.createElement('div');col.className='day-col';
+    const hdr=document.createElement('div');
+    hdr.className='day-hdr'+(isToday?' tdy':'')+(dow===0?' sun':dow===6?' sat':'');
+    hdr.innerHTML=DAYS[dow]+'<br>'+(isToday?`<div class="today-num">${d.getDate()}</div>`:d.getDate());
+    col.appendChild(hdr);
+    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round');
+    let rFrom=-1,rTo=-1,rCfm=false,rLbl='';
+    if(rounds.length>0){
+      const r=rounds[0];rFrom=parseInt(r.block_from||8);rTo=parseInt(r.block_to||17);rCfm=r.status==='booked';
+      const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';
+      rLbl=`⛳ ${sl} ${rFrom}〜${rTo}時`;
+    }
+    const labelEl=document.createElement('div');
+    labelEl.className=(rFrom>=0?'round-label-bar'+(rCfm?' cfm':''):'empty-label-bar')+(isToday?' tdy':'');
+    if(rFrom>=0){labelEl.textContent=rLbl;if(rCfm){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelEl.appendChild(b);}}
+    col.appendChild(labelEl);
+    HOURS.forEach(h=>{
+      const cell=document.createElement('div');
+      cell.className='cell'+(isToday?' tdy':'');
+      if(rFrom>=0&&h>=rFrom&&h<rTo){cell.style.background=rCfm?'#FFF0F0':'#FFFBEB';cell.style.borderLeft='2px solid '+(rCfm?'var(--red)':'var(--round-bd)');}
+      const shown={kyoto:false,fushimi:false};
+      allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h).forEach(s=>{
+        const keys2=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];
+        keys2.forEach(k=>{
+          if(shown[k])return;shown[k]=true;
+          const el=document.createElement('div');
+          el.className='sl '+(k==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');
+          el.textContent=k==='kyoto'?'京':'伏';
+          if(s.status==='booked'){const st=document.createElement('div');st.className='cfms';st.textContent='確';el.appendChild(st);}
+          cell.appendChild(el);
+        });
+      });
+      cell.onclick=()=>openModalAll(ds,h);
+      col.appendChild(cell);
+    });
+    cal.appendChild(col);
+  });
+  wrap.appendChild(cal);
+}
+function openModalAll(ds,h){
+  const existing=allSlots.filter(s=>gd(s)===ds&&(
+    (s.lesson_type==='indoor'&&gh(s)===h)||
+    (s.lesson_type==='round'&&parseInt(s.block_from||8)<=h&&h<parseInt(s.block_to||17))
+  ));
+  if(!existing.length){showToast('この時間に登録はありません');return;}
+  modalDate=ds;
+  const d=new Date(ds);
+  document.getElementById('m-store-label').textContent='📋 全体確認';
+  document.getElementById('mdt').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日 '+h+':00';
+  let html='<div style="margin-bottom:10px;"><div class="stl" style="margin-top:0;">'+h+':00 の登録済み</div>';
+  existing.forEach(s=>{
+    const cfm=s.status==='booked';
+    const sk=gs(s),sl=sk==='both'?'両店舗':sk==='kyoto'?'京都店':'伏見店';
+    html+=`<div class="erow"><div><div class="et">${s.lesson_type==='round'?'⛳ ラウンド':'🏌 インドア'} ${sl}</div><div class="ed">${s.lesson_type==='round'?(s.block_from||'8')+'〜'+(s.block_to||'17')+'時':gh(s)+'時'}</div></div>${cfm?'<span style="font-size:10px;color:var(--red);font-weight:700;">確定済</span>':`<button class="dbtn" onclick="delSlotAll('${s.id}')">削除</button>`}</div>`;
+  });
+  html+='</div><p style="font-size:11px;color:var(--muted);margin-top:8px;">変更は各店舗タブから行ってください</p>';
+  document.getElementById('exist-wrap').innerHTML=html;
+  document.querySelectorAll('.togrow').forEach(el=>el.style.display='none');
+  document.getElementById('cr-btn').style.display='none';
+  document.querySelector('.sbtn').style.display='none';
+  document.querySelector('.sec-cancel-rule-wrap')&&(document.getElementById('sec-cancel-rule').style.display='none');
+  document.getElementById('modal').classList.add('open');
+}
+async function delSlotAll(id){
+  if(!confirm('削除しますか？'))return;
+  try{await sb.from('schedules').delete().eq('id',id);}catch(e){}
+  allSlots=allSlots.filter(s=>s.id!==id);
+  document.getElementById('modal').classList.remove('open');
+  restoreModal();
+  buildWeekAll();showToast('削除しました');
+}
+function restoreModal(){
+  document.querySelectorAll('.togrow').forEach(el=>el.style.display='flex');
+  document.getElementById('cr-btn').style.display='flex';
+  document.querySelector('.sbtn').style.display='block';
 }
 
 function fd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -591,7 +717,11 @@ function openModal(ds,hour){
   buildHGrid();
   document.getElementById('modal').classList.add('open');
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+  restoreModal();
+}
+
 
 function onTog(t,on){
   document.getElementById('sec-'+t).style.display=on?'block':'none';
