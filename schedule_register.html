@@ -599,13 +599,13 @@ function buildWeek(){
     }
 
     if(roundFrom>=0){
-      for(let h=HOURS[0];h<roundFrom;h++)col.appendChild(mkCell(ds,h,isToday));
-      // ラウンドラベルバー（rb外）
+      // ラベルバーをday-hdrの直下に固定（全列同じ高さを保つ）
       const rlabel=document.createElement('div');
       rlabel.className='round-label-bar'+(roundConfirmed?' cfm':'');
       rlabel.textContent=roundLabel;
       if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';rlabel.appendChild(b);}
       col.appendChild(rlabel);
+      for(let h=HOURS[0];h<roundFrom;h++)col.appendChild(mkCell(ds,h,isToday));
       const rb=document.createElement('div');rb.className='rb'+(roundConfirmed?' cfm':'');
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');rc.className='rc'+(roundConfirmed?' cfm':'');
