@@ -804,7 +804,7 @@ async function saveSlot(){
     if(!selHours.length){showToast('時間を選んでください');return;}
     selHours.forEach(h=>saves.push({
       coach_id:coachId,slot_date:modalDate,lesson_type:'indoor',
-      store_key:currentStore,slot_hour:h,status:'available'
+      store_key:currentStore,store_id:currentStore,slot_hour:h,status:'available'
     }));
   }
   if(ro){
@@ -816,7 +816,7 @@ async function saveSlot(){
     const chkComp=document.getElementById('chk-comp').checked;
     if(!chkRound&&!chkAccompany&&!chkComp){showToast('種別を1つ以上選んでください');return;}
     const base={
-      coach_id:coachId,slot_date:modalDate,store_key:currentStore,
+      coach_id:coachId,slot_date:modalDate,store_key:currentStore,store_id:currentStore,
       block_from:rs2,block_to:re2,status:'available',
       cancel_rule:selCR,
       cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
