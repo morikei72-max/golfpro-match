@@ -492,10 +492,8 @@ function buildWeekAll(){
         });
       });
       cell.onclick=()=>openModalAll(ds,h);
-      if(rbWrap&&inRound){rbWrap.appendChild(cell);}
-      else{col.appendChild(cell);}
+      col.appendChild(cell);
     });
-    if(rbWrap)col.appendChild(rbWrap);
     cal.appendChild(col);
   });
   wrap.appendChild(cal);
