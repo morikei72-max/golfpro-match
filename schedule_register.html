@@ -459,17 +459,20 @@ function buildWeekAll(){
       const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';
       rLbl=`⛳ ${sl} ${rFrom}〜${rTo}時`;
     }
-    const emptyLbl=document.createElement('div');
-    emptyLbl.className='empty-label-bar'+(isToday?' tdy':'');
-    col.appendChild(emptyLbl);
-    // ラウンド枠：角丸四角で全体を囲む
-    let rbWrap=null;
+    // ラベルバー（1行だけ・全列同じ高さ）
     if(rFrom>=0){
       const rlbl=document.createElement('div');
       rlbl.className='round-label-bar'+(rCfm?' cfm':'');
       rlbl.textContent=rLbl;
       if(rCfm){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';rlbl.appendChild(b);}
       col.appendChild(rlbl);
+    } else {
+      const emptyLbl=document.createElement('div');
+      emptyLbl.className='empty-label-bar'+(isToday?' tdy':'');
+      col.appendChild(emptyLbl);
+    }
+    let rbWrap=null;
+    if(rFrom>=0){
       rbWrap=document.createElement('div');rbWrap.className='rb'+(rCfm?' cfm':'');
     }
     HOURS.forEach(h=>{
