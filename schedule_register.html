@@ -333,8 +333,12 @@ let currentStore=null; // 現在選択中の店舗key
 })();
 
 async function loadSlots(){
-  try{const{data}=await sb.from('schedules').select('*').eq('coach_id',coachId);allSlots=data||[];}
-  catch(e){allSlots=[];}
+  try{
+    const{data,error}=await sb.from('schedules').select('*').eq('coach_id',coachId);
+    if(error)console.error('loadSlots error:',error);
+    allSlots=data||[];
+    console.log('loadSlots: coachId=',coachId,'slots=',allSlots.length);
+  }catch(e){console.error('loadSlots catch:',e);allSlots=[];}
 }
 
 async function loadStoreSettings(){
@@ -486,6 +490,7 @@ function openModalAll(ds,h){
     (s.lesson_type==='round'&&parseInt(s.block_from||8)<=h&&h<parseInt(s.block_to||17))
   ));
   if(!existing.length){showToast('この時間に登録はありません');return;}
+  // 全体ビューは確認・削除のみ
   modalDate=ds;
   const d=new Date(ds);
   document.getElementById('m-store-label').textContent='📋 全体確認';
@@ -680,14 +685,8 @@ function buildMonth(){
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonth();}
 
 function openModal(ds,hour){
-  // ブロックチェック
-  if(isBlocked(ds,hour)){
-    const ss=stores[currentStore];
-    const dow=new Date(ds+'T00:00:00').getDay();
-    const allowedDays=ss?ss.lesson_days:[1,2,3,4,5,6];
-    if(!allowedDays.includes(dow)){showToast('この曜日はレッスン不可です');return;}
-    showToast('レッスン可能時間外です');return;
-  }
+  // インドアはブロックチェック。ラウンドは常に開放。
+  const blocked=isBlocked(ds,hour);
   modalDate=ds;
   const d=new Date(ds);
   const storeName=stores[currentStore]?stores[currentStore].name:currentStore;
@@ -715,9 +714,8 @@ function openModal(ds,hour){
   document.getElementById('tog-r').checked=blocked;
   document.getElementById('sec-i').style.display=blocked?'none':'block';
   document.getElementById('sec-r').style.display=blocked?'block':'none';
-  // ブロック時はインドアトグルを非活性に
   const indoorRow=document.getElementById('tog-i').closest('.togrow');
-  if(indoorRow){indoorRow.style.opacity=blocked?'0.4':'1';indoorRow.style.pointerEvents=blocked?'none':'auto';}
+  if(indoorRow){indoorRow.style.opacity=blocked?'0.35':'1';indoorRow.style.pointerEvents=blocked?'none':'auto';}
   buildHGrid();
   document.getElementById('modal').classList.add('open');
 }
