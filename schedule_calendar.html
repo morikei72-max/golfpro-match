@@ -130,6 +130,13 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .rule-radio{width:16px;height:16px;border-radius:50%;border:2px solid #ccc;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;}
 .rule-radio.on-r{border-color:var(--g);background:var(--g);}
 .rr-dot{width:6px;height:6px;border-radius:50%;background:#fff;}
+
+/* 店舗タブ */
+.store-tabs{display:flex;gap:0;background:#fff;border-bottom:2px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.store-tab{flex-shrink:0;padding:10px 18px;font-size:12px;font-weight:700;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;}
+.store-tab.active{color:var(--g);border-bottom-color:var(--g);}
+.store-tab.all{color:var(--muted);}
+.store-tab.all.active{color:var(--gd);border-bottom-color:var(--gd);}
 </style>
 </head>
 <body>
@@ -139,6 +146,9 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 <div class="view-tabs">
   <button class="view-tab active" id="tab-week" onclick="switchView('week')">週ビュー</button>
   <button class="view-tab" id="tab-month" onclick="switchView('month')">月ビュー</button>
+</div>
+<div class="store-tabs" id="store-tabs">
+  <!-- 店舗タブはJSで動的生成 -->
 </div>
 <div class="legend">
   <div class="leg"><div class="ld" style="background:var(--kyoto)"></div>京都</div>
@@ -287,12 +297,12 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSess
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 const HOURS=[];for(let h=8;h<=22;h++)HOURS.push(h);
 let coachId=null,currentMonth=new Date(),allSlots=[],modalDate=null,selStore=null,selHours=[];
-let storeSettings={kyoto:{lesson_start:8,lesson_end:22,lesson_days:[0,1,2,3,4,5,6]},fushimi:{lesson_start:8,lesson_end:22,lesson_days:[0,1,2,3,4,5,6]}};
+let storeSettings={};
+// 現在選択中の店舗タブ（'all' or store_key）
+let activeStoreTab='all';
 let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d;})();
 
 (async()=>{
-  const us=new URLSearchParams(location.search).get('store');
-  if(us)localStorage.setItem('gc_store',us);
   const targetDate=new URLSearchParams(location.search).get('date');
   if(targetDate){
     const d=new Date(targetDate);
@@ -302,17 +312,9 @@ let currentWeekSun=(function(){const d=new Date();d.setHours(0,0,0,0);d.setDate(
   const {data:{session}}=await sb.auth.getSession();
   if(!session){location.replace(BASE+'index.html');return;}
   coachId=session.user.id;
-  // localStorageから店舗を復元（カレンダーグレーアウト用）
-  const savedStore=localStorage.getItem('gc_store');
-  if(savedStore){
-    selStore=savedStore;
-    ['kyoto','fushimi','both'].forEach(id=>{
-      const el=document.getElementById('chip-'+id);
-      if(el)el.className='chip'+(id===savedStore?' s'+(id==='kyoto'?'k':id==='fushimi'?'f':'b'):'');
-    });
-  }
   buildRoundOpts();
   await Promise.all([loadSlots(),loadStoreSettings()]);
+  buildStoreTabs();
   buildWeek();
 })();
 
@@ -323,35 +325,82 @@ async function loadSlots(){
 
 async function loadStoreSettings(){
   try{
-    const{data}=await sb.from('store_settings').select('store_key,lesson_start,lesson_end,lesson_days').in('store_key',['kyoto','fushimi']);
+    // 全店舗を取得（store_key絞り込みなし）
+    const{data}=await sb.from('store_settings').select('store_key,store_name,lesson_start,lesson_end,lesson_days');
     if(data&&data.length){
+      storeSettings={};
       data.forEach(s=>{
         const k=s.store_key;
         const start=s.lesson_start?parseInt(s.lesson_start.split(':')[0]):8;
         const end=s.lesson_end?parseInt(s.lesson_end.split(':')[0]):22;
         const days=s.lesson_days?s.lesson_days.split(',').map(Number):[0,1,2,3,4,5,6];
-        storeSettings[k]={lesson_start:start,lesson_end:end,lesson_days:days};
+        const name=s.store_name||(k==='kyoto'?'京都店':k==='fushimi'?'伏見店':k);
+        storeSettings[k]={lesson_start:start,lesson_end:end,lesson_days:days,store_name:name};
       });
+    } else {
+      // データがない場合はデフォルト
+      storeSettings={
+        kyoto:{lesson_start:8,lesson_end:22,lesson_days:[0,1,2,3,4,5,6],store_name:'京都店'},
+        fushimi:{lesson_start:8,lesson_end:22,lesson_days:[0,1,2,3,4,5,6],store_name:'伏見店'}
+      };
     }
-  }catch(e){}
+  }catch(e){
+    storeSettings={
+      kyoto:{lesson_start:8,lesson_end:22,lesson_days:[0,1,2,3,4,5,6],store_name:'京都店'},
+      fushimi:{lesson_start:8,lesson_end:22,lesson_days:[0,1,2,3,4,5,6],store_name:'伏見店'}
+    };
+  }
 }
 
-// 指定日・時間がグレーアウトすべきかを判定する共通関数
-// selStoreがnullなら常にfalse（グレーアウトしない）
+// 店舗タブを動的に生成
+function buildStoreTabs(){
+  const wrap=document.getElementById('store-tabs');
+  if(!wrap)return;
+  wrap.innerHTML='';
+  // 全体タブ
+  const allBtn=document.createElement('button');
+  allBtn.className='store-tab all'+(activeStoreTab==='all'?' active':'');
+  allBtn.textContent='全体';
+  allBtn.onclick=()=>switchStoreTab('all');
+  wrap.appendChild(allBtn);
+  // 各店舗タブ
+  Object.keys(storeSettings).forEach(k=>{
+    const btn=document.createElement('button');
+    btn.className='store-tab'+(activeStoreTab===k?' active':'');
+    btn.textContent=storeSettings[k].store_name||(k==='kyoto'?'京都店':k==='fushimi'?'伏見店':k);
+    btn.dataset.store=k;
+    btn.onclick=()=>switchStoreTab(k);
+    wrap.appendChild(btn);
+  });
+}
+
+// 店舗タブ切り替え
+function switchStoreTab(storeKey){
+  activeStoreTab=storeKey;
+  // タブのアクティブ状態更新
+  document.querySelectorAll('.store-tab').forEach(btn=>{
+    const k=btn.dataset.store||'all';
+    btn.classList.toggle('active',k===storeKey);
+  });
+  // 全体タブ→グレーアウトなし、店舗タブ→その店舗設定を使用
+  selStore=storeKey==='all'?null:storeKey;
+  buildWeek();
+}
+
+// 指定日・時間がインドアレッスンとしてグレーアウトすべきかを判定
+// 全体タブ or 店舗未設定 → ブロックしない
+// ラウンドはブロックしない（別途対応）
 function isBlocked(ds,h){
-  if(!selStore) return false;
+  if(activeStoreTab==='all'||!selStore) return false;
   const dow=parseDow(ds);
-  let stores=selStore==='both'?['kyoto','fushimi']:[selStore];
-  // いずれかの店舗でOKならブロックしない（AND条件ではなくOR条件）
-  for(const sk of stores){
-    const ss=storeSettings[sk];
-    if(!ss) continue;
-    const allowedDays=ss.lesson_days||[0,1,2,3,4,5,6];
-    const hStart=ss.lesson_start!=null?ss.lesson_start:8;
-    const hEnd=ss.lesson_end!=null?ss.lesson_end-1:21;
-    if(allowedDays.includes(dow)&&h>=hStart&&h<=hEnd) return false;
-  }
-  return true;
+  const ss=storeSettings[selStore];
+  if(!ss) return false;
+  const allowedDays=ss.lesson_days||[0,1,2,3,4,5,6];
+  const hStart=ss.lesson_start!=null?ss.lesson_start:8;
+  const hEnd=ss.lesson_end!=null?ss.lesson_end-1:21;
+  if(!allowedDays.includes(dow)) return true;
+  if(h<hStart||h>hEnd) return true;
+  return false;
 }
 
 // "YYYY-MM-DD"から曜日を取得（UTC解釈を避ける）
@@ -586,7 +635,7 @@ function openModal(ds,hour){
     html+='</div>';
   }
   document.getElementById('exist-wrap').innerHTML=html;
-  selStore=localStorage.getItem('gc_store')||null;
+  selStore=activeStoreTab==='all'?null:activeStoreTab;
   selHours=hour!==undefined?[hour]:[];
   document.getElementById('tog-i').checked=hour!==undefined;
   document.getElementById('tog-r').checked=false;
@@ -601,12 +650,10 @@ function openModal(ds,hour){
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 function pickStore(k){
   selStore=k;
-  localStorage.setItem('gc_store',k);
   ['kyoto','fushimi','both'].forEach(id=>{
     document.getElementById('chip-'+id).className='chip'+(id===k?' s'+(id==='kyoto'?'k':id==='fushimi'?'f':'b'):'');
   });
   buildHGrid();
-  buildWeek();
 }
 function onTog(t,on){
   document.getElementById('sec-'+t).style.display=on?'block':'none';
