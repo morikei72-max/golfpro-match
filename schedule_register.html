@@ -60,7 +60,7 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .today-num{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:var(--g);color:#fff;border-radius:50%;font-size:9px;font-weight:900;}
 .cell{height:36px;border-bottom:1px solid var(--border);border-left:1px solid var(--border);padding:2px;background:#fff;cursor:pointer;overflow:hidden;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
 .cell.tdy{background:#fffef5;}
-.cell.blocked{background:#e8e8e8 !important;cursor:not-allowed !important;opacity:0.5;}
+.cell.blocked{background:#b0b8b4 !important;cursor:pointer !important;opacity:0.85;}
 .cell:not(.blocked):active{background:#f0faf5;}
 
 .sl{border-radius:3px;padding:2px 0;font-size:9px;font-weight:700;color:#fff;text-align:center;flex:1;min-width:0;position:relative;overflow:hidden;white-space:nowrap;}
@@ -96,7 +96,7 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .mcell:hover{border-color:var(--g);}
 .mcell.today{border-color:var(--g);border-width:2px;}
 .mcell.other{opacity:.4;cursor:default;}
-.mcell.blocked-day{background:#e8e8e8;opacity:0.5;cursor:not-allowed;}
+.mcell.blocked-day{background:#b0b8b4;opacity:0.85;cursor:not-allowed;}
 .mdate{font-size:10px;font-weight:700;margin-bottom:2px;}
 .mcell.today .mdate{color:var(--g);}
 .mcell.sun .mdate{color:var(--red);}
@@ -329,6 +329,7 @@ let currentStore=null; // 現在選択中の店舗key
   buildRoundOpts();
   await Promise.all([loadSlots(),loadStoreSettings()]);
   buildStoreTabs();
+  applyStoreView();
 })();
 
 async function loadSlots(){
@@ -512,7 +513,7 @@ async function delSlotAll(id){
   buildWeekAll();showToast('削除しました');
 }
 function restoreModal(){
-  document.querySelectorAll('.togrow').forEach(el=>el.style.display='flex');
+  document.querySelectorAll('.togrow').forEach(el=>{el.style.display='flex';el.style.opacity='1';el.style.pointerEvents='auto';});
   document.getElementById('cr-btn').style.display='flex';
   document.querySelector('.sbtn').style.display='block';
 }
@@ -630,9 +631,7 @@ function mkCell(ds,h,isToday){
     cell.appendChild(el);
   });
 
-  if(!finalBlocked){
-    cell.onclick=()=>openModal(ds,h);
-  }
+  cell.onclick=()=>openModal(ds,h);
   return cell;
 }
 
@@ -711,11 +710,14 @@ function openModal(ds,hour){
   }
   document.getElementById('exist-wrap').innerHTML=html;
 
-  selHours=[hour];
-  document.getElementById('tog-i').checked=true;
-  document.getElementById('tog-r').checked=false;
-  document.getElementById('sec-i').style.display='block';
-  document.getElementById('sec-r').style.display='none';
+  selHours=blocked?[]:[hour];
+  document.getElementById('tog-i').checked=!blocked;
+  document.getElementById('tog-r').checked=blocked;
+  document.getElementById('sec-i').style.display=blocked?'none':'block';
+  document.getElementById('sec-r').style.display=blocked?'block':'none';
+  // ブロック時はインドアトグルを非活性に
+  const indoorRow=document.getElementById('tog-i').closest('.togrow');
+  if(indoorRow){indoorRow.style.opacity=blocked?'0.4':'1';indoorRow.style.pointerEvents=blocked?'none':'auto';}
   buildHGrid();
   document.getElementById('modal').classList.add('open');
 }
@@ -798,8 +800,8 @@ async function saveSlot(){
   if(io){
     if(!selHours.length){showToast('時間を選んでください');return;}
     selHours.forEach(h=>saves.push({
-      coach_id:coachId,slot_date:modalDate,lesson_type:'indoor',
-      store_key:currentStore,slot_hour:h,status:'available'
+      coach_id:coachId,date:modalDate,slot_date:modalDate,lesson_type:'indoor',
+      store_key:currentStore,start_time:h,slot_hour:h,status:'available'
     }));
   }
   if(ro){
@@ -811,7 +813,7 @@ async function saveSlot(){
     const chkComp=document.getElementById('chk-comp').checked;
     if(!chkRound&&!chkAccompany&&!chkComp){showToast('種別を1つ以上選んでください');return;}
     const base={
-      coach_id:coachId,slot_date:modalDate,store_key:currentStore,
+      coach_id:coachId,date:modalDate,slot_date:modalDate,store_key:currentStore,
       block_from:rs2,block_to:re2,status:'available',
       cancel_rule:selCR,
       cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
