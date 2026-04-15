@@ -577,7 +577,7 @@ function buildWeek(){
     col.appendChild(hdr);
 
     // ラウンド情報
-    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round'&&(gs(s)===currentStore||gs(s)==='both'));
+    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round');
     let roundFrom=-1,roundTo=-1,roundConfirmed=false,roundLabel='';
     if(rounds.length>0){
       const r=rounds[0];
@@ -603,7 +603,7 @@ function buildWeek(){
       rb.appendChild(labelRow);
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');rc.className='rc'+(roundConfirmed?' cfm':'');
-        const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h&&(gs(s)===currentStore||gs(s)==='both'));
+        const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h&&(gs(s)===currentStore||gs(s)==='both'||currentStore==='both'));
         indoors.forEach(s=>{
           const el=document.createElement('div');
           el.className=roundConfirmed?'sl cancelled':'sl '+(currentStore==='kyoto'?'ky':'fu')+(s.status==='booked'?' cfm':'');
@@ -834,12 +834,12 @@ async function saveSlot(){
       if(s.lesson_type!=='indoor')return true;
       return !allSlots.some(ex=>
         gd(ex)===s.slot_date&&
-        gs(ex)===s.store_key&&
+        (gs(ex)===s.store_key||gs(ex)==='both'||s.store_key==='both')&&
         gh(ex)===s.slot_hour&&
         ex.lesson_type==='indoor'
       );
     });
-    if(!newSaves.length){showToast('すでに登録済みです');closeModal();return;}
+    if(!newSaves.length){showToast('この時間はすでに登録済みです');closeModal();return;}
     const{error}=await sb.from('schedules').insert(newSaves);
     if(error){showToast('保存失敗: '+error.message);return;}
     await loadSlots();
