@@ -613,8 +613,12 @@ function buildWeek(){
     HOURS.forEach(h=>{
       const cell=mkCell(ds,h,isToday);
       if(roundFrom>=0&&h>=roundFrom&&h<roundTo){
+        // ラウンド時間帯はblockedクラスを除去して背景色を優先
+        cell.classList.remove('blocked');
         cell.style.background=roundConfirmed?'#FFF0F0':'#FFFBEB';
         cell.style.borderLeft=roundConfirmed?'2px solid var(--red)':'2px solid var(--round-bd)';
+        cell.style.cursor='pointer';
+        cell.style.opacity='1';
       }
       col.appendChild(cell);
     });
