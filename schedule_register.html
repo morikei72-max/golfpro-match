@@ -519,9 +519,9 @@ function restoreModal(){
 }
 
 function fd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function gd(s){return s.date||s.slot_date||'';}
+function gd(s){return s.slot_date||'';}
 function gs(s){return s.store_key||s.store_id||'kyoto';}
-function gh(s){return parseInt(s.start_time||s.slot_hour||0);}
+function gh(s){return parseInt(s.slot_hour||0);}
 
 function isBlocked(ds,h){
   if(!currentStore||!stores[currentStore])return false;
@@ -800,8 +800,8 @@ async function saveSlot(){
   if(io){
     if(!selHours.length){showToast('時間を選んでください');return;}
     selHours.forEach(h=>saves.push({
-      coach_id:coachId,date:modalDate,slot_date:modalDate,lesson_type:'indoor',
-      store_key:currentStore,start_time:h,slot_hour:h,status:'available'
+      coach_id:coachId,slot_date:modalDate,lesson_type:'indoor',
+      store_key:currentStore,slot_hour:h,status:'available'
     }));
   }
   if(ro){
@@ -813,7 +813,7 @@ async function saveSlot(){
     const chkComp=document.getElementById('chk-comp').checked;
     if(!chkRound&&!chkAccompany&&!chkComp){showToast('種別を1つ以上選んでください');return;}
     const base={
-      coach_id:coachId,date:modalDate,slot_date:modalDate,store_key:currentStore,
+      coach_id:coachId,slot_date:modalDate,store_key:currentStore,
       block_from:rs2,block_to:re2,status:'available',
       cancel_rule:selCR,
       cancel_other_before:parseInt(document.getElementById('cr-other-before')?.value||0),
