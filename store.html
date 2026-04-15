@@ -280,6 +280,7 @@ async function saveStoreInfo(){
     close_time:g('si-close').value,
     lesson_start:g('si-lesson-start').value,
     lesson_end:g('si-lesson-end').value,
+    lesson_days:[0,1,2,3,4,5,6].filter(d=>{const el=g('si-day-'+d);return el&&el.checked;}).join(','),
     holiday:g('si-holiday').value,
     staffed_start:g('si-staffed-start').value,
     staffed_end:g('si-staffed-end').value,
@@ -1188,7 +1189,20 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="setting-row"><div class="setting-label">無人営業（スタッフ不在）</div>
             <div class="setting-row2"><input class="setting-input" id="si-unstaffed-start" type="time"><span style="font-size:12px;color:var(--muted);padding:0 4px;">〜</span><input class="setting-input" id="si-unstaffed-end" type="time"></div>
           </div>
-          <div class="setting-row full"><div class="setting-label">定休日</div><input class="setting-input" id="si-holiday" placeholder="例：毎週月曜日・年末年始"></div>
+          <div class="setting-row full">
+            <div class="setting-label" style="color:var(--g);font-weight:700;">★ レッスン可能曜日</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-0" value="0"><span style="color:var(--red);">日</span></label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-1" value="1" checked><span>月</span></label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-2" value="2" checked><span>火</span></label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-3" value="3" checked><span>水</span></label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-4" value="4" checked><span>木</span></label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-5" value="5" checked><span>金</span></label>
+              <label style="display:flex;align-items:center;gap:3px;font-size:13px;cursor:pointer;"><input type="checkbox" id="si-day-6" value="6" checked><span style="color:#1976D2;">土</span></label>
+            </div>
+            <div style="font-size:11px;color:var(--g);margin-top:4px;">チェックした曜日のみコーチがレッスン枠を登録できます</div>
+          </div>
+          <div class="setting-row full"><div class="setting-label">定休日メモ</div><input class="setting-input" id="si-holiday" placeholder="例：年末年始・祝日など"></div>
         </div>
         <div style="font-size:11px;color:var(--g);background:rgba(29,158,117,0.08);border-radius:7px;padding:7px;">★レッスン可能時間外はコーチがレッスン枠を登録できません</div>
       </div>
@@ -1383,6 +1397,10 @@ async function loadStoreSettings(){
       if(g('si-close')&&data.close_time) g('si-close').value=data.close_time;
       if(g('si-lesson-start')&&data.lesson_start) g('si-lesson-start').value=data.lesson_start;
       if(g('si-lesson-end')&&data.lesson_end) g('si-lesson-end').value=data.lesson_end;
+      if(data.lesson_days){
+        const days=data.lesson_days.split(',').map(Number);
+        [0,1,2,3,4,5,6].forEach(d=>{const el=g('si-day-'+d);if(el)el.checked=days.includes(d);});
+      }
       if(data.member_types){
         try{memberTypes=JSON.parse(data.member_types);}catch(e){}
         renderMemberTypes();
