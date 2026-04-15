@@ -343,7 +343,7 @@ async function loadSlots(){
 
 async function loadStoreSettings(){
   try{
-    const{data,error}=await sb.from('store_settings').select('store_key,name,lesson_start,lesson_end,lesson_days');
+    const{data,error}=await sb.from('store_settings').select('store_key,lesson_start,lesson_end,lesson_days');
     console.log('[SS] data:', JSON.stringify(data), 'error:', error);
     const defaults={
       kyoto:{name:'京都店',lesson_start:8,lesson_end:22,lesson_days:[1,2,3,4,5,6]},
@@ -357,7 +357,7 @@ async function loadStoreSettings(){
         if(s.lesson_start)stores[k].lesson_start=parseInt(s.lesson_start.split(':')[0]);
         if(s.lesson_end)stores[k].lesson_end=parseInt(s.lesson_end.split(':')[0]);
         if(s.lesson_days)stores[k].lesson_days=s.lesson_days.split(',').map(Number);
-        if(s.name)stores[k].name=s.name;
+
       });
     }
     console.log('[SS] stores:', JSON.stringify(stores));
