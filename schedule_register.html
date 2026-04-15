@@ -452,11 +452,12 @@ function buildWeekAll(){
     hdr.className='day-hdr'+(isToday?' tdy':'')+(dow===0?' sun':dow===6?' sat':'');
     hdr.innerHTML=DAYS[dow]+'<br>'+(isToday?`<div class="today-num">${d.getDate()}</div>`:d.getDate());
     col.appendChild(hdr);
-    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round');
+    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round'&&(gs(s)===currentStore||gs(s)==='both'));
+    if(rounds.length>0)console.log('rounds found:',ds,rounds.map(r=>({sk:gs(r),from:r.block_from,to:r.block_to})));
     let rFrom=-1,rTo=-1,rCfm=false,rLbl='';
     if(rounds.length>0){
       const r=rounds[0];rFrom=parseInt(r.block_from||8);rTo=parseInt(r.block_to||17);rCfm=r.status==='booked';
-      const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';
+      const sl=currentStore==='kyoto'?'京都':currentStore==='fushimi'?'伏見':'両店舗';
       rLbl=`⛳ ${sl} ${rFrom}〜${rTo}時`;
     }
     // ラベルバー（1行だけ・全列同じ高さ）
@@ -589,7 +590,7 @@ function buildWeek(){
     col.appendChild(hdr);
 
     // ラウンド情報
-    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round');
+    const rounds=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='round'&&(gs(s)===currentStore||gs(s)==='both'));
     let roundFrom=-1,roundTo=-1,roundConfirmed=false,roundLabel='';
     if(rounds.length>0){
       const r=rounds[0];
