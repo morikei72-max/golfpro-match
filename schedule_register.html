@@ -329,7 +329,6 @@ let currentStore=null; // 現在選択中の店舗key
   buildRoundOpts();
   await Promise.all([loadSlots(),loadStoreSettings()]);
   buildStoreTabs();
-  buildWeek();
 })();
 
 async function loadSlots(){
@@ -396,8 +395,11 @@ function applyStoreView(){
   document.getElementById('store-info-bar').style.display=isAll?'none':'block';
   document.querySelector('.view-tabs').style.display=isAll?'none':'flex';
   document.querySelector('.legend').style.display=isAll?'none':'flex';
-  if(isAll){buildWeekAll();}
-  else{updateStoreInfoBar();switchView('week');}
+  if(isAll){
+    document.getElementById('view-week').style.display='none';
+    document.getElementById('view-month').style.display='none';
+    buildWeekAll();
+  } else {updateStoreInfoBar();switchView('week');}
 }
 
 function updateStoreInfoBar(){
