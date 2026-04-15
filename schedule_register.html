@@ -71,7 +71,7 @@ html,body{min-height:100%;background:#f0f7f4;font-family:'Noto Sans JP',sans-ser
 .sl.cancelled{background:#ccc;color:#999;text-decoration:line-through;font-size:8px;flex:1;min-width:0;}
 
 /* ラウンド枠 */
-.rb{border:2.5px solid var(--round-bd);border-radius:10px;background:var(--round-bg);margin:1px 2px;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:calc(100% - 4px);min-width:0;box-sizing:border-box;box-shadow:0 0 0 0;}
+.rb{border:2.5px solid var(--round-bd);border-radius:10px;background:var(--round-bg);margin:0;padding:0;display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;width:100%;min-width:0;box-sizing:border-box;}
 .rb.cfm{border-color:var(--red);border-width:2.5px;background:#FFF0F0;}
 .rcbdg{background:var(--red);color:#fff;border-radius:50%;width:11px;height:11px;font-size:6px;display:flex;align-items:center;justify-content:center;font-weight:900;flex-shrink:0;}
 .rc{height:36px;border-bottom:1px solid rgba(245,158,11,0.25);padding:2px;overflow:hidden;cursor:pointer;display:flex;flex-direction:row;gap:1px;align-items:center;box-sizing:border-box;}
@@ -459,14 +459,23 @@ function buildWeekAll(){
       const sk=gs(r),sl=sk==='both'?'京・伏':sk==='kyoto'?'京都':'伏見';
       rLbl=`⛳ ${sl} ${rFrom}〜${rTo}時`;
     }
-    const labelEl=document.createElement('div');
-    labelEl.className=(rFrom>=0?'round-label-bar'+(rCfm?' cfm':''):'empty-label-bar')+(isToday?' tdy':'');
-    if(rFrom>=0){labelEl.textContent=rLbl;if(rCfm){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelEl.appendChild(b);}}
-    col.appendChild(labelEl);
+    const emptyLbl=document.createElement('div');
+    emptyLbl.className='empty-label-bar'+(isToday?' tdy':'');
+    col.appendChild(emptyLbl);
+    // ラウンド枠：角丸四角で全体を囲む
+    let rbWrap=null;
+    if(rFrom>=0){
+      const rlbl=document.createElement('div');
+      rlbl.className='round-label-bar'+(rCfm?' cfm':'');
+      rlbl.textContent=rLbl;
+      if(rCfm){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';rlbl.appendChild(b);}
+      col.appendChild(rlbl);
+      rbWrap=document.createElement('div');rbWrap.className='rb'+(rCfm?' cfm':'');
+    }
     HOURS.forEach(h=>{
       const cell=document.createElement('div');
       cell.className='cell'+(isToday?' tdy':'');
-      if(rFrom>=0&&h>=rFrom&&h<rTo){cell.style.background=rCfm?'#FFF0F0':'#FFFBEB';cell.style.borderLeft='2px solid '+(rCfm?'var(--red)':'var(--round-bd)');}
+      const inRound=rFrom>=0&&h>=rFrom&&h<rTo;
       const shown={kyoto:false,fushimi:false};
       allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h).forEach(s=>{
         const keys2=gs(s)==='both'?['kyoto','fushimi']:[gs(s)];
@@ -480,8 +489,10 @@ function buildWeekAll(){
         });
       });
       cell.onclick=()=>openModalAll(ds,h);
-      col.appendChild(cell);
+      if(rbWrap&&inRound){rbWrap.appendChild(cell);}
+      else{col.appendChild(cell);}
     });
+    if(rbWrap)col.appendChild(rbWrap);
     cal.appendChild(col);
   });
   wrap.appendChild(cal);
@@ -588,19 +599,14 @@ function buildWeek(){
     }
 
     if(roundFrom>=0){
-      const emptyLabelEl=document.createElement('div');
-      emptyLabelEl.className='empty-label-bar'+(isToday?' tdy':'');
-      col.appendChild(emptyLabelEl);
-
       for(let h=HOURS[0];h<roundFrom;h++)col.appendChild(mkCell(ds,h,isToday));
+      // ラウンドラベルバー（rb外）
+      const rlabel=document.createElement('div');
+      rlabel.className='round-label-bar'+(roundConfirmed?' cfm':'');
+      rlabel.textContent=roundLabel;
+      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';rlabel.appendChild(b);}
+      col.appendChild(rlabel);
       const rb=document.createElement('div');rb.className='rb'+(roundConfirmed?' cfm':'');
-      // ラウンドラベルをrb内の先頭に
-      const labelRow=document.createElement('div');
-      labelRow.className='round-label-bar'+(roundConfirmed?' cfm':'');
-      labelRow.style.cssText='border-radius:8px 8px 0 0;border-left:none;border-right:none;border-top:none;';
-      labelRow.textContent=roundLabel;
-      if(roundConfirmed){const b=document.createElement('div');b.className='rcbdg';b.style.marginLeft='3px';b.textContent='確';labelRow.appendChild(b);}
-      rb.appendChild(labelRow);
       for(let h=roundFrom;h<roundTo;h++){
         const rc=document.createElement('div');rc.className='rc'+(roundConfirmed?' cfm':'');
         const indoors=allSlots.filter(s=>gd(s)===ds&&s.lesson_type==='indoor'&&gh(s)===h&&(gs(s)===currentStore||gs(s)==='both'||currentStore==='both'));
@@ -832,12 +838,15 @@ async function saveSlot(){
     // 重複チェック：既存スロットと重複するものを除外
     const newSaves=saves.filter(s=>{
       if(s.lesson_type!=='indoor')return true;
-      return !allSlots.some(ex=>
-        gd(ex)===s.slot_date&&
-        (gs(ex)===s.store_key||gs(ex)==='both'||s.store_key==='both')&&
-        gh(ex)===s.slot_hour&&
-        ex.lesson_type==='indoor'
-      );
+      // 同日・同時間・インドアで「同一店舗」または「both」が既に存在する場合はスキップ
+      const isDup=allSlots.some(ex=>{
+        if(ex.lesson_type!=='indoor')return false;
+        if(gd(ex)!==s.slot_date)return false;
+        if(gh(ex)!==s.slot_hour)return false;
+        const ek=gs(ex),sk=s.store_key;
+        return ek===sk||ek==='both'||sk==='both';
+      });
+      return !isDup;
     });
     if(!newSaves.length){showToast('この時間はすでに登録済みです');closeModal();return;}
     const{error}=await sb.from('schedules').insert(newSaves);
