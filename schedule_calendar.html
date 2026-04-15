@@ -326,7 +326,7 @@ async function loadSlots(){
 async function loadStoreSettings(){
   try{
     // 全店舗を取得（store_key絞り込みなし）
-    const{data}=await sb.from('store_settings').select('store_key,store_name,lesson_start,lesson_end,lesson_days');
+    const{data}=await sb.from('store_settings').select('store_key,lesson_start,lesson_end,lesson_days');
     if(data&&data.length){
       storeSettings={};
       data.forEach(s=>{
@@ -334,7 +334,7 @@ async function loadStoreSettings(){
         const start=s.lesson_start?parseInt(s.lesson_start.split(':')[0]):8;
         const end=s.lesson_end?parseInt(s.lesson_end.split(':')[0]):22;
         const days=s.lesson_days?s.lesson_days.split(',').map(Number):[0,1,2,3,4,5,6];
-        const name=s.store_name||(k==='kyoto'?'京都店':k==='fushimi'?'伏見店':k);
+        const name=k==='kyoto'?'京都店':k==='fushimi'?'伏見店':k;
         storeSettings[k]={lesson_start:start,lesson_end:end,lesson_days:days,store_name:name};
       });
     } else {
