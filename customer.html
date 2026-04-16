@@ -276,7 +276,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <!-- 会員認証ブロック -->
     <div id="member-auth-block" style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Golf Create 会員認証</div>
-      <div style="font-size:11px;color:#888;margin-bottom:12px;">会員番号を照合してサービスをご利用ください</div>
+      <div style="font-size:11px;color:#888;margin-bottom:12px;">会員メールアドレスを照合してサービスをご利用ください</div>
+      <div style="background:#fff8e1;border:0.5px solid #f0c040;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#7a5c00;line-height:1.6;">
+        ⚠️ Golf Create 戸津池を退会された場合、MyCoachのご利用は停止されます。再入会の際は再度会員認証が必要です。
+      </div>
 
       <!-- 承認済み表示 -->
       <div id="approved-badge" style="display:none;background:var(--gl);border:0.5px solid var(--g);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
@@ -290,16 +293,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           <label>ご利用店舗</label>
           <select id="mp-store-key">
             <option value="">選択してください</option>
-            <option value="kyoto">Golf Create tozuike 京都店</option>
-            <option value="fushimi">Golf Create tozuike 伏見店</option>
+            <option value="kyoto">Golf Create 戸津池 京都店</option>
+            <option value="fushimi">Golf Create 戸津池 伏見店</option>
           </select>
         </div>
         <div class="form-group">
-          <label>会員番号</label>
-          <input type="text" id="mp-member-number" placeholder="例：0001">
+          <label>Golf Create 登録メールアドレス</label>
+          <input type="email" id="mp-member-email" placeholder="例：example@mail.com">
         </div>
         <div id="auth-msg" style="font-size:12px;margin-bottom:8px;display:none;"></div>
-        <button class="btn-request" onclick="verifyMember()" id="verify-btn">会員番号を照合する</button>
+        <button class="btn-request" onclick="verifyMember()" id="verify-btn">会員認証する</button>
       </div>
       <!-- 非会員向けLINE登録案内 -->
       <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
@@ -695,17 +698,17 @@ async function doLogout(){
 
 async function verifyMember(){
   var storeKey=document.getElementById('mp-store-key').value;
-  var memberNumber=document.getElementById('mp-member-number').value.trim();
+  var memberEmail=document.getElementById('mp-member-email').value.trim().toLowerCase();
   var msg=document.getElementById('auth-msg');
   if(!storeKey){msg.style.display='block';msg.style.color='#E24B4A';msg.textContent='店舗を選択してください';return;}
-  if(!memberNumber){msg.style.display='block';msg.style.color='#E24B4A';msg.textContent='会員番号を入力してください';return;}
+  if(!memberEmail){msg.style.display='block';msg.style.color='#E24B4A';msg.textContent='メールアドレスを入力してください';return;}
   document.getElementById('verify-btn').textContent='照合中...';
   document.getElementById('verify-btn').disabled=true;
-  var{data,error}=await sb.from('members').select('*').eq('store_key',storeKey).eq('member_number',memberNumber).eq('is_active',true).single();
+  var{data,error}=await sb.from('members').select('*').eq('store_key',storeKey).eq('email',memberEmail).eq('is_active',true).single();
   if(error||!data){
     msg.style.display='block';msg.style.color='#E24B4A';
-    msg.textContent='会員番号が見つかりません。店舗または番号をご確認ください。';
-    document.getElementById('verify-btn').textContent='会員番号を照合する';
+    msg.textContent='会員情報が見つかりません。店舗またはメールアドレスをご確認ください。';
+    document.getElementById('verify-btn').textContent='会員認証する';
     document.getElementById('verify-btn').disabled=false;
     return;
   }
@@ -716,7 +719,7 @@ async function verifyMember(){
   await sb.from('customers').upsert({
     user_id:uid,
     store_key:storeKey,
-    member_number:memberNumber,
+    member_number:data.member_number,
     member_type:data.member_type,
     is_approved:true,
     updated_at:new Date().toISOString()
@@ -724,9 +727,9 @@ async function verifyMember(){
   document.getElementById('auth-form').style.display='none';
   var badge=document.getElementById('approved-badge');
   badge.style.display='block';
-  document.getElementById('approved-detail').textContent=storeLabels[storeKey]+' / '+typeLabels[data.member_type];
+  document.getElementById('approved-detail').textContent=storeLabels[storeKey]+' / '+(typeLabels[data.member_type]||data.member_type);
   msg.style.display='none';
-  document.getElementById('verify-btn').textContent='会員番号を照合する';
+  document.getElementById('verify-btn').textContent='会員認証する';
   document.getElementById('verify-btn').disabled=false;
 }
 
