@@ -305,9 +305,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <button class="btn-request" onclick="verifyMember()" id="verify-btn">会員認証する</button>
       </div>
       <!-- 非会員向けLINE登録案内 -->
-      <div style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
+      <div id="line-register-area" style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
         <div style="font-size:11px;color:#888;margin-bottom:8px;">Golf Create tozuike の会員登録がまだの方はこちら</div>
-        <a href="https://lin.ee/291uwoxr" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;color:#fff;border-radius:8px;padding:11px;font-size:13px;font-weight:700;text-decoration:none;">
+        <a href="https://lin.ee/RB8lb45" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;color:#fff;border-radius:8px;padding:11px;font-size:13px;font-weight:700;text-decoration:none;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
           Golf Create LINEで会員登録する
         </a>
@@ -385,6 +385,8 @@ sb.auth.getSession().then(async function(res){
     document.getElementById('auth-form').style.display='none';
     document.getElementById('approved-badge').style.display='block';
     document.getElementById('approved-detail').textContent=(storeLabels[data.store_key]||data.store_key)+' / '+(typeLabels[data.member_type]||data.member_type);
+    document.getElementById('line-register-area').style.display='none';
+    document.getElementById('line-register-area').style.display='none';
   }
 });
 
