@@ -413,6 +413,27 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
+
+    <!-- 振込先口座登録（Stripe Connect） -->
+    <div class="card">
+      <div class="card-title">振込先口座登録 <span style="font-size:10px;color:var(--red);font-weight:400">※必須（報酬受取のため）</span></div>
+      <div style="background:var(--gl);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;">
+        <div style="font-weight:700;margin-bottom:4px;">🏦 Stripeで安全に口座登録</div>
+        決済代行事業者Stripeの画面で本人確認と振込先口座の登録を行います。<br>
+        Stripeは世界最高水準のセキュリティ認証（PCI DSS Level 1）を取得しています。
+      </div>
+      <div id="stripe-status-wrap" style="padding:10px 12px;border-radius:8px;background:#fff4f4;border:1px solid #ffd0d0;margin-bottom:12px;font-size:12px;color:#b30000;">
+        <span id="stripe-status-text">⚠️ 未登録：口座登録が完了するまで報酬の受取ができません</span>
+      </div>
+      <button class="save-btn" id="stripe-register-btn" onclick="startStripeOnboarding()">
+        🏦 Stripeで口座登録を開始
+      </button>
+      <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;">
+        ※ 18歳以上、日本国内の銀行口座、本人確認書類（運転免許証等）が必要です<br>
+        ※ 報酬は「雑所得」または「事業所得」として確定申告の対象となる場合があります<br>
+        ※ 当社は源泉徴収を行いません。確定申告はご自身の責任で行ってください
+      </div>
+    </div>
   </div>
 
   <!-- 料金設定 -->
@@ -722,6 +743,7 @@ let cancelTargetItem=null;
   buildWeekGrid();
   buildMonthGrid();
   await loadProfile(user.id);
+  checkStripeReturnStatus();
 })();
 
 /* ===== 店舗選択 ===== */
@@ -1297,7 +1319,83 @@ async function loadProfile(userId){
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
+    updateStripeStatus(data);
   }catch(e){console.error('プロフィール読み込み例外:',e);}
+}
+
+/* ===== Stripe Connect 連携 ===== */
+function updateStripeStatus(coachData){
+  const wrap=document.getElementById('stripe-status-wrap');
+  const text=document.getElementById('stripe-status-text');
+  const btn=document.getElementById('stripe-register-btn');
+  if(!wrap||!text||!btn)return;
+  if(coachData && coachData.stripe_account_id && coachData.stripe_charges_enabled){
+    wrap.style.background='#e8f5e9';
+    wrap.style.borderColor='#81c784';
+    wrap.style.color='#1b5e20';
+    text.textContent='✓ 登録完了：報酬の受取が可能です';
+    btn.textContent='🏦 口座情報を更新する';
+  }else if(coachData && coachData.stripe_account_id){
+    wrap.style.background='#fff8e1';
+    wrap.style.borderColor='#ffd54f';
+    wrap.style.color='#ef6c00';
+    text.textContent='⚠️ 登録中：Stripeで登録手続きが未完了です';
+    btn.textContent='🏦 Stripe登録を続ける';
+  }else{
+    wrap.style.background='#fff4f4';
+    wrap.style.borderColor='#ffd0d0';
+    wrap.style.color='#b30000';
+    text.textContent='⚠️ 未登録：口座登録が完了するまで報酬の受取ができません';
+    btn.textContent='🏦 Stripeで口座登録を開始';
+  }
+}
+
+async function startStripeOnboarding(){
+  if(!currentCoachId){showMsg('ログイン情報が取得できません','error');return;}
+  const name=document.getElementById('prof-name').value.trim();
+  if(!name){showMsg('先に基本情報（お名前）を保存してください','error');return;}
+  const {data:{user}}=await sb.auth.getUser();
+  if(!user||!user.email){showMsg('メールアドレスが取得できません','error');return;}
+  const btn=document.getElementById('stripe-register-btn');
+  btn.disabled=true;
+  btn.textContent='🏦 Stripe登録ページを生成中...';
+  try{
+    const res=await fetch('/.netlify/functions/stripe-create-account',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        email:user.email,
+        coach_id:currentCoachId,
+        coach_name:name
+      })
+    });
+    const result=await res.json();
+    if(!res.ok||!result.success){
+      throw new Error(result.error||'Stripeアカウント作成に失敗しました');
+    }
+    await sb.from('coaches').upsert({
+      user_id:currentCoachId,
+      stripe_account_id:result.account_id,
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+    window.location.href=result.onboarding_url;
+  }catch(e){
+    console.error('Stripe onboarding error:',e);
+    showMsg('エラー：'+e.message,'error');
+    btn.disabled=false;
+    btn.textContent='🏦 Stripeで口座登録を開始';
+  }
+}
+
+function checkStripeReturnStatus(){
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('stripe_return')==='true'){
+    showMsg('Stripe登録画面から戻りました。登録状況を確認しています...','success');
+    history.replaceState(null,'',window.location.pathname);
+  }else if(params.get('stripe_refresh')==='true'){
+    showMsg('Stripe登録を再開してください','error');
+    history.replaceState(null,'',window.location.pathname);
+  }
 }
 
 /* ===== メッセージ ===== */
