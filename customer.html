@@ -224,38 +224,38 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" id="req-time" value="10:00"></div>
       </div>
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
-        <select><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
+        <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
       </div>
       <div class="form-group"><label>場所</label>
-        <select><option>Golf Create 京都店</option><option>Golf Create 伏見店</option></select>
+        <select id="req-store"><option value="kyoto">Golf Create 京都店</option><option value="fushimi">Golf Create 伏見店</option></select>
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
-        <select><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
+        <select id="req-golf-history"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
       </div>
       <div class="form-group"><label>ご要望・コメント</label>
-        <textarea placeholder="例：スイングの基礎から教えていただきたいです。"></textarea>
+        <textarea id="req-comment" placeholder="例：スイングの基礎から教えていただきたいです。"></textarea>
       </div>
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:10px;">利用規約・同意事項</div>
       <div class="terms-box">
         <h4>第1条（サービスの性質と派遣業務の非該当）</h4>本サービス「GolfCoach」はマッチングプラットフォームです。運営者はコーチに業務上の指揮命令を行わず、レッスン内容・方法・料金はコーチが自ら決定します。本サービスは労働者派遣事業に該当しません。
-        <h4>第2条（コーチの独立性）</h4>コーチはすべて個人事業主であり、運営者との雇用関係はありません。
-        <h4>第3条（個人情報の取り扱い）</h4>個人情報保護法に基づき個人情報を適切に管理します。
-        <h4>第4条（お気に入り機能と情報開示）</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
-        <h4>第5条（ラウンド系依頼におけるお客様負担事項）</h4>ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。
-        <h4>第6条（キャンセルポリシー）</h4>レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
-        <h4>第7条（レビュー義務）</h4>レッスン終了後、星評価（1〜5）の投稿が必須です。
-        <h4>第8条（準拠法・管轄）</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
+        <h4>第2条(コーチの独立性)</h4>コーチはすべて個人事業主であり、運営者との雇用関係はありません。
+        <h4>第3条(個人情報の取り扱い)</h4>個人情報保護法に基づき個人情報を適切に管理します。
+        <h4>第4条(お気に入り機能と情報開示)</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
+        <h4>第5条(ラウンド系依頼におけるお客様負担事項)</h4>ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。
+        <h4>第6条(キャンセルポリシー)</h4>レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
+        <h4>第7条(レビュー義務)</h4>レッスン終了後、星評価(1〜5)の投稿が必須です。
+        <h4>第8条(準拠法・管轄)</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
       </div>
       <label class="agree-row"><input type="checkbox" id="agreeChk" onchange="checkAgree()">利用規約をすべて読み、内容に同意してサービスを利用します</label>
-      <button class="btn-confirm" id="req-btn" disabled>同意して依頼を確定する →</button>
+      <button class="btn-confirm" id="req-btn" disabled onclick="submitBooking()">同意して依頼を確定する →</button>
     </div>
   </div>
 
   <!-- お気に入り -->
   <div class="screen" id="s-fav">
-    <div class="fav-notice">♥ お気に入り登録すると、コーチにあなたのお名前が通知されます。（利用規約第4条）</div>
+    <div class="fav-notice">♥ お気に入り登録すると、コーチにあなたのお名前が通知されます。(利用規約第4条)</div>
     <div class="ccard">
       <div class="ccard-top">
         <div class="avatar">田中</div>
@@ -299,7 +299,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         </div>
         <div class="form-group">
           <label>Golf Create 登録メールアドレス</label>
-          <input type="email" id="mp-member-email" placeholder="例：example@mail.com">
+          <input type="email" id="mp-member-email" placeholder="例:example@mail.com">
         </div>
         <div id="auth-msg" style="font-size:12px;margin-bottom:8px;display:none;"></div>
         <button class="btn-request" onclick="verifyMember()" id="verify-btn">会員認証する</button>
@@ -325,9 +325,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="form-group"><label>ゴルフ歴</label>
         <select id="mp-golf-history"><option value="">未選択</option><option value="none">未経験</option><option value="lt1">1年未満</option><option value="1to3">1〜3年</option><option value="3to5">3〜5年</option><option value="5to10">5〜10年</option><option value="over10">10年以上</option></select>
       </div>
-      <div class="form-group"><label>所属ゴルフ場</label><input type="text" id="mp-home-course" placeholder="例：宝が池ゴルフ場（なければ空欄）"></div>
+      <div class="form-group"><label>所属ゴルフ場</label><input type="text" id="mp-home-course" placeholder="例:宝が池ゴルフ場(なければ空欄)"></div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>ハンディキャップ</label><input type="number" id="mp-handicap" placeholder="例：18" min="0" max="54"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>ハンディキャップ</label><input type="number" id="mp-handicap" placeholder="例:18" min="0" max="54"></div>
         <div class="form-group" style="flex:1;margin-bottom:0;"><label>年齢層</label>
           <select id="mp-age-group"><option value="">未選択</option><option value="10s">10代</option><option value="20s">20代</option><option value="30s">30代</option><option value="40s">40代</option><option value="50s">50代</option><option value="60s">60代以上</option></select>
         </div>
@@ -344,7 +344,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
   <!-- レビュー -->
   <div class="screen" id="s-review">
     <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);">
-      <div style="font-size:13px;font-weight:500;">田中コーチへの評価（必須）</div>
+      <div style="font-size:13px;font-weight:500;">田中コーチへの評価(必須)</div>
       <div style="font-size:12px;color:#666;margin-bottom:10px;">4月08日 インドアゴルフレッスン 50分</div>
       <label style="font-size:12px;color:#666;">総合評価</label>
       <div class="star-row" id="rev-stars">
@@ -354,7 +354,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <button class="starb" onclick="rate(4)">★</button>
         <button class="starb" onclick="rate(5)">★</button>
       </div>
-      <div class="form-group"><label>コメント（必須）</label><textarea placeholder="レッスンの感想をご記入ください。"></textarea></div>
+      <div class="form-group"><label>コメント(必須)</label><textarea placeholder="レッスンの感想をご記入ください。"></textarea></div>
       <button class="btn-request">評価を送信する</button>
     </div>
   </div>
@@ -388,6 +388,8 @@ sb.auth.getSession().then(async function(res){
     document.getElementById('line-register-area').style.display='none';
     document.getElementById('line-register-area').style.display='none';
   }
+  // 決済結果のURL判定
+  handlePaymentReturn();
 });
 
 // タブ切替
@@ -423,7 +425,7 @@ function selType(card,type){
   }
 }
 
-// ========== 空き日データ（Supabaseから取得）==========
+// ========== 空き日データ(Supabaseから取得)==========
 var availCache={};
 
 async function fetchAvailDates(){
@@ -494,7 +496,7 @@ function fmt(d){
   return y+'-'+m+'-'+dd;
 }
 
-// ========== 週間カレンダー（インドア）==========
+// ========== 週間カレンダー(インドア)==========
 var weekStart=null;
 
 function getMonday(d){
@@ -562,7 +564,7 @@ function selectSlot(t){
   showCoachInfo();
 }
 
-// ========== 月間カレンダー（ラウンド・同伴・コンペ）==========
+// ========== 月間カレンダー(ラウンド・同伴・コンペ)==========
 var calYear=null;
 var calMonth=null;
 
@@ -579,7 +581,7 @@ function renderMonthCal(){
   var html='<div class="month-grid">';
   days.forEach(function(d){html+='<div class="month-day-label">'+d+'</div>';});
 
-  // 月初の曜日（月曜=0）
+  // 月初の曜日(月曜=0)
   var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
   // 前月の日を埋める
   for(var i=0;i<startDow;i++){
@@ -627,7 +629,7 @@ function showCoachInfo(){
   var msg=selectedDate?selectedDate.replace(/-/g,'/'):'';
   if(selectedTime) msg+=' '+selectedTime;
   msg+=' 【'+typeNames[currentType]+'】';
-  document.getElementById('coach-info-text').textContent='選択中：'+msg;
+  document.getElementById('coach-info-text').textContent='選択中:'+msg;
   document.getElementById('btn-to-request').style.display='block';
 }
 
@@ -755,6 +757,121 @@ async function saveMyProfile(){
   var result=await sb.from('customers').upsert(payload,{onConflict:'user_id'});
   if(result.error){alert('保存に失敗しました');}
   else{alert('プロフィールを保存しました！');}
+}
+
+/* ===========================================================
+   決済関連(Stripe Checkout連携)
+   =========================================================== */
+
+// 「同意して依頼を確定する」ボタン押下時
+async function submitBooking(){
+  var btn=document.getElementById('req-btn');
+  var chk=document.getElementById('agreeChk');
+  if(!chk.checked){alert('利用規約に同意してください');return;}
+
+  // セッション取得
+  var sres=await sb.auth.getSession();
+  var session=sres.data.session;
+  if(!session){alert('ログインが必要です');window.location.href='index.html';return;}
+  var uid=session.user.id;
+
+  // 入力取得
+  var lessonType=document.getElementById('req-type').value;
+  var lessonDate=document.getElementById('req-date').value;
+  var lessonTime=document.getElementById('req-time').value;
+  var storeKey=document.getElementById('req-store').value;
+  var golfHistory=document.getElementById('req-golf-history').value;
+  var comment=document.getElementById('req-comment').value;
+
+  if(!lessonDate){alert('希望日を入力してください');return;}
+
+  // 金額とレッスン時間の抽出
+  var amountYen=0;
+  var durationMin=null;
+  var lessonLabel='';
+  var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+
+  if(lessonType==='indoor'){
+    var durationText=document.getElementById('req-duration').value;
+    // 例："50分 — ¥4,000" → 4000
+    var amtMatch=durationText.match(/¥([\d,]+)/);
+    var minMatch=durationText.match(/(\d+)分/);
+    if(amtMatch){amountYen=parseInt(amtMatch[1].replace(/,/g,''),10);}
+    if(minMatch){durationMin=parseInt(minMatch[1],10);}
+    lessonLabel=(typeLabelMap[lessonType]||lessonType)+' '+(durationMin||'')+'分';
+  }else{
+    // ラウンド系は店舗固定料金(段階1: 仮値、後日料金設定連携)
+    var roundPrices={kyoto:8000,fushimi:6000};
+    amountYen=roundPrices[storeKey]||8000;
+    lessonLabel=typeLabelMap[lessonType]||lessonType;
+  }
+
+  if(!amountYen||amountYen<100){alert('金額が取得できませんでした');return;}
+
+  // お客様情報取得(メール事前入力用)
+  var customerEmail=session.user.email||'';
+  var customerName='';
+  try{
+    var c=await sb.from('customers').select('name,email').eq('user_id',uid).maybeSingle();
+    if(c.data){
+      customerName=c.data.name||'';
+      if(c.data.email) customerEmail=c.data.email;
+    }
+  }catch(e){}
+
+  btn.disabled=true;
+  btn.textContent='処理中...';
+
+  try{
+    var resp=await fetch('/.netlify/functions/create-checkout-session',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        user_id:uid,
+        coach_id:null, /* 段階1: コーチ選択は後日 */
+        store_key:storeKey,
+        lesson_type:lessonType,
+        lesson_date:lessonDate,
+        lesson_time:lessonTime,
+        duration_min:durationMin,
+        amount_yen:amountYen,
+        lesson_label:lessonLabel,
+        golf_history:golfHistory,
+        comment:comment,
+        customer_name:customerName,
+        customer_email:customerEmail
+      })
+    });
+    var json=await resp.json();
+    if(!resp.ok||!json.checkout_url){
+      console.error('checkout error:',json);
+      alert('決済セッションの作成に失敗しました\n'+(json.error||json.detail||''));
+      btn.disabled=false;
+      btn.textContent='同意して依頼を確定する →';
+      return;
+    }
+    // Stripe Checkoutへ遷移
+    window.location.href=json.checkout_url;
+  }catch(e){
+    console.error(e);
+    alert('通信エラー:'+e.message);
+    btn.disabled=false;
+    btn.textContent='同意して依頼を確定する →';
+  }
+}
+
+// 決済結果の戻り判定(Stripe Checkoutから戻ってきたときの処理)
+function handlePaymentReturn(){
+  var params=new URLSearchParams(window.location.search);
+  var result=params.get('payment');
+  if(result==='success'){
+    alert('✅ お支払いが完了しました。\nご予約が確定しました。');
+    // URLをクリーンに
+    window.history.replaceState({},document.title,window.location.pathname);
+  }else if(result==='cancel'){
+    alert('決済がキャンセルされました。');
+    window.history.replaceState({},document.title,window.location.pathname);
+  }
 }
 
 </script>
