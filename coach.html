@@ -1391,6 +1391,13 @@ async function startStripeOnboarding(){
       updated_at:new Date().toISOString()
     }).eq('user_id',currentCoachId);
     console.log('[口座登録] DB更新完了');
+    if(result.already_completed){
+      console.log('[口座登録] 既に登録完了済みのため画面を更新');
+      showMsg('登録は既に完了しています','success');
+      btn.disabled=false;
+      await loadProfile();
+      return;
+    }
     console.log('[口座登録] 遷移先:',result.onboarding_url);
     window.location.href=result.onboarding_url;
   }catch(e){
@@ -1406,6 +1413,25 @@ function checkStripeReturnStatus(){
   if(params.get('stripe_return')==='true'){
     showMsg('登録画面から戻りました。登録状況を確認しています...','success');
     history.replaceState(null,'',window.location.pathname);
+    setTimeout(async()=>{
+      if(!currentCoachId)return;
+      try{
+        const {data:{user}}=await sb.auth.getUser();
+        if(!user||!user.email)return;
+        const name=(document.getElementById('prof-name')&&document.getElementById('prof-name').value.trim())||'';
+        const res=await fetch('/.netlify/functions/stripe-create-account',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:user.email,coach_id:currentCoachId,coach_name:name})
+        });
+        const result=await res.json();
+        console.log('[Stripe戻り確認]',result);
+        if(result.already_completed){
+          showMsg('✓ 登録完了が確認できました','success');
+        }
+        await loadProfile();
+      }catch(e){console.error('[Stripe戻り確認]エラー:',e);}
+    },1500);
   }else if(params.get('stripe_refresh')==='true'){
     showMsg('Stripe登録を再開してください','error');
     history.replaceState(null,'',window.location.pathname);
