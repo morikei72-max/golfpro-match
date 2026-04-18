@@ -1386,11 +1386,11 @@ async function startStripeOnboarding(){
     if(!res.ok||!result.success){
       throw new Error(result.error||'アカウント作成に失敗しました（HTTP '+res.status+'）');
     }
-    await sb.from('coaches').upsert({
-      user_id:currentCoachId,
+    await sb.from('coaches').update({
       stripe_account_id:result.account_id,
       updated_at:new Date().toISOString()
-    },{onConflict:'user_id'});
+    }).eq('user_id',currentCoachId);
+    console.log('[口座登録] DB更新完了');
     console.log('[口座登録] 遷移先:',result.onboarding_url);
     window.location.href=result.onboarding_url;
   }catch(e){
