@@ -42,7 +42,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .cal-title{font-size:14px;font-weight:700;color:var(--gd);}
 .cal-type-label{display:none;}
 
-/* 週間カレンダー（インドア用）*/
+/* 週間カレンダー(インドア用)*/
 .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:12px;}
 .week-day-label{text-align:center;font-size:10px;color:#999;padding:2px 0;}
 .week-day{text-align:center;padding:6px 2px;border-radius:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
@@ -63,7 +63,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .slot.sel{background:var(--g);color:#fff;border-color:var(--g);}
 .slot-none{font-size:12px;color:#bbb;padding:8px 0;}
 
-/* 月間カレンダー（ラウンド用）*/
+/* 月間カレンダー(ラウンド用)*/
 .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
 .month-day-label{text-align:center;font-size:10px;color:#999;padding:4px 0;}
 .month-day{text-align:center;padding:4px 2px;border-radius:6px;min-height:36px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
@@ -217,7 +217,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:12px;">依頼内容を入力</div>
       <div class="form-group"><label>依頼の種類</label>
-        <select id="req-type"><option value="indoor">⛳ インドアゴルフレッスン（時間制）</option><option value="round">🏌 ラウンドレッスン（1ラウンド）</option><option value="accompany">🤝 同伴ラウンド（1ラウンド）</option><option value="comp">🏆 コンペ参加（1ラウンド）</option></select>
+        <select id="req-type"><option value="indoor">⛳ インドアゴルフレッスン(時間制)</option><option value="round">🏌 ラウンドレッスン(1ラウンド)</option><option value="accompany">🤝 同伴ラウンド(1ラウンド)</option><option value="comp">🏆 コンペ参加(1ラウンド)</option></select>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date"></div>
@@ -233,13 +233,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <select id="req-golf-history"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
       </div>
       <div class="form-group"><label>ご要望・コメント</label>
-        <textarea id="req-comment" placeholder="例：スイングの基礎から教えていただきたいです。"></textarea>
+        <textarea id="req-comment" placeholder="例:スイングの基礎から教えていただきたいです。"></textarea>
       </div>
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:10px;">利用規約・同意事項</div>
       <div class="terms-box">
-        <h4>第1条（サービスの性質と派遣業務の非該当）</h4>本サービス「GolfCoach」はマッチングプラットフォームです。運営者はコーチに業務上の指揮命令を行わず、レッスン内容・方法・料金はコーチが自ら決定します。本サービスは労働者派遣事業に該当しません。
+        <h4>第1条(サービスの性質と派遣業務の非該当)</h4>本サービス「GolfCoach」はマッチングプラットフォームです。運営者はコーチに業務上の指揮命令を行わず、レッスン内容・方法・料金はコーチが自ら決定します。本サービスは労働者派遣事業に該当しません。
         <h4>第2条(コーチの独立性)</h4>コーチはすべて個人事業主であり、運営者との雇用関係はありません。
         <h4>第3条(個人情報の取り扱い)</h4>個人情報保護法に基づき個人情報を適切に管理します。
         <h4>第4条(お気に入り機能と情報開示)</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
@@ -793,7 +793,7 @@ async function submitBooking(){
 
   if(lessonType==='indoor'){
     var durationText=document.getElementById('req-duration').value;
-    // 例："50分 — ¥4,000" → 4000
+    // 例:"50分 — ¥4,000" → 4000
     var amtMatch=durationText.match(/¥([\d,]+)/);
     var minMatch=durationText.match(/(\d+)分/);
     if(amtMatch){amountYen=parseInt(amtMatch[1].replace(/,/g,''),10);}
@@ -827,8 +827,8 @@ async function submitBooking(){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        user_id:uid,
-        coach_id:null, /* 段階1: コーチ選択は後日 */
+        customer_user_id:uid,
+        coach_id:'6f728334-3fbe-4af2-93b1-9b4d288c2ca3',
         store_key:storeKey,
         lesson_type:lessonType,
         lesson_date:lessonDate,
