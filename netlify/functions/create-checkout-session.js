@@ -1,164 +1,168 @@
 // netlify/functions/create-checkout-session.js
-// お客様の「依頼を確定する」ボタン押下時に呼ばれる
-// 流れ：
-//   1. 入力値を検証
-//   2. Supabase bookings に status='pending_payment' で仮予約を作成
-//   3. Stripe Checkout セッションを作成（metadata に booking_id を埋め込む）
-//   4. 決済URLを返す
-//   5. ユーザーが決済完了 → stripe-webhook.js が bookings.status を 'confirmed' に更新
+// MyCoach 決済セッション作成（MASTER_DB.md 準拠・2026/4/19）
+// bookings 実カラムのみ使用: customer_id, coach_id, store_key, lesson_type,
+//   minutes, total_price, booking_date, booking_time, comment, status,
+//   agreed_terms, customer_name, coach_name
 
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2024-06-20',
+});
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
 exports.handler = async (event) => {
   // CORS
-  const corsHeaders = {
+  const headers = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
-
   if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers: corsHeaders, body: '' };
+    return { statusCode: 200, headers, body: '' };
   }
-
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers: corsHeaders, body: 'Method Not Allowed' };
+    return { statusCode: 405, headers, body: 'Method Not Allowed' };
   }
 
   try {
-    // ===== 1. 入力値パース =====
-    const payload = JSON.parse(event.body || '{}');
-    const {
-      user_id,          // customer user_id (Supabase auth)
-      coach_id,         // 依頼先コーチ（未設定可）
-      store_key,        // 'kyoto' or 'fushimi'
-      lesson_type,      // 'indoor' | 'round' | 'accompany' | 'comp'
-      lesson_date,      // 'YYYY-MM-DD'
-      lesson_time,      // 'HH:MM'
-      duration_min,     // インドアのみ数値、他はnull
-      amount_yen,       // 請求額（円、整数）
-      lesson_label,     // 画面表示用ラベル（例: "インドア 50分"）
-      golf_history,     // 'beginner' 等
-      comment,          // 要望コメント
-      customer_name,    // LINE通知/領収書用
-      customer_email,   // 決済時のメール事前入力
-    } = payload;
+    const body = JSON.parse(event.body || '{}');
 
-    // バリデーション
-    if (!user_id) return json(400, corsHeaders, { error: 'user_id required' });
-    if (!lesson_type) return json(400, corsHeaders, { error: 'lesson_type required' });
-    if (!lesson_date) return json(400, corsHeaders, { error: 'lesson_date required' });
-    if (!amount_yen || amount_yen < 100) return json(400, corsHeaders, { error: 'amount_yen invalid' });
+    // ============================================
+    // customer.html から届く想定パラメータを吸収
+    // 新旧どちらの名前で来ても受けられるようにする
+    // ============================================
+    const customerId   = body.customer_id || body.customer_user_id || body.customerId;
+    const coachId      = body.coach_id    || body.coachId;
+    const storeKey     = body.store_key   || body.storeKey || 'kyoto';
+    const lessonType   = body.lesson_type || body.lessonType || 'indoor';
+    const minutes      = parseInt(body.minutes || body.duration_min || body.duration || 0, 10) || null;
+    const totalPrice   = parseInt(body.total_price || body.amount_yen || body.amount || 0, 10);
+    const bookingDate  = body.booking_date || body.lesson_date || body.date; // 'YYYY-MM-DD'
+    let   bookingTime  = body.booking_time || body.lesson_time || body.start_time; // 'HH:MM' or 'HH:MM:SS'
+    const comment      = body.comment || body.golf_history || '';
+    const agreedTerms  = !!body.agreed_terms;
+    const customerName = body.customer_name || '';
+    const coachName    = body.coach_name || body.lesson_label || '';
 
-    // ===== 2. Supabase に仮予約作成 =====
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    // booking_time を 'HH:MM:SS' に正規化
+    if (bookingTime && bookingTime.length === 5) bookingTime = bookingTime + ':00';
 
-    const bookingPayload = {
-      customer_user_id: user_id,
-      coach_id: coach_id || null,
-      store_key: store_key || null,
-      lesson_type,
-      lesson_date,
-      lesson_time: lesson_time || null,
-      duration_min: duration_min || null,
-      amount_yen: Math.round(amount_yen),
-      lesson_label: lesson_label || null,
-      golf_history: golf_history || null,
-      comment: comment || null,
-      status: 'pending_payment',
-      created_at: new Date().toISOString(),
-    };
-
-    const { data: booking, error: bookingErr } = await supabase
-      .from('bookings')
-      .insert(bookingPayload)
-      .select()
-      .single();
-
-    if (bookingErr) {
-      console.error('booking insert error:', bookingErr);
-      // カラム不足の場合、最小セットで再試行
-      const minimal = {
-        customer_user_id: user_id,
-        coach_id: coach_id || null,
-        lesson_type,
-        lesson_date,
-        amount_yen: Math.round(amount_yen),
-        status: 'pending_payment',
+    // 必須項目チェック
+    if (!customerId || !coachId || !totalPrice || !bookingDate || !bookingTime) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          error: '必須項目が不足しています',
+          received: { customerId, coachId, totalPrice, bookingDate, bookingTime },
+        }),
       };
-      const retry = await supabase.from('bookings').insert(minimal).select().single();
-      if (retry.error) {
-        return json(500, corsHeaders, {
-          error: 'booking_insert_failed',
-          detail: retry.error.message,
-        });
-      }
-      booking = retry.data;
     }
 
-    // ===== 3. Stripe Checkout セッション作成 =====
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    // ============================================
+    // 1) bookings へ pending_payment で仮INSERT
+    // ============================================
+    const { data: booking, error: insertErr } = await supabase
+      .from('bookings')
+      .insert({
+        customer_id:   customerId,
+        coach_id:      coachId,
+        store_key:     storeKey,
+        lesson_type:   lessonType,
+        minutes:       minutes,
+        total_price:   totalPrice,
+        booking_date:  bookingDate,
+        booking_time:  bookingTime,
+        comment:       comment,
+        status:        'pending_payment',
+        agreed_terms:  agreedTerms,
+        customer_name: customerName,
+        coach_name:    coachName,
+      })
+      .select('id')
+      .single();
 
-    const siteUrl = process.env.SITE_URL || 'https://soft-speculoos-5ef188.netlify.app';
+    if (insertErr) {
+      console.error('bookings insert error:', insertErr);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'bookings insert failed', detail: insertErr.message }),
+      };
+    }
+
+    const bookingId = booking.id;
+
+    // ============================================
+    // 2) Stripe Checkout セッション作成
+    // ============================================
+    const origin =
+      event.headers.origin ||
+      event.headers.Origin ||
+      'https://soft-speculoos-5ef188.netlify.app';
+
+    const productName =
+      coachName
+        ? `${coachName} コーチ / ${lessonTypeLabel(lessonType)}`
+        : `MyCoach ${lessonTypeLabel(lessonType)}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
-      customer_email: customer_email || undefined,
       line_items: [
         {
           price_data: {
             currency: 'jpy',
-            product_data: {
-              name: lesson_label || `MyCoach ${lesson_type} レッスン`,
-              description: `日時: ${lesson_date} ${lesson_time || ''}`.trim(),
-            },
-            unit_amount: Math.round(amount_yen),
+            product_data: { name: productName },
+            unit_amount: totalPrice,
           },
           quantity: 1,
         },
       ],
+      success_url: `${origin}/customer.html?payment=success&booking_id=${bookingId}`,
+      cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${bookingId}`,
       metadata: {
-        booking_id: String(booking.id),
-        customer_user_id: String(user_id),
-        coach_id: String(coach_id || ''),
-        store_key: String(store_key || ''),
-        lesson_type: String(lesson_type),
+        booking_id:  bookingId,
+        customer_id: customerId,
+        coach_id:    coachId,
+        store_key:   storeKey,
+        lesson_type: lessonType,
       },
-      success_url: `${siteUrl}/customer.html?payment=success&booking=${booking.id}`,
-      cancel_url: `${siteUrl}/customer.html?payment=cancel&booking=${booking.id}`,
     });
 
-    // bookingsにsession_idを保存（Webhookで参照するため）
-    try {
-      await supabase
-        .from('bookings')
-        .update({ stripe_session_id: session.id })
-        .eq('id', booking.id);
-    } catch (_) {
-      // stripe_session_idカラムが無い場合はスキップ
-    }
+    // bookings に Stripe セッションIDを保存（任意カラム。存在しなければスキップ）
+    // ※MASTER_DB.md 未登録のため、ここでは保存しない。必要なら後日 ALTER TABLE で追加。
 
-    return json(200, corsHeaders, {
-      ok: true,
-      booking_id: booking.id,
-      checkout_url: session.url,
-      session_id: session.id,
-    });
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ url: session.url, booking_id: bookingId }),
+    };
   } catch (err) {
     console.error('create-checkout-session error:', err);
-    return json(500, corsHeaders, { error: err.message });
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ error: err.message }),
+    };
   }
 };
 
-function json(statusCode, headers, obj) {
-  return {
-    statusCode,
-    headers: { ...headers, 'Content-Type': 'application/json' },
-    body: JSON.stringify(obj),
-  };
+function lessonTypeLabel(t) {
+  switch (t) {
+    case 'indoor':    return 'インドアレッスン';
+    case 'round':     return 'ラウンドレッスン';
+    case 'accompany': return '同伴ラウンド';
+    case 'comp':      return 'コンペ参加';
+    default:          return 'レッスン';
+  }
 }
