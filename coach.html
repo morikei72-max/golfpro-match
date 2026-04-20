@@ -681,7 +681,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div id="board-store">
       <div class="post-item">
         <div class="post-header"><div><span class="post-tag tag-info">お知らせ</span><div class="post-title">4月の営業時間変更について</div></div><div class="post-date">2026/04/01</div></div>
-        <div class="post-author">Golf Create tozuike 店舗管理</div>
+        <div class="post-author">Golf Create 戸津池店 店舗管理</div>
         <div class="post-body">4月29日（祝）は通常通り10:00〜21:00の営業となります。</div>
         <div class="reply-section">
           <div class="reply-form"><input type="text" class="reply-input" placeholder="返信を入力..."><button class="reply-submit" onclick="submitReply(this)">送信</button></div>
@@ -692,7 +692,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div id="board-recruit" style="display:none">
       <div class="post-item">
         <div class="post-header"><div><span class="post-tag tag-recruit">募集</span><div class="post-title">土日に集まれるコーチ募集</div></div><div class="post-date">2026/04/05</div></div>
-        <div class="post-author">Golf Create tozuike 店舗管理</div>
+        <div class="post-author">Golf Create 戸津池店 店舗管理</div>
         <div class="post-body">土曜・日曜に対応できるコーチを募集しています。週1回からでもOKです。</div>
         <div class="reply-section">
           <div class="reply-form"><input type="text" class="reply-input" placeholder="返信を入力..."><button class="reply-submit" onclick="submitReply(this)">送信</button></div>
@@ -717,12 +717,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'golfcoach_session',storage:localStorage,autoRefreshToken:true}});
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 
 const stores={
-  kyoto:{name:'Golf Create tozuike 京都店',addr:'京都府京都市〇〇区',fees:{indoor:15,round:8,accompany:8,comp:8},hqFee:5,stripeFee:3.6},
-  fushimi:{name:'Golf Create tozuike 伏見店',addr:'京都府京都市伏見区',fees:{indoor:12,round:6,accompany:6,comp:6},hqFee:5,stripeFee:3.6}
+  kyoto:{name:'Golf Create 戸津池店',addr:'京都府八幡市',fees:{indoor:15,round:8,accompany:8,comp:8},hqFee:5,stripeFee:3.6}
 };
 
 function saveInvoice(){alert('✅ インボイス情報を保存しました！');showMsg('インボイス情報を保存しました！','success');}
@@ -738,7 +737,7 @@ let cancelTargetItem=null;
 /* ===== 認証チェック ===== */
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.replace(BASE+'index.html');return;}
+  if(!session){window.location.replace(BASE+'index.html?role=coach');return;}
   const user=session.user;
   currentCoachId=user.id;
   const name=user.user_metadata?.name||'コーチ';
@@ -1099,7 +1098,7 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 
 <div class="footer">
   本明細書はMyCoach（株式会社ケイエスケー）システムより自動発行されます。<br>
-  Golf Create tozuike ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー
+  Golf Create 戸津池店 ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー
 </div>
 
 <script>window.onload=function(){window.print();}<\/script>
@@ -1169,7 +1168,7 @@ function showMsg(text,type){
 /* ===== ログアウト ===== */
 async function doLogout(){
   await sb.auth.signOut();localStorage.removeItem('gc_user_type');
-  window.location.replace(BASE+'index.html');
+  window.location.replace(BASE+'index.html?role=coach');
 }
 </script>
 </body>
