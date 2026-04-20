@@ -280,8 +280,41 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 
       <div style="font-size:12px;color:var(--gd);font-weight:700;margin-bottom:10px;">✏️ 以下をご入力ください</div>
 
+      <!-- 打席予約セクション(インドアレッスンのみ表示) -->
+      <div id="booth-reservation-section" class="form-group" style="background:#fff8e1;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:6px;">⚠️ 店舗での打席予約について</div>
+        <div style="font-size:11px;color:#7a5c00;line-height:1.6;margin-bottom:10px;">
+          コーチレッスンをご利用いただくには、まず店舗(Golf Create 戸津池店)で打席の予約をお取りください。
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="display:block;font-size:11px;color:#7a5c00;font-weight:500;margin-bottom:4px;">打席予約時間</label>
+          <select id="booth-duration" style="width:100%;padding:8px 10px;border:1px solid #f0c040;border-radius:6px;font-family:inherit;font-size:13px;background:#fff;" onchange="checkBoothTime()">
+            <option value="60">1時間</option>
+            <option value="90">1.5時間</option>
+            <option value="120" selected>2時間</option>
+            <option value="150">2.5時間</option>
+            <option value="180">3時間</option>
+          </select>
+        </div>
+
+        <div id="booth-warning" style="display:none;background:#ffe5e5;border:1px solid #e24b4a;border-radius:6px;padding:8px 10px;font-size:11px;color:#a00;margin-bottom:10px;line-height:1.5;">
+          ⚠️ <strong>レッスン時間が打席予約時間を超えています。</strong><br>
+          打席を延長するか、レッスン時間を短くしてください。
+        </div>
+
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#7a5c00;cursor:pointer;padding:8px;background:#fff;border:1px solid #f0c040;border-radius:6px;margin-bottom:8px;">
+          <input type="checkbox" id="boothReservedChk" onchange="checkAgree()" style="margin-top:2px;accent-color:#7a5c00;">
+          <span>hacomonoで打席予約を済ませています</span>
+        </label>
+
+        <a href="https://golfcreate.hacomono.jp" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#7a5c00;color:#fff;border-radius:6px;padding:9px;font-size:12px;font-weight:700;text-decoration:none;">
+          🔗 hacomonoで打席を予約する
+        </a>
+      </div>
+
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
-        <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
+        <select id="req-duration" onchange="checkBoothTime()"><option data-min="25">25分 — ¥2,000</option><option data-min="30">30分 — ¥2,400</option><option selected data-min="50">50分 — ¥4,000</option><option data-min="60">60分 — ¥4,800</option><option data-min="90">90分 — ¥7,200</option><option data-min="120">120分 — ¥9,600</option></select>
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
         <select id="req-golf-history"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -815,7 +848,7 @@ function goToRequest(){
 
   // 時間
   if(selectedTime){
-    document.getElementById('display-time').textContent=selectedTime;
+    document.getElementById('display-time').textContent=selectedTime+'〜';
   }else if(currentType!=='indoor'){
     document.getElementById('display-time').textContent='(ラウンド系のため時間指定なし)';
   }else{
@@ -828,6 +861,23 @@ function goToRequest(){
 
   // レッスン時間入力欄の表示/非表示
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
+
+  // 打席予約セクション:インドアレッスンのみ表示
+  var boothSec=document.getElementById('booth-reservation-section');
+  if(boothSec){
+    boothSec.style.display=(currentType==='indoor')?'block':'none';
+  }
+
+  // チェックボックスをリセット
+  var boothChk=document.getElementById('boothReservedChk');
+  if(boothChk) boothChk.checked=false;
+  var agreeChk=document.getElementById('agreeChk');
+  if(agreeChk) agreeChk.checked=false;
+  // ボタン無効化
+  document.getElementById('req-btn').disabled=true;
+  // 警告表示リセット
+  var warningEl=document.getElementById('booth-warning');
+  if(warningEl) warningEl.style.display='none';
 
   // 選択されたコーチ情報を依頼画面に表示
   if(selectedCoachData){
@@ -884,7 +934,59 @@ function toggleHeart(btn){
 
 function checkAgree(){
   var chk=document.getElementById('agreeChk');
-  document.getElementById('req-btn').disabled=!chk.checked;
+  var btn=document.getElementById('req-btn');
+  var reqType=document.getElementById('req-type').value;
+
+  // インドアレッスン以外(ラウンド系)は打席予約チェック不要
+  if(reqType!=='indoor'){
+    btn.disabled=!chk.checked;
+    return;
+  }
+
+  // インドアレッスンの場合:規約同意 + 打席予約チェック + 打席時間OK
+  var boothChk=document.getElementById('boothReservedChk');
+  var boothTimeOk=checkBoothTime();
+  btn.disabled=!(chk.checked && boothChk.checked && boothTimeOk);
+}
+
+// 打席予約時間 vs レッスン時間の整合性チェック
+function checkBoothTime(){
+  var reqType=document.getElementById('req-type').value;
+  var warningEl=document.getElementById('booth-warning');
+
+  // インドアレッスン以外は警告非表示で常にOK
+  if(reqType!=='indoor'){
+    if(warningEl) warningEl.style.display='none';
+    return true;
+  }
+
+  var boothMinEl=document.getElementById('booth-duration');
+  var lessonEl=document.getElementById('req-duration');
+  if(!boothMinEl||!lessonEl){
+    if(warningEl) warningEl.style.display='none';
+    return true;
+  }
+
+  var boothMin=parseInt(boothMinEl.value,10)||120;
+  var selectedOpt=lessonEl.options[lessonEl.selectedIndex];
+  var lessonMin=parseInt(selectedOpt.getAttribute('data-min'),10);
+  if(isNaN(lessonMin)){
+    // data-min属性がない場合、テキストから取得
+    var match=selectedOpt.text.match(/(\d+)分/);
+    lessonMin=match?parseInt(match[1],10):50;
+  }
+
+  // レッスン時間が打席時間を超えたら警告表示
+  if(lessonMin>boothMin){
+    if(warningEl) warningEl.style.display='block';
+    // 同意ボタンを無効化(呼び出し元のcheckAgreeでも判定されるが念のため)
+    var btn=document.getElementById('req-btn');
+    if(btn) btn.disabled=true;
+    return false;
+  }else{
+    if(warningEl) warningEl.style.display='none';
+    return true;
+  }
 }
 
 function rate(n){
