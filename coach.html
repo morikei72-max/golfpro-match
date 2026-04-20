@@ -116,32 +116,64 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .price-section{margin-bottom:16px;}
 .price-section-title{font-size:12px;font-weight:700;color:var(--gd);background:var(--gl);padding:6px 10px;border-radius:8px;margin-bottom:8px;}
 
-/* ★ 修正メモ㉖：1行レイアウトを枠いっぱいに */
-.price-row-full{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  margin-bottom:8px;
-  width:100%;
+/* 【第2バッチ】料金行（自由入力対応） */
+.price-item-row{
+  display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:8px;
+  background:#fafafa;border:1px solid var(--border);border-radius:10px;
+  flex-wrap:wrap;
 }
-.price-label{font-size:12px;color:var(--text);min-width:60px;flex-shrink:0;}
-.price-input{padding:7px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;text-align:right;outline:none;width:80px;flex-shrink:0;}
-.price-unit{font-size:11px;color:var(--muted);flex-shrink:0;}
-.price-take{font-size:11px;font-weight:700;color:var(--gd);white-space:nowrap;flex-shrink:0;min-width:70px;}
+.price-item-time{
+  width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;
+  font-family:inherit;font-size:12px;text-align:right;outline:none;background:#fff;
+}
+.price-item-bill{
+  width:80px;padding:6px 8px;border:1px solid var(--g);border-radius:6px;
+  font-family:inherit;font-size:12px;text-align:right;outline:none;background:#fff;
+}
+.price-item-take{
+  width:80px;padding:6px 8px;border:1px solid var(--g);border-radius:6px;
+  font-family:inherit;font-size:12px;text-align:right;outline:none;background:var(--gl);
+  font-weight:700;color:var(--gd);
+}
+.price-swap-icon{font-size:13px;color:var(--g);font-weight:700;flex-shrink:0;}
+.price-unit-sm{font-size:10px;color:var(--muted);flex-shrink:0;}
+.price-delete-btn{
+  width:26px;height:26px;border:1px solid var(--border);background:#fff;color:var(--red);
+  border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.price-delete-btn:hover{background:#fff0f0;border-color:var(--red);}
+.price-add-btn{
+  width:100%;padding:8px;background:#fff;color:var(--g);border:1px dashed var(--g);
+  border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+  margin-top:4px;
+}
+.price-add-btn:hover{background:var(--gl);}
 
-/* 内訳チップを均等に横並び・枠いっぱい */
-.bd-inline{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:4px;
-  flex:1;
-  min-width:0;
+/* 最低レッスン時間 */
+.min-lesson-box{
+  background:#fff8e1;border:1px solid var(--gold);border-radius:10px;
+  padding:10px 12px;margin-bottom:12px;
+}
+.min-lesson-box label{display:block;font-size:11px;color:#633806;margin-bottom:6px;font-weight:700;}
+.min-lesson-input{
+  width:80px;padding:6px 8px;border:1px solid var(--gold);border-radius:6px;
+  font-family:inherit;font-size:13px;text-align:right;outline:none;background:#fff;
+}
+
+/* 逆算注記 */
+.calc-note{
+  background:#f0f7f4;border:1px solid var(--g);border-radius:10px;
+  padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.6;
+}
+
+/* 手数料内訳チップ（料金行の下に表示） */
+.price-breakdown{
+  width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px;
 }
 .bd-chip{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#fff;border-radius:6px;padding:4px 4px;
-  border:1px solid var(--border);
-  text-align:center;
+  background:#fff;border-radius:6px;padding:4px;border:1px solid var(--border);text-align:center;
 }
 .bd-chip.coach-chip{background:var(--gl);border-color:var(--g);}
 .bd-chip-label{font-size:9px;color:var(--muted);margin-bottom:1px;white-space:nowrap;}
@@ -150,6 +182,33 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .bd-chip-val.v-store{color:var(--gold);}
 .bd-chip-val.v-hq{color:var(--red);}
 .bd-chip-val.v-coach{color:var(--gd);}
+
+/* 【カテゴリN】独自プラン */
+.custom-plan-card{
+  background:#fafafa;border:1px solid var(--border);border-radius:12px;
+  padding:12px;margin-bottom:10px;position:relative;
+}
+.custom-plan-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
+}
+.custom-plan-num{font-size:11px;font-weight:700;color:var(--gd);}
+.custom-plan-body .form-group{margin-bottom:8px;}
+.custom-plan-body .form-label{font-size:10px;}
+.custom-plan-body .form-input{font-size:12px;padding:8px 10px;}
+.custom-plan-body .form-textarea{font-size:12px;padding:8px 10px;height:60px;}
+.plan-price-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.plan-checkbox-row{
+  display:flex;align-items:center;gap:8px;padding:8px 10px;
+  background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:6px;
+}
+.plan-checkbox-row input[type="checkbox"]{accent-color:var(--g);width:16px;height:16px;}
+.plan-checkbox-row label{font-size:12px;cursor:pointer;flex:1;}
+.plan-greenfee-detail{
+  background:var(--gl);border-radius:8px;padding:10px;margin-top:8px;
+  border:1px solid var(--g);
+}
+.plan-greenfee-detail .form-group{margin-bottom:6px;}
+.plan-greenfee-detail .form-label{color:var(--gd);font-weight:700;}
 
 /* ===== スケジュール ===== */
 .schedule-mode-btns{display:flex;gap:6px;margin-bottom:12px;}
@@ -415,7 +474,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- 料金設定 -->
+  <!-- 料金設定（第2バッチ全面改修） -->
   <div class="page" id="page-price">
     <div class="card">
       <div class="card-title">手数料一覧</div>
@@ -433,83 +492,56 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
     <div class="card">
       <div class="card-title">料金設定</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">金額を入力すると手取り額・内訳が自動計算されます</div>
 
-      <!-- インドアレッスン -->
+      <!-- 最低レッスン時間（カテゴリL） -->
+      <div class="min-lesson-box">
+        <label>⏱ 最低レッスン時間（インドアのみ）</label>
+        <input type="number" class="min-lesson-input" id="min-lesson-minutes" placeholder="30" min="5" step="5">
+        <span style="font-size:11px;color:#633806;margin-left:4px;">分 ／ この時間未満の予約は受付不可</span>
+      </div>
+
+      <!-- 料金逆算ガイド（カテゴリM） -->
+      <div class="calc-note">
+        💡 <strong>料金逆算機能</strong>：請求額⇄手取り額はどちらからでも入力できます。<br>
+        手取り額から逆算する場合、請求額は100円単位で切り上げます。これによりコーチの目標手取りを確実に保証します。
+      </div>
+
+      <!-- インドアレッスン（カテゴリL・自由入力） -->
       <div class="price-section">
         <div class="price-section-title">🏌 インドアゴルフレッスン</div>
-        <div id="pr-30">
-          <div class="price-row-full">
-            <span class="price-label">30分</span>
-            <input type="number" class="price-input" id="price-30" placeholder="3000" oninput="calcTake('30',this.value,'indoor')">
-            <span class="price-unit">円</span>
-            <span class="price-take" id="take-30">-</span>
-            <div class="bd-inline" id="bd-30"></div>
-          </div>
-        </div>
-        <div id="pr-50">
-          <div class="price-row-full">
-            <span class="price-label">50分</span>
-            <input type="number" class="price-input" id="price-50" placeholder="5000" oninput="calcTake('50',this.value,'indoor')">
-            <span class="price-unit">円</span>
-            <span class="price-take" id="take-50">-</span>
-            <div class="bd-inline" id="bd-50"></div>
-          </div>
-        </div>
-        <div id="pr-90">
-          <div class="price-row-full">
-            <span class="price-label">90分</span>
-            <input type="number" class="price-input" id="price-90" placeholder="8000" oninput="calcTake('90',this.value,'indoor')">
-            <span class="price-unit">円</span>
-            <span class="price-take" id="take-90">-</span>
-            <div class="bd-inline" id="bd-90"></div>
-          </div>
-        </div>
-        <div id="pr-120">
-          <div class="price-row-full">
-            <span class="price-label">120分</span>
-            <input type="number" class="price-input" id="price-120" placeholder="10000" oninput="calcTake('120',this.value,'indoor')">
-            <span class="price-unit">円</span>
-            <span class="price-take" id="take-120">-</span>
-            <div class="bd-inline" id="bd-120"></div>
-          </div>
-        </div>
+        <div id="indoor-items"></div>
+        <button class="price-add-btn" onclick="addPriceItem('indoor')">＋ 時間と料金を追加</button>
       </div>
 
       <!-- ラウンドレッスン -->
       <div class="price-section">
         <div class="price-section-title">⛳ ラウンドレッスン</div>
-        <div class="price-row-full">
-          <span class="price-label">1ラウンド</span>
-          <input type="number" class="price-input" id="price-round" placeholder="20000" oninput="calcTake('round',this.value,'round')">
-          <span class="price-unit">円</span>
-          <span class="price-take" id="take-round">-</span>
-          <div class="bd-inline" id="bd-round"></div>
-        </div>
+        <div id="round-items"></div>
+        <button class="price-add-btn" onclick="addPriceItem('round')">＋ 料金を追加</button>
       </div>
 
       <!-- 同伴ラウンド -->
       <div class="price-section">
         <div class="price-section-title">🚗 同伴ラウンド</div>
-        <div class="price-row-full">
-          <span class="price-label">1ラウンド</span>
-          <input type="number" class="price-input" id="price-accompany" placeholder="15000" oninput="calcTake('accompany',this.value,'accompany')">
-          <span class="price-unit">円</span>
-          <span class="price-take" id="take-accompany">-</span>
-          <div class="bd-inline" id="bd-accompany"></div>
-        </div>
+        <div id="accompany-items"></div>
+        <button class="price-add-btn" onclick="addPriceItem('accompany')">＋ 料金を追加</button>
       </div>
 
       <!-- コンペ参加 -->
       <div class="price-section">
         <div class="price-section-title">🏆 コンペ参加</div>
-        <div class="price-row-full">
-          <span class="price-label">1ラウンド</span>
-          <input type="number" class="price-input" id="price-comp" placeholder="10000" oninput="calcTake('comp',this.value,'comp')">
-          <span class="price-unit">円</span>
-          <span class="price-take" id="take-comp">-</span>
-          <div class="bd-inline" id="bd-comp"></div>
+        <div id="comp-items"></div>
+        <button class="price-add-btn" onclick="addPriceItem('comp')">＋ 料金を追加</button>
+      </div>
+
+      <!-- その他・コーチ独自プラン（カテゴリN） -->
+      <div class="price-section">
+        <div class="price-section-title">💡 その他・コーチ独自プラン</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6;">
+          アプローチ特化・ショートコース・スイング診断など、あなたの得意分野を活かした独自プランを自由に設計できます。
         </div>
+        <div id="custom-plans-container"></div>
+        <button class="price-add-btn" onclick="addCustomPlan()">＋ 新しいプランを追加</button>
       </div>
 
       <button class="save-btn" onclick="savePrices()">料金を保存</button>
@@ -725,14 +757,16 @@ const stores={
 };
 
 function saveInvoice(){alert('✅ インボイス情報を保存しました！');showMsg('インボイス情報を保存しました！','success');}
-function savePrices(){alert('✅ 料金設定を保存しました！');showMsg('料金設定を保存しました！','success');}
 function saveSchedule(){alert('✅ スケジュールを保存しました！');showMsg('スケジュールを保存しました！','success');}
 let currentCoachId=null;
 let currentStore=null;
+let currentStoreId=null;
 let scheduleData={};
 let weekOffset=0;
 let currentMonth=new Date();
 let cancelTargetItem=null;
+let priceItemCounter=0;
+let customPlanCounter=0;
 
 /* ===== 認証チェック ===== */
 (async()=>{
@@ -759,16 +793,11 @@ function buildStoreOptions(){
   });
 }
 
-/* ===== スケジュール・プロフィールは店舗間共有 ===== */
-// scheduleDataはグローバル（店舗切替しても保持）
-// profileDataもグローバル（店舗切替しても保持）
-
-function selectStore(key){
+async function selectStore(key){
   currentStore=key;const s=stores[key];
   document.getElementById('store-overlay').classList.add('hidden');
   document.getElementById('store-badge').textContent=s.name;
   document.getElementById('welcome-store').textContent='📍 '+s.name;
-  // スケジュールは店舗間共有なので店舗名のみ更新
   document.getElementById('schedule-store-label').textContent='📍 スケジュールは全店舗共通です';
   document.getElementById('booking-store-label').textContent='📍 '+s.name+' の予約';
   const coachPct=100-s.fees.indoor-s.hqFee-s.stripeFee;
@@ -783,32 +812,383 @@ function selectStore(key){
     <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
-  // 料金は店舗ごとに再計算
-  ['30','50','90','120'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,'indoor');});
-  ['round','accompany','comp'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,id);});
+  // 店舗IDを取得（DB保存用）
+  try{
+    const {data:storeRow}=await sb.from('stores').select('id').eq('store_key',key).maybeSingle();
+    if(storeRow)currentStoreId=storeRow.id;
+  }catch(e){console.warn('店舗ID取得失敗（DB未登録の可能性）',e);}
+  // 料金データ読み込み
+  await loadPrices();
+  // 全料金行を再計算
+  recalcAllPrices();
 }
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
 
-/* ===== 手取り計算（1行横並び） ===== */
-function calcTake(id,val,type){
-  const takeEl=document.getElementById('take-'+id);
-  const bdEl=document.getElementById('bd-'+id);
-  if(!currentStore||!val||parseInt(val)<=0){takeEl.textContent='-';bdEl.innerHTML='';return;}
+/* ===== 【第2バッチ】料金計算ユーティリティ ===== */
+// 既存のcalcTake関数：請求額→手取り計算（単体数値版）
+function calcTakeAmount(billAmount,lessonType){
+  if(!currentStore||!billAmount||billAmount<=0)return null;
   const s=stores[currentStore];
   const feeMap={indoor:s.fees.indoor,round:s.fees.round,accompany:s.fees.accompany,comp:s.fees.comp};
-  const storePct=feeMap[type]||s.fees.indoor;
-  const total=parseInt(val);
+  const storePct=feeMap[lessonType]||s.fees.indoor;
+  const total=parseInt(billAmount);
   const stripe=Math.round(total*s.stripeFee/100);
   const storeFee=Math.round(total*storePct/100);
   const hqFee=Math.round(total*s.hqFee/100);
   const take=total-stripe-storeFee-hqFee;
-  takeEl.textContent='→ ¥'+take.toLocaleString();
-  bdEl.innerHTML=`
-    <div class="bd-chip"><div class="bd-chip-label">決済(${s.stripeFee}%)</div><div class="bd-chip-val v-stripe">▲¥${stripe.toLocaleString()}</div></div>
-    <div class="bd-chip"><div class="bd-chip-label">店舗(${storePct}%)</div><div class="bd-chip-val v-store">▲¥${storeFee.toLocaleString()}</div></div>
-    <div class="bd-chip"><div class="bd-chip-label">本部(${s.hqFee}%)</div><div class="bd-chip-val v-hq">▲¥${hqFee.toLocaleString()}</div></div>
-    <div class="bd-chip coach-chip"><div class="bd-chip-label">手取り</div><div class="bd-chip-val v-coach">¥${take.toLocaleString()}</div></div>
+  return{total,stripe,storeFee,hqFee,take,stripePct:s.stripeFee,storePct,hqPct:s.hqFee};
+}
+
+// 【カテゴリM】逆算：手取り→請求額（100円切り上げ）
+function calcBillFromTake(takeAmount,lessonType){
+  if(!currentStore||!takeAmount||takeAmount<=0)return 0;
+  const s=stores[currentStore];
+  const feeMap={indoor:s.fees.indoor,round:s.fees.round,accompany:s.fees.accompany,comp:s.fees.comp};
+  const storePct=feeMap[lessonType]||s.fees.indoor;
+  const totalFeePct=(s.stripeFee+storePct+s.hqFee)/100;
+  const rawBill=takeAmount/(1-totalFeePct);
+  // 100円単位で切り上げ（コーチの目標手取りを保証）
+  return Math.ceil(rawBill/100)*100;
+}
+
+/* ===== 【第2バッチ】料金行の動的追加・削除 ===== */
+function addPriceItem(lessonType,preset){
+  priceItemCounter++;
+  const rowId='price-item-'+priceItemCounter;
+  const container=document.getElementById(lessonType+'-items');
+  const row=document.createElement('div');
+  row.className='price-item-row';
+  row.id=rowId;
+  row.dataset.lessonType=lessonType;
+
+  let timeInputHTML='';
+  if(lessonType==='indoor'){
+    timeInputHTML=`<input type="number" class="price-item-time" placeholder="60" min="5" step="5" value="${preset?.minutes||''}" oninput="recalcRow('${rowId}')"><span class="price-unit-sm">分</span>`;
+  }else{
+    // ラウンド系：R数（1.0 / 0.5）
+    timeInputHTML=`<input type="number" class="price-item-time" placeholder="1" min="0.5" step="0.5" value="${preset?.round_count||''}" oninput="recalcRow('${rowId}')"><span class="price-unit-sm">R</span>`;
+  }
+
+  row.innerHTML=`
+    ${timeInputHTML}
+    <input type="number" class="price-item-bill" placeholder="請求額" min="0" step="100" value="${preset?.price||''}" oninput="onBillInput('${rowId}')">
+    <span class="price-unit-sm">円</span>
+    <span class="price-swap-icon">⇄</span>
+    <input type="number" class="price-item-take" placeholder="手取り" min="0" step="100" value="${preset?.take_home||''}" oninput="onTakeInput('${rowId}')">
+    <span class="price-unit-sm">円</span>
+    <button class="price-delete-btn" onclick="deletePriceItem('${rowId}')" title="削除">×</button>
+    <div class="price-breakdown" id="bd-${rowId}"></div>
   `;
+  container.appendChild(row);
+  if(preset?.price)recalcRow(rowId);
+  return rowId;
+}
+
+function deletePriceItem(rowId){
+  const row=document.getElementById(rowId);
+  if(row)row.remove();
+}
+
+function onBillInput(rowId){
+  const row=document.getElementById(rowId);
+  if(!row)return;
+  const billInput=row.querySelector('.price-item-bill');
+  const takeInput=row.querySelector('.price-item-take');
+  const lessonType=row.dataset.lessonType;
+  const bill=parseInt(billInput.value)||0;
+  if(bill<=0){takeInput.value='';updateBreakdown(rowId,null);return;}
+  const result=calcTakeAmount(bill,lessonType);
+  if(result){
+    takeInput.value=result.take;
+    updateBreakdown(rowId,result);
+  }
+}
+
+function onTakeInput(rowId){
+  const row=document.getElementById(rowId);
+  if(!row)return;
+  const billInput=row.querySelector('.price-item-bill');
+  const takeInput=row.querySelector('.price-item-take');
+  const lessonType=row.dataset.lessonType;
+  const take=parseInt(takeInput.value)||0;
+  if(take<=0){billInput.value='';updateBreakdown(rowId,null);return;}
+  const bill=calcBillFromTake(take,lessonType);
+  billInput.value=bill;
+  const result=calcTakeAmount(bill,lessonType);
+  if(result)updateBreakdown(rowId,result);
+}
+
+function recalcRow(rowId){
+  const row=document.getElementById(rowId);
+  if(!row)return;
+  const billInput=row.querySelector('.price-item-bill');
+  const bill=parseInt(billInput.value)||0;
+  if(bill>0)onBillInput(rowId);
+}
+
+function updateBreakdown(rowId,result){
+  const bdEl=document.getElementById('bd-'+rowId);
+  if(!bdEl)return;
+  if(!result){bdEl.innerHTML='';return;}
+  bdEl.innerHTML=`
+    <div class="bd-chip"><div class="bd-chip-label">決済(${result.stripePct}%)</div><div class="bd-chip-val v-stripe">▲¥${result.stripe.toLocaleString()}</div></div>
+    <div class="bd-chip"><div class="bd-chip-label">店舗(${result.storePct}%)</div><div class="bd-chip-val v-store">▲¥${result.storeFee.toLocaleString()}</div></div>
+    <div class="bd-chip"><div class="bd-chip-label">本部(${result.hqPct}%)</div><div class="bd-chip-val v-hq">▲¥${result.hqFee.toLocaleString()}</div></div>
+    <div class="bd-chip coach-chip"><div class="bd-chip-label">手取り</div><div class="bd-chip-val v-coach">¥${result.take.toLocaleString()}</div></div>
+  `;
+}
+
+function recalcAllPrices(){
+  document.querySelectorAll('.price-item-row').forEach(row=>{
+    const bill=parseInt(row.querySelector('.price-item-bill').value)||0;
+    if(bill>0)onBillInput(row.id);
+  });
+  // 独自プランの再計算
+  document.querySelectorAll('.custom-plan-card').forEach(card=>{
+    const bill=parseInt(card.querySelector('.custom-plan-bill').value)||0;
+    if(bill>0)onCustomPlanBillInput(card.id);
+  });
+}
+
+/* ===== 【カテゴリN】独自プラン ===== */
+function addCustomPlan(preset){
+  customPlanCounter++;
+  const cardId='custom-plan-'+customPlanCounter;
+  const container=document.getElementById('custom-plans-container');
+  const card=document.createElement('div');
+  card.className='custom-plan-card';
+  card.id=cardId;
+
+  const greenfeeChecked=preset?.coach_pays_greenfee?'checked':'';
+  const greenfeeDisplay=preset?.coach_pays_greenfee?'block':'none';
+
+  card.innerHTML=`
+    <div class="custom-plan-header">
+      <div class="custom-plan-num">プラン ${customPlanCounter}</div>
+      <button class="price-delete-btn" onclick="deleteCustomPlan('${cardId}')" title="削除">×</button>
+    </div>
+    <div class="custom-plan-body">
+      <div class="form-group">
+        <label class="form-label">プラン名 <span style="color:var(--red)">※必須</span></label>
+        <input type="text" class="form-input custom-plan-name" placeholder="例：アプローチ特化30分レッスン" value="${preset?.plan_name||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">時間 <span style="color:var(--red)">※必須</span></label>
+        <input type="text" class="form-input custom-plan-duration" placeholder="例：60分 / 半日 / 9H" value="${preset?.duration_text||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">料金（請求額⇄手取り）<span style="color:var(--red)">※必須</span></label>
+        <div class="plan-price-row">
+          <input type="number" class="price-item-bill custom-plan-bill" placeholder="請求額" min="0" step="100" value="${preset?.price||''}" oninput="onCustomPlanBillInput('${cardId}')">
+          <span class="price-unit-sm">円</span>
+          <span class="price-swap-icon">⇄</span>
+          <input type="number" class="price-item-take custom-plan-take" placeholder="手取り" min="0" step="100" value="${preset?.take_home||''}" oninput="onCustomPlanTakeInput('${cardId}')">
+          <span class="price-unit-sm">円</span>
+        </div>
+        <div class="price-breakdown" id="bd-${cardId}" style="margin-top:6px"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">プラン説明文 <span style="color:var(--red)">※必須</span> <span style="color:var(--g)">👁 お客様に表示されます</span></label>
+        <textarea class="form-textarea custom-plan-desc" placeholder="このプランの魅力・対象者・指導内容をお客様向けに説明してください">${preset?.description||''}</textarea>
+      </div>
+      <div class="plan-checkbox-row">
+        <input type="checkbox" id="greenfee-${cardId}" class="custom-plan-greenfee" ${greenfeeChecked} onchange="toggleGreenfee('${cardId}')">
+        <label for="greenfee-${cardId}">コーチがプレーフィーを負担する（指定ゴルフ場あり）</label>
+      </div>
+      <div class="plan-greenfee-detail" id="greenfee-detail-${cardId}" style="display:${greenfeeDisplay}">
+        <div class="form-group">
+          <label class="form-label">指定ゴルフ場 <span style="color:var(--red)">※必須</span></label>
+          <input type="text" class="form-input custom-plan-course" placeholder="例：京都ゴルフ倶楽部" value="${preset?.golf_course_name||''}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">スタート時間 <span style="color:var(--red)">※必須</span></label>
+          <input type="time" class="form-input custom-plan-starttime" value="${preset?.start_time||''}">
+        </div>
+      </div>
+    </div>
+  `;
+  container.appendChild(card);
+  if(preset?.price)onCustomPlanBillInput(cardId);
+  return cardId;
+}
+
+function deleteCustomPlan(cardId){
+  const card=document.getElementById(cardId);
+  if(card)card.remove();
+}
+
+function toggleGreenfee(cardId){
+  const cb=document.getElementById('greenfee-'+cardId);
+  const detail=document.getElementById('greenfee-detail-'+cardId);
+  detail.style.display=cb.checked?'block':'none';
+}
+
+function onCustomPlanBillInput(cardId){
+  const card=document.getElementById(cardId);
+  if(!card)return;
+  const billInput=card.querySelector('.custom-plan-bill');
+  const takeInput=card.querySelector('.custom-plan-take');
+  const bill=parseInt(billInput.value)||0;
+  if(bill<=0){takeInput.value='';updateBreakdownForCard(cardId,null);return;}
+  // 独自プランはインドア扱い（その他カテゴリ）
+  const result=calcTakeAmount(bill,'indoor');
+  if(result){
+    takeInput.value=result.take;
+    updateBreakdownForCard(cardId,result);
+  }
+}
+
+function onCustomPlanTakeInput(cardId){
+  const card=document.getElementById(cardId);
+  if(!card)return;
+  const billInput=card.querySelector('.custom-plan-bill');
+  const takeInput=card.querySelector('.custom-plan-take');
+  const take=parseInt(takeInput.value)||0;
+  if(take<=0){billInput.value='';updateBreakdownForCard(cardId,null);return;}
+  const bill=calcBillFromTake(take,'indoor');
+  billInput.value=bill;
+  const result=calcTakeAmount(bill,'indoor');
+  if(result)updateBreakdownForCard(cardId,result);
+}
+
+function updateBreakdownForCard(cardId,result){
+  const bdEl=document.getElementById('bd-'+cardId);
+  if(!bdEl)return;
+  if(!result){bdEl.innerHTML='';return;}
+  bdEl.innerHTML=`
+    <div class="bd-chip"><div class="bd-chip-label">決済(${result.stripePct}%)</div><div class="bd-chip-val v-stripe">▲¥${result.stripe.toLocaleString()}</div></div>
+    <div class="bd-chip"><div class="bd-chip-label">店舗(${result.storePct}%)</div><div class="bd-chip-val v-store">▲¥${result.storeFee.toLocaleString()}</div></div>
+    <div class="bd-chip"><div class="bd-chip-label">本部(${result.hqPct}%)</div><div class="bd-chip-val v-hq">▲¥${result.hqFee.toLocaleString()}</div></div>
+    <div class="bd-chip coach-chip"><div class="bd-chip-label">手取り</div><div class="bd-chip-val v-coach">¥${result.take.toLocaleString()}</div></div>
+  `;
+}
+
+/* ===== 【第2バッチ】料金保存・読込 ===== */
+async function savePrices(){
+  if(!currentCoachId){alert('❌ ログイン情報が取得できません');return;}
+  if(!currentStore){alert('❌ 店舗を選択してください');return;}
+
+  try{
+    // ① 最低レッスン時間をcoachesテーブルに保存
+    const minLesson=document.getElementById('min-lesson-minutes').value.trim();
+    if(minLesson){
+      await sb.from('coaches').update({min_lesson:minLesson,updated_at:new Date().toISOString()}).eq('user_id',currentCoachId);
+    }
+
+    // ② 料金アイテム（カテゴリL）の保存
+    // 既存データを削除してから再挿入（シンプル・確実）
+    const {error:delErr}=await sb.from('coach_price_items').delete().eq('coach_id',currentCoachId);
+    if(delErr){console.error('既存料金削除エラー',delErr);}
+
+    const priceItems=[];
+    let displayOrder=0;
+    document.querySelectorAll('.price-item-row').forEach(row=>{
+      const lessonType=row.dataset.lessonType;
+      const timeVal=row.querySelector('.price-item-time').value;
+      const bill=parseInt(row.querySelector('.price-item-bill').value)||0;
+      const take=parseInt(row.querySelector('.price-item-take').value)||0;
+      if(bill<=0||take<=0)return;
+      const item={
+        coach_id:currentCoachId,
+        store_id:currentStoreId,
+        lesson_type:lessonType,
+        price:bill,
+        take_home:take,
+        display_order:displayOrder++
+      };
+      if(lessonType==='indoor'){
+        item.minutes=parseInt(timeVal)||null;
+      }else{
+        item.round_count=parseFloat(timeVal)||1.0;
+      }
+      priceItems.push(item);
+    });
+
+    if(priceItems.length>0){
+      const {error:insErr}=await sb.from('coach_price_items').insert(priceItems);
+      if(insErr){alert('❌ 料金保存に失敗しました\n'+insErr.message);return;}
+    }
+
+    // ③ 独自プラン（カテゴリN）の保存
+    const {error:delPlanErr}=await sb.from('coach_custom_plans').delete().eq('coach_id',currentCoachId);
+    if(delPlanErr){console.error('既存プラン削除エラー',delPlanErr);}
+
+    const customPlans=[];
+    let planOrder=0;
+    document.querySelectorAll('.custom-plan-card').forEach(card=>{
+      const name=card.querySelector('.custom-plan-name').value.trim();
+      const duration=card.querySelector('.custom-plan-duration').value.trim();
+      const bill=parseInt(card.querySelector('.custom-plan-bill').value)||0;
+      const take=parseInt(card.querySelector('.custom-plan-take').value)||0;
+      const desc=card.querySelector('.custom-plan-desc').value.trim();
+      if(!name||!duration||bill<=0||!desc)return;
+      const coachPays=card.querySelector('.custom-plan-greenfee').checked;
+      const course=card.querySelector('.custom-plan-course')?.value.trim()||null;
+      const startTime=card.querySelector('.custom-plan-starttime')?.value||null;
+      if(coachPays&&(!course||!startTime)){
+        alert('❌ コーチ負担プランは指定ゴルフ場とスタート時間が必須です');
+        throw new Error('validation');
+      }
+      customPlans.push({
+        coach_id:currentCoachId,
+        store_id:currentStoreId,
+        plan_name:name,
+        duration_text:duration,
+        price:bill,
+        take_home:take,
+        description:desc,
+        coach_pays_greenfee:coachPays,
+        golf_course_name:coachPays?course:null,
+        start_time:coachPays?startTime:null,
+        display_order:planOrder++,
+        is_active:true
+      });
+    });
+
+    if(customPlans.length>0){
+      const {error:insPlanErr}=await sb.from('coach_custom_plans').insert(customPlans);
+      if(insPlanErr){alert('❌ 独自プラン保存に失敗しました\n'+insPlanErr.message);return;}
+    }
+
+    alert('✅ 料金設定を保存しました！');
+    showMsg('料金設定を保存しました！','success');
+  }catch(e){
+    if(e.message!=='validation'){
+      console.error('savePrices例外',e);
+      alert('❌ 保存中にエラーが発生しました\n'+e.message);
+    }
+  }
+}
+
+async function loadPrices(){
+  if(!currentCoachId)return;
+  try{
+    // 最低レッスン時間の読込
+    const {data:coachRow}=await sb.from('coaches').select('min_lesson').eq('user_id',currentCoachId).maybeSingle();
+    if(coachRow?.min_lesson){
+      document.getElementById('min-lesson-minutes').value=coachRow.min_lesson;
+    }
+
+    // 既存UI行をクリア
+    ['indoor','round','accompany','comp'].forEach(t=>{
+      document.getElementById(t+'-items').innerHTML='';
+    });
+    document.getElementById('custom-plans-container').innerHTML='';
+
+    // 料金アイテムの読込
+    const {data:items,error}=await sb.from('coach_price_items').select('*').eq('coach_id',currentCoachId).order('display_order',{ascending:true});
+    if(error){console.error('料金読込エラー',error);}
+    else if(items&&items.length>0){
+      items.forEach(item=>addPriceItem(item.lesson_type,item));
+    }
+
+    // 独自プランの読込
+    const {data:plans,error:planErr}=await sb.from('coach_custom_plans').select('*').eq('coach_id',currentCoachId).order('display_order',{ascending:true});
+    if(planErr){console.error('プラン読込エラー',planErr);}
+    else if(plans&&plans.length>0){
+      plans.forEach(plan=>addCustomPlan(plan));
+    }
+  }catch(e){console.error('loadPrices例外',e);}
 }
 
 /* ===== タブ ===== */
@@ -1156,6 +1536,7 @@ async function loadProfile(userId){
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
+    if(data.min_lesson)document.getElementById('min-lesson-minutes').value=data.min_lesson;
   }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
