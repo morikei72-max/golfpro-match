@@ -80,6 +80,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .coach-info-bar{background:var(--gl);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gd);}
 .btn-to-request{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
 
+/* コーチ選択カード */
+.coach-card{display:flex;gap:10px;padding:12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:all .15s;-webkit-tap-highlight-color:transparent;align-items:flex-start;}
+.coach-card:hover{border-color:var(--g);background:var(--gl);}
+.coach-card.selected{border-color:var(--g);background:var(--gl);box-shadow:0 0 0 2px rgba(29,158,117,.2);}
+.coach-card-photo{width:60px;height:60px;border-radius:50%;background:var(--gl);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--gd);font-weight:700;}
+.coach-card-photo img{width:100%;height:100%;object-fit:cover;}
+.coach-card-body{flex:1;min-width:0;}
+.coach-card-name{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:3px;}
+.coach-card-license{font-size:11px;color:#555;margin-bottom:2px;line-height:1.4;}
+.coach-card-tags{font-size:11px;color:var(--g);margin-bottom:4px;}
+.coach-card-bio{font-size:11px;color:#777;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.coach-card-none{padding:20px;text-align:center;color:#999;font-size:12px;background:#f9f9f9;border-radius:8px;}
+
 /* FORM */
 .form-group{margin-bottom:12px;}
 .form-group label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:4px;}
@@ -199,7 +212,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div id="coach-info-area" style="display:none;">
         <div class="coach-info-bar" id="coach-info-text"></div>
       </div>
-      <button class="btn-to-request" id="btn-to-request" style="display:none;" onclick="goToRequest()">この日程で依頼する →</button>
+
+      <!-- コーチ選択エリア（新規追加） -->
+      <div id="coach-select-area" style="display:none;margin-top:12px;">
+        <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;">🏌 ご指名のコーチを選ぶ</div>
+        <div id="coach-list"></div>
+      </div>
+
+      <button class="btn-to-request" id="btn-to-request" style="display:none;" onclick="goToRequest()">このコーチに依頼する →</button>
     </div>
   </div>
 
@@ -215,19 +235,35 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <span>種類</span><span>日程選択</span><span>詳細入力</span><span>同意・確定</span>
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
-      <div style="font-size:13px;font-weight:500;margin-bottom:12px;">依頼内容を入力</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:12px;">ご依頼内容の確認</div>
+
+      <!-- 選択済みコーチの表示 -->
+      <div id="selected-coach-box" style="display:none;background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:11px;color:var(--gd);font-weight:700;margin-bottom:8px;">🏌 ご指名のコーチ</div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div id="sel-coach-photo" style="width:54px;height:54px;border-radius:50%;background:#fff;overflow:hidden;flex-shrink:0;border:2px solid var(--g);"></div>
+          <div style="flex:1;">
+            <div id="sel-coach-name" style="font-size:14px;font-weight:700;color:var(--gd);"></div>
+            <div id="sel-coach-license" style="font-size:11px;color:#555;margin-top:2px;"></div>
+            <div id="sel-coach-tags" style="font-size:11px;color:var(--g);margin-top:2px;"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="form-group"><label>依頼の種類</label>
-        <select id="req-type"><option value="indoor">⛳ インドアゴルフレッスン(時間制)</option><option value="round">🏌 ラウンドレッスン(1ラウンド)</option><option value="accompany">🤝 同伴ラウンド(1ラウンド)</option><option value="comp">🏆 コンペ参加(1ラウンド)</option></select>
+        <select id="req-type" disabled style="background:#f5f5f5;cursor:not-allowed;"><option value="indoor">⛳ インドアゴルフレッスン(時間制)</option><option value="round">🏌 ラウンドレッスン(1ラウンド)</option><option value="accompany">🤝 同伴ラウンド(1ラウンド)</option><option value="comp">🏆 コンペ参加(1ラウンド)</option></select>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">※前の画面で選択した内容です</div>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date"></div>
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" id="req-time" value="10:00"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date" readonly style="background:#f5f5f5;cursor:not-allowed;"></div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" id="req-time" value="10:00" readonly style="background:#f5f5f5;cursor:not-allowed;"></div>
       </div>
+      <div style="font-size:10px;color:var(--muted);margin-top:-8px;margin-bottom:12px;">※前の画面で選択した日時です。変更する場合は前画面に戻ってください。</div>
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
         <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
       </div>
       <div class="form-group"><label>場所</label>
-        <select id="req-store"><option value="kyoto">Golf Create 京都店</option><option value="fushimi">Golf Create 伏見店</option></select>
+        <select id="req-store" disabled style="background:#f5f5f5;cursor:not-allowed;"><option value="kyoto">Golf Create 京都店</option><option value="fushimi">Golf Create 伏見店</option></select>
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
         <select id="req-golf-history"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -412,9 +448,13 @@ function selType(card,type){
   currentType=type;
   selectedDate=null;
   selectedTime=null;
+  selectedCoachId=null;
+  selectedCoachData=null;
   document.getElementById('btn-to-request').style.display='none';
   document.getElementById('slot-area').style.display='none';
   document.getElementById('coach-info-area').style.display='none';
+  var coachSelArea=document.getElementById('coach-select-area');
+  if(coachSelArea) coachSelArea.style.display='none';
   document.getElementById('cal-box').scrollIntoView({behavior:'smooth',block:'start'});
   var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ'};
   document.getElementById('cal-type-label').textContent=labels[type]||type;
@@ -539,6 +579,8 @@ function selectWeekDay(ds){
   var avail=getAvailDates('indoor');
   if(!avail[ds]) return;
   selectedDate=ds;
+  selectedCoachId=null;
+  selectedCoachData=null;
   renderWeekCal();
   // 時間スロット表示
   var slots=avail[ds]||[];
@@ -552,6 +594,8 @@ function selectWeekDay(ds){
   });
   document.getElementById('slot-list').innerHTML=html;
   document.getElementById('coach-info-area').style.display='none';
+  var coachSelArea=document.getElementById('coach-select-area');
+  if(coachSelArea) coachSelArea.style.display='none';
   document.getElementById('btn-to-request').style.display='none';
 }
 
@@ -617,12 +661,18 @@ function selectMonthDay(ds){
   if(!avail[ds]) return;
   selectedDate=ds;
   selectedTime=null;
+  selectedCoachId=null;
+  selectedCoachData=null;
   renderMonthCal();
   showCoachInfo();
 }
 
+// 選択されたコーチ情報を格納
+var selectedCoachId=null;
+var selectedCoachData=null;
+
 // コーチ情報表示＆依頼ボタン表示
-function showCoachInfo(){
+async function showCoachInfo(){
   var area=document.getElementById('coach-info-area');
   area.style.display='block';
   var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
@@ -630,14 +680,99 @@ function showCoachInfo(){
   if(selectedTime) msg+=' '+selectedTime;
   msg+=' 【'+typeNames[currentType]+'】';
   document.getElementById('coach-info-text').textContent='選択中:'+msg;
+
+  // コーチ一覧を表示
+  await loadCoachesForDate();
+}
+
+// 日程に対応可能なコーチ一覧を取得＆表示
+async function loadCoachesForDate(){
+  var area=document.getElementById('coach-select-area');
+  var listEl=document.getElementById('coach-list');
+  area.style.display='block';
+  document.getElementById('btn-to-request').style.display='none';
+  selectedCoachId=null;
+  selectedCoachData=null;
+
+  // その日に対応可能なコーチIDを availCache から取得
+  var coachIds=getCoachesForDate(selectedDate,currentType);
+  // 'sample' は除外
+  coachIds=coachIds.filter(function(id){return id&&id!=='sample';});
+
+  // 重複排除
+  coachIds=Array.from(new Set(coachIds));
+
+  // コーチが見つからない場合でも、暫定的に全コーチ表示(段階1)
+  // 本番運用では空き判定を厳密化
+  if(coachIds.length===0){
+    // スケジュールが無くても、is_approved=true のコーチを表示
+    try{
+      var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,is_approved').eq('is_approved',true);
+      if(!error&&data&&data.length>0){
+        renderCoachList(data);
+        return;
+      }
+    }catch(e){}
+    listEl.innerHTML='<div class="coach-card-none">この日程に対応可能なコーチが見つかりませんでした。<br>別の日時をお選びください。</div>';
+    return;
+  }
+
+  // コーチ情報を取得
+  try{
+    var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio').in('id',coachIds);
+    if(error||!data||data.length===0){
+      listEl.innerHTML='<div class="coach-card-none">コーチ情報を取得できませんでした。</div>';
+      return;
+    }
+    renderCoachList(data);
+  }catch(e){
+    listEl.innerHTML='<div class="coach-card-none">通信エラーが発生しました。</div>';
+  }
+}
+
+// コーチ一覧HTML生成
+function renderCoachList(coaches){
+  var listEl=document.getElementById('coach-list');
+  var html='';
+  coaches.forEach(function(c){
+    var photoHtml=c.photo_url?'<img src="'+c.photo_url+'" alt="'+(c.name||'')+'">':(c.name?c.name.charAt(0):'?');
+    var name=c.name||'(お名前未登録)';
+    var license=c.license||'';
+    var tags=c.tags||'';
+    var bio=c.bio||'';
+    html+='<div class="coach-card" data-coach-id="'+c.id+'" onclick="selectCoach(\''+c.id+'\')">';
+    html+='<div class="coach-card-photo">'+photoHtml+'</div>';
+    html+='<div class="coach-card-body">';
+    html+='<div class="coach-card-name">'+name+'</div>';
+    if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
+    if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
+    if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
+    html+='</div></div>';
+  });
+  listEl.innerHTML=html;
+  // データをグローバルに保存
+  window._coachCache={};
+  coaches.forEach(function(c){window._coachCache[c.id]=c;});
+}
+
+// コーチを選択
+function selectCoach(coachId){
+  selectedCoachId=coachId;
+  selectedCoachData=window._coachCache?window._coachCache[coachId]:null;
+  // 選択状態を表示
+  document.querySelectorAll('.coach-card').forEach(function(el){
+    el.classList.toggle('selected',el.getAttribute('data-coach-id')===coachId);
+  });
+  // 依頼ボタン表示
   document.getElementById('btn-to-request').style.display='block';
 }
 
 // 依頼するページへ遷移
 function goToRequest(){
-  if(!selectedDate) return;
+  if(!selectedDate){alert('日程を選択してください');return;}
+  if(!selectedCoachId){alert('コーチを選択してください');return;}
+
   // フォームにセット
-  var typeMap={indoor:'indoor',round:'round',accompany:'accompany',comp:'comp'};
   var sel=document.getElementById('req-type');
   for(var i=0;i<sel.options.length;i++){
     if(sel.options[i].value===currentType){sel.selectedIndex=i;break;}
@@ -645,6 +780,22 @@ function goToRequest(){
   document.getElementById('req-date').value=selectedDate;
   if(selectedTime) document.getElementById('req-time').value=selectedTime;
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
+
+  // 選択されたコーチ情報を依頼画面に表示
+  if(selectedCoachData){
+    var box=document.getElementById('selected-coach-box');
+    box.style.display='block';
+    var photoEl=document.getElementById('sel-coach-photo');
+    if(selectedCoachData.photo_url){
+      photoEl.innerHTML='<img src="'+selectedCoachData.photo_url+'" style="width:100%;height:100%;object-fit:cover;">';
+    }else{
+      photoEl.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--gd);font-weight:700;">'+(selectedCoachData.name?selectedCoachData.name.charAt(0):'?')+'</div>';
+    }
+    document.getElementById('sel-coach-name').textContent=selectedCoachData.name||'(お名前未登録)';
+    document.getElementById('sel-coach-license').textContent=selectedCoachData.license?'📜 '+selectedCoachData.license:'';
+    document.getElementById('sel-coach-tags').textContent=selectedCoachData.tags?'🏌 '+selectedCoachData.tags:'';
+  }
+
   // タブ切替
   var btn=document.getElementById('snb-request');
   tab(btn,'s-request');
@@ -828,7 +979,7 @@ async function submitBooking(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         customer_user_id:uid,
-        coach_id:'6f728334-3fbe-4af2-93b1-9b4d288c2ca3',
+        coach_id:selectedCoachId||'6f728334-3fbe-4af2-93b1-9b4d288c2ca3',
         store_key:storeKey,
         lesson_type:lessonType,
         lesson_date:lessonDate,
