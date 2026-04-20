@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GolfCoach — お客様画面</title>
+<title>MyCoach — お客様画面</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
@@ -139,7 +139,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 </head>
 <body>
 <div class="header">
-  <div class="logo">GolfCoach</div>
+  <div class="logo">MyCoach</div>
   <div style="display:flex;align-items:center;gap:10px;">
     <div class="user-name" id="user-name"></div>
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
@@ -326,7 +326,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:10px;">利用規約・同意事項</div>
       <div class="terms-box">
-        <h4>第1条(サービスの性質と派遣業務の非該当)</h4>本サービス「GolfCoach」はマッチングプラットフォームです。運営者はコーチに業務上の指揮命令を行わず、レッスン内容・方法・料金はコーチが自ら決定します。本サービスは労働者派遣事業に該当しません。
+        <h4>第1条(サービスの性質と派遣業務の非該当)</h4>本サービス「MyCoach」はマッチングプラットフォームです。運営者はコーチに業務上の指揮命令を行わず、レッスン内容・方法・料金はコーチが自ら決定します。本サービスは労働者派遣事業に該当しません。
         <h4>第2条(コーチの独立性)</h4>コーチはすべて個人事業主であり、運営者との雇用関係はありません。
         <h4>第3条(個人情報の取り扱い)</h4>個人情報保護法に基づき個人情報を適切に管理します。
         <h4>第4条(お気に入り機能と情報開示)</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
@@ -334,6 +334,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <h4>第6条(キャンセルポリシー)</h4>レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
         <h4>第7条(レビュー義務)</h4>レッスン終了後、星評価(1〜5)の投稿が必須です。
         <h4>第8条(準拠法・管轄)</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
+        <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #ccc;font-size:10px;">
+          <a href="terms.html" target="_blank" style="color:var(--g);">全文を表示</a> / 
+          <a href="privacy.html" target="_blank" style="color:var(--g);">プライバシーポリシー</a>
+        </div>
       </div>
       <label class="agree-row"><input type="checkbox" id="agreeChk" onchange="checkAgree()">利用規約をすべて読み、内容に同意してサービスを利用します</label>
       <button class="btn-confirm" id="req-btn" disabled onclick="submitBooking()">同意して依頼を確定する →</button>
@@ -365,7 +369,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Golf Create 会員認証</div>
       <div style="font-size:11px;color:#888;margin-bottom:12px;">会員メールアドレスを照合してサービスをご利用ください</div>
       <div style="background:#fff8e1;border:0.5px solid #f0c040;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#7a5c00;line-height:1.6;">
-        ⚠️ Golf Create 戸津池を退会された場合、MyCoachのご利用は停止されます。再入会の際は再度会員認証が必要です。
+        ⚠️ Golf Create 戸津池店を退会された場合、MyCoachのご利用は停止されます。再入会の際は再度会員認証が必要です。
       </div>
 
       <!-- 承認済み表示 -->
@@ -380,8 +384,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           <label>ご利用店舗</label>
           <select id="mp-store-key">
             <option value="">選択してください</option>
-            <option value="kyoto">Golf Create 戸津池 京都店</option>
-            <option value="fushimi">Golf Create 戸津池 伏見店</option>
+            <option value="kyoto">Golf Create 戸津池店</option>
           </select>
         </div>
         <div class="form-group">
@@ -393,7 +396,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       </div>
       <!-- 非会員向けLINE登録案内 -->
       <div id="line-register-area" style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
-        <div style="font-size:11px;color:#888;margin-bottom:8px;">Golf Create tozuike の会員登録がまだの方はこちら</div>
+        <div style="font-size:11px;color:#888;margin-bottom:8px;">Golf Create 戸津池店 の会員登録がまだの方はこちら</div>
         <a href="https://lin.ee/RB8lb45" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;color:#fff;border-radius:8px;padding:11px;font-size:13px;font-weight:700;text-decoration:none;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
           Golf Create LINEで会員登録する
@@ -458,7 +461,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 // セッション確認
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
-  if(!session){window.location.href='index.html';return;}
+  if(!session){window.location.href='index.html?role=customer';return;}
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
@@ -468,7 +471,7 @@ sb.auth.getSession().then(async function(res){
   var{data}=await sb.from('customers').select('store_key,member_number,member_type,is_approved').eq('user_id',uid).single();
   if(data&&data.is_approved){
     var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-    var storeLabels={kyoto:'京都店',fushimi:'伏見店'};
+    var storeLabels={kyoto:'Golf Create 戸津池店'};
     document.getElementById('auth-form').style.display='none';
     document.getElementById('approved-badge').style.display='block';
     document.getElementById('approved-detail').textContent=(storeLabels[data.store_key]||data.store_key)+' / '+(typeLabels[data.member_type]||data.member_type);
@@ -851,7 +854,7 @@ function goToRequest(){
 
   // 表示専用カードに日本語フォーマットでセット
   var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加'};
-  var storeLabelMap={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
+  var storeLabelMap={kyoto:'Golf Create 戸津池店'};
   var weekdayNames=['日','月','火','水','木','金','土'];
 
   document.getElementById('display-type').textContent=typeLabelMap[currentType]||currentType;
@@ -875,7 +878,7 @@ function goToRequest(){
     document.getElementById('display-time').textContent='—';
   }
 
-  // 場所(現状は京都店固定だが、将来拡張に備える)
+  // 場所(現状はGolf Create 戸津池店固定、将来拡張に備える)
   var storeVal=document.getElementById('req-store').value;
   document.getElementById('display-store').textContent=storeLabelMap[storeVal]||storeVal;
 
@@ -1018,7 +1021,7 @@ function rate(n){
 async function doLogout(){
   localStorage.removeItem('gc_login_time');
   await sb.auth.signOut();
-  window.location.href='index.html';
+  window.location.href='index.html?role=customer';
 }
 
 async function verifyMember(){
@@ -1038,7 +1041,7 @@ async function verifyMember(){
     return;
   }
   var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-  var storeLabels={kyoto:'京都店',fushimi:'伏見店'};
+  var storeLabels={kyoto:'Golf Create 戸津池店'};
   var res=await sb.auth.getSession();
   var uid=res.data.session.user.id;
   await sb.from('customers').upsert({
@@ -1093,7 +1096,7 @@ async function submitBooking(){
   // セッション取得
   var sres=await sb.auth.getSession();
   var session=sres.data.session;
-  if(!session){alert('ログインが必要です');window.location.href='index.html';return;}
+  if(!session){alert('ログインが必要です');window.location.href='index.html?role=customer';return;}
   var uid=session.user.id;
 
   // 入力取得
@@ -1122,7 +1125,7 @@ async function submitBooking(){
     lessonLabel=(typeLabelMap[lessonType]||lessonType)+' '+(durationMin||'')+'分';
   }else{
     // ラウンド系は店舗固定料金(段階1: 仮値、後日料金設定連携)
-    var roundPrices={kyoto:8000,fushimi:6000};
+    var roundPrices={kyoto:8000};
     amountYen=roundPrices[storeKey]||8000;
     lessonLabel=typeLabelMap[lessonType]||lessonType;
   }
@@ -1171,7 +1174,7 @@ async function submitBooking(){
       btn.textContent='同意して依頼を確定する →';
       return;
     }
-    // Stripe Checkoutへ遷移
+    // 安全な外部決済システムへ遷移
     window.location.href=json.url||json.checkout_url;
   }catch(e){
     console.error(e);
@@ -1181,7 +1184,7 @@ async function submitBooking(){
   }
 }
 
-// 決済結果の戻り判定(Stripe Checkoutから戻ってきたときの処理)
+// 決済結果の戻り判定(外部決済システムから戻ってきたときの処理)
 function handlePaymentReturn(){
   var params=new URLSearchParams(window.location.search);
   var result=params.get('payment');
