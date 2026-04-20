@@ -843,7 +843,7 @@ async function submitBooking(){
       })
     });
     var json=await resp.json();
-    if(!resp.ok||!json.checkout_url){
+    if(!resp.ok||!(json.url||json.checkout_url)){
       console.error('checkout error:',json);
       alert('決済セッションの作成に失敗しました\n'+(json.error||json.detail||''));
       btn.disabled=false;
@@ -851,7 +851,7 @@ async function submitBooking(){
       return;
     }
     // Stripe Checkoutへ遷移
-    window.location.href=json.checkout_url;
+    window.location.href=json.url||json.checkout_url;
   }catch(e){
     console.error(e);
     alert('通信エラー:'+e.message);
