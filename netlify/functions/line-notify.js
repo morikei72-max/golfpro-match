@@ -11,6 +11,15 @@ const { createClient } = require('@supabase/supabase-js');
 const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push';
 
 /**
+ * store_key から正式店舗名へのマッピング
+ * 【2026/4/20 追加】LINE通知で「場所：kyoto」と表示される問題を解消
+ * bookings.store_id が NULL の場合でも、store_key から正式名称を引けるようにする
+ */
+const STORE_KEY_TO_NAME = {
+  kyoto: 'Golf Create 戸津池店',
+};
+
+/**
  * 指定のLINE userIdにテキストメッセージを送信
  * @param {string} toUserId - LINE user ID (Uxxxxxxxxxx...)
  * @param {string} text - 送信するテキスト（5000文字以内）
@@ -218,6 +227,9 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   }
 
   // 店舗情報（任意）
+  // 【2026/4/20 修正】store_key から正式店舗名に変換するロジックを追加
+  // 変更前：storeName = booking.store_key; // 'kyoto' がそのまま表示されていた
+  // 変更後：STORE_KEY_TO_NAME マップを引いて正式名称を取得
   let storeName = '—';
   if (booking.store_id) {
     const { data } = await supabase
@@ -227,7 +239,8 @@ async function notifyBookingConfirmed({ bookingId, session }) {
       .maybeSingle();
     if (data) storeName = data.name;
   } else if (booking.store_key) {
-    storeName = booking.store_key;
+    // store_key → 正式店舗名 への変換
+    storeName = STORE_KEY_TO_NAME[booking.store_key] || booking.store_key;
   }
 
   // 日時フォーマット
