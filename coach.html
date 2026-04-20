@@ -725,9 +725,9 @@ const stores={
   fushimi:{name:'Golf Create tozuike 伏見店',addr:'京都府京都市伏見区',fees:{indoor:12,round:6,accompany:6,comp:6},hqFee:5,stripeFee:3.6}
 };
 
-function saveInvoice(){showMsg('インボイス情報を保存しました！','success');}
-function savePrices(){showMsg('料金設定を保存しました！','success');}
-function saveSchedule(){showMsg('スケジュールを保存しました！','success');}
+function saveInvoice(){alert('✅ インボイス情報を保存しました！');showMsg('インボイス情報を保存しました！','success');}
+function savePrices(){alert('✅ 料金設定を保存しました！');showMsg('料金設定を保存しました！','success');}
+function saveSchedule(){alert('✅ スケジュールを保存しました！');showMsg('スケジュールを保存しました！','success');}
 let currentCoachId=null;
 let currentStore=null;
 let scheduleData={};
@@ -1118,9 +1118,9 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 
 /* ===== プロフィール保存・読み込み ===== */
 async function saveProfile(){
-  if(!currentCoachId){showMsg('ログイン情報が取得できません','error');return;}
+  if(!currentCoachId){alert('❌ ログイン情報が取得できません');showMsg('ログイン情報が取得できません','error');return;}
   const name=document.getElementById('prof-name').value.trim();
-  if(!name){showMsg('お名前は必須です','error');return;}
+  if(!name){alert('❌ お名前は必須項目です');showMsg('お名前は必須です','error');return;}
   const data={
     user_id:currentCoachId,
     name:name,
@@ -1133,9 +1133,10 @@ async function saveProfile(){
     updated_at:new Date().toISOString()
   };
   const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
-  if(error){showMsg('保存に失敗しました：'+error.message,'error');return;}
+  if(error){alert('❌ 保存に失敗しました\n'+error.message);showMsg('保存に失敗しました：'+error.message,'error');return;}
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
+  alert('✅ 基本情報を保存しました！');
   showMsg('プロフィールを保存しました！','success');
 }
 
