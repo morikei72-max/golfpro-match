@@ -303,9 +303,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           打席を延長するか、レッスン時間を短くしてください。
         </div>
 
-        <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;color:#7a5c00;cursor:pointer;padding:8px;background:#fff;border:1px solid #f0c040;border-radius:6px;margin-bottom:8px;">
-          <input type="checkbox" id="boothReservedChk" onchange="checkAgree()" style="margin-top:2px;accent-color:#7a5c00;">
-          <span>hacomonoで打席予約を済ませています</span>
+        <label style="display:flex;align-items:center;gap:10px;font-size:12px;color:#7a5c00;cursor:pointer;padding:10px;background:#fff;border:1px solid #f0c040;border-radius:6px;margin-bottom:8px;justify-content:flex-start;">
+          <input type="checkbox" id="boothReservedChk" onchange="checkAgree()" style="flex-shrink:0;accent-color:#7a5c00;width:16px;height:16px;">
+          <span style="flex:1;">hacomonoで打席予約を済ませています</span>
         </label>
 
         <a href="https://golfcreate.hacomono.jp" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;background:#7a5c00;color:#fff;border-radius:6px;padding:9px;font-size:12px;font-weight:700;text-decoration:none;">
@@ -640,8 +640,9 @@ function selectWeekDay(ds){
   document.getElementById('slot-title').textContent=ds.replace(/-/g,'/')+' の空き時間';
   var html='';
   slots.forEach(function(t){
-    var sel=t===selectedTime?' sel':'';
-    html+='<div class="slot avail'+sel+'" onclick="selectSlot(\''+t+'\')">'+t+'</div>';
+    var normalizedTime=normalizeTime(t);
+    var sel=normalizedTime===selectedTime?' sel':'';
+    html+='<div class="slot avail'+sel+'" onclick="selectSlot(\''+normalizedTime+'\')">'+normalizedTime+'</div>';
   });
   document.getElementById('slot-list').innerHTML=html;
   document.getElementById('coach-info-area').style.display='none';
@@ -650,11 +651,30 @@ function selectWeekDay(ds){
   document.getElementById('btn-to-request').style.display='none';
 }
 
+// 時間を HH:MM 形式に正規化する
+// '14' → '14:00', '14:00' → '14:00', '9' → '09:00', '9:30' → '09:30'
+function normalizeTime(t){
+  if(!t) return '';
+  var s=String(t).trim();
+  if(s.indexOf(':')<0){
+    // 分がない場合 → ':00' を追加
+    var h=parseInt(s,10);
+    if(isNaN(h)) return s;
+    return (h<10?'0'+h:''+h)+':00';
+  }
+  // 既に : がある場合 → 時を2桁にゼロパディング
+  var parts=s.split(':');
+  var h=parseInt(parts[0],10);
+  var m=parts[1]||'00';
+  if(isNaN(h)) return s;
+  return (h<10?'0'+h:''+h)+':'+(m.length===1?'0'+m:m);
+}
+
 function selectSlot(t){
-  selectedTime=t;
+  selectedTime=normalizeTime(t);
   // スロット再描画
   document.querySelectorAll('#slot-list .slot').forEach(function(el){
-    el.classList.toggle('sel',el.textContent===t);
+    el.classList.toggle('sel',el.textContent===selectedTime);
   });
   showCoachInfo();
 }
