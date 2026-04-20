@@ -34,6 +34,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .notice-text{font-size:10px;color:#633806;font-weight:500;line-height:1.4;}
 .indoor-bottom{background:var(--gl);border-top:0.5px solid var(--g);padding:5px 10px;}
 .indoor-bottom-text{font-size:10px;color:var(--gd);font-weight:500;}
+/* 【第2バッチ】その他カテゴリ用の緑バー */
+.custom-bottom{background:var(--gl);border-top:0.5px solid var(--g);padding:5px 10px;display:flex;align-items:center;gap:5px;}
+.custom-dot{width:4px;height:4px;border-radius:50%;background:var(--g);flex-shrink:0;}
+.custom-text{font-size:10px;color:var(--gd);font-weight:500;line-height:1.4;}
 
 /* CALENDAR */
 .cal-box{background:#fff;border-radius:12px;border:0.5px solid var(--border);padding:14px;margin-bottom:12px;}
@@ -92,6 +96,41 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .coach-card-tags{font-size:11px;color:var(--g);margin-bottom:4px;}
 .coach-card-bio{font-size:11px;color:#777;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .coach-card-none{padding:20px;text-align:center;color:#999;font-size:12px;background:#f9f9f9;border-radius:8px;}
+
+/* 【第2バッチ】コーチの料金プラン表示 */
+.coach-plans-box{
+  background:#f9fbfa;border:1px solid #d8e8df;border-radius:10px;
+  padding:12px;margin-top:10px;margin-bottom:10px;
+}
+.coach-plans-title{
+  font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;
+}
+.plan-option{
+  display:flex;align-items:center;gap:8px;padding:10px;margin-bottom:6px;
+  background:#fff;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;
+  transition:all .15s;
+}
+.plan-option:hover{border-color:var(--g);}
+.plan-option.selected{border-color:var(--g);background:var(--gl);box-shadow:0 0 0 2px rgba(29,158,117,.2);}
+.plan-option input[type="radio"]{accent-color:var(--g);flex-shrink:0;}
+.plan-option-body{flex:1;min-width:0;}
+.plan-option-main{font-size:13px;font-weight:700;color:var(--gd);}
+.plan-option-desc{font-size:11px;color:#666;margin-top:2px;line-height:1.4;}
+.plan-option-price{font-size:14px;font-weight:900;color:var(--gd);flex-shrink:0;white-space:nowrap;}
+.plan-option-disabled{opacity:0.4;cursor:not-allowed;background:#f5f5f5;}
+.plan-option-disabled-reason{font-size:10px;color:var(--red);margin-top:2px;}
+.plan-greenfee-badge{
+  display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;
+  background:var(--gl);color:var(--gd);font-weight:700;margin-top:4px;
+}
+.plan-greenfee-info{
+  font-size:11px;color:var(--gd);margin-top:4px;line-height:1.5;
+  background:var(--gl);border-radius:6px;padding:6px 8px;
+}
+.coach-plans-none{
+  padding:12px;text-align:center;color:#999;font-size:11px;
+  background:#f9f9f9;border-radius:6px;
+}
 
 /* FORM */
 .form-group{margin-bottom:12px;}
@@ -163,7 +202,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/indoor.png');">
           <div class="photo-content">
             <div class="photo-title">インドアゴルフ<br>レッスン</div>
-            <div class="photo-sub">5〜120分・時間制</div>
+            <div class="photo-sub">コーチが設定した時間から選択</div>
           </div>
         </div>
         <div class="indoor-bottom"><div class="indoor-bottom-text">時間と料金はこちら</div></div>
@@ -172,7 +211,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/round.png');">
           <div class="photo-content">
             <div class="photo-title">ラウンドレッスン</div>
-            <div class="photo-sub">1ラウンド固定</div>
+            <div class="photo-sub">ラウンド数から選択</div>
           </div>
         </div>
         <div class="notice-bar"><div class="notice-dot"></div><div class="notice-text">コーチのプレーフィー・キャディフィーはお客様のご負担</div></div>
@@ -181,7 +220,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/accompany.png');">
           <div class="photo-content">
             <div class="photo-title">同伴ラウンド</div>
-            <div class="photo-sub">1ラウンド固定</div>
+            <div class="photo-sub">ラウンド数から選択</div>
           </div>
         </div>
         <div class="notice-bar"><div class="notice-dot"></div><div class="notice-text">コーチのプレーフィー・キャディフィーはお客様のご負担</div></div>
@@ -190,10 +229,20 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/comp.png');">
           <div class="photo-content">
             <div class="photo-title">コンペ参加</div>
-            <div class="photo-sub">1ラウンド固定</div>
+            <div class="photo-sub">ラウンド数から選択</div>
           </div>
         </div>
         <div class="notice-bar"><div class="notice-dot"></div><div class="notice-text">コーチのプレーフィー・キャディフィーはお客様のご負担</div></div>
+      </div>
+      <!-- 【第2バッチN】その他・コーチ独自プラン -->
+      <div class="type-card" id="card-custom" onclick="selType(this,'custom')">
+        <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/indoor.png');">
+          <div class="photo-content">
+            <div class="photo-title">💡 その他<br>コーチ独自プラン</div>
+            <div class="photo-sub">特別なレッスンプラン</div>
+          </div>
+        </div>
+        <div class="custom-bottom"><div class="custom-dot"></div><div class="custom-text">アプローチ特化・スイング診断など</div></div>
       </div>
     </div>
 
@@ -213,10 +262,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div class="coach-info-bar" id="coach-info-text"></div>
       </div>
 
-      <!-- コーチ選択エリア（新規追加） -->
+      <!-- コーチ選択エリア -->
       <div id="coach-select-area" style="display:none;margin-top:12px;">
         <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;">🏌 ご指名のコーチを選ぶ</div>
         <div id="coach-list"></div>
+      </div>
+
+      <!-- 【第2バッチ】コーチの料金プラン選択エリア -->
+      <div id="coach-plans-area" style="display:none;margin-top:12px;">
+        <div class="coach-plans-box">
+          <div class="coach-plans-title">💰 料金プランを選ぶ</div>
+          <div id="coach-plans-list"></div>
+        </div>
       </div>
 
       <button class="btn-to-request" id="btn-to-request" style="display:none;" onclick="goToRequest()">このコーチに依頼する →</button>
@@ -257,6 +314,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">⛳ 依頼の種類</div>
           <div id="display-type" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
         </div>
+        <!-- 【第2バッチN】プラン名表示（独自プラン時のみ） -->
+        <div id="display-plan-row" style="display:none;margin-bottom:7px;">
+          <div style="display:flex;">
+            <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">💡 プラン名</div>
+            <div id="display-plan" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
+          </div>
+        </div>
         <div style="display:flex;margin-bottom:7px;">
           <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">📅 希望日</div>
           <div id="display-date" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
@@ -264,6 +328,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div style="display:flex;margin-bottom:7px;">
           <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">🕐 希望時間</div>
           <div id="display-time" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
+        </div>
+        <!-- 【第2バッチN】コーチ負担プラン時の追加情報 -->
+        <div id="display-course-row" style="display:none;margin-bottom:7px;">
+          <div style="display:flex;">
+            <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">⛳ 指定コース</div>
+            <div id="display-course" style="font-size:13px;font-weight:500;color:var(--gd);">—</div>
+          </div>
+        </div>
+        <div id="display-starttime-row" style="display:none;margin-bottom:7px;">
+          <div style="display:flex;">
+            <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">⏰ スタート時間</div>
+            <div id="display-starttime" style="font-size:13px;font-weight:500;color:var(--gd);">—</div>
+          </div>
+        </div>
+        <div style="display:flex;margin-bottom:7px;">
+          <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">💰 料金</div>
+          <div id="display-price" style="font-size:13px;font-weight:700;color:var(--gd);">—</div>
         </div>
         <div style="display:flex;">
           <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">📍 場所</div>
@@ -277,10 +358,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <input type="hidden" id="req-date" value="">
       <input type="hidden" id="req-time" value="">
       <input type="hidden" id="req-store" value="kyoto">
+      <!-- 【第2バッチ】選択されたプラン情報 -->
+      <input type="hidden" id="req-plan-id" value="">
+      <input type="hidden" id="req-plan-kind" value="">
+      <input type="hidden" id="req-plan-amount" value="">
+      <input type="hidden" id="req-plan-minutes" value="">
+      <input type="hidden" id="req-plan-label" value="">
+      <input type="hidden" id="req-plan-course" value="">
+      <input type="hidden" id="req-plan-starttime" value="">
+      <input type="hidden" id="req-plan-coach-pays" value="false">
 
       <div style="font-size:12px;color:var(--gd);font-weight:700;margin-bottom:10px;">✏️ 以下をご入力ください</div>
 
-      <!-- 打席予約セクション(インドアレッスンのみ表示) -->
+      <!-- 打席予約セクション(インドアレッスン・独自プランのみ表示) -->
       <div id="booth-reservation-section" class="form-group" style="background:#fff8e1;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
         <div style="font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:6px;">⚠️ 店舗での打席予約について</div>
         <div style="font-size:11px;color:#7a5c00;line-height:1.6;margin-bottom:10px;">
@@ -313,9 +403,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         </a>
       </div>
 
-      <div class="form-group" id="dur-group"><label>レッスン時間</label>
-        <select id="req-duration" onchange="checkBoothTime()"><option data-min="25">25分 — ¥2,000</option><option data-min="30">30分 — ¥2,400</option><option selected data-min="50">50分 — ¥4,000</option><option data-min="60">60分 — ¥4,800</option><option data-min="90">90分 — ¥7,200</option><option data-min="120">120分 — ¥9,600</option></select>
+      <!-- 【第2バッチ】dur-groupは非表示化（コーチが設定したプランを選択する方式に変更） -->
+      <div class="form-group" id="dur-group" style="display:none;">
+        <label>レッスン時間</label>
+        <select id="req-duration" onchange="checkBoothTime()">
+          <option value="" data-min="50">（コーチが設定した料金プランから選択済み）</option>
+        </select>
       </div>
+
       <div class="form-group"><label>ゴルフ歴</label>
         <select id="req-golf-history"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
       </div>
@@ -330,7 +425,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <h4>第2条(コーチの独立性)</h4>コーチはすべて個人事業主であり、運営者との雇用関係はありません。
         <h4>第3条(個人情報の取り扱い)</h4>個人情報保護法に基づき個人情報を適切に管理します。
         <h4>第4条(お気に入り機能と情報開示)</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
-        <h4>第5条(ラウンド系依頼におけるお客様負担事項)</h4>ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。
+        <h4>第5条(ラウンド系依頼におけるお客様負担事項)</h4>ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。ただし、コーチ独自プラン（その他カテゴリ）において「コーチがプレーフィーを負担する」設定がなされている場合を除きます。この場合、料金はすべてプランに含まれます。
         <h4>第6条(キャンセルポリシー)</h4>レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
         <h4>第7条(レビュー義務)</h4>レッスン終了後、星評価(1〜5)の投稿が必須です。
         <h4>第8条(準拠法・管轄)</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
@@ -495,6 +590,18 @@ var currentType='indoor';
 var selectedDate=null;
 var selectedTime=null;
 
+// 【第2バッチ】選択されたプラン情報
+var selectedPlan=null;
+// selectedPlan = {
+//   kind:'price_item'|'custom_plan',
+//   id:uuid,
+//   price:number, take_home:number, minutes:number|null, round_count:number|null,
+//   label:string, plan_name:string(custom only),
+//   duration_text:string(custom only), description:string(custom only),
+//   coach_pays_greenfee:bool(custom only),
+//   golf_course_name:string|null, start_time:string|null
+// }
+
 // カード選択
 function selType(card,type){
   document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('on');});
@@ -504,15 +611,18 @@ function selType(card,type){
   selectedTime=null;
   selectedCoachId=null;
   selectedCoachData=null;
+  selectedPlan=null;
   document.getElementById('btn-to-request').style.display='none';
   document.getElementById('slot-area').style.display='none';
   document.getElementById('coach-info-area').style.display='none';
   var coachSelArea=document.getElementById('coach-select-area');
   if(coachSelArea) coachSelArea.style.display='none';
+  var plansArea=document.getElementById('coach-plans-area');
+  if(plansArea) plansArea.style.display='none';
   document.getElementById('cal-box').scrollIntoView({behavior:'smooth',block:'start'});
-  var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ'};
+  var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
   document.getElementById('cal-type-label').textContent=labels[type]||type;
-  if(type==='indoor'){
+  if(type==='indoor'||type==='custom'){
     renderWeekCal();
   }else{
     renderMonthCal();
@@ -551,10 +661,13 @@ async function fetchAvailDates(){
       if(!availCache[ds]) availCache[ds]={};
       if(dow>=1&&dow<=5){
         availCache[ds].indoor={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample']};
+        // 独自プランもインドア同様に平日空き
+        availCache[ds].custom={times:['10:00','11:00','13:00','14:00','15:00'],coaches:['sample']};
       }else if(dow===6||dow===0){
         availCache[ds].round={times:[],coaches:['sample']};
         availCache[ds].accompany={times:[],coaches:['sample']};
         availCache[ds].comp={times:[],coaches:['sample']};
+        availCache[ds].custom={times:['09:00','10:00','13:00'],coaches:['sample']};
       }
     }
   }
@@ -566,7 +679,7 @@ function getAvailDates(type){
   var result={};
   Object.keys(availCache).forEach(function(ds){
     if(availCache[ds][type]){
-      if(type==='indoor'){
+      if(type==='indoor'||type==='custom'){
         result[ds]=availCache[ds][type].times;
       }else{
         result[ds]=true;
@@ -590,7 +703,7 @@ function fmt(d){
   return y+'-'+m+'-'+dd;
 }
 
-// ========== 週間カレンダー(インドア)==========
+// ========== 週間カレンダー(インドア・独自プラン)==========
 var weekStart=null;
 
 function getMonday(d){
@@ -604,7 +717,7 @@ function getMonday(d){
 
 function renderWeekCal(){
   if(!weekStart) weekStart=getMonday(new Date());
-  var avail=getAvailDates('indoor');
+  var avail=getAvailDates(currentType);
   var today=fmt(new Date());
   var weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
   document.getElementById('cal-title').textContent=
@@ -630,11 +743,12 @@ function renderWeekCal(){
 }
 
 function selectWeekDay(ds){
-  var avail=getAvailDates('indoor');
+  var avail=getAvailDates(currentType);
   if(!avail[ds]) return;
   selectedDate=ds;
   selectedCoachId=null;
   selectedCoachData=null;
+  selectedPlan=null;
   renderWeekCal();
   // 時間スロット表示
   var slots=avail[ds]||[];
@@ -651,21 +765,20 @@ function selectWeekDay(ds){
   document.getElementById('coach-info-area').style.display='none';
   var coachSelArea=document.getElementById('coach-select-area');
   if(coachSelArea) coachSelArea.style.display='none';
+  var plansArea=document.getElementById('coach-plans-area');
+  if(plansArea) plansArea.style.display='none';
   document.getElementById('btn-to-request').style.display='none';
 }
 
 // 時間を HH:MM 形式に正規化する
-// '14' → '14:00', '14:00' → '14:00', '9' → '09:00', '9:30' → '09:30'
 function normalizeTime(t){
   if(!t) return '';
   var s=String(t).trim();
   if(s.indexOf(':')<0){
-    // 分がない場合 → ':00' を追加
     var h=parseInt(s,10);
     if(isNaN(h)) return s;
     return (h<10?'0'+h:''+h)+':00';
   }
-  // 既に : がある場合 → 時を2桁にゼロパディング
   var parts=s.split(':');
   var h=parseInt(parts[0],10);
   var m=parts[1]||'00';
@@ -675,7 +788,6 @@ function normalizeTime(t){
 
 function selectSlot(t){
   selectedTime=normalizeTime(t);
-  // スロット再描画
   document.querySelectorAll('#slot-list .slot').forEach(function(el){
     el.classList.toggle('sel',el.textContent===selectedTime);
   });
@@ -699,14 +811,11 @@ function renderMonthCal(){
   var html='<div class="month-grid">';
   days.forEach(function(d){html+='<div class="month-day-label">'+d+'</div>';});
 
-  // 月初の曜日(月曜=0)
   var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
-  // 前月の日を埋める
   for(var i=0;i<startDow;i++){
     var d=new Date(calYear,calMonth,1-startDow+i);
     html+='<div class="month-day other-month"><div class="md-num">'+d.getDate()+'</div></div>';
   }
-  // 当月
   for(var day=1;day<=lastDay.getDate();day++){
     var d=new Date(calYear,calMonth,day);
     var ds=fmt(d);
@@ -719,7 +828,6 @@ function renderMonthCal(){
     if(avail[ds]) html+='<div class="avail-badge">●</div>';
     html+='</div>';
   }
-  // 残りを埋める
   var total=startDow+lastDay.getDate();
   var remain=(7-total%7)%7;
   for(var i=1;i<=remain;i++){
@@ -737,6 +845,7 @@ function selectMonthDay(ds){
   selectedTime=null;
   selectedCoachId=null;
   selectedCoachData=null;
+  selectedPlan=null;
   renderMonthCal();
   showCoachInfo();
 }
@@ -745,43 +854,36 @@ function selectMonthDay(ds){
 var selectedCoachId=null;
 var selectedCoachData=null;
 
-// コーチ情報表示＆依頼ボタン表示
 async function showCoachInfo(){
   var area=document.getElementById('coach-info-area');
   area.style.display='block';
-  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
   var msg=selectedDate?selectedDate.replace(/-/g,'/'):'';
   if(selectedTime) msg+=' '+selectedTime;
   msg+=' 【'+typeNames[currentType]+'】';
   document.getElementById('coach-info-text').textContent='選択中:'+msg;
 
-  // コーチ一覧を表示
   await loadCoachesForDate();
 }
 
-// 日程に対応可能なコーチ一覧を取得＆表示
 async function loadCoachesForDate(){
   var area=document.getElementById('coach-select-area');
   var listEl=document.getElementById('coach-list');
   area.style.display='block';
   document.getElementById('btn-to-request').style.display='none';
+  var plansArea=document.getElementById('coach-plans-area');
+  if(plansArea) plansArea.style.display='none';
   selectedCoachId=null;
   selectedCoachData=null;
+  selectedPlan=null;
 
-  // その日に対応可能なコーチIDを availCache から取得
   var coachIds=getCoachesForDate(selectedDate,currentType);
-  // 'sample' は除外
   coachIds=coachIds.filter(function(id){return id&&id!=='sample';});
-
-  // 重複排除
   coachIds=Array.from(new Set(coachIds));
 
-  // コーチが見つからない場合でも、暫定的に全コーチ表示(段階1)
-  // 本番運用では空き判定を厳密化
   if(coachIds.length===0){
-    // スケジュールが無くても、is_approved=true のコーチを表示
     try{
-      var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,is_approved').eq('is_approved',true);
+      var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,min_lesson,is_approved').eq('is_approved',true);
       if(!error&&data&&data.length>0){
         renderCoachList(data);
         return;
@@ -791,9 +893,8 @@ async function loadCoachesForDate(){
     return;
   }
 
-  // コーチ情報を取得
   try{
-    var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio').in('id',coachIds);
+    var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,min_lesson').in('id',coachIds);
     if(error||!data||data.length===0){
       listEl.innerHTML='<div class="coach-card-none">コーチ情報を取得できませんでした。</div>';
       return;
@@ -804,7 +905,6 @@ async function loadCoachesForDate(){
   }
 }
 
-// コーチ一覧HTML生成
 function renderCoachList(coaches){
   var listEl=document.getElementById('coach-list');
   var html='';
@@ -824,42 +924,225 @@ function renderCoachList(coaches){
     html+='</div></div>';
   });
   listEl.innerHTML=html;
-  // データをグローバルに保存
   window._coachCache={};
   coaches.forEach(function(c){window._coachCache[c.id]=c;});
 }
 
-// コーチを選択
-function selectCoach(coachId){
+// コーチを選択→【第2バッチ】料金プランを動的読込
+async function selectCoach(coachId){
   selectedCoachId=coachId;
   selectedCoachData=window._coachCache?window._coachCache[coachId]:null;
-  // 選択状態を表示
+  selectedPlan=null;
   document.querySelectorAll('.coach-card').forEach(function(el){
     el.classList.toggle('selected',el.getAttribute('data-coach-id')===coachId);
   });
-  // 依頼ボタン表示
+  // 【第2バッチ】コーチの料金プランを読込
+  await loadCoachPlans(coachId);
+}
+
+// 【第2バッチ】コーチの料金プラン（coach_price_items + coach_custom_plans）を読込
+async function loadCoachPlans(coachId){
+  var plansArea=document.getElementById('coach-plans-area');
+  var listEl=document.getElementById('coach-plans-list');
+  plansArea.style.display='block';
+  listEl.innerHTML='<div class="coach-plans-none">料金プランを読み込み中...</div>';
+  document.getElementById('btn-to-request').style.display='none';
+
+  try{
+    var coachData=selectedCoachData||{};
+    var minLessonMin=parseInt(coachData.min_lesson||'0',10)||0;
+
+    if(currentType==='custom'){
+      // 独自プラン（coach_custom_plans）を取得
+      var{data:plans,error}=await sb.from('coach_custom_plans').select('*').eq('coach_id',coachId).eq('is_active',true).order('display_order',{ascending:true});
+      if(error||!plans||plans.length===0){
+        listEl.innerHTML='<div class="coach-plans-none">このコーチは独自プランを設定していません。</div>';
+        return;
+      }
+      renderCustomPlans(plans);
+    }else{
+      // 通常料金（coach_price_items）を取得
+      var{data:items,error}=await sb.from('coach_price_items').select('*').eq('coach_id',coachId).eq('lesson_type',currentType).order('display_order',{ascending:true});
+      if(error||!items||items.length===0){
+        listEl.innerHTML='<div class="coach-plans-none">このコーチは料金プランを設定していません。</div>';
+        return;
+      }
+      renderPriceItems(items,minLessonMin);
+    }
+  }catch(e){
+    console.error('loadCoachPlans error',e);
+    listEl.innerHTML='<div class="coach-plans-none">料金プランの取得に失敗しました。</div>';
+  }
+}
+
+// 通常料金プラン（coach_price_items）の描画
+function renderPriceItems(items,minLessonMin){
+  var listEl=document.getElementById('coach-plans-list');
+  var html='';
+  items.forEach(function(item,idx){
+    var timeLabel='';
+    var disabled=false;
+    var disabledReason='';
+    if(item.lesson_type==='indoor'){
+      timeLabel=(item.minutes||'-')+'分';
+      // 最低レッスン時間チェック
+      if(minLessonMin>0&&item.minutes<minLessonMin){
+        disabled=true;
+        disabledReason='最低'+minLessonMin+'分以上の予約が必要です';
+      }
+    }else{
+      var rc=parseFloat(item.round_count)||1;
+      timeLabel=rc+'R';
+    }
+    var optId='price-item-'+idx;
+    var cls='plan-option'+(disabled?' plan-option-disabled':'');
+    var onclick=disabled?'':' onclick="selectPriceItem('+idx+')"';
+    html+='<label class="'+cls+'" id="'+optId+'"'+onclick+'>';
+    if(!disabled) html+='<input type="radio" name="price-plan" value="'+idx+'">';
+    html+='<div class="plan-option-body">';
+    html+='<div class="plan-option-main">'+timeLabel+'</div>';
+    if(disabled) html+='<div class="plan-option-disabled-reason">⚠️ '+disabledReason+'</div>';
+    html+='</div>';
+    html+='<div class="plan-option-price">¥'+parseInt(item.price).toLocaleString()+'</div>';
+    html+='</label>';
+  });
+  listEl.innerHTML=html;
+  // データをグローバルに保持
+  window._priceItemsCache=items;
+}
+
+// 通常料金プラン選択
+function selectPriceItem(idx){
+  var items=window._priceItemsCache||[];
+  var item=items[idx];
+  if(!item) return;
+  // 選択状態を描画
+  document.querySelectorAll('#coach-plans-list .plan-option').forEach(function(el,i){
+    el.classList.toggle('selected',i===idx);
+    var radio=el.querySelector('input[type="radio"]');
+    if(radio) radio.checked=(i===idx);
+  });
+  var timeLabel='';
+  if(item.lesson_type==='indoor'){
+    timeLabel=(item.minutes||'-')+'分';
+  }else{
+    var rc=parseFloat(item.round_count)||1;
+    timeLabel=rc+'R';
+  }
+  selectedPlan={
+    kind:'price_item',
+    id:item.id,
+    price:parseInt(item.price),
+    take_home:parseInt(item.take_home),
+    minutes:item.minutes||null,
+    round_count:item.round_count||null,
+    label:timeLabel+' ¥'+parseInt(item.price).toLocaleString(),
+    coach_pays_greenfee:false,
+    golf_course_name:null,
+    start_time:null
+  };
   document.getElementById('btn-to-request').style.display='block';
+}
+
+// 独自プラン（coach_custom_plans）の描画
+function renderCustomPlans(plans){
+  var listEl=document.getElementById('coach-plans-list');
+  var html='';
+  plans.forEach(function(plan,idx){
+    var optId='custom-plan-'+idx;
+    html+='<label class="plan-option" id="'+optId+'" onclick="selectCustomPlan('+idx+')">';
+    html+='<input type="radio" name="price-plan" value="'+idx+'">';
+    html+='<div class="plan-option-body">';
+    html+='<div class="plan-option-main">'+escapeHtml(plan.plan_name)+' <span style="font-size:11px;color:#666;">（'+escapeHtml(plan.duration_text)+'）</span></div>';
+    html+='<div class="plan-option-desc">'+escapeHtml(plan.description)+'</div>';
+    if(plan.coach_pays_greenfee){
+      html+='<div class="plan-greenfee-badge">✅ プレーフィー・キャディフィー込み</div>';
+      if(plan.golf_course_name||plan.start_time){
+        html+='<div class="plan-greenfee-info">';
+        if(plan.golf_course_name) html+='⛳ 指定コース: '+escapeHtml(plan.golf_course_name)+'<br>';
+        if(plan.start_time) html+='⏰ スタート時間: '+escapeHtml(plan.start_time);
+        html+='</div>';
+      }
+    }
+    html+='</div>';
+    html+='<div class="plan-option-price">¥'+parseInt(plan.price).toLocaleString()+'</div>';
+    html+='</label>';
+  });
+  listEl.innerHTML=html;
+  window._customPlansCache=plans;
+}
+
+function selectCustomPlan(idx){
+  var plans=window._customPlansCache||[];
+  var plan=plans[idx];
+  if(!plan) return;
+  document.querySelectorAll('#coach-plans-list .plan-option').forEach(function(el,i){
+    el.classList.toggle('selected',i===idx);
+    var radio=el.querySelector('input[type="radio"]');
+    if(radio) radio.checked=(i===idx);
+  });
+  selectedPlan={
+    kind:'custom_plan',
+    id:plan.id,
+    price:parseInt(plan.price),
+    take_home:parseInt(plan.take_home),
+    minutes:null,
+    round_count:null,
+    label:plan.plan_name+' ('+plan.duration_text+') ¥'+parseInt(plan.price).toLocaleString(),
+    plan_name:plan.plan_name,
+    duration_text:plan.duration_text,
+    description:plan.description,
+    coach_pays_greenfee:!!plan.coach_pays_greenfee,
+    golf_course_name:plan.golf_course_name||null,
+    start_time:plan.start_time||null
+  };
+  document.getElementById('btn-to-request').style.display='block';
+}
+
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // 依頼するページへ遷移
 function goToRequest(){
   if(!selectedDate){alert('日程を選択してください');return;}
   if(!selectedCoachId){alert('コーチを選択してください');return;}
+  if(!selectedPlan){alert('料金プランを選択してください');return;}
 
   // 非表示の実値フィールドにセット（送信用）
   document.getElementById('req-type').value=currentType;
   document.getElementById('req-date').value=selectedDate;
-  document.getElementById('req-time').value=selectedTime||'10:00';
+  document.getElementById('req-time').value=selectedTime||(selectedPlan.start_time||'10:00');
   document.getElementById('req-store').value=document.getElementById('req-store').value||'kyoto';
 
-  // 表示専用カードに日本語フォーマットでセット
-  var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加'};
+  // 【第2バッチ】プラン情報をフォームに格納
+  document.getElementById('req-plan-id').value=selectedPlan.id||'';
+  document.getElementById('req-plan-kind').value=selectedPlan.kind||'';
+  document.getElementById('req-plan-amount').value=selectedPlan.price||0;
+  document.getElementById('req-plan-minutes').value=selectedPlan.minutes||'';
+  document.getElementById('req-plan-label').value=selectedPlan.label||'';
+  document.getElementById('req-plan-course').value=selectedPlan.golf_course_name||'';
+  document.getElementById('req-plan-starttime').value=selectedPlan.start_time||'';
+  document.getElementById('req-plan-coach-pays').value=selectedPlan.coach_pays_greenfee?'true':'false';
+
+  var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 コーチ独自プラン'};
   var storeLabelMap={kyoto:'Golf Create 戸津池店'};
   var weekdayNames=['日','月','火','水','木','金','土'];
 
   document.getElementById('display-type').textContent=typeLabelMap[currentType]||currentType;
 
-  // 日付を日本語フォーマットに(例: 2026年4月22日(水))
+  // 独自プラン時のみプラン名表示
+  if(selectedPlan.kind==='custom_plan'){
+    document.getElementById('display-plan-row').style.display='block';
+    document.getElementById('display-plan').textContent=selectedPlan.plan_name+'（'+selectedPlan.duration_text+'）';
+  }else{
+    document.getElementById('display-plan-row').style.display='none';
+  }
+
+  // 料金表示
+  document.getElementById('display-price').textContent='¥'+parseInt(selectedPlan.price).toLocaleString()+(selectedPlan.minutes?'（'+selectedPlan.minutes+'分）':'');
+
   if(selectedDate){
     var parts=selectedDate.split('-');
     var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
@@ -869,40 +1152,52 @@ function goToRequest(){
     document.getElementById('display-date').textContent='—';
   }
 
-  // 時間
   if(selectedTime){
     document.getElementById('display-time').textContent=selectedTime+'〜';
-  }else if(currentType!=='indoor'){
+  }else if(selectedPlan.kind==='custom_plan'&&selectedPlan.start_time){
+    document.getElementById('display-time').textContent=selectedPlan.start_time+'（コース指定）';
+  }else if(currentType!=='indoor'&&currentType!=='custom'){
     document.getElementById('display-time').textContent='(ラウンド系のため時間指定なし)';
   }else{
     document.getElementById('display-time').textContent='—';
   }
 
-  // 場所(現状はGolf Create 戸津池店固定、将来拡張に備える)
+  // 【第2バッチN】コーチ負担プラン時の追加情報表示
+  if(selectedPlan.coach_pays_greenfee){
+    document.getElementById('display-course-row').style.display='block';
+    document.getElementById('display-course').textContent=selectedPlan.golf_course_name||'—';
+    if(selectedPlan.start_time){
+      document.getElementById('display-starttime-row').style.display='block';
+      document.getElementById('display-starttime').textContent=selectedPlan.start_time+'（プレーフィー・キャディフィー込み）';
+    }else{
+      document.getElementById('display-starttime-row').style.display='none';
+    }
+  }else{
+    document.getElementById('display-course-row').style.display='none';
+    document.getElementById('display-starttime-row').style.display='none';
+  }
+
   var storeVal=document.getElementById('req-store').value;
   document.getElementById('display-store').textContent=storeLabelMap[storeVal]||storeVal;
 
-  // レッスン時間入力欄の表示/非表示
-  document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
+  // dur-groupは非表示（プラン選択済みのため）
+  document.getElementById('dur-group').style.display='none';
 
-  // 打席予約セクション:インドアレッスンのみ表示
+  // 打席予約セクション:インドア・独自プランで表示（コーチ負担コースは除外）
   var boothSec=document.getElementById('booth-reservation-section');
   if(boothSec){
-    boothSec.style.display=(currentType==='indoor')?'block':'none';
+    var showBooth=(currentType==='indoor')||(currentType==='custom'&&!selectedPlan.coach_pays_greenfee);
+    boothSec.style.display=showBooth?'block':'none';
   }
 
-  // チェックボックスをリセット
   var boothChk=document.getElementById('boothReservedChk');
   if(boothChk) boothChk.checked=false;
   var agreeChk=document.getElementById('agreeChk');
   if(agreeChk) agreeChk.checked=false;
-  // ボタン無効化
   document.getElementById('req-btn').disabled=true;
-  // 警告表示リセット
   var warningEl=document.getElementById('booth-warning');
   if(warningEl) warningEl.style.display='none';
 
-  // 選択されたコーチ情報を依頼画面に表示
   if(selectedCoachData){
     var box=document.getElementById('selected-coach-box');
     box.style.display='block';
@@ -917,14 +1212,13 @@ function goToRequest(){
     document.getElementById('sel-coach-tags').textContent=selectedCoachData.tags?'🏌 '+selectedCoachData.tags:'';
   }
 
-  // タブ切替
   var btn=document.getElementById('snb-request');
   tab(btn,'s-request');
 }
 
 // カレンダーナビ
 function calPrev(){
-  if(currentType==='indoor'){
+  if(currentType==='indoor'||currentType==='custom'){
     if(!weekStart) weekStart=getMonday(new Date());
     weekStart.setDate(weekStart.getDate()-7);
     renderWeekCal();
@@ -937,7 +1231,7 @@ function calPrev(){
 }
 
 function calNext(){
-  if(currentType==='indoor'){
+  if(currentType==='indoor'||currentType==='custom'){
     if(!weekStart) weekStart=getMonday(new Date());
     weekStart.setDate(weekStart.getDate()+7);
     renderWeekCal();
@@ -959,50 +1253,50 @@ function checkAgree(){
   var chk=document.getElementById('agreeChk');
   var btn=document.getElementById('req-btn');
   var reqType=document.getElementById('req-type').value;
+  var coachPays=document.getElementById('req-plan-coach-pays').value==='true';
 
-  // インドアレッスン以外(ラウンド系)は打席予約チェック不要
-  if(reqType!=='indoor'){
+  // インドア以外で、かつコーチ負担独自プランでもない場合 → 打席予約チェック不要
+  var needBooth=(reqType==='indoor')||(reqType==='custom'&&!coachPays);
+
+  if(!needBooth){
     btn.disabled=!chk.checked;
     return;
   }
 
-  // インドアレッスンの場合:規約同意 + 打席予約チェック + 打席時間OK
   var boothChk=document.getElementById('boothReservedChk');
   var boothTimeOk=checkBoothTime();
   btn.disabled=!(chk.checked && boothChk.checked && boothTimeOk);
 }
 
-// 打席予約時間 vs レッスン時間の整合性チェック
 function checkBoothTime(){
   var reqType=document.getElementById('req-type').value;
   var warningEl=document.getElementById('booth-warning');
+  var coachPays=document.getElementById('req-plan-coach-pays').value==='true';
 
-  // インドアレッスン以外は警告非表示で常にOK
-  if(reqType!=='indoor'){
+  // インドア以外＆コーチ負担独自でもない場合 → 警告非表示・OK
+  var needBooth=(reqType==='indoor')||(reqType==='custom'&&!coachPays);
+  if(!needBooth){
     if(warningEl) warningEl.style.display='none';
     return true;
   }
 
   var boothMinEl=document.getElementById('booth-duration');
-  var lessonEl=document.getElementById('req-duration');
-  if(!boothMinEl||!lessonEl){
+  if(!boothMinEl){
     if(warningEl) warningEl.style.display='none';
     return true;
   }
 
   var boothMin=parseInt(boothMinEl.value,10)||120;
-  var selectedOpt=lessonEl.options[lessonEl.selectedIndex];
-  var lessonMin=parseInt(selectedOpt.getAttribute('data-min'),10);
-  if(isNaN(lessonMin)){
-    // data-min属性がない場合、テキストから取得
-    var match=selectedOpt.text.match(/(\d+)分/);
-    lessonMin=match?parseInt(match[1],10):50;
+  // 【第2バッチ】プランのminutesを使用（旧req-durationは廃止）
+  var lessonMin=parseInt(document.getElementById('req-plan-minutes').value,10);
+  if(isNaN(lessonMin)||lessonMin<=0){
+    // 独自プランでminutes未設定の場合は警告なし
+    if(warningEl) warningEl.style.display='none';
+    return true;
   }
 
-  // レッスン時間が打席時間を超えたら警告表示
   if(lessonMin>boothMin){
     if(warningEl) warningEl.style.display='block';
-    // 同意ボタンを無効化(呼び出し元のcheckAgreeでも判定されるが念のため)
     var btn=document.getElementById('req-btn');
     if(btn) btn.disabled=true;
     return false;
@@ -1084,7 +1378,7 @@ async function saveMyProfile(){
 }
 
 /* ===========================================================
-   決済関連(Stripe Checkout連携)
+   決済関連(外部決済システム連携)
    =========================================================== */
 
 // 「同意して依頼を確定する」ボタン押下時
@@ -1093,13 +1387,11 @@ async function submitBooking(){
   var chk=document.getElementById('agreeChk');
   if(!chk.checked){alert('利用規約に同意してください');return;}
 
-  // セッション取得
   var sres=await sb.auth.getSession();
   var session=sres.data.session;
   if(!session){alert('ログインが必要です');window.location.href='index.html?role=customer';return;}
   var uid=session.user.id;
 
-  // 入力取得
   var lessonType=document.getElementById('req-type').value;
   var lessonDate=document.getElementById('req-date').value;
   var lessonTime=document.getElementById('req-time').value;
@@ -1109,30 +1401,21 @@ async function submitBooking(){
 
   if(!lessonDate){alert('希望日を入力してください');return;}
 
-  // 金額とレッスン時間の抽出
-  var amountYen=0;
-  var durationMin=null;
-  var lessonLabel='';
-  var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加'};
+  // 【第2バッチ】選択されたプラン情報を使用
+  var amountYen=parseInt(document.getElementById('req-plan-amount').value,10)||0;
+  var durationMin=parseInt(document.getElementById('req-plan-minutes').value,10)||null;
+  var planLabel=document.getElementById('req-plan-label').value||'';
+  var planKind=document.getElementById('req-plan-kind').value||'';
+  var planId=document.getElementById('req-plan-id').value||'';
+  var planCourse=document.getElementById('req-plan-course').value||'';
+  var planStarttime=document.getElementById('req-plan-starttime').value||'';
+  var planCoachPays=document.getElementById('req-plan-coach-pays').value==='true';
 
-  if(lessonType==='indoor'){
-    var durationText=document.getElementById('req-duration').value;
-    // 例:"50分 — ¥4,000" → 4000
-    var amtMatch=durationText.match(/¥([\d,]+)/);
-    var minMatch=durationText.match(/(\d+)分/);
-    if(amtMatch){amountYen=parseInt(amtMatch[1].replace(/,/g,''),10);}
-    if(minMatch){durationMin=parseInt(minMatch[1],10);}
-    lessonLabel=(typeLabelMap[lessonType]||lessonType)+' '+(durationMin||'')+'分';
-  }else{
-    // ラウンド系は店舗固定料金(段階1: 仮値、後日料金設定連携)
-    var roundPrices={kyoto:8000};
-    amountYen=roundPrices[storeKey]||8000;
-    lessonLabel=typeLabelMap[lessonType]||lessonType;
-  }
+  var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
+  var lessonLabel=(typeLabelMap[lessonType]||lessonType)+(planLabel?' / '+planLabel:'');
 
-  if(!amountYen||amountYen<100){alert('金額が取得できませんでした');return;}
+  if(!amountYen||amountYen<100){alert('金額が取得できませんでした。料金プランを選択してください。');return;}
 
-  // お客様情報取得(メール事前入力用)
   var customerEmail=session.user.email||'';
   var customerName='';
   try{
@@ -1163,7 +1446,14 @@ async function submitBooking(){
         golf_history:golfHistory,
         comment:comment,
         customer_name:customerName,
-        customer_email:customerEmail
+        customer_email:customerEmail,
+        // 【第2バッチ】追加フィールド（Functions側で参照）
+        plan_kind:planKind,
+        plan_id:planId,
+        plan_label:planLabel,
+        plan_golf_course:planCourse,
+        plan_start_time:planStarttime,
+        plan_coach_pays_greenfee:planCoachPays
       })
     });
     var json=await resp.json();
@@ -1174,7 +1464,6 @@ async function submitBooking(){
       btn.textContent='同意して依頼を確定する →';
       return;
     }
-    // 安全な外部決済システムへ遷移
     window.location.href=json.url||json.checkout_url;
   }catch(e){
     console.error(e);
@@ -1184,13 +1473,11 @@ async function submitBooking(){
   }
 }
 
-// 決済結果の戻り判定(外部決済システムから戻ってきたときの処理)
 function handlePaymentReturn(){
   var params=new URLSearchParams(window.location.search);
   var result=params.get('payment');
   if(result==='success'){
     alert('✅ お支払いが完了しました。\nご予約が確定しました。');
-    // URLをクリーンに
     window.history.replaceState({},document.title,window.location.pathname);
   }else if(result==='cancel'){
     alert('決済がキャンセルされました。');
