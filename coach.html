@@ -353,7 +353,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <!-- プロフィール -->
   <div class="page" id="page-profile">
     <div class="card">
-      <div class="card-title">プロフィール写真</div>
+      <div class="card-title">プロフィール写真 <span style="font-size:10px;color:var(--g);font-weight:400">👁 お客様に表示されます</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
         <div style="width:90px;height:90px;border-radius:50%;background:var(--gl);border:3px solid var(--g);overflow:hidden;margin-bottom:8px;">
           <img id="profile-img" src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/coach_morishita.png" alt="プロフィール" style="width:100%;height:100%;object-fit:cover;">
@@ -365,7 +365,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
     <div class="card">
       <div class="card-title">基本情報</div>
-      <div class="form-group"><label class="form-label">お名前 <span style="color:var(--red)">※必須</span></label><input type="text" class="form-input" id="prof-name" placeholder="森下 啓介"></div>
+      <div class="form-group"><label class="form-label">お名前 <span style="color:var(--red)">※必須</span> <span style="color:var(--g)">👁 お客様に表示されます</span></label><input type="text" class="form-input" id="prof-name" placeholder="森下 啓介"></div>
 
       <!-- プライバシー注記 -->
       <div class="privacy-note">
@@ -376,16 +376,16 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="form-group"><label class="form-label">住所 <span style="color:var(--red)">※必須</span></label><input type="text" class="form-input" id="prof-address" placeholder="京都府八幡市〇〇町1-1"></div>
       <div class="form-group"><label class="form-label">生年月日 <span style="color:var(--red)">※必須</span></label><input type="date" class="form-input" id="prof-birth"></div>
       <div class="form-group"><label class="form-label">電話番号</label><input type="tel" class="form-input" id="prof-tel" placeholder="090-0000-0000"></div>
-      <div class="form-group"><label class="form-label">自己紹介</label><textarea class="form-textarea" id="prof-bio" placeholder="コーチとしての経歴や指導スタイルを入力してください"></textarea></div>
+      <div class="form-group"><label class="form-label">自己紹介 <span style="color:var(--g)">👁 お客様に表示されます</span></label><textarea class="form-textarea" id="prof-bio" placeholder="コーチとしての経歴や指導スタイルを入力してください"></textarea></div>
 
       <!-- 修正メモ㉓：保有資格欄追加 -->
       <div class="form-group">
-        <label class="form-label">保有資格</label>
+        <label class="form-label">保有資格 <span style="color:var(--g)">👁 お客様に表示されます</span></label>
         <input type="text" class="form-input" id="prof-license" placeholder="例：PGA公認ティーチングプロ、日本ゴルフ協会公認など">
         <div style="font-size:10px;color:var(--muted);margin-top:4px;">複数ある場合は「、」で区切って入力してください</div>
       </div>
 
-      <div class="form-group"><label class="form-label">得意分野</label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
+      <div class="form-group"><label class="form-label">得意分野 <span style="color:var(--g)">👁 お客様に表示されます</span></label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
     </div>
 
@@ -413,27 +413,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
-
-    <!-- 振込先口座登録 -->
-    <div class="card">
-      <div class="card-title">振込先口座登録 <span style="font-size:10px;color:var(--red);font-weight:400">※必須（報酬受取のため）</span></div>
-      <div style="background:var(--gl);border-radius:8px;padding:12px 14px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;">
-        <div style="font-weight:700;margin-bottom:4px;">🏦 安全な外部決済システムで口座登録</div>
-        本人確認（運転免許証等）と振込先口座の登録を行います。<br>
-        世界最高水準のセキュリティ認証を取得した決済システムで安全に管理されます。
-      </div>
-      <div id="stripe-status-wrap" style="padding:10px 12px;border-radius:8px;background:#fff4f4;border:1px solid #ffd0d0;margin-bottom:12px;font-size:12px;color:#b30000;">
-        <span id="stripe-status-text">⚠️ 未登録：口座登録が完了するまで報酬の受取ができません</span>
-      </div>
-      <button class="save-btn" id="stripe-register-btn" onclick="startStripeOnboarding()">
-        🏦 口座登録を開始
-      </button>
-      <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;">
-        ※ 18歳以上、日本国内の銀行口座、本人確認書類（運転免許証等）が必要です<br>
-        ※ 報酬は「雑所得」または「事業所得」として確定申告の対象となる場合があります<br>
-        ※ 当社は源泉徴収を行いません。確定申告はご自身の責任で行ってください
-      </div>
-    </div>
   </div>
 
   <!-- 料金設定 -->
@@ -454,21 +433,47 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
     <div class="card">
       <div class="card-title">料金設定</div>
-      <!-- 計算モード切替 -->
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <button id="mode-forward" onclick="setPriceMode('forward')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--g);background:var(--g);color:#fff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">請求額 → 手取り計算</button>
-        <button id="mode-reverse" onclick="setPriceMode('reverse')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--muted);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">手取り希望 → 請求額逆算</button>
-      </div>
-      <div id="mode-forward-desc" style="font-size:11px;color:var(--muted);margin-bottom:12px;">請求額を入力すると手取り額・内訳が自動計算されます</div>
-      <div id="mode-reverse-desc" style="font-size:11px;color:var(--g);margin-bottom:12px;display:none;">手取りの希望額を入力すると、お客様への請求額が逆算されます</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">金額を入力すると手取り額・内訳が自動計算されます</div>
 
       <!-- インドアレッスン -->
       <div class="price-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div class="price-section-title" style="margin-bottom:0;">🏌 インドアゴルフレッスン</div>
-          <button onclick="addIndoorSlot()" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-family:inherit;cursor:pointer;">＋ 時間を追加</button>
+        <div class="price-section-title">🏌 インドアゴルフレッスン</div>
+        <div id="pr-30">
+          <div class="price-row-full">
+            <span class="price-label">30分</span>
+            <input type="number" class="price-input" id="price-30" placeholder="3000" oninput="calcTake('30',this.value,'indoor')">
+            <span class="price-unit">円</span>
+            <span class="price-take" id="take-30">-</span>
+            <div class="bd-inline" id="bd-30"></div>
+          </div>
         </div>
-        <div id="indoor-slots"></div>
+        <div id="pr-50">
+          <div class="price-row-full">
+            <span class="price-label">50分</span>
+            <input type="number" class="price-input" id="price-50" placeholder="5000" oninput="calcTake('50',this.value,'indoor')">
+            <span class="price-unit">円</span>
+            <span class="price-take" id="take-50">-</span>
+            <div class="bd-inline" id="bd-50"></div>
+          </div>
+        </div>
+        <div id="pr-90">
+          <div class="price-row-full">
+            <span class="price-label">90分</span>
+            <input type="number" class="price-input" id="price-90" placeholder="8000" oninput="calcTake('90',this.value,'indoor')">
+            <span class="price-unit">円</span>
+            <span class="price-take" id="take-90">-</span>
+            <div class="bd-inline" id="bd-90"></div>
+          </div>
+        </div>
+        <div id="pr-120">
+          <div class="price-row-full">
+            <span class="price-label">120分</span>
+            <input type="number" class="price-input" id="price-120" placeholder="10000" oninput="calcTake('120',this.value,'indoor')">
+            <span class="price-unit">円</span>
+            <span class="price-take" id="take-120">-</span>
+            <div class="bd-inline" id="bd-120"></div>
+          </div>
+        </div>
       </div>
 
       <!-- ラウンドレッスン -->
@@ -743,7 +748,6 @@ let cancelTargetItem=null;
   buildWeekGrid();
   buildMonthGrid();
   await loadProfile(user.id);
-  checkStripeReturnStatus();
 })();
 
 /* ===== 店舗選択 ===== */
@@ -781,179 +785,12 @@ function selectStore(key){
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
   // 料金は店舗ごとに再計算
-  indoorSlots.forEach(function(slot){ if(slot.price) calcTakeSlot(slot.id, slot.price); });
-  ['round','accompany','comp'].forEach(id=>{const v=document.getElementById('price-'+id);if(v&&v.value)calcTake(id,v.value,id);});
-  // 初回のみデフォルトスロットを追加
-  if(indoorSlots.length===0){
-    addIndoorSlot(30,'');
-    addIndoorSlot(50,'');
-    addIndoorSlot(90,'');
-  }
+  ['30','50','90','120'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,'indoor');});
+  ['round','accompany','comp'].forEach(id=>{const v=document.getElementById('price-'+id).value;if(v)calcTake(id,v,id);});
 }
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
 
 /* ===== 手取り計算（1行横並び） ===== */
-var priceMode='forward';
-var indoorSlots=[];// {id, minutes, price}
-var slotCounter=0;
-
-function addIndoorSlot(minutes, price){
-  slotCounter++;
-  var sid='slot'+slotCounter;
-  indoorSlots.push({id:sid, minutes:minutes||'', price:price||''});
-  renderIndoorSlots();
-}
-
-function removeIndoorSlot(sid){
-  indoorSlots=indoorSlots.filter(function(s){return s.id!==sid;});
-  renderIndoorSlots();
-}
-
-function renderIndoorSlots(){
-  var container=document.getElementById('indoor-slots');
-  if(!container) return;
-  container.innerHTML='';
-  indoorSlots.forEach(function(slot){
-    var div=document.createElement('div');
-    div.id='slot-wrap-'+slot.id;
-    div.style.cssText='background:#f8fdf9;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;';
-    div.innerHTML=
-      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">'+
-        '<input type="number" min="1" max="300" placeholder="分" value="'+slot.minutes+'" '+
-          'style="width:60px;padding:6px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;text-align:center;" '+
-          'oninput="updateSlotMinutes(\''+slot.id+'\',this.value)" id="min-'+slot.id+'">'+
-        '<span style="font-size:12px;color:var(--muted);">分</span>'+
-        '<button onclick="removeIndoorSlot(\''+slot.id+'\')" style="margin-left:auto;background:none;border:1px solid #ffcccc;color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;">削除</button>'+
-      '</div>'+
-      '<div id="price-area-'+slot.id+'">'+
-        '<div style="display:flex;align-items:center;gap:6px;" id="fwd-row-'+slot.id+'">'+
-          '<span style="font-size:12px;color:var(--muted);min-width:60px;">請求額</span>'+
-          '<input type="number" placeholder="5000" value="'+slot.price+'" '+
-            'style="width:80px;padding:6px 8px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;text-align:right;" '+
-            'oninput="updateSlotPrice(\''+slot.id+'\',this.value)" id="price-'+slot.id+'">'+
-          '<span style="font-size:11px;color:var(--muted);">円</span>'+
-          '<span style="font-size:11px;font-weight:700;color:var(--gd);" id="take-'+slot.id+'">-</span>'+
-        '</div>'+
-        '<div style="display:none;align-items:center;gap:6px;" id="rev-row-'+slot.id+'">'+
-          '<span style="font-size:12px;color:var(--g);min-width:60px;">手取り希望</span>'+
-          '<input type="number" placeholder="3500" '+
-            'style="width:80px;padding:6px 8px;border:1.5px solid var(--g);border-radius:8px;font-family:inherit;font-size:12px;text-align:right;" '+
-            'oninput="calcReverseSlot(\''+slot.id+'\',this.value)" id="want-'+slot.id+'">'+
-          '<span style="font-size:11px;color:var(--muted);">円</span>'+
-          '<span style="font-size:11px;font-weight:700;color:var(--g);" id="req-'+slot.id+'">-</span>'+
-        '</div>'+
-        '<div style="margin-top:4px;" id="bd-'+slot.id+'"></div>'+
-      '</div>';
-    container.appendChild(div);
-    // モードに合わせて表示切替
-    applyModeToSlot(slot.id);
-  });
-  if(indoorSlots.length===0){
-    container.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;">「＋ 時間を追加」で設定を追加してください</div>';
-  }
-}
-
-function applyModeToSlot(sid){
-  var fwd=document.getElementById('fwd-row-'+sid);
-  var rev=document.getElementById('rev-row-'+sid);
-  if(fwd) fwd.style.display=priceMode==='forward'?'flex':'none';
-  if(rev) rev.style.display=priceMode==='reverse'?'flex':'none';
-}
-
-function updateSlotMinutes(sid,val){
-  var slot=indoorSlots.find(function(s){return s.id===sid;});
-  if(slot) slot.minutes=val;
-}
-
-function updateSlotPrice(sid,val){
-  var slot=indoorSlots.find(function(s){return s.id===sid;});
-  if(slot) slot.price=val;
-  calcTakeSlot(sid,val);
-}
-
-function calcTakeSlot(sid,val){
-  var takeEl=document.getElementById('take-'+sid);
-  var bdEl=document.getElementById('bd-'+sid);
-  if(!currentStore||!val||parseInt(val)<=0){if(takeEl)takeEl.textContent='-';if(bdEl)bdEl.innerHTML='';return;}
-  var s=stores[currentStore];
-  var total=parseInt(val);
-  var stripe=Math.round(total*s.stripeFee/100);
-  var storeFee=Math.round(total*s.fees.indoor/100);
-  var hqFee=Math.round(total*s.hqFee/100);
-  var take=total-stripe-storeFee-hqFee;
-  if(takeEl) takeEl.textContent='→ ¥'+take.toLocaleString();
-  if(bdEl) bdEl.innerHTML=
-    '<div class="bd-chip"><div class="bd-chip-label">決済('+s.stripeFee+'%)</div><div class="bd-chip-val v-stripe">▲¥'+stripe.toLocaleString()+'</div></div>'+
-    '<div class="bd-chip"><div class="bd-chip-label">店舗('+s.fees.indoor+'%)</div><div class="bd-chip-val v-store">▲¥'+storeFee.toLocaleString()+'</div></div>'+
-    '<div class="bd-chip"><div class="bd-chip-label">本部('+s.hqFee+'%)</div><div class="bd-chip-val v-hq">▲¥'+hqFee.toLocaleString()+'</div></div>'+
-    '<div class="bd-chip coach-chip"><div class="bd-chip-label">手取り</div><div class="bd-chip-val v-coach">¥'+take.toLocaleString()+'</div></div>';
-}
-
-function calcReverseSlot(sid,val){
-  var reqEl=document.getElementById('req-'+sid);
-  var bdEl=document.getElementById('bd-'+sid);
-  if(!currentStore||!val||parseInt(val)<=0){if(reqEl)reqEl.textContent='-';if(bdEl)bdEl.innerHTML='';return;}
-  var s=stores[currentStore];
-  var totalFeePct=(s.stripeFee+s.fees.indoor+s.hqFee)/100;
-  var wantTake=parseInt(val);
-  var required=Math.ceil(wantTake/(1-totalFeePct));
-  var stripe=Math.round(required*s.stripeFee/100);
-  var storeFee=Math.round(required*s.fees.indoor/100);
-  var hqFee=Math.round(required*s.hqFee/100);
-  var actualTake=required-stripe-storeFee-hqFee;
-  if(reqEl) reqEl.textContent='請求額 ¥'+required.toLocaleString();
-  if(bdEl) bdEl.innerHTML=
-    '<div class="bd-chip"><div class="bd-chip-label">決済('+s.stripeFee+'%)</div><div class="bd-chip-val v-stripe">▲¥'+stripe.toLocaleString()+'</div></div>'+
-    '<div class="bd-chip"><div class="bd-chip-label">店舗('+s.fees.indoor+'%)</div><div class="bd-chip-val v-store">▲¥'+storeFee.toLocaleString()+'</div></div>'+
-    '<div class="bd-chip"><div class="bd-chip-label">本部('+s.hqFee+'%)</div><div class="bd-chip-val v-hq">▲¥'+hqFee.toLocaleString()+'</div></div>'+
-    '<div class="bd-chip coach-chip"><div class="bd-chip-label">実手取り</div><div class="bd-chip-val v-coach">¥'+actualTake.toLocaleString()+'</div></div>';
-}
-
-function setPriceMode(mode){
-  priceMode=mode;
-  var ids=['round','accompany','comp'];
-  ids.forEach(function(id){
-    var fwd=document.getElementById('price-'+id);
-    var rev=document.getElementById('rev-'+id);
-    if(fwd) fwd.parentElement.style.display=mode==='forward'?'flex':'none';
-    if(rev) rev.style.display=mode==='reverse'?'flex':'none';
-  });
-  // インドアスロットにも適用
-  indoorSlots.forEach(function(slot){ applyModeToSlot(slot.id); });
-  document.getElementById('mode-forward').style.background=mode==='forward'?'var(--g)':'#fff';
-  document.getElementById('mode-forward').style.color=mode==='forward'?'#fff':'var(--muted)';
-  document.getElementById('mode-forward').style.borderColor=mode==='forward'?'var(--g)':'var(--border)';
-  document.getElementById('mode-reverse').style.background=mode==='reverse'?'var(--g)':'#fff';
-  document.getElementById('mode-reverse').style.color=mode==='reverse'?'#fff':'var(--muted)';
-  document.getElementById('mode-reverse').style.borderColor=mode==='reverse'?'var(--g)':'var(--border)';
-  document.getElementById('mode-forward-desc').style.display=mode==='forward'?'block':'none';
-  document.getElementById('mode-reverse-desc').style.display=mode==='reverse'?'block':'none';
-}
-
-function calcReverse(id,val,type){
-  var reqEl=document.getElementById('req-'+id);
-  var bdEl=document.getElementById('bd-rev-'+id);
-  if(!currentStore||!val||parseInt(val)<=0){reqEl.textContent='-';bdEl.innerHTML='';return;}
-  var s=stores[currentStore];
-  var feeMap={indoor:s.fees.indoor,round:s.fees.round,accompany:s.fees.accompany,comp:s.fees.comp};
-  var storePct=feeMap[type]||s.fees.indoor;
-  var wantTake=parseInt(val);
-  // 手取り = 請求額 × (1 - stripe% - store% - hq%) → 請求額 = 手取り / (1 - 合計%)
-  var totalFeePct=(s.stripeFee+storePct+s.hqFee)/100;
-  var required=Math.ceil(wantTake/(1-totalFeePct));
-  var stripe=Math.round(required*s.stripeFee/100);
-  var storeFee=Math.round(required*storePct/100);
-  var hqFee=Math.round(required*s.hqFee/100);
-  var actualTake=required-stripe-storeFee-hqFee;
-  reqEl.textContent='請求額 ¥'+required.toLocaleString();
-  bdEl.innerHTML=`
-    <div class="bd-chip"><div class="bd-chip-label">決済(${s.stripeFee}%)</div><div class="bd-chip-val v-stripe">▲¥${stripe.toLocaleString()}</div></div>
-    <div class="bd-chip"><div class="bd-chip-label">店舗(${storePct}%)</div><div class="bd-chip-val v-store">▲¥${storeFee.toLocaleString()}</div></div>
-    <div class="bd-chip"><div class="bd-chip-label">本部(${s.hqFee}%)</div><div class="bd-chip-val v-hq">▲¥${hqFee.toLocaleString()}</div></div>
-    <div class="bd-chip coach-chip"><div class="bd-chip-label">実手取り</div><div class="bd-chip-val v-coach">¥${actualTake.toLocaleString()}</div></div>
-  `;
-}
-
 function calcTake(id,val,type){
   const takeEl=document.getElementById('take-'+id);
   const bdEl=document.getElementById('bd-'+id);
@@ -1319,123 +1156,7 @@ async function loadProfile(userId){
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
-    updateStripeStatus(data);
   }catch(e){console.error('プロフィール読み込み例外:',e);}
-}
-
-/* ===== Stripe Connect 連携 ===== */
-function updateStripeStatus(coachData){
-  const wrap=document.getElementById('stripe-status-wrap');
-  const text=document.getElementById('stripe-status-text');
-  const btn=document.getElementById('stripe-register-btn');
-  if(!wrap||!text||!btn)return;
-  if(coachData && coachData.stripe_account_id && coachData.stripe_charges_enabled){
-    wrap.style.background='#e8f5e9';
-    wrap.style.borderColor='#81c784';
-    wrap.style.color='#1b5e20';
-    text.textContent='✓ 登録完了：報酬の受取が可能です';
-    btn.textContent='🏦 口座情報を更新する';
-  }else if(coachData && coachData.stripe_account_id){
-    wrap.style.background='#fff8e1';
-    wrap.style.borderColor='#ffd54f';
-    wrap.style.color='#ef6c00';
-    text.textContent='⚠️ 登録中：登録手続きが未完了です';
-    btn.textContent='🏦 登録を続ける';
-  }else{
-    wrap.style.background='#fff4f4';
-    wrap.style.borderColor='#ffd0d0';
-    wrap.style.color='#b30000';
-    text.textContent='⚠️ 未登録：口座登録が完了するまで報酬の受取ができません';
-    btn.textContent='🏦 口座登録を開始';
-  }
-}
-
-async function startStripeOnboarding(){
-  console.log('[口座登録] 開始');
-  if(!currentCoachId){
-    console.error('[口座登録] currentCoachIdがありません');
-    showMsg('ログイン情報が取得できません','error');return;
-  }
-  const name=document.getElementById('prof-name').value.trim();
-  if(!name){
-    console.error('[口座登録] 名前未入力');
-    showMsg('先に基本情報（お名前）を保存してください','error');return;
-  }
-  const {data:{user}}=await sb.auth.getUser();
-  if(!user||!user.email){
-    console.error('[口座登録] user取得失敗',user);
-    showMsg('メールアドレスが取得できません','error');return;
-  }
-  console.log('[口座登録] リクエスト送信:',{email:user.email,coach_id:currentCoachId,coach_name:name});
-  const btn=document.getElementById('stripe-register-btn');
-  btn.disabled=true;
-  btn.textContent='🏦 登録ページを準備中...';
-  try{
-    const res=await fetch('/.netlify/functions/stripe-create-account',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        email:user.email,
-        coach_id:currentCoachId,
-        coach_name:name
-      })
-    });
-    console.log('[口座登録] レスポンス:',res.status);
-    const result=await res.json();
-    console.log('[口座登録] 結果:',result);
-    if(!res.ok||!result.success){
-      throw new Error(result.error||'アカウント作成に失敗しました（HTTP '+res.status+'）');
-    }
-    await sb.from('coaches').update({
-      stripe_account_id:result.account_id,
-      updated_at:new Date().toISOString()
-    }).eq('user_id',currentCoachId);
-    console.log('[口座登録] DB更新完了');
-    if(result.already_completed){
-      console.log('[口座登録] 既に登録完了済みのため画面を更新');
-      showMsg('登録は既に完了しています','success');
-      btn.disabled=false;
-      await loadProfile();
-      return;
-    }
-    console.log('[口座登録] 遷移先:',result.onboarding_url);
-    window.location.href=result.onboarding_url;
-  }catch(e){
-    console.error('[口座登録] エラー:',e);
-    showMsg('エラー：'+e.message,'error');
-    btn.disabled=false;
-    btn.textContent='🏦 口座登録を開始';
-  }
-}
-
-function checkStripeReturnStatus(){
-  const params=new URLSearchParams(window.location.search);
-  if(params.get('stripe_return')==='true'){
-    showMsg('登録画面から戻りました。登録状況を確認しています...','success');
-    history.replaceState(null,'',window.location.pathname);
-    setTimeout(async()=>{
-      if(!currentCoachId)return;
-      try{
-        const {data:{user}}=await sb.auth.getUser();
-        if(!user||!user.email)return;
-        const name=(document.getElementById('prof-name')&&document.getElementById('prof-name').value.trim())||'';
-        const res=await fetch('/.netlify/functions/stripe-create-account',{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email:user.email,coach_id:currentCoachId,coach_name:name})
-        });
-        const result=await res.json();
-        console.log('[Stripe戻り確認]',result);
-        if(result.already_completed){
-          showMsg('✓ 登録完了が確認できました','success');
-        }
-        await loadProfile();
-      }catch(e){console.error('[Stripe戻り確認]エラー:',e);}
-    },1500);
-  }else if(params.get('stripe_refresh')==='true'){
-    showMsg('Stripe登録を再開してください','error');
-    history.replaceState(null,'',window.location.pathname);
-  }
 }
 
 /* ===== メッセージ ===== */
