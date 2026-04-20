@@ -235,7 +235,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <span>種類</span><span>日程選択</span><span>詳細入力</span><span>同意・確定</span>
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
-      <div style="font-size:13px;font-weight:500;margin-bottom:12px;">ご依頼内容の確認</div>
+      <div style="font-size:13px;font-weight:700;color:var(--gd);margin-bottom:12px;">📋 ご依頼内容の確認</div>
 
       <!-- 選択済みコーチの表示 -->
       <div id="selected-coach-box" style="display:none;background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:14px;">
@@ -250,20 +250,38 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         </div>
       </div>
 
-      <div class="form-group"><label>依頼の種類</label>
-        <select id="req-type" disabled style="background:#f5f5f5;cursor:not-allowed;"><option value="indoor">⛳ インドアゴルフレッスン(時間制)</option><option value="round">🏌 ラウンドレッスン(1ラウンド)</option><option value="accompany">🤝 同伴ラウンド(1ラウンド)</option><option value="comp">🏆 コンペ参加(1ラウンド)</option></select>
-        <div style="font-size:10px;color:var(--muted);margin-top:3px;">※前の画面で選択した内容です</div>
+      <!-- 前画面で選択済み情報（表示専用カード） -->
+      <div style="background:#f9fbfa;border:1px solid #d8e8df;border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:11px;color:#888;font-weight:700;margin-bottom:10px;">前の画面で選択済み</div>
+        <div style="display:flex;margin-bottom:7px;">
+          <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">⛳ 依頼の種類</div>
+          <div id="display-type" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
+        </div>
+        <div style="display:flex;margin-bottom:7px;">
+          <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">📅 希望日</div>
+          <div id="display-date" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
+        </div>
+        <div style="display:flex;margin-bottom:7px;">
+          <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">🕐 希望時間</div>
+          <div id="display-time" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
+        </div>
+        <div style="display:flex;">
+          <div style="width:90px;font-size:12px;color:#666;flex-shrink:0;">📍 場所</div>
+          <div id="display-store" style="font-size:13px;font-weight:500;color:#1a1a1a;">—</div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:10px;padding-top:10px;border-top:1px dashed #d8e8df;">※変更する場合は「コーチを探す」画面に戻ってください</div>
       </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望日</label><input type="date" id="req-date" readonly style="background:#f5f5f5;cursor:not-allowed;"></div>
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>希望時間</label><input type="time" id="req-time" value="10:00" readonly style="background:#f5f5f5;cursor:not-allowed;"></div>
-      </div>
-      <div style="font-size:10px;color:var(--muted);margin-top:-8px;margin-bottom:12px;">※前の画面で選択した日時です。変更する場合は前画面に戻ってください。</div>
+
+      <!-- 非表示の実値ホルダー（送信用） -->
+      <input type="hidden" id="req-type" value="indoor">
+      <input type="hidden" id="req-date" value="">
+      <input type="hidden" id="req-time" value="">
+      <input type="hidden" id="req-store" value="kyoto">
+
+      <div style="font-size:12px;color:var(--gd);font-weight:700;margin-bottom:10px;">✏️ 以下をご入力ください</div>
+
       <div class="form-group" id="dur-group"><label>レッスン時間</label>
         <select id="req-duration"><option>25分 — ¥2,000</option><option>30分 — ¥2,400</option><option selected>50分 — ¥4,000</option><option>60分 — ¥4,800</option><option>90分 — ¥7,200</option><option>120分 — ¥9,600</option></select>
-      </div>
-      <div class="form-group"><label>場所</label>
-        <select id="req-store" disabled style="background:#f5f5f5;cursor:not-allowed;"><option value="kyoto">Golf Create 京都店</option><option value="fushimi">Golf Create 伏見店</option></select>
       </div>
       <div class="form-group"><label>ゴルフ歴</label>
         <select id="req-golf-history"><option>未経験</option><option>1年未満</option><option>1〜3年</option><option>3年以上</option></select>
@@ -772,13 +790,43 @@ function goToRequest(){
   if(!selectedDate){alert('日程を選択してください');return;}
   if(!selectedCoachId){alert('コーチを選択してください');return;}
 
-  // フォームにセット
-  var sel=document.getElementById('req-type');
-  for(var i=0;i<sel.options.length;i++){
-    if(sel.options[i].value===currentType){sel.selectedIndex=i;break;}
-  }
+  // 非表示の実値フィールドにセット（送信用）
+  document.getElementById('req-type').value=currentType;
   document.getElementById('req-date').value=selectedDate;
-  if(selectedTime) document.getElementById('req-time').value=selectedTime;
+  document.getElementById('req-time').value=selectedTime||'10:00';
+  document.getElementById('req-store').value=document.getElementById('req-store').value||'kyoto';
+
+  // 表示専用カードに日本語フォーマットでセット
+  var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加'};
+  var storeLabelMap={kyoto:'Golf Create 京都店',fushimi:'Golf Create 伏見店'};
+  var weekdayNames=['日','月','火','水','木','金','土'];
+
+  document.getElementById('display-type').textContent=typeLabelMap[currentType]||currentType;
+
+  // 日付を日本語フォーマットに(例: 2026年4月22日(水))
+  if(selectedDate){
+    var parts=selectedDate.split('-');
+    var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
+    var dateStr=parts[0]+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日('+weekdayNames[d.getDay()]+')';
+    document.getElementById('display-date').textContent=dateStr;
+  }else{
+    document.getElementById('display-date').textContent='—';
+  }
+
+  // 時間
+  if(selectedTime){
+    document.getElementById('display-time').textContent=selectedTime;
+  }else if(currentType!=='indoor'){
+    document.getElementById('display-time').textContent='(ラウンド系のため時間指定なし)';
+  }else{
+    document.getElementById('display-time').textContent='—';
+  }
+
+  // 場所(現状は京都店固定だが、将来拡張に備える)
+  var storeVal=document.getElementById('req-store').value;
+  document.getElementById('display-store').textContent=storeLabelMap[storeVal]||storeVal;
+
+  // レッスン時間入力欄の表示/非表示
   document.getElementById('dur-group').style.display=(currentType==='indoor')?'block':'none';
 
   // 選択されたコーチ情報を依頼画面に表示
