@@ -433,7 +433,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const{createClient}=supabase;
-const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:window.localStorage}});
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage}});
 
 var currentStore=null;
 var seats=[];
@@ -449,9 +449,9 @@ const approvalDescs={
 // 初期化
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
-  if(!session){window.location.href='index.html?type=store';return;}
+  if(!session){window.location.href='index.html?role=store';return;}
   var user=session.user;
-  var storeName=user.user_metadata&&user.user_metadata.store_name?user.user_metadata.store_name:'Golf Create tozuike 京都店';
+  var storeName=user.user_metadata&&user.user_metadata.store_name?user.user_metadata.store_name:'Golf Create 戸津池店';
   document.getElementById('store-badge').textContent=storeName;
   currentStore='kyoto';
   loadStats();
@@ -651,7 +651,7 @@ function showMsg(id,text,type){
 // ログアウト
 async function doLogout(){
   await sb.auth.signOut();
-  window.location.href='index.html?type=store';
+  window.location.href='index.html?role=store';
 }
 </script>
 </body>
