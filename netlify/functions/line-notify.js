@@ -3,8 +3,10 @@
 // 他のNetlify関数（stripe-webhook.js等）から呼び出して使う
 //
 // 使い方：
-//   const { pushMessage } = require('./line-notify');
-//   await pushMessage(lineUserId, 'ご予約が確定しました');
+//   const { pushMessage, notify } = require('./line-notify');
+//   await notify('booking_confirmed', { bookingId, session });
+
+const { createClient } = require('@supabase/supabase-js');
 
 const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push';
 
@@ -53,8 +55,6 @@ async function pushMessage(toUserId, text) {
 
 /**
  * 複数人に同じメッセージを送る（multicast）
- * @param {string[]} toUserIds
- * @param {string} text
  */
 async function multicastMessage(toUserIds, text) {
   const ids = (toUserIds || []).filter(Boolean);
@@ -87,10 +87,7 @@ async function multicastMessage(toUserIds, text) {
   }
 }
 
-/* ===== 定型文テンプレート =====
-   呼び出し例:
-     await pushMessage(uid, buildBookingConfirmedText({...}));
-*/
+/* ===== 定型文テンプレート ===== */
 
 function buildBookingConfirmedText({ customerName, coachName, lessonType, dateStr, timeStr, storeName, amount }) {
   return (
@@ -129,7 +126,7 @@ function buildCoachNewBookingText({ coachName, customerName, lessonType, dateStr
     `種別：${lessonType || '—'}\n` +
     `日時：${dateStr || '—'} ${timeStr || ''}\n` +
     `場所：${storeName || '—'}\n` +
-    `手取り：¥${Number(coachAmount || 0).toLocaleString()}\n` +
+    `金額：¥${Number(coachAmount || 0).toLocaleString()}\n` +
     `━━━━━━━━━━━━━━━\n\n` +
     `ご対応よろしくお願いいたします。\n` +
     `— MyCoach`
@@ -150,6 +147,162 @@ function buildCancellationText({ customerName, coachName, dateStr, timeStr, reas
   );
 }
 
+/* ============================================
+   notify() 統合関数 - stripe-webhook.js から呼ばれる
+============================================ */
+
+/**
+ * イベント種別に応じてLINE通知を送る
+ * @param {string} kind - 'booking_confirmed' | 'booking_cancelled' | etc.
+ * @param {object} payload - { bookingId, session, ... }
+ */
+async function notify(kind, payload) {
+  try {
+    if (kind === 'booking_confirmed') {
+      await notifyBookingConfirmed(payload);
+    } else {
+      console.log('[line-notify] unknown kind:', kind);
+    }
+  } catch (e) {
+    console.error('[line-notify] notify error:', e);
+  }
+}
+
+/**
+ * 予約確定時の通知（コーチとお客様両方に送信）
+ */
+async function notifyBookingConfirmed({ bookingId, session }) {
+  if (!bookingId) {
+    console.log('[line-notify] no bookingId');
+    return;
+  }
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
+  // 予約情報を取得
+  const { data: booking, error: bookingErr } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('id', bookingId)
+    .maybeSingle();
+
+  if (bookingErr || !booking) {
+    console.error('[line-notify] booking fetch error:', bookingErr);
+    return;
+  }
+
+  // コーチ情報を取得
+  let coach = null;
+  if (booking.coach_id) {
+    const { data } = await supabase
+      .from('coaches')
+      .select('id, name, line_user_id')
+      .eq('id', booking.coach_id)
+      .maybeSingle();
+    coach = data;
+  }
+
+  // お客様情報を取得（customer_id または customer_user_id で）
+  let customer = null;
+  const customerKey = booking.customer_id || booking.customer_user_id;
+  if (customerKey) {
+    const { data } = await supabase
+      .from('customers')
+      .select('id, name, line_user_id')
+      .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
+      .maybeSingle();
+    customer = data;
+  }
+
+  // 店舗情報（任意）
+  let storeName = '—';
+  if (booking.store_id) {
+    const { data } = await supabase
+      .from('stores')
+      .select('name')
+      .eq('id', booking.store_id)
+      .maybeSingle();
+    if (data) storeName = data.name;
+  } else if (booking.store_key) {
+    storeName = booking.store_key;
+  }
+
+  // 日時フォーマット
+  const dateStr = booking.booking_date
+    ? formatDateJa(booking.booking_date)
+    : '—';
+  const timeStr = booking.booking_time
+    ? booking.booking_time.substring(0, 5)
+    : '';
+
+  // レッスン種別
+  const lessonTypeMap = {
+    indoor: 'インドアゴルフレッスン',
+    round: 'ラウンドレッスン',
+    accompany: '同伴ラウンド',
+    comp: 'コンペ参加',
+  };
+  const lessonType = lessonTypeMap[booking.lesson_type] || booking.lesson_type || '—';
+
+  const amount = booking.total_price || 0;
+  const coachName = coach?.name || booking.coach_name || 'コーチ';
+  const customerName = customer?.name || booking.customer_name || 'お客様';
+
+  // コーチへLINE通知
+  if (coach?.line_user_id) {
+    const coachText = buildCoachNewBookingText({
+      coachName,
+      customerName,
+      lessonType,
+      dateStr,
+      timeStr,
+      storeName,
+      coachAmount: amount,
+    });
+    const result = await pushMessage(coach.line_user_id, coachText);
+    console.log('[line-notify] coach push:', result);
+  } else {
+    console.log('[line-notify] coach has no line_user_id');
+  }
+
+  // お客様へLINE通知
+  if (customer?.line_user_id) {
+    const customerText = buildBookingConfirmedText({
+      customerName,
+      coachName,
+      lessonType,
+      dateStr,
+      timeStr,
+      storeName,
+      amount,
+    });
+    const result = await pushMessage(customer.line_user_id, customerText);
+    console.log('[line-notify] customer push:', result);
+  } else {
+    console.log('[line-notify] customer has no line_user_id');
+  }
+}
+
+/**
+ * 日付を日本語フォーマットに (例: 2026年4月22日(水))
+ */
+function formatDateJa(dateStr) {
+  if (!dateStr) return '—';
+  const parts = String(dateStr).split('-');
+  if (parts.length < 3) return dateStr;
+  const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+  const weekdayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  return (
+    parts[0] + '年' +
+    parseInt(parts[1], 10) + '月' +
+    parseInt(parts[2], 10) + '日(' +
+    weekdayNames[d.getDay()] + ')'
+  );
+}
+
 module.exports = {
   pushMessage,
   multicastMessage,
@@ -157,4 +310,5 @@ module.exports = {
   buildPaymentCompletedText,
   buildCoachNewBookingText,
   buildCancellationText,
+  notify,
 };
