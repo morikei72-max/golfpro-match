@@ -490,9 +490,9 @@ function goLogin(){
   var next=params.get('next');
   var validNext=['customer_login','coach_login','store_login'];
   if(next && validNext.indexOf(next)>=0){
-    window.location.href=next+'.html';
+    window.location.href=next+'.html?from=top';
   }else{
-    window.location.href='customer_login.html';
+    window.location.href='customer_login.html?from=top';
   }
 }
 
