@@ -1,3 +1,6 @@
+/customer_login.html  from=top  /customer_login.html  200
+/coach_login.html     from=top  /coach_login.html     200
+/store_login.html     from=top  /store_login.html     200
 /customer_login.html  /top.html?next=customer_login  302!
 /coach_login.html     /top.html?next=coach_login     302!
 /store_login.html     /top.html?next=store_login     302!
