@@ -25,12 +25,12 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--da
 .nav-links{display:flex;align-items:center;gap:28px;}
 .nav-links a{font-size:12px;color:rgba(255,255,255,0.55);text-decoration:none;letter-spacing:0.04em;transition:color .2s;}
 .nav-links a:hover{color:#fff;}
-.nav-login{border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:12px;font-weight:500;padding:8px 20px;border-radius:24px;text-decoration:none;transition:all .2s;letter-spacing:0.04em;}
+.nav-login{border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:12px;font-weight:500;padding:8px 20px;border-radius:24px;text-decoration:none;transition:all .2s;letter-spacing:0.04em;cursor:pointer;}
 .nav-login:hover{background:rgba(255,255,255,0.1);}
 .hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
 .hamburger span{width:22px;height:2px;background:#fff;border-radius:2px;transition:all .3s;}
 .mobile-nav{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(6,18,12,0.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:199;flex-direction:column;padding:16px 6%;}
-.mobile-nav a{display:block;color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.mobile-nav a{display:block;color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;}
 .mobile-nav a:last-child{border:none;color:var(--accent);font-weight:700;}
 
 /* ===== ヒーロー（スライドショー） ===== */
@@ -43,11 +43,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--da
 .slide-3{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/slide_woman2.jpg") center/cover no-repeat;}
 .slide-4{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/slide_woman3.jpg") center/cover no-repeat;}
 .slide-5{background:url("https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1600&q=75&fit=crop") center/cover no-repeat;}
-/* テクスチャオーバーレイ */
 
 /* グラデーションオーバーレイ */
 .hero-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(6,18,12,0.5) 0%,rgba(6,18,12,0.35) 40%,rgba(6,18,12,0.6) 100%);}
-/* 下部グラデーション */
 .hero-bottom-fade{position:absolute;bottom:0;left:0;right:0;height:200px;z-index:3;background:linear-gradient(to bottom,transparent,rgba(6,18,12,0.95));}
 
 /* ===== ヒーローコンテンツ ===== */
@@ -160,7 +158,7 @@ section{background:#fff;}
 .cta-pre{font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.25em;color:var(--accent);text-transform:uppercase;margin-bottom:20px;}
 .cta-title{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);color:#fff;line-height:1.35;margin-bottom:16px;}
 .cta-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.9;margin-bottom:40px;}
-.cta-btn{display:inline-flex;align-items:center;gap:10px;background:var(--g);color:#fff;font-size:15px;font-weight:700;padding:18px 48px;border-radius:32px;text-decoration:none;transition:all .3s;letter-spacing:0.06em;}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;background:var(--g);color:#fff;font-size:15px;font-weight:700;padding:18px 48px;border-radius:32px;text-decoration:none;transition:all .3s;letter-spacing:0.06em;cursor:pointer;border:none;font-family:inherit;}
 .cta-btn:hover{background:#26c48f;transform:translateY(-2px);box-shadow:0 8px 32px rgba(29,158,117,0.35);}
 
 /* ===== フッター ===== */
@@ -174,7 +172,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
 .footer-company{font-size:11px;color:rgba(255,255,255,0.2);margin-top:12px;line-height:1.8;}
 .footer-links{display:flex;gap:48px;flex-wrap:wrap;}
 .footer-col h4{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.15em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:14px;}
-.footer-col a{display:block;font-size:12px;color:rgba(255,255,255,0.25);text-decoration:none;margin-bottom:8px;transition:color .2s;}
+.footer-col a{display:block;font-size:12px;color:rgba(255,255,255,0.25);text-decoration:none;margin-bottom:8px;transition:color .2s;cursor:pointer;}
 .footer-col a:hover{color:rgba(255,255,255,0.6);}
 .footer-bottom{border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;display:flex;justify-content:space-between;font-size:11px;flex-wrap:wrap;gap:8px;}
 .footer-bottom a{color:rgba(255,255,255,0.2);text-decoration:none;}
@@ -213,7 +211,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
     <a href="#coaches">コーチ</a>
     <a href="#pricing">料金</a>
     <a href="#faq">FAQ</a>
-    <a href="index.html" class="nav-login">ログイン / 登録</a>
+    <a class="nav-login" onclick="goLogin()">MyCoach を始める</a>
   </div>
   <div class="hamburger" onclick="toggleNav()">
     <span></span><span></span><span></span>
@@ -224,7 +222,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
   <a href="#coaches" onclick="toggleNav()">コーチ紹介</a>
   <a href="#pricing" onclick="toggleNav()">料金</a>
   <a href="#faq" onclick="toggleNav()">よくある質問</a>
-  <a href="index.html">ログイン / 新規登録 →</a>
+  <a onclick="goLogin()">MyCoach を始める →</a>
 </div>
 
 <!-- ヒーロー -->
@@ -241,11 +239,11 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
     <div class="hero-logo">My<span>Coach</span></div>
     <div class="hero-tagline">Your Personal Golf Coach</div>
     <div class="hero-divider"></div>
-    <div class="hero-catchcopy">あなただけのゴルフコーチと出会う場所<br>Golf Create tozuike 公式マッチングサービス</div>
-    <a href="index.html" class="hero-btn">
-      コーチを探す
+    <div class="hero-catchcopy">あなただけのゴルフコーチと出会う場所<br>Golf Create 戸津池店 公式マッチングサービス</div>
+    <button class="hero-btn" onclick="goLogin()">
+      MyCoach を始める
       <div class="hero-btn-arrow"></div>
-    </a>
+    </button>
   </div>
   <div class="hero-dots">
     <div class="hdot on" onclick="goSlide(0)"></div>
@@ -334,7 +332,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
     <div class="reveal">
       <div class="sec-label">Our Coaches</div>
       <h2 class="sec-title">コーチ紹介</h2>
-      <p class="sec-sub">Golf Create tozuike の認定コーチがあなたのゴルフをサポートします。</p>
+      <p class="sec-sub">Golf Create 戸津池店 の認定コーチがあなたのゴルフをサポートします。</p>
     </div>
     <div class="coaches-grid reveal">
       <div class="coach-card">
@@ -343,7 +341,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
         </div>
         <div class="coach-body">
           <div class="coach-name">森下 啓介</div>
-          <div class="coach-area">📍 Golf Create tozuike 京都</div>
+          <div class="coach-area">📍 Golf Create 戸津池店</div>
           <div class="coach-bio">スパルタ指導で確実に上達。初心者から丁寧に教えます。インドアシミュレーターを使ったレッスンが得意です。</div>
           <div class="coach-tags">
             <span class="coach-tag">インドアレッスン</span>
@@ -354,12 +352,12 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
       <div class="coach-card coach-add">
         <div class="coach-add-icon">+</div>
         <div class="coach-add-title">コーチ募集中</div>
-        <div class="coach-add-sub">Golf Create tozuikeで<br>コーチとして活躍しませんか？</div>
+        <div class="coach-add-sub">Golf Create 戸津池店で<br>コーチとして活躍しませんか？</div>
       </div>
       <div class="coach-card coach-add">
         <div class="coach-add-icon">+</div>
         <div class="coach-add-title">コーチ募集中</div>
-        <div class="coach-add-sub">Golf Create tozuikeで<br>コーチとして活躍しませんか？</div>
+        <div class="coach-add-sub">Golf Create 戸津池店で<br>コーチとして活躍しませんか？</div>
       </div>
     </div>
   </div>
@@ -435,8 +433,8 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
   <div class="cta-inner">
     <div class="cta-pre reveal">Start Today</div>
     <h2 class="cta-title reveal">今すぐコーチを<br>探してみましょう</h2>
-    <p class="cta-sub reveal">Golf Create tozuike のプロコーチが<br>あなたのゴルフライフをサポートします。</p>
-    <a href="index.html" class="cta-btn reveal">無料で始める →</a>
+    <p class="cta-sub reveal">Golf Create 戸津池店 のプロコーチが<br>あなたのゴルフライフをサポートします。</p>
+    <button class="cta-btn reveal" onclick="goLogin()">MyCoach を始める →</button>
   </div>
 </section>
 
@@ -447,7 +445,7 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
       <div class="footer-brand">
         <div class="footer-logo">My<span>Coach</span></div>
         <div class="footer-tagline">Golf Matching Service</div>
-        <div class="footer-company">株式会社ケイエスケー<br>京都府八幡市<br>GOLF Create tozuike</div>
+        <div class="footer-company">株式会社ケイエスケー<br>京都府八幡市<br>Golf Create 戸津池店</div>
       </div>
       <div class="footer-links">
         <div class="footer-col">
@@ -462,26 +460,42 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
           <a href="#coaches">コーチ紹介</a>
           <a href="#pricing">料金</a>
           <a href="#faq">よくある質問</a>
-          <a href="index.html">ログイン / 登録</a>
+          <a onclick="goLogin()">MyCoach を始める</a>
         </div>
         <div class="footer-col">
           <h4>Store</h4>
-          <a href="#">Golf Create 京都店</a>
-          <a href="#">Golf Create 伏見店</a>
+          <a href="#">Golf Create 戸津池店</a>
         </div>
       </div>
     </div>
     <div class="footer-bottom">
       <span>© 2026 MyCoach by 株式会社ケイエスケー</span>
       <div style="display:flex;gap:20px;">
-        <a href="#">利用規約</a>
-        <a href="#">プライバシーポリシー</a>
+        <a href="terms.html">利用規約</a>
+        <a href="privacy.html">プライバシーポリシー</a>
       </div>
     </div>
   </div>
 </footer>
 
 <script>
+// 【2026/4/21 追加】QRコード式オープニング統合
+// URLパラメータ ?next= を読み取り、ボタンクリック時に適切なログイン画面に遷移
+// - ?next=customer_login → customer_login.html
+// - ?next=coach_login    → coach_login.html
+// - ?next=store_login    → store_login.html
+// - パラメータなし       → customer_login.html（デフォルト）
+function goLogin(){
+  var params=new URLSearchParams(window.location.search);
+  var next=params.get('next');
+  var validNext=['customer_login','coach_login','store_login'];
+  if(next && validNext.indexOf(next)>=0){
+    window.location.href=next+'.html';
+  }else{
+    window.location.href='customer_login.html';
+  }
+}
+
 (function(){
   var slides=document.querySelectorAll('.hero .slide');
   var dots=document.querySelectorAll('.hdot');
