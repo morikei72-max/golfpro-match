@@ -447,6 +447,19 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
 
       <div class="form-group"><label class="form-label">得意分野 <span style="color:var(--g)">👁 お客様に表示されます</span></label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
+
+      <!-- SNS・リンク -->
+      <div style="margin-top:16px;padding:12px;background:#f7faf8;border-radius:10px;border:1px solid var(--border);">
+        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:10px;">📱 SNS・リンク <span style="color:var(--g);font-weight:400;font-size:10px;">👁 お客様に表示されます</span></div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">SNSアカウントや公式サイトのURLを登録すると、お客様のコーチ選びの参考になります。</div>
+        <div class="form-group"><label class="form-label">📸 Instagram</label><input type="url" class="form-input" id="prof-instagram" placeholder="https://instagram.com/your_account"></div>
+        <div class="form-group"><label class="form-label">🎵 TikTok</label><input type="url" class="form-input" id="prof-tiktok" placeholder="https://tiktok.com/@your_account"></div>
+        <div class="form-group"><label class="form-label">📺 YouTube</label><input type="url" class="form-input" id="prof-youtube" placeholder="https://youtube.com/@your_channel"></div>
+        <div class="form-group"><label class="form-label">🐦 X (旧Twitter)</label><input type="url" class="form-input" id="prof-x" placeholder="https://x.com/your_account"></div>
+        <div class="form-group"><label class="form-label">📘 Facebook</label><input type="url" class="form-input" id="prof-facebook" placeholder="https://facebook.com/your_account"></div>
+        <div class="form-group"><label class="form-label">🌐 公式サイト</label><input type="url" class="form-input" id="prof-website" placeholder="https://your-site.com"></div>
+      </div>
+
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
     </div>
 
@@ -1540,6 +1553,12 @@ async function saveProfile(){
     bio:document.getElementById('prof-bio').value.trim(),
     license:document.getElementById('prof-license').value.trim(),
     tags:document.getElementById('prof-tags').value.trim(),
+    instagram_url:document.getElementById('prof-instagram').value.trim()||null,
+    tiktok_url:document.getElementById('prof-tiktok').value.trim()||null,
+    youtube_url:document.getElementById('prof-youtube').value.trim()||null,
+    x_url:document.getElementById('prof-x').value.trim()||null,
+    facebook_url:document.getElementById('prof-facebook').value.trim()||null,
+    website_url:document.getElementById('prof-website').value.trim()||null,
     updated_at:new Date().toISOString()
   };
   const {data:saved,error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'}).select().maybeSingle();
@@ -1568,6 +1587,12 @@ async function loadProfile(userId){
     if(data.bio)document.getElementById('prof-bio').value=data.bio;
     if(data.license)document.getElementById('prof-license').value=data.license;
     if(data.tags)document.getElementById('prof-tags').value=data.tags;
+    if(data.instagram_url)document.getElementById('prof-instagram').value=data.instagram_url;
+    if(data.tiktok_url)document.getElementById('prof-tiktok').value=data.tiktok_url;
+    if(data.youtube_url)document.getElementById('prof-youtube').value=data.youtube_url;
+    if(data.x_url)document.getElementById('prof-x').value=data.x_url;
+    if(data.facebook_url)document.getElementById('prof-facebook').value=data.facebook_url;
+    if(data.website_url)document.getElementById('prof-website').value=data.website_url;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
     if(data.min_lesson)document.getElementById('min-lesson-minutes').value=data.min_lesson;
   }catch(e){console.error('プロフィール読み込み例外:',e);}
