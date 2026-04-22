@@ -197,6 +197,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .custom-plan-body .form-input{font-size:12px;padding:8px 10px;}
 .custom-plan-body .form-textarea{font-size:12px;padding:8px 10px;height:60px;}
 .plan-price-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.plan-participants-row{display:flex;gap:8px;}
+.plan-participants-row .form-group{flex:1;}
 .plan-checkbox-row{
   display:flex;align-items:center;gap:8px;padding:8px 10px;
   background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:6px;
@@ -495,7 +497,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
       <!-- 最低レッスン時間（カテゴリL） -->
       <div class="min-lesson-box">
-        <label>⏱ 最低レッスン時間（インドアのみ）</label>
+        <label>⏱ 最低レッスン時間(インドアのみ)</label>
         <input type="number" class="min-lesson-input" id="min-lesson-minutes" placeholder="30" min="5" step="5">
         <span style="font-size:11px;color:#633806;margin-left:4px;">分 ／ この時間未満の予約は受付不可</span>
       </div>
@@ -605,7 +607,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <!-- キャンセルポリシー表示 -->
       <div class="cancel-policy-note">
         <strong>🚨 緊急キャンセルについて</strong>
-        やむを得ない事情（病気・家族の緊急事態・事故等）の場合は「緊急キャンセル」ボタンを押してください。お客様・店舗へ自動通知されます。
+        やむを得ない事情(病気・家族の緊急事態・事故等)の場合は「緊急キャンセル」ボタンを押してください。お客様・店舗へ自動通知されます。
       </div>
 
       <div class="filter-wrap">
@@ -616,7 +618,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <div id="bookings-list">
         <div class="booking-item" data-status="pending">
-          <div class="booking-header"><div class="booking-date">2026/04/15（水）11:00</div><span class="booking-status status-pending">承認待ち</span></div>
+          <div class="booking-header"><div class="booking-date">2026/04/15(水)11:00</div><span class="booking-status status-pending">承認待ち</span></div>
           <div class="booking-customer">山田 太郎</div>
           <div class="booking-detail">インドアゴルフレッスン・50分 ¥5,000</div>
           <div class="booking-actions">
@@ -625,7 +627,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           </div>
         </div>
         <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/12（日）10:00</div><span class="booking-status status-approved">承認済み</span></div>
+          <div class="booking-header"><div class="booking-date">2026/04/12(日)10:00</div><span class="booking-status status-approved">承認済み</span></div>
           <div class="booking-customer">田中 次郎</div>
           <div class="booking-detail">インドアゴルフレッスン・90分 ¥8,000</div>
           <div class="booking-actions">
@@ -634,7 +636,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           </div>
         </div>
         <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/18（土）ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
+          <div class="booking-header"><div class="booking-date">2026/04/18(土)ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
           <div class="booking-customer">鈴木 花子</div>
           <div class="booking-detail">ラウンドレッスン・1ラウンド ¥20,000</div>
           <div class="booking-actions">
@@ -684,7 +686,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div style="margin-top:12px;">
         <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:6px;">領収書アップロード</div>
         <div class="receipt-upload" onclick="document.getElementById('receipt-input').click()">
-          <div style="font-size:13px;color:var(--muted);">📄 領収書をアップロード（PDF・画像）</div>
+          <div style="font-size:13px;color:var(--muted);">📄 領収書をアップロード(PDF・画像)</div>
         </div>
         <input type="file" id="receipt-input" accept="image/*,.pdf" style="display:none" onchange="uploadReceipt(this)">
       </div>
@@ -713,8 +715,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div id="board-store">
       <div class="post-item">
         <div class="post-header"><div><span class="post-tag tag-info">お知らせ</span><div class="post-title">4月の営業時間変更について</div></div><div class="post-date">2026/04/01</div></div>
-        <div class="post-author">Golf Create 戸津池店 店舗管理</div>
-        <div class="post-body">4月29日（祝）は通常通り10:00〜21:00の営業となります。</div>
+        <div class="post-author">Golf Create 戸津池 店舗管理</div>
+        <div class="post-body">4月29日(祝)は通常通り10:00〜21:00の営業となります。</div>
         <div class="reply-section">
           <div class="reply-form"><input type="text" class="reply-input" placeholder="返信を入力..."><button class="reply-submit" onclick="submitReply(this)">送信</button></div>
           <button class="line-reply-btn" onclick="replyWithLine()">LINEで返信する</button>
@@ -724,7 +726,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div id="board-recruit" style="display:none">
       <div class="post-item">
         <div class="post-header"><div><span class="post-tag tag-recruit">募集</span><div class="post-title">土日に集まれるコーチ募集</div></div><div class="post-date">2026/04/05</div></div>
-        <div class="post-author">Golf Create 戸津池店 店舗管理</div>
+        <div class="post-author">Golf Create 戸津池 店舗管理</div>
         <div class="post-body">土曜・日曜に対応できるコーチを募集しています。週1回からでもOKです。</div>
         <div class="reply-section">
           <div class="reply-form"><input type="text" class="reply-input" placeholder="返信を入力..."><button class="reply-submit" onclick="submitReply(this)">送信</button></div>
@@ -753,11 +755,11 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSess
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 
 const stores={
-  kyoto:{name:'Golf Create 戸津池店',addr:'京都府八幡市',fees:{indoor:15,round:8,accompany:8,comp:8},hqFee:5,stripeFee:3.6}
+  tozuike:{id:'ce4edff2-a86a-45f8-9159-a2683be84b4f',name:'Golf Create 戸津池',addr:'京都府八幡市',fees:{indoor:15,round:8,accompany:8,comp:8},hqFee:5,stripeFee:3.6}
 };
 
-function saveInvoice(){alert('✅ インボイス情報を保存しました！');showMsg('インボイス情報を保存しました！','success');}
-function saveSchedule(){alert('✅ スケジュールを保存しました！');showMsg('スケジュールを保存しました！','success');}
+function saveInvoice(){alert('✅ インボイス情報を保存しました!');showMsg('インボイス情報を保存しました!','success');}
+function saveSchedule(){alert('✅ スケジュールを保存しました!');showMsg('スケジュールを保存しました!','success');}
 let currentCoachId=null;
 let currentStore=null;
 let currentStoreId=null;
@@ -776,7 +778,7 @@ let customPlanCounter=0;
   currentCoachId=user.id;
   const name=user.user_metadata?.name||'コーチ';
   document.getElementById('coach-name').textContent=name;
-  document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
+  document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
   buildStoreOptions();
   buildWeekGrid();
   buildMonthGrid();
@@ -812,11 +814,8 @@ async function selectStore(key){
     <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
-  // 店舗IDを取得（DB保存用）
-  try{
-    const {data:storeRow}=await sb.from('stores').select('id').eq('store_key',key).maybeSingle();
-    if(storeRow)currentStoreId=storeRow.id;
-  }catch(e){console.warn('店舗ID取得失敗（DB未登録の可能性）',e);}
+  // 店舗IDはstoresオブジェクトから取得(DB問合せ不要)
+  if(s.id)currentStoreId=s.id;
   // 料金データ読み込み
   await loadPrices();
   // 全料金行を再計算
@@ -825,7 +824,7 @@ async function selectStore(key){
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
 
 /* ===== 【第2バッチ】料金計算ユーティリティ ===== */
-// 既存のcalcTake関数：請求額→手取り計算（単体数値版）
+// 既存のcalcTake関数：請求額→手取り計算(単体数値版)
 function calcTakeAmount(billAmount,lessonType){
   if(!currentStore||!billAmount||billAmount<=0)return null;
   const s=stores[currentStore];
@@ -839,7 +838,7 @@ function calcTakeAmount(billAmount,lessonType){
   return{total,stripe,storeFee,hqFee,take,stripePct:s.stripeFee,storePct,hqPct:s.hqFee};
 }
 
-// 【カテゴリM】逆算：手取り→請求額（100円切り上げ）
+// 【カテゴリM】逆算：手取り→請求額(100円切り上げ)
 function calcBillFromTake(takeAmount,lessonType){
   if(!currentStore||!takeAmount||takeAmount<=0)return 0;
   const s=stores[currentStore];
@@ -847,7 +846,7 @@ function calcBillFromTake(takeAmount,lessonType){
   const storePct=feeMap[lessonType]||s.fees.indoor;
   const totalFeePct=(s.stripeFee+storePct+s.hqFee)/100;
   const rawBill=takeAmount/(1-totalFeePct);
-  // 100円単位で切り上げ（コーチの目標手取りを保証）
+  // 100円単位で切り上げ(コーチの目標手取りを保証)
   return Math.ceil(rawBill/100)*100;
 }
 
@@ -865,7 +864,7 @@ function addPriceItem(lessonType,preset){
   if(lessonType==='indoor'){
     timeInputHTML=`<input type="number" class="price-item-time" placeholder="60" min="5" step="5" value="${preset?.minutes||''}" oninput="recalcRow('${rowId}')"><span class="price-unit-sm">分</span>`;
   }else{
-    // ラウンド系：R数（1.0 / 0.5）
+    // ラウンド系：R数(1.0 / 0.5)
     timeInputHTML=`<input type="number" class="price-item-time" placeholder="1" min="0.5" step="0.5" value="${preset?.round_count||''}" oninput="recalcRow('${rowId}')"><span class="price-unit-sm">R</span>`;
   }
 
@@ -977,7 +976,15 @@ function addCustomPlan(preset){
         <input type="text" class="form-input custom-plan-duration" placeholder="例：60分 / 半日 / 9H" value="${preset?.duration_text||''}">
       </div>
       <div class="form-group">
-        <label class="form-label">料金（請求額⇄手取り）<span style="color:var(--red)">※必須</span></label>
+        <label class="form-label">場所</label>
+        <input type="text" class="form-input custom-plan-location" placeholder="例：Golf Create 戸津池 / 京都ゴルフ倶楽部" value="${preset?.location||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">集合時間</label>
+        <input type="time" class="form-input custom-plan-meeting" value="${preset?.meeting_time||''}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">料金(請求額⇄手取り)<span style="color:var(--red)">※必須</span></label>
         <div class="plan-price-row">
           <input type="number" class="price-item-bill custom-plan-bill" placeholder="請求額" min="0" step="100" value="${preset?.price||''}" oninput="onCustomPlanBillInput('${cardId}')">
           <span class="price-unit-sm">円</span>
@@ -987,13 +994,23 @@ function addCustomPlan(preset){
         </div>
         <div class="price-breakdown" id="bd-${cardId}" style="margin-top:6px"></div>
       </div>
+      <div class="plan-participants-row">
+        <div class="form-group">
+          <label class="form-label">最低催行人数</label>
+          <input type="number" class="form-input custom-plan-min" placeholder="例：3" min="1" step="1" value="${preset?.min_participants||''}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">募集人数(定員)</label>
+          <input type="number" class="form-input custom-plan-max" placeholder="例:8" min="1" step="1" value="${preset?.max_participants||''}">
+        </div>
+      </div>
       <div class="form-group">
         <label class="form-label">プラン説明文 <span style="color:var(--red)">※必須</span> <span style="color:var(--g)">👁 お客様に表示されます</span></label>
         <textarea class="form-textarea custom-plan-desc" placeholder="このプランの魅力・対象者・指導内容をお客様向けに説明してください">${preset?.description||''}</textarea>
       </div>
       <div class="plan-checkbox-row">
         <input type="checkbox" id="greenfee-${cardId}" class="custom-plan-greenfee" ${greenfeeChecked} onchange="toggleGreenfee('${cardId}')">
-        <label for="greenfee-${cardId}">コーチがプレーフィーを負担する（指定ゴルフ場あり）</label>
+        <label for="greenfee-${cardId}">コーチがプレーフィーを負担する(指定ゴルフ場あり)</label>
       </div>
       <div class="plan-greenfee-detail" id="greenfee-detail-${cardId}" style="display:${greenfeeDisplay}">
         <div class="form-group">
@@ -1030,7 +1047,7 @@ function onCustomPlanBillInput(cardId){
   const takeInput=card.querySelector('.custom-plan-take');
   const bill=parseInt(billInput.value)||0;
   if(bill<=0){takeInput.value='';updateBreakdownForCard(cardId,null);return;}
-  // 独自プランはインドア扱い（その他カテゴリ）
+  // 独自プランはインドア扱い(その他カテゴリ)
   const result=calcTakeAmount(bill,'indoor');
   if(result){
     takeInput.value=result.take;
@@ -1075,8 +1092,8 @@ async function savePrices(){
       await sb.from('coaches').update({min_lesson:minLesson,updated_at:new Date().toISOString()}).eq('user_id',currentCoachId);
     }
 
-    // ② 料金アイテム（カテゴリL）の保存
-    // 既存データを削除してから再挿入（シンプル・確実）
+    // ② 料金アイテム(カテゴリL)の保存
+    // 既存データを削除してから再挿入(シンプル・確実)
     const {error:delErr}=await sb.from('coach_price_items').delete().eq('coach_id',currentCoachId);
     if(delErr){console.error('既存料金削除エラー',delErr);}
 
@@ -1109,7 +1126,7 @@ async function savePrices(){
       if(insErr){alert('❌ 料金保存に失敗しました\n'+insErr.message);return;}
     }
 
-    // ③ 独自プラン（カテゴリN）の保存
+    // ③ 独自プラン(カテゴリN)の保存
     const {error:delPlanErr}=await sb.from('coach_custom_plans').delete().eq('coach_id',currentCoachId);
     if(delPlanErr){console.error('既存プラン削除エラー',delPlanErr);}
 
@@ -1118,8 +1135,12 @@ async function savePrices(){
     document.querySelectorAll('.custom-plan-card').forEach(card=>{
       const name=card.querySelector('.custom-plan-name').value.trim();
       const duration=card.querySelector('.custom-plan-duration').value.trim();
+      const location=card.querySelector('.custom-plan-location').value.trim()||null;
+      const meetingTime=card.querySelector('.custom-plan-meeting').value||null;
       const bill=parseInt(card.querySelector('.custom-plan-bill').value)||0;
       const take=parseInt(card.querySelector('.custom-plan-take').value)||0;
+      const minP=parseInt(card.querySelector('.custom-plan-min').value)||null;
+      const maxP=parseInt(card.querySelector('.custom-plan-max').value)||null;
       const desc=card.querySelector('.custom-plan-desc').value.trim();
       if(!name||!duration||bill<=0||!desc)return;
       const coachPays=card.querySelector('.custom-plan-greenfee').checked;
@@ -1134,8 +1155,12 @@ async function savePrices(){
         store_id:currentStoreId,
         plan_name:name,
         duration_text:duration,
+        location:location,
+        meeting_time:meetingTime,
         price:bill,
         take_home:take,
+        min_participants:minP,
+        max_participants:maxP,
         description:desc,
         coach_pays_greenfee:coachPays,
         golf_course_name:coachPays?course:null,
@@ -1150,8 +1175,8 @@ async function savePrices(){
       if(insPlanErr){alert('❌ 独自プラン保存に失敗しました\n'+insPlanErr.message);return;}
     }
 
-    alert('✅ 料金設定を保存しました！');
-    showMsg('料金設定を保存しました！','success');
+    alert('✅ 料金設定を保存しました!');
+    showMsg('料金設定を保存しました!','success');
   }catch(e){
     if(e.message!=='validation'){
       console.error('savePrices例外',e);
@@ -1213,7 +1238,7 @@ function switchScheduleMode(mode){
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
 }
 
-/* ===== 週間スケジュール（スワイプ対応） ===== */
+/* ===== 週間スケジュール(スワイプ対応) ===== */
 function buildWeekGrid(){
   const days=['日','月','火','水','木','金','土'];
   const today=new Date();
@@ -1347,7 +1372,7 @@ function replyWithLine(){window.open('https://line.me/R/','_blank');}
 function uploadPhoto(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();reader.onload=e=>{document.getElementById('profile-img').src=e.target.result;};
-  reader.readAsDataURL(file);showMsg('写真をアップロードしました！','success');
+  reader.readAsDataURL(file);showMsg('写真をアップロードしました!','success');
 }
 function uploadId(input){
   const file=input.files[0];if(!file)return;
@@ -1356,7 +1381,7 @@ function uploadId(input){
   document.getElementById('id-status').textContent='審査待ち';
   showMsg('身分証をアップロードしました。審査をお待ちください。','success');
 }
-function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg('領収書をアップロードしました！','success');}
+function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg('領収書をアップロードしました!','success');}
 
 /* ===== PDF出力 ===== */
 function downloadPDF(){
@@ -1420,7 +1445,7 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
   </div>
   <div class="doc-title">
     <h1>月次収入明細書</h1>
-    <p>${month}分　発行日：${now.toLocaleDateString('ja-JP')}</p>
+    <p>${month}分 発行日：${now.toLocaleDateString('ja-JP')}</p>
   </div>
 </div>
 
@@ -1468,7 +1493,7 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 </table>
 
 <div class="fee-box">
-  <div class="fee-box-title">手数料内訳（今月合計）</div>
+  <div class="fee-box-title">手数料内訳(今月合計)</div>
   <div class="fee-row"><span>お客様請求額合計</span><span class="amount">¥58,000</span></div>
   <div class="fee-row"><span>決済手数料 (3.6%)</span><span class="fee-minus amount">▲¥2,088</span></div>
   <div class="fee-row"><span>店舗使用料</span><span class="fee-minus amount">▲¥8,700</span></div>
@@ -1477,8 +1502,8 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 </div>
 
 <div class="footer">
-  本明細書はMyCoach（株式会社ケイエスケー）システムより自動発行されます。<br>
-  Golf Create 戸津池店 ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー
+  本明細書はMyCoach(株式会社ケイエスケー)システムより自動発行されます。<br>
+  Golf Create 戸津池 ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー
 </div>
 
 <script>window.onload=function(){window.print();}<\/script>
@@ -1492,7 +1517,7 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
   a.download=month+'_収入明細_'+coachName+'.html';
   a.click();
   URL.revokeObjectURL(url);
-  showMsg('明細書を開きました。印刷でPDF保存できます！','success');
+  showMsg('明細書を開きました。印刷でPDF保存できます!','success');
 }
 
 /* ===== プロフィール保存・読み込み ===== */
@@ -1514,9 +1539,9 @@ async function saveProfile(){
   const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
   if(error){alert('❌ 保存に失敗しました\n'+error.message);showMsg('保存に失敗しました：'+error.message,'error');return;}
   document.getElementById('coach-name').textContent=name;
-  document.getElementById('welcome-name').textContent=name+'さん、こんにちは！';
-  alert('✅ 基本情報を保存しました！');
-  showMsg('プロフィールを保存しました！','success');
+  document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
+  alert('✅ 基本情報を保存しました!');
+  showMsg('プロフィールを保存しました!','success');
 }
 
 async function loadProfile(userId){
@@ -1527,7 +1552,7 @@ async function loadProfile(userId){
     if(data.name){
       document.getElementById('prof-name').value=data.name;
       document.getElementById('coach-name').textContent=data.name;
-      document.getElementById('welcome-name').textContent=data.name+'さん、こんにちは！';
+      document.getElementById('welcome-name').textContent=data.name+'さん、こんにちは!';
     }
     if(data.address)document.getElementById('prof-address').value=data.address;
     if(data.birth)document.getElementById('prof-birth').value=data.birth;
