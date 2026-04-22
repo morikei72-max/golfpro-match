@@ -761,6 +761,7 @@ const stores={
 function saveInvoice(){alert('✅ インボイス情報を保存しました!');showMsg('インボイス情報を保存しました!','success');}
 function saveSchedule(){alert('✅ スケジュールを保存しました!');showMsg('スケジュールを保存しました!','success');}
 let currentCoachId=null;
+let currentAuthId=null;
 let currentStore=null;
 let currentStoreId=null;
 let scheduleData={};
@@ -775,8 +776,13 @@ let customPlanCounter=0;
   const {data:{session}}=await sb.auth.getSession();
   if(!session){window.location.replace(BASE+'index.html?role=coach');return;}
   const user=session.user;
-  currentCoachId=user.id;
-  const name=user.user_metadata?.name||'コーチ';
+  currentAuthId=user.id;
+  // coachesテーブルから正しいcoach_idを取得(FK制約対応)
+  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name').eq('user_id',user.id).maybeSingle();
+  if(coachErr){console.error('coach取得エラー',coachErr);alert('❌ コーチ情報の取得に失敗しました: '+coachErr.message);return;}
+  if(!coachRow){alert('❌ このアカウントにはコーチ情報が登録されていません。\n先にプロフィール画面で基本情報を保存してください。');}
+  currentCoachId=coachRow?coachRow.id:null;
+  const name=coachRow?.name||user.user_metadata?.name||'コーチ';
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
   buildStoreOptions();
@@ -1089,7 +1095,7 @@ async function savePrices(){
     // ① 最低レッスン時間をcoachesテーブルに保存
     const minLesson=document.getElementById('min-lesson-minutes').value.trim();
     if(minLesson){
-      await sb.from('coaches').update({min_lesson:minLesson,updated_at:new Date().toISOString()}).eq('user_id',currentCoachId);
+      await sb.from('coaches').update({min_lesson:minLesson,updated_at:new Date().toISOString()}).eq('user_id',currentAuthId);
     }
 
     // ② 料金アイテム(カテゴリL)の保存
@@ -1189,7 +1195,7 @@ async function loadPrices(){
   if(!currentCoachId)return;
   try{
     // 最低レッスン時間の読込
-    const {data:coachRow}=await sb.from('coaches').select('min_lesson').eq('user_id',currentCoachId).maybeSingle();
+    const {data:coachRow}=await sb.from('coaches').select('min_lesson').eq('user_id',currentAuthId).maybeSingle();
     if(coachRow?.min_lesson){
       document.getElementById('min-lesson-minutes').value=coachRow.min_lesson;
     }
@@ -1522,11 +1528,11 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 
 /* ===== プロフィール保存・読み込み ===== */
 async function saveProfile(){
-  if(!currentCoachId){alert('❌ ログイン情報が取得できません');showMsg('ログイン情報が取得できません','error');return;}
+  if(!currentAuthId){alert('❌ ログイン情報が取得できません');showMsg('ログイン情報が取得できません','error');return;}
   const name=document.getElementById('prof-name').value.trim();
   if(!name){alert('❌ お名前は必須項目です');showMsg('お名前は必須です','error');return;}
   const data={
-    user_id:currentCoachId,
+    user_id:currentAuthId,
     name:name,
     address:document.getElementById('prof-address').value.trim(),
     birth:document.getElementById('prof-birth').value,
@@ -1536,8 +1542,10 @@ async function saveProfile(){
     tags:document.getElementById('prof-tags').value.trim(),
     updated_at:new Date().toISOString()
   };
-  const {error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'});
+  const {data:saved,error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'}).select().maybeSingle();
   if(error){alert('❌ 保存に失敗しました\n'+error.message);showMsg('保存に失敗しました：'+error.message,'error');return;}
+  // upsert後の coaches.id を currentCoachId に反映(初回登録時にも正しくセット)
+  if(saved?.id)currentCoachId=saved.id;
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
   alert('✅ 基本情報を保存しました!');
