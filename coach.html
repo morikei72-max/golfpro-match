@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -787,7 +788,7 @@ let customPlanCounter=0;
 /* ===== 認証チェック ===== */
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.replace(BASE+'coach_login.html');return;}
+  if(!session){window.location.replace(BASE+'index.html?role=coach');return;}
   const user=session.user;
   currentAuthId=user.id;
   // coachesテーブルから正しいcoach_idを取得(FK制約対応)
@@ -1607,7 +1608,7 @@ function showMsg(text,type){
 /* ===== ログアウト ===== */
 async function doLogout(){
   await sb.auth.signOut();localStorage.removeItem('gc_user_type');
-  window.location.replace(BASE+'coach_login.html');
+  window.location.replace(BASE+'index.html?role=coach');
 }
 </script>
 </body>
