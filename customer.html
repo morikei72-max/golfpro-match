@@ -556,7 +556,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 // セッション確認
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
-  if(!session){window.location.href='index.html?role=customer';return;}
+  if(!session){window.location.href='customer_login.html?from=top';return;}
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
@@ -1315,7 +1315,7 @@ function rate(n){
 async function doLogout(){
   localStorage.removeItem('gc_login_time');
   await sb.auth.signOut();
-  window.location.href='index.html?role=customer';
+  window.location.href='customer_login.html?from=top';
 }
 
 async function verifyMember(){
@@ -1389,7 +1389,7 @@ async function submitBooking(){
 
   var sres=await sb.auth.getSession();
   var session=sres.data.session;
-  if(!session){alert('ログインが必要です');window.location.href='index.html?role=customer';return;}
+  if(!session){alert('ログインが必要です');window.location.href='customer_login.html?from=top';return;}
   var uid=session.user.id;
 
   var lessonType=document.getElementById('req-type').value;
