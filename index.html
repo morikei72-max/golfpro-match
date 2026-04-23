@@ -3,191 +3,539 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/png" href="data:image/png;base64,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">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MyCoach">
-<meta name="theme-color" content="#064e3b">
-<title>MyCoach — ログイン</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="apple-touch-icon" href="mycoach_icon_180.png">
+<title>MyCoach — Golf Matching Service</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Montserrat:wght@300;400;700;900&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
-:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--red:#E24B4A;--border:#e0e0e0;--white:#ffffff;}
-body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;}
-.logo-wrap{text-align:center;margin-bottom:32px;}
-.logo-title{font-family:'Playfair Display',serif;font-size:32px;color:var(--gd);}
-.logo-sub{font-size:12px;color:#666;margin-top:4px;letter-spacing:.06em;}
-.main-card{background:var(--white);border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,.10);width:100%;max-width:420px;overflow:hidden;}
-.type-tabs{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border);}
-.type-tabs.single-mode{display:none;}
-.type-tab{padding:16px 8px;text-align:center;cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:500;color:#666;transition:all .2s;border-bottom:3px solid transparent;}
-.type-tab.active{color:var(--gd);border-bottom:3px solid var(--g);background:var(--gl);}
-.type-tab-icon{font-size:20px;display:block;margin-bottom:4px;}
-.role-header{background:var(--gl);border-bottom:1px solid var(--g);padding:14px 20px;display:flex;align-items:center;gap:10px;}
-.role-header-icon{font-size:22px;}
-.role-header-text{font-size:13px;font-weight:700;color:var(--gd);}
-.form-area{padding:28px 28px 24px;}
-.form-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:6px;}
-.form-sub{font-size:12px;color:#666;margin-bottom:24px;line-height:1.6;}
-.form-group{margin-bottom:16px;}
-label{display:block;font-size:12px;font-weight:500;color:#666;margin-bottom:6px;}
-input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:inherit;font-size:14px;color:#1a1a1a;background:#fafafa;outline:none;transition:border-color .2s;}
-input:focus{border-color:var(--g);background:var(--white);box-shadow:0 0 0 3px rgba(29,158,117,.10);}
-.btn-primary{width:100%;padding:14px;background:var(--g);color:white;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:8px;}
-.btn-primary:hover{background:var(--gd);}
-.btn-primary:disabled{background:#aaa;cursor:not-allowed;}
-.btn-outline{width:100%;padding:12px;background:transparent;color:var(--g);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;margin-top:10px;}
-.btn-outline:hover{background:var(--gl);}
-.toggle-link{text-align:center;margin-top:18px;font-size:13px;color:#666;}
-.toggle-link a{color:var(--g);font-weight:500;cursor:pointer;text-decoration:none;}
-.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none;line-height:1.5;}
-.msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
-.msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
-.security-badge{display:flex;align-items:center;gap:6px;background:var(--gl);border:.5px solid var(--g);border-radius:6px;padding:7px 12px;font-size:11px;color:var(--gd);margin-top:16px;}
-.security-dot{width:6px;height:6px;border-radius:50%;background:var(--g);flex-shrink:0;}
-.divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:#bbb;font-size:12px;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-.forgot-link{text-align:right;margin-top:-8px;margin-bottom:12px;}
-.forgot-link a{font-size:12px;color:#666;cursor:pointer;text-decoration:none;}
-.forgot-link a:hover{color:var(--g);}
-.screen{display:none;}.screen.active{display:block;}
-.footer{text-align:center;margin-top:24px;font-size:11px;color:#aaa;line-height:1.7;}
-.footer a{color:#888;text-decoration:none;}
-.footer a:hover{color:var(--g);text-decoration:underline;}
-.loading{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px;}
-@keyframes spin{to{transform:rotate(360deg);}}
+:root{
+  --g:#1D9E75;--gd:#085041;--gl:#E1F5EE;
+  --accent:#5dd4a8;--gold:#BA7517;
+  --white:#fff;--dark:#06120c;
+  --text:#1a2e24;--muted:#6b8a78;--border:#e0ece6;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans JP',sans-serif;color:var(--text);background:var(--dark);overflow-x:hidden;}
+
+/* ===== ナビ ===== */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 6%;transition:background .4s,backdrop-filter .4s;}
+.nav.scrolled{background:rgba(6,18,12,0.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.06);}
+.nav-logo{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:900;color:#fff;letter-spacing:0.04em;text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-links{display:flex;align-items:center;gap:28px;}
+.nav-links a{font-size:12px;color:rgba(255,255,255,0.55);text-decoration:none;letter-spacing:0.04em;transition:color .2s;}
+.nav-links a:hover{color:#fff;}
+.nav-login{border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:12px;font-weight:500;padding:8px 20px;border-radius:24px;text-decoration:none;transition:all .2s;letter-spacing:0.04em;cursor:pointer;}
+.nav-login:hover{background:rgba(255,255,255,0.1);}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px;}
+.hamburger span{width:22px;height:2px;background:#fff;border-radius:2px;transition:all .3s;}
+.mobile-nav{display:none;position:fixed;top:60px;left:0;right:0;background:rgba(6,18,12,0.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);z-index:199;flex-direction:column;padding:16px 6%;}
+.mobile-nav a{display:block;color:rgba(255,255,255,0.7);text-decoration:none;font-size:14px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);cursor:pointer;}
+.mobile-nav a:last-child{border:none;color:var(--accent);font-weight:700;}
+
+/* ===== ヒーロー（スライドショー） ===== */
+.hero{position:relative;height:100vh;min-height:600px;overflow:hidden;}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease;background-size:cover;background-position:center;}
+.slide.on{opacity:1;}
+
+.slide-1{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/slide_ball2.jpg") center/cover no-repeat;}
+.slide-2{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/slide_woman1.jpg") center/cover no-repeat;}
+.slide-3{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/slide_woman2.jpg") center/cover no-repeat;}
+.slide-4{background:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/slide_woman3.jpg") center/cover no-repeat;}
+.slide-5{background:url("https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=1600&q=75&fit=crop") center/cover no-repeat;}
+
+/* グラデーションオーバーレイ */
+.hero-overlay{position:absolute;inset:0;z-index:2;background:linear-gradient(to bottom,rgba(6,18,12,0.5) 0%,rgba(6,18,12,0.35) 40%,rgba(6,18,12,0.6) 100%);}
+.hero-bottom-fade{position:absolute;bottom:0;left:0;right:0;height:200px;z-index:3;background:linear-gradient(to bottom,transparent,rgba(6,18,12,0.95));}
+
+/* ===== ヒーローコンテンツ ===== */
+.hero-content{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 20px;}
+.hero-pre{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:400;letter-spacing:0.3em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:20px;opacity:0;animation:fadeUp 1s .3s forwards;}
+.hero-logo{font-family:'Montserrat',sans-serif;font-size:clamp(52px,10vw,96px);font-weight:900;color:#fff;letter-spacing:-0.02em;line-height:1;margin-bottom:4px;opacity:0;animation:fadeUp 1s .5s forwards;}
+.hero-logo span{color:var(--accent);}
+.hero-tagline{font-family:'Montserrat',sans-serif;font-size:clamp(11px,1.5vw,14px);font-weight:300;letter-spacing:0.22em;color:rgba(255,255,255,0.45);text-transform:uppercase;margin-bottom:32px;opacity:0;animation:fadeUp 1s .7s forwards;}
+.hero-divider{width:1px;height:40px;background:linear-gradient(to bottom,rgba(255,255,255,0.4),transparent);margin:0 auto 32px;opacity:0;animation:fadeUp 1s .8s forwards;}
+.hero-catchcopy{font-family:'Noto Sans JP',sans-serif;font-size:clamp(14px,2vw,18px);font-weight:300;color:rgba(255,255,255,0.7);line-height:1.9;margin-bottom:40px;opacity:0;animation:fadeUp 1s .9s forwards;}
+.hero-btn{display:inline-flex;align-items:center;gap:10px;background:var(--g);color:#fff;font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;padding:16px 40px;border-radius:32px;text-decoration:none;letter-spacing:0.06em;transition:all .3s;opacity:0;animation:fadeUp 1s 1.1s forwards;border:none;cursor:pointer;}
+.hero-btn:hover{background:#26c48f;transform:translateY(-2px);box-shadow:0 8px 32px rgba(29,158,117,0.4);}
+.hero-btn-arrow{width:20px;height:1px;background:#fff;position:relative;transition:width .3s;}
+.hero-btn-arrow::after{content:'';position:absolute;right:-1px;top:-3px;width:7px;height:7px;border-top:1.5px solid #fff;border-right:1.5px solid #fff;transform:rotate(45deg);}
+.hero-btn:hover .hero-btn-arrow{width:28px;}
+
+/* スライドドット */
+.hero-dots{position:absolute;bottom:100px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:8px;opacity:0;animation:fadeIn 1s 1.4s forwards;}
+.hdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.25);cursor:pointer;transition:all .4s;}
+.hdot.on{background:var(--accent);width:20px;border-radius:3px;}
+
+/* スクロール誘導 */
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);z-index:20;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;animation:fadeIn 1s 1.6s forwards;}
+.scroll-text{font-size:9px;letter-spacing:0.2em;color:rgba(255,255,255,0.3);text-transform:uppercase;}
+.scroll-line{width:1px;height:32px;background:linear-gradient(to bottom,rgba(255,255,255,0.3),transparent);animation:scrollAnim 1.8s ease infinite;}
+@keyframes scrollAnim{0%{transform:scaleY(0);transform-origin:top;}50%{transform:scaleY(1);transform-origin:top;}51%{transform:scaleY(1);transform-origin:bottom;}100%{transform:scaleY(0);transform-origin:bottom;}}
+
+/* ===== セクション共通 ===== */
+section{background:#fff;}
+.section-inner{max-width:1100px;margin:0 auto;padding:80px 6%;}
+.sec-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.25em;color:var(--g);text-transform:uppercase;margin-bottom:12px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);color:var(--gd);line-height:1.3;margin-bottom:14px;}
+.sec-sub{font-size:14px;color:var(--muted);line-height:1.9;max-width:520px;}
+
+/* ===== サービス ===== */
+.services{background:#f7faf8;}
+.svc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:48px;}
+.svc-card{border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.07);background:#fff;transition:transform .25s,box-shadow .25s;}
+.svc-card:hover{transform:translateY(-5px);box-shadow:0 12px 40px rgba(0,0,0,0.12);}
+.svc-img{height:150px;background-size:cover;background-position:center;position:relative;}
+.svc-img::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,0.65));}
+.svc-name{position:absolute;bottom:12px;left:12px;z-index:1;font-size:13px;font-weight:700;color:#fff;line-height:1.3;}
+.svc-body{padding:14px 16px;}
+.svc-desc{font-size:12px;color:var(--muted);line-height:1.7;}
+.svc-price{margin-top:8px;font-size:12px;font-weight:700;color:var(--g);}
+#si1{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/indoor.png?width=400&quality=70");}
+#si2{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/round.png?width=400&quality=70");}
+#si3{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/accompany.png?width=400&quality=70");}
+#si4{background-image:url("https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/comp.png?width=400&quality=70");}
+
+/* ===== 特徴 ===== */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:48px;}
+.feat{padding:32px 24px;border-radius:16px;background:#f7faf8;transition:background .2s;}
+.feat:hover{background:var(--gl);}
+.feat-icon{width:52px;height:52px;border-radius:14px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px;}
+.feat-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:8px;}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.8;}
+
+/* ===== コーチ ===== */
+.coaches-sec{background:var(--dark);}
+.coaches-inner{max-width:1100px;margin:0 auto;padding:80px 6%;}
+.coaches-sec .sec-label{color:var(--accent);}
+.coaches-sec .sec-title{color:#fff;}
+.coaches-sec .sec-sub{color:rgba(255,255,255,0.5);}
+.coaches-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px;}
+.coach-card{border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);transition:transform .25s,border-color .25s;}
+.coach-card:hover{transform:translateY(-4px);border-color:rgba(29,158,117,0.4);}
+.coach-img{height:200px;background:#1a3328;position:relative;overflow:hidden;}
+.coach-img img{width:100%;height:200px;object-fit:cover;}
+.coach-body{padding:18px 20px;}
+.coach-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:3px;}
+.coach-area{font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:10px;}
+.coach-bio{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.8;}
+.coach-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.coach-tag{font-size:10px;background:rgba(29,158,117,0.15);color:var(--accent);padding:3px 10px;border-radius:12px;}
+.coach-add{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;}
+.coach-add-icon{font-size:32px;color:rgba(255,255,255,0.15);margin-bottom:12px;}
+.coach-add-title{font-size:14px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;}
+.coach-add-sub{font-size:11px;color:rgba(255,255,255,0.2);line-height:1.7;}
+
+/* ===== 料金 ===== */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px;}
+.price-card{border-radius:16px;border:1px solid var(--border);padding:28px 24px;background:#fff;transition:border-color .2s,transform .2s;}
+.price-card:hover{border-color:var(--g);transform:translateY(-3px);}
+.price-card.featured{border:2px solid var(--g);position:relative;}
+.price-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--g);color:#fff;font-size:10px;font-weight:700;padding:4px 14px;border-radius:12px;white-space:nowrap;letter-spacing:0.06em;}
+.price-name{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.price-desc{font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.7;}
+.price-amount{font-family:'Montserrat',sans-serif;font-size:32px;font-weight:900;color:var(--gd);}
+.price-amount span{font-size:13px;font-weight:400;color:var(--muted);}
+.price-note{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6;}
+.pricing-notice{margin-top:20px;padding:12px 16px;background:#fff8e1;border-left:3px solid var(--gold);font-size:12px;color:#633806;border-radius:0 8px 8px 0;line-height:1.7;}
+
+/* ===== FAQ ===== */
+.faq-section{background:#f7faf8;}
+.faq-list{margin-top:40px;display:flex;flex-direction:column;gap:10px;max-width:760px;}
+.faq-item{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.faq-q{padding:18px 20px;font-size:14px;font-weight:700;color:var(--gd);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;user-select:none;transition:background .2s;}
+.faq-q:hover{background:#f7faf8;}
+.faq-icon{width:24px;height:24px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gd);flex-shrink:0;transition:transform .3s,background .3s;}
+.faq-item.open .faq-icon{transform:rotate(45deg);background:var(--g);color:#fff;}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.faq-item.open .faq-a{max-height:200px;}
+.faq-a-inner{padding:0 20px 18px;font-size:13px;color:var(--muted);line-height:1.9;border-top:1px solid var(--border);}
+
+/* ===== CTA ===== */
+.cta-sec{background:var(--dark);position:relative;overflow:hidden;}
+.cta-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 100%,rgba(29,158,117,0.15),transparent 70%);}
+.cta-inner{max-width:700px;margin:0 auto;padding:100px 6%;text-align:center;position:relative;z-index:1;}
+.cta-pre{font-family:'Montserrat',sans-serif;font-size:10px;letter-spacing:0.25em;color:var(--accent);text-transform:uppercase;margin-bottom:20px;}
+.cta-title{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,44px);color:#fff;line-height:1.35;margin-bottom:16px;}
+.cta-sub{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.9;margin-bottom:40px;}
+.cta-btn{display:inline-flex;align-items:center;gap:10px;background:var(--g);color:#fff;font-size:15px;font-weight:700;padding:18px 48px;border-radius:32px;text-decoration:none;transition:all .3s;letter-spacing:0.06em;cursor:pointer;border:none;font-family:inherit;}
+.cta-btn:hover{background:#26c48f;transform:translateY(-2px);box-shadow:0 8px 32px rgba(29,158,117,0.35);}
+
+/* ===== フッター ===== */
+footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
+.footer-inner{max-width:1100px;margin:0 auto;}
+.footer-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:48px;flex-wrap:wrap;gap:32px;}
+.footer-brand{}
+.footer-logo{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;color:#fff;margin-bottom:6px;}
+.footer-logo span{color:var(--accent);}
+.footer-tagline{font-size:11px;letter-spacing:0.1em;color:rgba(255,255,255,0.25);}
+.footer-company{font-size:11px;color:rgba(255,255,255,0.2);margin-top:12px;line-height:1.8;}
+.footer-links{display:flex;gap:48px;flex-wrap:wrap;}
+.footer-col h4{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.15em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:14px;}
+.footer-col a{display:block;font-size:12px;color:rgba(255,255,255,0.25);text-decoration:none;margin-bottom:8px;transition:color .2s;cursor:pointer;}
+.footer-col a:hover{color:rgba(255,255,255,0.6);}
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;display:flex;justify-content:space-between;font-size:11px;flex-wrap:wrap;gap:8px;}
+.footer-bottom a{color:rgba(255,255,255,0.2);text-decoration:none;}
+.footer-bottom a:hover{color:rgba(255,255,255,0.5);}
+
+/* ===== アニメーション ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ===== レスポンシブ ===== */
+@media(max-width:960px){
+  .svc-grid{grid-template-columns:repeat(2,1fr);}
+  .features-grid{grid-template-columns:1fr;}
+  .coaches-grid{grid-template-columns:1fr;}
+  .pricing-grid{grid-template-columns:1fr;}
+  .nav-links{display:none;}
+  .hamburger{display:flex;}
+  .footer-top{flex-direction:column;}
+  .footer-links{gap:24px;}
+}
+@media(max-width:600px){
+  .svc-grid{grid-template-columns:1fr;}
+  .section-inner,.coaches-inner{padding:60px 5%;}
+}
 </style>
 </head>
 <body>
-<div class="logo-wrap">
-  <div class="logo-title">MyCoach</div>
-  <div class="logo-sub">Golf Matching Service</div>
+
+<!-- ナビ -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">My<span>Coach</span></a>
+  <div class="nav-links">
+    <a href="#services">サービス</a>
+    <a href="#coaches">コーチ</a>
+    <a href="#pricing">料金</a>
+    <a href="#faq">FAQ</a>
+    <a class="nav-login" onclick="goLogin()">MyCoach を始める</a>
+  </div>
+  <div class="hamburger" onclick="toggleNav()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+<div class="mobile-nav" id="mobile-nav">
+  <a href="#services" onclick="toggleNav()">サービス</a>
+  <a href="#coaches" onclick="toggleNav()">コーチ紹介</a>
+  <a href="#pricing" onclick="toggleNav()">料金</a>
+  <a href="#faq" onclick="toggleNav()">よくある質問</a>
+  <a onclick="goLogin()">MyCoach を始める →</a>
 </div>
-<div class="main-card">
-  <!-- 3タブ切替（パラメータなしの場合のみ表示） -->
-  <div class="type-tabs" id="type-tabs">
-    <button class="type-tab active" onclick="switchType('customer',this)"><span class="type-tab-icon">👤</span>お客様</button>
-    <button class="type-tab" onclick="switchType('coach',this)"><span class="type-tab-icon">🏌</span>コーチ</button>
-    <button class="type-tab" onclick="switchType('store',this)"><span class="type-tab-icon">🏪</span>店舗管理</button>
+
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="slide slide-1 on"></div>
+  <div class="slide slide-2"></div>
+  <div class="slide slide-3"></div>
+  <div class="slide slide-4"></div>
+  <div class="slide slide-5"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-bottom-fade"></div>
+  <div class="hero-content">
+    <div class="hero-pre">Golf Matching Service</div>
+    <div class="hero-logo">My<span>Coach</span></div>
+    <div class="hero-tagline">Your Personal Golf Coach</div>
+    <div class="hero-divider"></div>
+    <div class="hero-catchcopy">あなただけのゴルフコーチと出会う場所<br>Golf Create 戸津池店 公式マッチングサービス</div>
+    <button class="hero-btn" onclick="goLogin()">
+      MyCoach を始める
+      <div class="hero-btn-arrow"></div>
+    </button>
   </div>
-  <!-- 単一モードヘッダー（role指定ありの場合のみ表示） -->
-  <div class="role-header" id="role-header" style="display:none;">
-    <span class="role-header-icon" id="role-header-icon"></span>
-    <span class="role-header-text" id="role-header-text"></span>
+  <div class="hero-dots">
+    <div class="hdot on" onclick="goSlide(0)"></div>
+    <div class="hdot" onclick="goSlide(1)"></div>
+    <div class="hdot" onclick="goSlide(2)"></div>
+    <div class="hdot" onclick="goSlide(3)"></div>
+    <div class="hdot" onclick="goSlide(4)"></div>
   </div>
-  <div class="form-area">
-    <div class="msg" id="msg"></div>
-    <div class="screen active" id="screen-login">
-      <div class="form-title" id="login-title">お客様ログイン</div>
-      <div class="form-sub" id="login-sub">メールアドレスとパスワードでログインしてください</div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="login-email" placeholder="example@mail.com"></div>
-      <div class="form-group"><label>パスワード</label><input type="password" id="login-password" placeholder="パスワードを入力"></div>
-      <div class="forgot-link"><a onclick="showScreen('screen-reset')">パスワードをお忘れの方</a></div>
-      <button class="btn-primary" id="login-btn" onclick="doLogin()">ログイン</button>
-      <div class="divider">または</div>
-      <button class="btn-outline" onclick="showScreen('screen-register')">新規アカウント登録</button>
-      <div class="security-badge"><span class="security-dot"></span>SSL暗号化通信で安全に保護されています</div>
+  <div class="scroll-hint">
+    <div class="scroll-text">Scroll</div>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- サービス -->
+<section id="services">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-label">Services</div>
+      <h2 class="sec-title">4つのレッスンスタイル</h2>
+      <p class="sec-sub">初心者からベテランまで。目的に合ったレッスンをお選びください。</p>
     </div>
-    <div class="screen" id="screen-register">
-      <div class="form-title">新規アカウント登録</div>
-      <div class="form-sub">情報を入力してアカウントを作成してください</div>
-      <div class="form-group"><label>お名前</label><input type="text" id="reg-name" placeholder="山田 太郎"></div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="reg-email" placeholder="example@mail.com"></div>
-      <div class="form-group"><label>パスワード（8文字以上）</label><input type="password" id="reg-password" placeholder="パスワードを設定"></div>
-      <div class="form-group"><label>パスワード（確認）</label><input type="password" id="reg-password2" placeholder="パスワードを再入力"></div>
-      <button class="btn-primary" id="register-btn" onclick="doRegister()">アカウントを作成する</button>
-      <button class="btn-outline" onclick="showScreen('screen-login')">ログインに戻る</button>
-    </div>
-    <div class="screen" id="screen-reset">
-      <div class="form-title">パスワードをリセット</div>
-      <div class="form-sub">登録済みのメールアドレスにリセット用リンクを送信します</div>
-      <div class="form-group"><label>メールアドレス</label><input type="email" id="reset-email" placeholder="example@mail.com"></div>
-      <button class="btn-primary" onclick="doReset()">リセットメールを送信</button>
-      <button class="btn-outline" onclick="showScreen('screen-login')">ログインに戻る</button>
+    <div class="svc-grid reveal">
+      <div class="svc-card">
+        <div class="svc-img" id="si1"><div class="svc-name">インドアゴルフ<br>レッスン</div></div>
+        <div class="svc-body">
+          <div class="svc-desc">シミュレーターを使った室内レッスン。天候に関係なく、基礎からしっかり学べます。5〜120分の時間制。</div>
+          <div class="svc-price">¥5,000〜（50分）</div>
+        </div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-img" id="si2"><div class="svc-name">ラウンドレッスン</div></div>
+        <div class="svc-body">
+          <div class="svc-desc">実際のゴルフ場でプロコーチと一緒にラウンド。実戦的な技術を身につけられます。</div>
+          <div class="svc-price">要問い合わせ</div>
+        </div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-img" id="si3"><div class="svc-name">同伴ラウンド</div></div>
+        <div class="svc-body">
+          <div class="svc-desc">コーチと一緒にゴルフ場を回るだけ。楽しみながら上達できる人気のスタイル。</div>
+          <div class="svc-price">要問い合わせ</div>
+        </div>
+      </div>
+      <div class="svc-card">
+        <div class="svc-img" id="si4"><div class="svc-name">コンペ参加</div></div>
+        <div class="svc-body">
+          <div class="svc-desc">コーチが企画するコンペに参加。同じ目標を持つ仲間と楽しくラウンド。</div>
+          <div class="svc-price">要問い合わせ</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
-<div class="footer">© 2026 MyCoach by 株式会社ケイエスケー<br><a href="terms.html">利用規約</a> ・ <a href="privacy.html">プライバシーポリシー</a></div>
+</section>
+
+<!-- 特徴 -->
+<section style="background:#fff;" id="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-label">Why MyCoach</div>
+      <h2 class="sec-title">選ばれる理由</h2>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feat">
+        <div class="feat-icon">📅</div>
+        <div class="feat-title">スケジュールが一目でわかる</div>
+        <div class="feat-desc">コーチの空き時間をカレンダーで確認。気に入ったコーチの都合の良い時間を選んでそのまま予約できます。</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⭐</div>
+        <div class="feat-title">レビューで安心して選べる</div>
+        <div class="feat-desc">受講者のリアルな評価とコメントを参考にコーチを選択。レッスン後のレビュー投稿で常に品質を維持。</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📱</div>
+        <div class="feat-title">スマホで完結する手軽さ</div>
+        <div class="feat-desc">コーチ検索から予約まですべてスマホで完結。24時間いつでも予約でき、確認もすぐに届きます。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- コーチ紹介 -->
+<section class="coaches-sec" id="coaches">
+  <div class="coaches-inner">
+    <div class="reveal">
+      <div class="sec-label">Our Coaches</div>
+      <h2 class="sec-title">コーチ紹介</h2>
+      <p class="sec-sub">Golf Create 戸津池店 の認定コーチがあなたのゴルフをサポートします。</p>
+    </div>
+    <div class="coaches-grid reveal">
+      <div class="coach-card">
+        <div class="coach-img">
+          <img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/render/image/public/images/coach_morishita.png?width=400&quality=70" alt="森下啓介コーチ">
+        </div>
+        <div class="coach-body">
+          <div class="coach-name">森下 啓介</div>
+          <div class="coach-area">📍 Golf Create 戸津池店</div>
+          <div class="coach-bio">スパルタ指導で確実に上達。初心者から丁寧に教えます。インドアシミュレーターを使ったレッスンが得意です。</div>
+          <div class="coach-tags">
+            <span class="coach-tag">インドアレッスン</span>
+            <span class="coach-tag">初心者歓迎</span>
+          </div>
+        </div>
+      </div>
+      <div class="coach-card coach-add">
+        <div class="coach-add-icon">+</div>
+        <div class="coach-add-title">コーチ募集中</div>
+        <div class="coach-add-sub">Golf Create 戸津池店で<br>コーチとして活躍しませんか？</div>
+      </div>
+      <div class="coach-card coach-add">
+        <div class="coach-add-icon">+</div>
+        <div class="coach-add-title">コーチ募集中</div>
+        <div class="coach-add-sub">Golf Create 戸津池店で<br>コーチとして活躍しませんか？</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 料金 -->
+<section id="pricing">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-label">Pricing</div>
+      <h2 class="sec-title">料金</h2>
+      <p class="sec-sub">インドアゴルフレッスンの料金です。ラウンド系は各コーチへお問い合わせください。</p>
+    </div>
+    <div class="pricing-grid reveal">
+      <div class="price-card">
+        <div class="price-name">スタンダード</div>
+        <div class="price-desc">基本のインドアレッスン。まずはここから始めましょう。</div>
+        <div class="price-amount">¥5,000<span> / 50分</span></div>
+        <div class="price-note">基礎から丁寧に指導</div>
+      </div>
+      <div class="price-card featured">
+        <div class="price-badge">人気No.1</div>
+        <div class="price-name">じっくりコース</div>
+        <div class="price-desc">90分でしっかり学びたい方に。技術の定着が早まります。</div>
+        <div class="price-amount">¥8,000<span> / 90分</span></div>
+        <div class="price-note">技術定着・反復練習に最適</div>
+      </div>
+      <div class="price-card">
+        <div class="price-name">集中コース</div>
+        <div class="price-desc">120分の集中レッスン。上達スピードを最大化したい方へ。</div>
+        <div class="price-amount">¥10,000<span> / 120分</span></div>
+        <div class="price-note">短期集中で飛躍的に上達</div>
+      </div>
+    </div>
+    <div class="pricing-notice reveal">⚠ 本レッスンはゴルフクリエイト会員様のみご利用いただけます。未会員の方は店舗スタッフへお申し付けください。</div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-label">FAQ</div>
+      <h2 class="sec-title">よくあるご質問</h2>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <div class="faq-q" onclick="faq(this)"><span>ゴルフ初心者でも大丈夫ですか？</span><div class="faq-icon">+</div></div>
+        <div class="faq-a"><div class="faq-a-inner">はい、もちろんです。初心者の方でも安心してご参加いただけます。コーチがゼロから丁寧に指導しますので、クラブの握り方から始めることができます。</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="faq(this)"><span>予約はどうやってするの？</span><div class="faq-icon">+</div></div>
+        <div class="faq-a"><div class="faq-a-inner">このアプリからアカウントを作成し、お気に入りのコーチのスケジュールを確認して予約するだけです。スマホから24時間いつでも予約できます。</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="faq(this)"><span>キャンセルはできますか？</span><div class="faq-icon">+</div></div>
+        <div class="faq-a"><div class="faq-a-inner">レッスン48時間前まではキャンセル料無料です。48時間以内のキャンセルは料金の50%、当日キャンセルは全額のキャンセル料が発生します。</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="faq(this)"><span>ゴルフクリエイトの会員でないと利用できませんか？</span><div class="faq-icon">+</div></div>
+        <div class="faq-a"><div class="faq-a-inner">はい、本サービスはゴルフクリエイト会員様向けのサービスです。まだ会員でない方は、店舗スタッフへお気軽にお申し付けください。</div></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="faq(this)"><span>コーチを毎回変えることはできますか？</span><div class="faq-icon">+</div></div>
+        <div class="faq-a"><div class="faq-a-inner">はい、毎回自由にコーチを選んで予約できます。複数のコーチから選択可能ですので、目的やスケジュールに合わせてお選びください。</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec">
+  <div class="cta-inner">
+    <div class="cta-pre reveal">Start Today</div>
+    <h2 class="cta-title reveal">今すぐコーチを<br>探してみましょう</h2>
+    <p class="cta-sub reveal">Golf Create 戸津池店 のプロコーチが<br>あなたのゴルフライフをサポートします。</p>
+    <button class="cta-btn reveal" onclick="goLogin()">MyCoach を始める →</button>
+  </div>
+</section>
+
+<!-- フッター -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">My<span>Coach</span></div>
+        <div class="footer-tagline">Golf Matching Service</div>
+        <div class="footer-company">株式会社ケイエスケー<br>京都府八幡市<br>Golf Create 戸津池店</div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Service</h4>
+          <a href="#services">インドアゴルフレッスン</a>
+          <a href="#services">ラウンドレッスン</a>
+          <a href="#services">同伴ラウンド</a>
+          <a href="#services">コンペ参加</a>
+        </div>
+        <div class="footer-col">
+          <h4>Menu</h4>
+          <a href="#coaches">コーチ紹介</a>
+          <a href="#pricing">料金</a>
+          <a href="#faq">よくある質問</a>
+          <a onclick="goLogin()">MyCoach を始める</a>
+        </div>
+        <div class="footer-col">
+          <h4>Store</h4>
+          <a href="#">Golf Create 戸津池店</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 MyCoach by 株式会社ケイエスケー</span>
+      <div style="display:flex;gap:20px;">
+        <a href="terms.html">利用規約</a>
+        <a href="privacy.html">プライバシーポリシー</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
 <script>
-const SUPABASE_URL = 'https://gojrdnufmueuvkroevut.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const {createClient}=supabase;
-const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'golfcoach_session',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
-});
-let currentType='customer';
-const typeLabels={
-  customer:{title:'お客様ログイン',sub:'メールアドレスとパスワードでログインしてください',icon:'👤',headerText:'お客様専用ログイン'},
-  coach:{title:'コーチログイン',sub:'コーチ専用のアカウントでログインしてください',icon:'🏌',headerText:'コーチ専用ログイン'},
-  store:{title:'店舗管理者ログイン',sub:'店舗管理者専用のアカウントでログインしてください',icon:'🏪',headerText:'店舗管理者専用ログイン'}
-};
-
-// 【2026/4/20 追加】QRコード式入口分離
-// URLパラメータ ?role= を読み取り、該当するログイン画面のみを表示
-// - ?role=customer → お客様ログインのみ
-// - ?role=coach    → コーチログインのみ
-// - ?role=store    → 店舗管理ログインのみ（誤アクセス防止）
-// - パラメータなし → 3タブ切替（従来通り・デフォルト）
-function initRoleFromURL(){
+// 【2026/4/21 追加】QRコード式オープニング統合
+// URLパラメータ ?next= を読み取り、ボタンクリック時に適切なログイン画面に遷移
+// - ?next=customer_login → customer_login.html
+// - ?next=coach_login    → coach_login.html
+// - ?next=store_login    → store_login.html
+// - パラメータなし       → customer_login.html（デフォルト）
+function goLogin(){
   var params=new URLSearchParams(window.location.search);
-  var role=params.get('role');
-  var validRoles=['customer','coach','store'];
-  if(role && validRoles.indexOf(role)>=0){
-    // 単一モード：3タブを非表示、該当ロールのヘッダーを表示
-    currentType=role;
-    document.getElementById('type-tabs').style.display='none';
-    var hdr=document.getElementById('role-header');
-    hdr.style.display='flex';
-    document.getElementById('role-header-icon').textContent=typeLabels[role].icon;
-    document.getElementById('role-header-text').textContent=typeLabels[role].headerText;
-    document.getElementById('login-title').textContent=typeLabels[role].title;
-    document.getElementById('login-sub').textContent=typeLabels[role].sub;
+  var next=params.get('next');
+  var validNext=['customer_login','coach_login','store_login'];
+  if(next && validNext.indexOf(next)>=0){
+    window.location.href=next+'.html?from=top';
+  }else{
+    window.location.href='customer_login.html?from=top';
   }
-  // パラメータなしの場合は従来通り3タブ切替（デフォルトcustomer）
 }
 
-// 初期化
-initRoleFromURL();
+(function(){
+  var slides=document.querySelectorAll('.hero .slide');
+  var dots=document.querySelectorAll('.hdot');
+  var total=slides.length;
+  var cur=0;
 
-function switchType(type,btn){
-  currentType=type;
-  document.querySelectorAll('.type-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('login-title').textContent=typeLabels[type].title;
-  document.getElementById('login-sub').textContent=typeLabels[type].sub;
-  showScreen('screen-login');
-  clearMsg();
+  function goTo(n){
+    slides[cur].classList.remove('on');
+    if(dots[cur])dots[cur].classList.remove('on');
+    cur=(n+total)%total;
+    slides[cur].classList.add('on');
+    if(dots[cur])dots[cur].classList.add('on');
+  }
+
+  window.goSlide=goTo;
+
+  setInterval(function(){
+    goTo(cur+1);
+  },3500);
+})();
+
+window.addEventListener('scroll',function(){
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>40);
+});
+
+var observer=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible');});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(function(el){observer.observe(el);});
+
+function toggleNav(){
+  var m=document.getElementById('mobile-nav');
+  m.style.display=m.style.display==='flex'?'none':'flex';
 }
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');clearMsg();}
-function showMsg(text,type){const el=document.getElementById('msg');el.textContent=text;el.className='msg '+type;}
-function clearMsg(){const el=document.getElementById('msg');el.className='msg';el.textContent='';}
-function setLoading(btnId,loading){const btn=document.getElementById(btnId);if(loading){btn.disabled=true;btn.innerHTML='<span class="loading"></span>処理中...';}else{btn.disabled=false;btn.textContent=btnId==='login-btn'?'ログイン':'アカウントを作成する';}}
-async function doLogin(){
-  const email=document.getElementById('login-email').value.trim();
-  const password=document.getElementById('login-password').value;
-  if(!email||!password){showMsg('メールアドレスとパスワードを入力してください','error');return;}
-  setLoading('login-btn',true);clearMsg();
-  try{const{data,error}=await sb.auth.signInWithPassword({email,password});if(error)throw error;localStorage.setItem('gc_login_time',Date.now().toString());showMsg('ログインしました！','success');setTimeout(()=>{if(currentType==='coach')window.location.href='coach.html';else if(currentType==='store')window.location.href='store.html';else window.location.href='customer.html';},800);}
-  catch(err){showMsg('ログインに失敗しました。メールアドレスとパスワードを確認してください。','error');setLoading('login-btn',false);}
-}
-async function doRegister(){
-  const name=document.getElementById('reg-name').value.trim();
-  const email=document.getElementById('reg-email').value.trim();
-  const password=document.getElementById('reg-password').value;
-  const password2=document.getElementById('reg-password2').value;
-  if(!name||!email||!password){showMsg('全ての項目を入力してください','error');return;}
-  if(password.length<8){showMsg('パスワードは8文字以上で設定してください','error');return;}
-  if(password!==password2){showMsg('パスワードが一致しません','error');return;}
-  setLoading('register-btn',true);clearMsg();
-  try{const{data,error}=await sb.auth.signUp({email,password,options:{data:{name,role:currentType}}});if(error)throw error;showMsg('登録が完了しました！ログインしてください。','success');setLoading('register-btn',false);setTimeout(()=>showScreen('screen-login'),2000);}
-  catch(err){showMsg('登録に失敗しました：'+(err.message||''),'error');setLoading('register-btn',false);}
-}
-async function doReset(){
-  const email=document.getElementById('reset-email').value.trim();
-  if(!email){showMsg('メールアドレスを入力してください','error');return;}
-  try{const{error}=await sb.auth.resetPasswordForEmail(email);if(error)throw error;showMsg('リセット用のメールを送信しました。','success');}
-  catch(err){showMsg('送信に失敗しました。','error');}
+
+function faq(el){
+  var item=el.parentElement;
+  var isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(function(i){i.classList.remove('open');});
+  if(!isOpen)item.classList.add('open');
 }
 </script>
 </body>
