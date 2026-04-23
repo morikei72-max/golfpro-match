@@ -449,7 +449,7 @@ const approvalDescs={
 // 初期化
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
-  if(!session){window.location.href='index.html?role=store';return;}
+  if(!session){window.location.href='store_login.html';return;}
   var user=session.user;
   var storeName=user.user_metadata&&user.user_metadata.store_name?user.user_metadata.store_name:'Golf Create 戸津池店';
   document.getElementById('store-badge').textContent=storeName;
@@ -651,7 +651,7 @@ function showMsg(id,text,type){
 // ログアウト
 async function doLogout(){
   await sb.auth.signOut();
-  window.location.href='index.html?role=store';
+  window.location.href='store_login.html';
 }
 </script>
 </body>
