@@ -379,7 +379,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 // セッション確認
 sb.auth.getSession().then(function(res){
   var session=res.data.session;
-  if(!session){window.location.href='customer_login.html';return;}
+  if(!session){window.location.href='index.html';return;}
   var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
   document.getElementById('user-name').textContent=name+'さん';
   localStorage.setItem('gc_login_time',Date.now().toString());
@@ -848,7 +848,7 @@ function rate(n){
 async function doLogout(){
   localStorage.removeItem('gc_login_time');
   await sb.auth.signOut();
-  window.location.href='customer_login.html';
+  window.location.href='index.html';
 }
 
 async function saveMyProfile(){
