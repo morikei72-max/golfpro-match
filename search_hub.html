@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — 探し方を選ぶ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
+:root{--g:#1D9E75;--gd:#085041;--gl:#E1F5EE;--gold:#BA7517;--gold-l:#FAEEDA;--red:#E24B4A;--border:#e0e0e0;}
+
+.header{background:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.logo{font-family:'Playfair Display',serif;font-size:20px;color:var(--gd);}
+.user-name{font-size:12px;color:#666;}
+.logout-btn{font-size:12px;color:var(--g);background:none;border:1px solid var(--g);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;}
+
+.content{padding:24px 16px;max-width:480px;margin:0 auto;}
+.page-title{font-size:20px;font-weight:700;color:var(--gd);text-align:center;margin-bottom:8px;}
+.page-sub{font-size:13px;color:#666;text-align:center;margin-bottom:28px;line-height:1.7;}
+
+.choice-card{
+  background:#fff;
+  border:2px solid var(--border);
+  border-radius:16px;
+  padding:20px 20px;
+  margin-bottom:14px;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  -webkit-tap-highlight-color:transparent;
+}
+.choice-card:hover,.choice-card:active{
+  border-color:var(--g);
+  background:#f9fdfb;
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(29,158,117,0.15);
+}
+.choice-icon{
+  font-size:32px;
+  margin-bottom:10px;
+  display:block;
+}
+.choice-title{
+  font-size:17px;
+  font-weight:700;
+  color:var(--gd);
+  margin-bottom:6px;
+}
+.choice-desc{
+  font-size:12px;
+  color:#777;
+  line-height:1.7;
+  margin-bottom:8px;
+}
+.choice-arrow{
+  position:absolute;
+  right:20px;
+  bottom:20px;
+  font-size:18px;
+  color:var(--g);
+  font-weight:700;
+}
+
+.badge-new{
+  display:inline-block;
+  font-size:10px;
+  background:var(--gold);
+  color:#fff;
+  padding:2px 8px;
+  border-radius:10px;
+  margin-left:6px;
+  vertical-align:middle;
+  font-weight:700;
+}
+
+.help-box{
+  background:var(--gl);
+  border-radius:12px;
+  padding:14px 16px;
+  margin-top:20px;
+  font-size:11px;
+  color:var(--gd);
+  line-height:1.8;
+}
+.help-title{
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">MyCoach</div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="user-name" id="user-name"></div>
+    <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+  </div>
+</div>
+
+<div class="content">
+  <div class="page-title">どのように探しますか?</div>
+  <div class="page-sub">ご希望の方法をお選びください</div>
+
+  <div class="choice-card" onclick="goToLesson()">
+    <span class="choice-icon">🏌️</span>
+    <div class="choice-title">レッスン内容から探す</div>
+    <div class="choice-desc">
+      インドアゴルフレッスン・ラウンドレッスン・同伴ラウンド・コンペ参加・独自プランなど、レッスン種別から最適なコーチを見つけます。
+    </div>
+    <div class="choice-arrow">→</div>
+  </div>
+
+  <div class="choice-card" onclick="goToCoach()">
+    <span class="choice-icon">👤</span>
+    <div class="choice-title">コーチから探す<span class="badge-new">NEW</span></div>
+    <div class="choice-desc">
+      在籍コーチの一覧からお気に入りのコーチを選び、そのコーチが提供するレッスンを予約します。
+    </div>
+    <div class="choice-arrow">→</div>
+  </div>
+
+  <div class="help-box">
+    <div class="help-title">💡 どちらを選べばいい?</div>
+    はじめての方は「<strong>レッスン内容から探す</strong>」がおすすめです。目的に合ったコーチを見つけやすくなります。お気に入りのコーチがいる方は「<strong>コーチから探す</strong>」が便利です。
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+});
+
+sb.auth.getSession().then(function(res){
+  var session=res.data.session;
+  if(!session){
+    window.location.href='customer_login.html?from=top';
+    return;
+  }
+  var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
+  document.getElementById('user-name').textContent=name+'さん';
+});
+
+function goToLesson(){
+  window.location.href='customer.html';
+}
+
+function goToCoach(){
+  window.location.href='customer.html?entry=coach';
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  window.location.href='customer_login.html?from=top';
+}
+</script>
+</body>
+</html>
