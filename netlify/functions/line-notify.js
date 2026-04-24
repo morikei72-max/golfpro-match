@@ -12,17 +12,26 @@ const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push';
 
 /**
  * store_key から正式店舗名へのマッピング
- * 【2026/4/20 追加】LINE通知で「場所：kyoto」と表示される問題を解消
- * bookings.store_id が NULL の場合でも、store_key から正式名称を引けるようにする
  */
 const STORE_KEY_TO_NAME = {
   kyoto: 'Golf Create 戸津池店',
 };
 
 /**
+ * 【2026/4/24 追加】
+ * 却下理由ボタン → お客様向け定型文のマッピング
+ * キー: postback dataで送られる reason_code
+ * 値: お客様への表示文
+ */
+const REJECTION_REASON_MAP = {
+  health: 'コーチの体調不良のため、万全の状態でレッスンをご提供することが難しく、今回は見送らせていただきます',
+  schedule: '誠に恐れ入りますが、ご希望の日程でのご対応が難しく、別日程でのご調整をお願いしたく存じます',
+  weather: '当日の天候不良が予想されるため、安全とレッスンの品質を考慮し、見送らせていただきます',
+  // 'other' はコーチ入力のテキストをそのまま使う
+};
+
+/**
  * 指定のLINE userIdにテキストメッセージを送信
- * @param {string} toUserId - LINE user ID (Uxxxxxxxxxx...)
- * @param {string} text - 送信するテキスト（5000文字以内）
  */
 async function pushMessage(toUserId, text) {
   if (!toUserId) {
@@ -97,11 +106,7 @@ async function multicastMessage(toUserIds, text) {
 }
 
 /**
- * 【2026/4/24 追加】
  * Flex Messageを送信（承認ボタン付き等のリッチメッセージ）
- * @param {string} toUserId - LINE user ID
- * @param {string} altText - 通知一覧に表示されるテキスト（〜400文字）
- * @param {object} flexContent - Flex Message の contents オブジェクト
  */
 async function pushFlexMessage(toUserId, altText, flexContent) {
   if (!toUserId) {
@@ -206,7 +211,6 @@ function buildCancellationText({ customerName, coachName, dateStr, timeStr, reas
 }
 
 /**
- * 【2026/4/24 追加】
  * コーチへの承認依頼メッセージ（テキスト、altText用）
  */
 function buildApprovalRequestText({ coachName, customerName, lessonType, dateStr, timeStr, storeName, amount }) {
@@ -224,9 +228,7 @@ function buildApprovalRequestText({ coachName, customerName, lessonType, dateStr
 }
 
 /**
- * 【2026/4/24 追加】
  * コーチへの承認依頼 Flex Message（承認／却下ボタン付き）
- * postbackで「approve_booking:{bookingId}」「reject_booking:{bookingId}」が返る
  */
 function buildApprovalRequestFlex({ bookingId, customerName, lessonType, dateStr, timeStr, storeName, amount }) {
   return {
@@ -310,6 +312,95 @@ function buildApprovalRequestFlex({ bookingId, customerName, lessonType, dateStr
 }
 
 /**
+ * 【2026/4/24 追加】
+ * 却下理由選択ボタン Flex Message（4ボタン方式）
+ * コーチが[❌却下]を押した後に表示される
+ */
+function buildRejectionButtonsFlex({ bookingId }) {
+  return {
+    type: 'bubble',
+    size: 'mega',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#B71C1C',
+      paddingAll: '16px',
+      contents: [
+        {
+          type: 'text',
+          text: '❌ 却下理由を選択',
+          color: '#FFFFFF',
+          weight: 'bold',
+          size: 'lg',
+        },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: 'お客様には丁寧なお詫び文面が自動送信されます。理由を選択してください。',
+          size: 'sm',
+          color: '#555555',
+          wrap: true,
+        },
+      ],
+    },
+    footer: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'sm',
+      contents: [
+        {
+          type: 'button',
+          style: 'secondary',
+          action: {
+            type: 'postback',
+            label: '🤒 体調不良',
+            data: `action=reject_reason&booking_id=${bookingId}&reason_code=health`,
+            displayText: '理由：体調不良',
+          },
+        },
+        {
+          type: 'button',
+          style: 'secondary',
+          action: {
+            type: 'postback',
+            label: '📆 別の日程を希望',
+            data: `action=reject_reason&booking_id=${bookingId}&reason_code=schedule`,
+            displayText: '理由：別の日程を希望',
+          },
+        },
+        {
+          type: 'button',
+          style: 'secondary',
+          action: {
+            type: 'postback',
+            label: '🌧 天候不良',
+            data: `action=reject_reason&booking_id=${bookingId}&reason_code=weather`,
+            displayText: '理由：天候不良',
+          },
+        },
+        {
+          type: 'button',
+          style: 'primary',
+          color: '#555555',
+          action: {
+            type: 'postback',
+            label: '🚫 その他(理由を入力)',
+            data: `action=reject_reason&booking_id=${bookingId}&reason_code=other`,
+            displayText: '理由：その他(理由を入力します)',
+          },
+        },
+      ],
+    },
+  };
+}
+
+/**
  * Flex Message の1行（ラベル：値）
  */
 function _flexRow(label, value) {
@@ -338,55 +429,57 @@ function _flexRow(label, value) {
 }
 
 /**
- * 【2026/4/24 追加】
- * コーチへの却下理由入力依頼メッセージ
+ * 【2026/4/24 更新】
+ * コーチへの却下理由入力依頼メッセージ（「その他」選択時のみ使用）
  */
 function buildRejectionReasonPromptText() {
   return (
-    `却下の理由を3文字以上で返信してください。\n` +
-    `お客様にも伝わる内容をお願いします。\n\n` +
-    `例：\n` +
-    `・その時間は別のご予約が入っています\n` +
-    `・体調不良のため対応できません\n` +
-    `・別の日程でお願いします\n\n` +
-    `※10分以内にご返信ください`
+    `却下理由を3文字以上で返信してください。\n` +
+    `お客様にも伝わる丁寧な内容をお願いします。\n\n` +
+    `※24時間以内にご返信ください。\n` +
+    `※返信内容はそのままお客様に送信されます。`
   );
 }
 
 /**
- * 【2026/4/24 追加】
+ * 【2026/4/24 更新】
  * コーチへの却下完了メッセージ
  */
 function buildRejectionCompleteText({ customerName }) {
   return (
-    `却下しました。\n` +
-    `${customerName || 'お客様'}様にLINEでご連絡済みです。\n` +
+    `却下処理が完了しました。\n\n` +
+    `${customerName || 'お客様'}様にお詫びのご連絡をLINEでお送りいたしました。\n\n` +
     `— MyCoach`
   );
 }
 
 /**
- * 【2026/4/24 追加】
- * お客様への却下通知メッセージ
+ * 【2026/4/24 更新】
+ * お客様への却下通知メッセージ（丁寧なお詫び文）
  */
 function buildRejectionNoticeText({ customerName, coachName, dateStr, timeStr, reason }) {
   return (
-    `【ご予約についてのご連絡】\n\n` +
+    `【ご予約につきましてのお詫び】\n\n` +
     `${customerName || 'お客様'}様\n\n` +
-    `申し訳ございません。\n` +
-    `コーチの都合により、以下のご予約がお受けできませんでした。\n\n` +
+    `この度は、MyCoachをご利用いただき誠にありがとうございます。\n\n` +
+    `大変申し訳ございませんが、${coachName || 'コーチ'}コーチの都合により、\n` +
+    `下記のご予約をお受けすることが叶わなくなりましたこと、\n` +
+    `心よりお詫び申し上げます。\n\n` +
     `━━━━━━━━━━━━━━━\n` +
     `コーチ：${coachName || '—'}\n` +
     `日時：${dateStr || '—'} ${timeStr || ''}\n` +
     `理由：${reason || '—'}\n` +
     `━━━━━━━━━━━━━━━\n\n` +
-    `他のコーチ・日程でぜひお試しください。\n` +
+    `せっかくご予約をいただきましたのに、\n` +
+    `ご期待に沿えない結果となりましたこと、重ねてお詫び申し上げます。\n\n` +
+    `お手数をおかけいたしますが、別のコーチ、または別日程にて\n` +
+    `再度ご予約を承れますと幸いでございます。\n\n` +
+    `今後ともMyCoachをよろしくお願い申し上げます。\n\n` +
     `— MyCoach`
   );
 }
 
 /**
- * 【2026/4/24 追加】
  * お客様への承認完了＆決済案内メッセージ
  */
 function buildApprovalCompleteText({ customerName, coachName, dateStr, timeStr, amount, paymentUrl }) {
@@ -411,8 +504,6 @@ function buildApprovalCompleteText({ customerName, coachName, dateStr, timeStr, 
 
 /**
  * イベント種別に応じてLINE通知を送る
- * @param {string} kind - 'booking_confirmed' | 'booking_cancelled' | etc.
- * @param {object} payload - { bookingId, session, ... }
  */
 async function notify(kind, payload) {
   try {
@@ -475,10 +566,7 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     customer = data;
   }
 
-  // 店舗情報（任意）
-  // 【2026/4/20 修正】store_key から正式店舗名に変換するロジックを追加
-  // 変更前：storeName = booking.store_key; // 'kyoto' がそのまま表示されていた
-  // 変更後：STORE_KEY_TO_NAME マップを引いて正式名称を取得
+  // 店舗情報
   let storeName = '—';
   if (booking.store_id) {
     const { data } = await supabase
@@ -488,7 +576,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
       .maybeSingle();
     if (data) storeName = data.name;
   } else if (booking.store_key) {
-    // store_key → 正式店舗名 への変換
     storeName = STORE_KEY_TO_NAME[booking.store_key] || booking.store_key;
   }
 
@@ -575,10 +662,12 @@ module.exports = {
   buildCancellationText,
   buildApprovalRequestText,
   buildApprovalRequestFlex,
+  buildRejectionButtonsFlex,
   buildRejectionReasonPromptText,
   buildRejectionCompleteText,
   buildRejectionNoticeText,
   buildApprovalCompleteText,
   notify,
   formatDateJa,
+  REJECTION_REASON_MAP,
 };
