@@ -1824,41 +1824,54 @@ async function submitBooking(){
   var amountYen=parseInt(document.getElementById('req-plan-amount').value,10)||0;
   var durationMin=parseInt(document.getElementById('req-plan-minutes').value,10)||null;
   var planLabel=document.getElementById('req-plan-label').value||'';
-  var planKind=document.getElementById('req-plan-kind').value||'';
-  var planId=document.getElementById('req-plan-id').value||'';
-  var planCourse=document.getElementById('req-plan-course').value||'';
-  var planStarttime=document.getElementById('req-plan-starttime').value||'';
-  var planCoachPays=document.getElementById('req-plan-coach-pays').value==='true';
-  var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
-  var lessonLabel=(typeLabelMap[lessonType]||lessonType)+(planLabel?' / '+planLabel:'');
   if(!amountYen||amountYen<100){alert('金額が取得できませんでした。料金プランを選択してください。');return;}
-  var customerEmail=session.user.email||'';
   var customerName='';
   try{
-    var c=await sb.from('customers').select('name,email').eq('user_id',uid).maybeSingle();
-    if(c.data){customerName=c.data.name||'';if(c.data.email) customerEmail=c.data.email;}
+    var c=await sb.from('customers').select('id,name').eq('user_id',uid).maybeSingle();
+    if(c.data){customerName=c.data.name||'';}
   }catch(e){}
+  var coachName='';
+  if(selectedCoachData&&selectedCoachData.name){coachName=selectedCoachData.name;}
+  if(!coachName&&entrySelectedCoachData&&entrySelectedCoachData.name){coachName=entrySelectedCoachData.name;}
+  var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
+  var lessonLabel=(typeLabelMap[lessonType]||lessonType)+(planLabel?' / '+planLabel:'');
+  var fullComment=comment;
+  if(golfHistory){fullComment='【ゴルフ歴】'+golfHistory+(comment?'\n\n'+comment:'');}
+  if(planLabel){fullComment='【プラン】'+planLabel+(fullComment?'\n\n'+fullComment:'');}
   btn.disabled=true;
   btn.textContent='処理中...';
   try{
-    var resp=await fetch('/.netlify/functions/create-checkout-session',{
+    var resp=await fetch('/.netlify/functions/create-booking-request',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        customer_user_id:uid,coach_id:selectedCoachId||'6f728334-3fbe-4af2-93b1-9b4d288c2ca3',
-        store_key:storeKey,lesson_type:lessonType,lesson_date:lessonDate,lesson_time:lessonTime,
-        duration_min:durationMin,amount_yen:amountYen,lesson_label:lessonLabel,
-        golf_history:golfHistory,comment:comment,customer_name:customerName,customer_email:customerEmail,
-        plan_kind:planKind,plan_id:planId,plan_label:planLabel,plan_golf_course:planCourse,
-        plan_start_time:planStarttime,plan_coach_pays_greenfee:planCoachPays
+        customer_user_id:uid,
+        coach_id:selectedCoachId||'6f728334-3fbe-4af2-93b1-9b4d288c2ca3',
+        store_key:storeKey,
+        lesson_type:lessonType,
+        minutes:durationMin,
+        total_price:amountYen,
+        booking_date:lessonDate,
+        booking_time:lessonTime,
+        comment:fullComment,
+        agreed_terms:true,
+        customer_name:customerName,
+        coach_name:coachName||lessonLabel
       })
     });
     var json=await resp.json();
-    if(!resp.ok||!(json.url||json.checkout_url)){
-      console.error('checkout error:',json);
-      alert('決済セッションの作成に失敗しました\n'+(json.error||json.detail||''));
+    if(!resp.ok||!json.ok){
+      console.error('booking request error:',json);
+      alert('予約申込の送信に失敗しました\n'+(json.error||json.detail||''));
       btn.disabled=false;btn.textContent='同意して依頼を確定する →';return;
     }
-    window.location.href=json.url||json.checkout_url;
+    alert('✅ コーチへ承認依頼を送信しました。\n\nコーチの承認後、決済リンクがLINEに届きます。\n\n予約一覧でステータスをご確認ください。');
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
+    var bookingsTab=document.getElementById('snb-bookings');
+    if(bookingsTab){bookingsTab.click();}
+    document.getElementById('agreeChk').checked=false;
+    document.getElementById('req-comment').value='';
+    btn.disabled=false;
+    btn.textContent='同意して依頼を確定する →';
   }catch(e){
     console.error(e);alert('通信エラー:'+e.message);
     btn.disabled=false;btn.textContent='同意して依頼を確定する →';
