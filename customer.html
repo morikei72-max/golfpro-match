@@ -165,7 +165,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .b-g{background:var(--gl);color:var(--gd);}
 .b-bl{background:#e6f1fb;color:#185fa5;}
 
-/* 予約一覧タブ 新規CSS */
 .booking-empty{background:#fff;border-radius:12px;padding:32px 16px;text-align:center;border:0.5px solid var(--border);}
 .booking-empty-icon{font-size:48px;margin-bottom:12px;}
 .booking-empty-title{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:6px;}
@@ -200,7 +199,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .bk-msg.approved{background:var(--gl);color:var(--gd);}
 .bk-msg.completed{background:#f0f0f0;color:#666;}
 
-/* モーダル */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;padding:16px;}
 .modal-overlay.open{display:flex;}
 .modal-content{background:#f0f4f2;border-radius:14px;width:100%;max-width:420px;max-height:90vh;overflow-y:auto;}
@@ -231,6 +229,26 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .mdl-btn-line{background:#06C755;color:#fff;}
 .mdl-btn-cancel{background:#fff;color:var(--red);border:1px solid var(--red);}
 .mdl-cancel-note{background:#fff0f0;border-radius:6px;padding:8px;font-size:9px;color:#791F1F;line-height:1.5;margin-top:8px;}
+
+/* 【2026/4/24 追加】決済確認モーダル専用スタイル */
+.pay-confirm-header{background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;padding:20px 16px;text-align:center;border-radius:14px 14px 0 0;}
+.pay-confirm-icon{font-size:42px;margin-bottom:6px;}
+.pay-confirm-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.pay-confirm-sub{font-size:12px;opacity:0.9;line-height:1.5;}
+.pay-info-card{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid var(--border);}
+.pay-info-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #f0f0f0;}
+.pay-info-row:last-child{border-bottom:none;}
+.pay-info-row span:first-child{color:#888;}
+.pay-info-row span:last-child{color:var(--gd);font-weight:700;}
+.pay-amount-box{background:linear-gradient(135deg,var(--gl),#9FE1CB);border-radius:12px;padding:14px;text-align:center;margin:14px 0;}
+.pay-amount-label{font-size:11px;color:var(--gd);margin-bottom:4px;}
+.pay-amount-value{font-size:28px;font-weight:900;color:var(--gd);}
+.pay-warning-box{background:#FFF3CD;border:1px solid #FFC107;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#7a5c00;line-height:1.5;}
+.pay-warning-icon{font-weight:700;margin-right:4px;}
+.pay-btn-main{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;}
+.pay-btn-main:disabled{background:#aaa;cursor:not-allowed;}
+.pay-loading{text-align:center;padding:30px 14px;color:#888;}
+.pay-error{background:#ffe5e5;border:1px solid var(--red);border-radius:8px;padding:12px;color:#a00;font-size:12px;text-align:center;}
 </style>
 </head>
 <body>
@@ -354,7 +372,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- 予約一覧(新規) -->
+  <!-- 予約一覧 -->
   <div class="screen" id="s-bookings">
     <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;">📋 ご予約一覧</div>
     <div id="bookings-filter" style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;">
@@ -383,7 +401,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- 依頼する(内部画面・タブからは非表示) -->
+  <!-- 【2026/4/24 追加】決済確認モーダル(承認済み予約用) -->
+  <div class="modal-overlay" id="payment-confirm-modal">
+    <div class="modal-content">
+      <div class="pay-confirm-header">
+        <div class="pay-confirm-icon">✅</div>
+        <div class="pay-confirm-title">予約承認のお知らせ</div>
+        <div class="pay-confirm-sub">以下のご予約が承認されました<br>決済完了で予約が確定いたします</div>
+      </div>
+      <div class="modal-body" id="payment-confirm-body">
+        <div class="pay-loading">予約情報を読み込み中...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 依頼する(内部画面) -->
   <div class="screen" id="s-request">
     <div class="stepbar">
       <div class="stepc done">1</div><div class="stepl done"></div>
@@ -780,6 +812,7 @@ sb.auth.getSession().then(async function(res){
     document.getElementById('line-register-area').style.display='none';
   }
   handlePaymentReturn();
+  checkPaymentConfirmUrl();
   loadBookings();
 });
 
@@ -798,7 +831,125 @@ var selectedPlan=null;
 var allBookings=[];
 var currentBookingFilter='all';
 
-/* ===== 予約一覧機能(カラム名:booking_date/booking_time/total_price/minutes) ===== */
+/* ============================================
+   【2026/4/24 追加】決済確認モーダル処理
+============================================ */
+function checkPaymentConfirmUrl(){
+  var params=new URLSearchParams(window.location.search);
+  var action=params.get('action');
+  var bookingId=params.get('booking_id');
+  if(action==='pay'&&bookingId){
+    showPaymentConfirmModal(bookingId);
+  }
+}
+
+async function showPaymentConfirmModal(bookingId){
+  var modal=document.getElementById('payment-confirm-modal');
+  var body=document.getElementById('payment-confirm-body');
+  modal.classList.add('open');
+  body.innerHTML='<div class="pay-loading">予約情報を読み込み中...</div>';
+  try{
+    var{data:booking,error}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
+    if(error||!booking){
+      body.innerHTML='<div class="pay-error">ご予約が見つかりませんでした。<br>URLをご確認ください。</div>';
+      return;
+    }
+    if(booking.status==='confirmed'){
+      body.innerHTML='<div class="pay-info-card" style="text-align:center;padding:24px;"><div style="font-size:32px;margin-bottom:8px;">✅</div><div style="font-weight:700;color:var(--gd);margin-bottom:6px;">既にお支払い済みです</div><div style="font-size:11px;color:#666;">ご予約が確定しています。<br>予約一覧からご確認ください。</div></div><button class="pay-btn-main" onclick="closePaymentConfirmModal();document.getElementById(\'snb-bookings\').click();">予約一覧へ</button>';
+      return;
+    }
+    if(booking.status==='rejected'||booking.status==='cancelled'){
+      body.innerHTML='<div class="pay-error">このご予約は受付できませんでした。<br>別のコーチ・日程でお試しください。</div>';
+      return;
+    }
+    if(booking.status!=='approved_pending_payment'){
+      body.innerHTML='<div class="pay-error">このご予約は現在お支払いできる状態ではありません。<br>状態: '+booking.status+'</div>';
+      return;
+    }
+    var{data:coach}=await sb.from('coaches').select('name').eq('id',booking.coach_id).maybeSingle();
+    var coachName=coach?coach.name:(booking.coach_name||'コーチ');
+    var lessonTypeMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
+    var lessonLabel=lessonTypeMap[booking.lesson_type]||booking.lesson_type;
+    var dateStr=formatDateJP(booking.booking_date);
+    var timeStr=formatBookingTime(booking.booking_time);
+    var storeMap={kyoto:'Golf Create 戸津池店'};
+    var storeName=storeMap[booking.store_key]||booking.store_key;
+    var minutesStr=booking.minutes?booking.minutes+'分':'';
+    var amount=parseInt(booking.total_price)||0;
+    var html='<div class="pay-info-card">'+
+      '<div class="pay-info-row"><span>コーチ</span><span>'+escapeHtml(coachName)+'</span></div>'+
+      '<div class="pay-info-row"><span>種別</span><span>'+lessonLabel+'</span></div>'+
+      (minutesStr?'<div class="pay-info-row"><span>時間</span><span>'+minutesStr+'</span></div>':'')+
+      '<div class="pay-info-row"><span>日時</span><span>'+dateStr+' '+timeStr+'</span></div>'+
+      '<div class="pay-info-row"><span>店舗</span><span>'+storeName+'</span></div>'+
+    '</div>'+
+    '<div class="pay-amount-box">'+
+      '<div class="pay-amount-label">💳 お支払い金額</div>'+
+      '<div class="pay-amount-value">¥'+amount.toLocaleString()+'</div>'+
+    '</div>'+
+    '<div class="pay-warning-box">'+
+      '<span class="pay-warning-icon">⚠️</span>'+
+      'お支払いが完了するまで、予約は確定されません。<br>'+
+      '下記ボタンよりお支払いへお進みください。'+
+    '</div>'+
+    '<button class="pay-btn-main" id="pay-btn-main" onclick="proceedToStripePayment(\''+bookingId+'\')">'+
+      '💳 お支払いに進む'+
+    '</button>';
+    body.innerHTML=html;
+  }catch(e){
+    console.error('showPaymentConfirmModal error',e);
+    body.innerHTML='<div class="pay-error">通信エラーが発生しました。<br>しばらくしてから再度お試しください。</div>';
+  }
+}
+
+function closePaymentConfirmModal(){
+  document.getElementById('payment-confirm-modal').classList.remove('open');
+  window.history.replaceState({},document.title,window.location.pathname);
+}
+
+async function proceedToStripePayment(bookingId){
+  var btn=document.getElementById('pay-btn-main');
+  if(btn){btn.disabled=true;btn.textContent='⏳ 処理中...';}
+  try{
+    var{data:booking,error}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
+    if(error||!booking){alert('予約情報の取得に失敗しました');if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}return;}
+    var sres=await sb.auth.getSession();
+    var session=sres.data.session;
+    if(!session){alert('ログインが必要です');window.location.href='customer_login.html?from=top';return;}
+    var customerEmail=session.user.email||'';
+    var customerName=booking.customer_name||'';
+    var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
+    var lessonLabel=typeLabelMap[booking.lesson_type]||booking.lesson_type;
+    var resp=await fetch('/.netlify/functions/create-checkout-session',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        customer_user_id:booking.customer_id,coach_id:booking.coach_id,
+        store_key:booking.store_key,lesson_type:booking.lesson_type,
+        lesson_date:booking.booking_date,lesson_time:booking.booking_time,
+        duration_min:booking.minutes,amount_yen:booking.total_price,
+        lesson_label:lessonLabel,golf_history:'',comment:booking.comment||'',
+        customer_name:customerName,customer_email:customerEmail,
+        plan_kind:'',plan_id:'',plan_label:'',plan_golf_course:'',plan_start_time:'',
+        plan_coach_pays_greenfee:false,
+        approved_booking_id:bookingId
+      })
+    });
+    var json=await resp.json();
+    if(!resp.ok||!(json.url||json.checkout_url)){
+      console.error('checkout error:',json);
+      alert('決済セッションの作成に失敗しました\n'+(json.error||json.detail||''));
+      if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}
+      return;
+    }
+    window.location.href=json.url||json.checkout_url;
+  }catch(e){
+    console.error(e);
+    alert('通信エラー:'+e.message);
+    if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}
+  }
+}
+
+/* ===== 予約一覧機能 ===== */
 async function loadBookings(){
   if(!currentUserId){
     var res=await sb.auth.getSession();
