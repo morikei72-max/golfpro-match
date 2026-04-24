@@ -26,6 +26,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .header-logo span{color:var(--accent);}
 .store-badge{font-size:10px;font-weight:700;color:var(--g);background:var(--gl);border:1px solid var(--g);padding:3px 8px;border-radius:10px;}
 .header-right{display:flex;align-items:center;gap:8px;}
+.status-badge{font-size:10px;font-weight:700;color:var(--gd);background:var(--gl);border:1px solid var(--g);padding:3px 8px;border-radius:10px;}
 .logout-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:inherit;}
 
 /* タブナビ */
@@ -117,12 +118,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .board-body{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6;}
 .board-date{font-size:10px;color:#aaa;margin-top:4px;}
 
-/* 統計 */
-.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
-.stat-card{background:var(--gl);border-radius:10px;padding:12px;text-align:center;}
-.stat-num{font-size:22px;font-weight:700;color:var(--gd);}
-.stat-label{font-size:10px;color:var(--muted);margin-top:2px;}
-
 /* モーダル */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
@@ -139,43 +134,340 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .check-row{display:flex;align-items:center;gap:8px;padding:6px 0;}
 .check-row input{accent-color:var(--g);width:16px;height:16px;}
 .check-row label{font-size:13px;}
+
+/* ====================== ダッシュボード全面刷新 ====================== */
+.date-display{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.hero-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;}
+.hero-label{font-size:10px;opacity:0.85;}
+.hero-value-row{display:flex;align-items:baseline;gap:8px;margin-top:2px;}
+.hero-value{font-size:26px;font-weight:700;}
+.hero-delta{font-size:11px;background:rgba(255,255,255,0.25);padding:2px 7px;border-radius:8px;font-weight:500;}
+.hero-chart{margin-top:8px;}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.kpi-card{background:#fff;border-radius:10px;padding:10px;border:0.5px solid var(--border);}
+.kpi-label{font-size:9px;color:var(--muted);}
+.kpi-value{font-size:18px;font-weight:700;color:var(--gd);}
+.kpi-sub{font-size:8px;color:var(--muted);margin-top:2px;}
+.kpi-bar{background:#f0f4f2;border-radius:8px;height:5px;overflow:hidden;margin-top:4px;}
+.kpi-bar-fill{background:var(--g);height:100%;}
+.kpi-mini-chart{margin-top:4px;}
+.goal-card{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;border:0.5px solid var(--border);}
+.goal-content{display:flex;align-items:center;gap:12px;}
+.goal-circle{flex-shrink:0;width:90px;height:90px;position:relative;}
+.goal-info{flex:1;min-width:0;}
+.goal-label{font-size:10px;color:var(--muted);}
+.goal-value{font-size:14px;font-weight:700;color:var(--gd);}
+.goal-hint{font-size:9px;color:var(--g);margin-top:4px;background:var(--gl);padding:3px 6px;border-radius:4px;display:inline-block;}
+.ranking-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.ranking-row:last-child{margin-bottom:0;}
+.medal{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
+.medal-gold{background:#FAC775;}
+.medal-silver{background:#D3D1C7;}
+.medal-bronze{background:#F5C4B3;}
+.ranking-avatar{width:28px;height:28px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;color:var(--gd);font-weight:700;font-size:11px;flex-shrink:0;}
+.ranking-main{flex:1;min-width:0;}
+.ranking-name{font-size:11px;font-weight:700;color:var(--gd);}
+.ranking-bar{background:#f0f4f2;height:4px;border-radius:2px;overflow:hidden;margin-top:2px;}
+.ranking-bar-fill{height:100%;}
+.ranking-bar-1{background:var(--g);}
+.ranking-bar-2{background:#5DCAA5;}
+.ranking-bar-3{background:#9FE1CB;}
+.ranking-amount{font-size:11px;color:var(--gd);font-weight:700;flex-shrink:0;}
+.mvp-card{background:linear-gradient(135deg,#FAEEDA,#FAC775);border-radius:10px;padding:10px;display:flex;gap:10px;align-items:center;}
+.mvp-avatar{width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--gd);font-weight:700;font-size:16px;border:2px solid var(--gold);flex-shrink:0;}
+.mvp-info{flex:1;min-width:0;}
+.mvp-name{font-size:12px;font-weight:700;color:var(--gd);}
+.mvp-meta{font-size:9px;color:#633806;margin-top:2px;}
+.mvp-badge{background:var(--gold);color:#fff;padding:3px 7px;border-radius:10px;font-size:9px;font-weight:700;}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.week-bar{border-radius:4px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;min-height:30px;}
+.week-bar.high{background:var(--g);}
+.week-bar.vhigh{background:var(--gd);}
+.week-bar.mid{background:#5DCAA5;}
+.week-bar.low{background:#9FE1CB;}
+.week-bar-val{font-size:8px;font-weight:700;}
+.week-bar.high .week-bar-val,.week-bar.vhigh .week-bar-val,.week-bar.mid .week-bar-val{color:#fff;}
+.week-bar.low .week-bar-val{color:var(--gd);}
+.week-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:4px;}
+.week-labels div{font-size:9px;color:var(--muted);text-align:center;}
+.week-hint{font-size:9px;color:var(--muted);text-align:center;margin-top:6px;}
+.lesson-rank-row{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--gd);margin-top:6px;}
+.lesson-rank-val{font-weight:700;}
+.lesson-rank-bar{background:#f0f4f2;height:5px;border-radius:2px;overflow:hidden;margin-top:3px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.review-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.review-score{font-size:28px;font-weight:700;color:var(--gd);}
+.review-stars{color:var(--gold);font-size:14px;letter-spacing:2px;}
+.review-count{font-size:9px;color:var(--muted);margin-top:2px;}
+.review-latest{background:var(--gl);padding:6px 8px;border-radius:6px;font-size:10px;color:var(--gd);}
+.notification{padding:6px 8px;font-size:10px;border-radius:0 4px 4px 0;margin-bottom:4px;}
+.notification-success{background:var(--gl);border-left:3px solid var(--g);color:var(--gd);}
+.notification-warning{background:#FAEEDA;border-left:3px solid var(--gold);color:#633806;}
+.notification-danger{background:#FCEBEB;border-left:3px solid var(--red);color:#791F1F;}
+.ai-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:10px;padding:14px;color:#fff;margin-bottom:12px;}
+.ai-header{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;font-weight:700;}
+.ai-item{background:rgba(255,255,255,0.1);border-radius:6px;padding:8px;font-size:10px;line-height:1.6;margin-top:6px;}
+.ai-item:first-of-type{margin-top:0;}
+.ai-highlight{color:#FAC775;font-weight:700;}
+.mini-pie{display:flex;justify-content:center;}
+.mini-pie-legend{display:flex;flex-direction:column;gap:2px;font-size:9px;color:#633806;margin-top:4px;}
+.area-block{display:flex;flex-direction:column;gap:4px;}
+.area-row{display:flex;align-items:center;gap:6px;font-size:10px;}
+.area-bar{height:18px;border-radius:3px;display:flex;align-items:center;justify-content:flex-end;padding:0 5px;color:#fff;font-weight:700;font-size:9px;}
+.preview-badge{font-size:8px;background:#FAEEDA;color:#633806;padding:2px 6px;border-radius:8px;margin-left:6px;font-weight:700;}
+.dash-section-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
 </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
 <div class="header">
   <div class="header-left">
     <div class="header-logo">My<span>Coach</span></div>
     <div class="store-badge" id="store-badge">店舗管理</div>
   </div>
   <div class="header-right">
+    <span class="status-badge" id="status-badge">🔥 絶好調</span>
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </div>
 
-<!-- メイン -->
 <div class="main">
 
-  <!-- ホーム -->
   <div class="page active" id="page-home">
     <div class="msg" id="msg-home"></div>
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-num" id="stat-coaches">-</div>
-        <div class="stat-label">在籍コーチ数</div>
+    <div class="date-display" id="date-display">こんにちは、森下啓介さん・読み込み中...</div>
+
+    <div class="hero-card">
+      <div class="hero-label">今月売上</div>
+      <div class="hero-value-row">
+        <span class="hero-value" id="hero-revenue">¥0</span>
+        <span class="hero-delta" id="hero-delta">▲ 0%</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-pending">-</div>
-        <div class="stat-label">承認待ち</div>
+      <div class="hero-chart">
+        <svg width="100%" height="40" viewBox="0 0 340 40">
+          <polyline points="5,32 65,28 125,22 185,18 245,12 305,6" stroke="#9FE1CB" stroke-width="2" fill="none"/>
+          <polyline points="5,32 65,28 125,22 185,18 245,12 305,6 305,38 5,38" fill="rgba(255,255,255,0.15)" stroke="none"/>
+          <circle cx="305" cy="6" r="3.5" fill="#fff"/>
+          <text x="5" y="40" font-size="6" fill="rgba(255,255,255,0.7)" text-anchor="middle" id="hero-lbl-0">-</text>
+          <text x="65" y="40" font-size="6" fill="rgba(255,255,255,0.7)" text-anchor="middle" id="hero-lbl-1">-</text>
+          <text x="125" y="40" font-size="6" fill="rgba(255,255,255,0.7)" text-anchor="middle" id="hero-lbl-2">-</text>
+          <text x="185" y="40" font-size="6" fill="rgba(255,255,255,0.7)" text-anchor="middle" id="hero-lbl-3">-</text>
+          <text x="245" y="40" font-size="6" fill="rgba(255,255,255,0.7)" text-anchor="middle" id="hero-lbl-4">-</text>
+          <text x="305" y="40" font-size="6" fill="#fff" text-anchor="middle" font-weight="500" id="hero-lbl-5">今月</text>
+        </svg>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-today-bookings">-</div>
-        <div class="stat-label">本日の予約</div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">入会率</div>
+        <div class="kpi-value" id="kpi-newmember">+0%</div>
+        <svg width="100%" height="14" viewBox="0 0 100 14" class="kpi-mini-chart">
+          <rect x="0" y="8" width="15" height="5" fill="#9FE1CB"/>
+          <rect x="20" y="6" width="15" height="7" fill="#9FE1CB"/>
+          <rect x="40" y="4" width="15" height="9" fill="#5DCAA5"/>
+          <rect x="60" y="3" width="15" height="10" fill="#1D9E75"/>
+          <rect x="80" y="1" width="15" height="12" fill="#085041"/>
+        </svg>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="stat-month-sales">-</div>
-        <div class="stat-label">今月売上</div>
+      <div class="kpi-card">
+        <div class="kpi-label">月間目標達成</div>
+        <div class="kpi-value" id="kpi-goal">0%</div>
+        <div class="kpi-bar"><div class="kpi-bar-fill" id="kpi-goal-bar" style="width:0%;"></div></div>
+        <div class="kpi-sub" id="kpi-goal-sub">目標額設定で達成率計算</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">⏰ 次の予約まで</div>
+        <div class="kpi-value" id="kpi-next">--</div>
+        <div class="kpi-sub" id="kpi-next-sub">本日の予約なし</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">今日の予約</div>
+        <div class="kpi-value" id="kpi-today-bookings">0<span style="font-size:11px;">件</span></div>
+        <div class="kpi-sub" id="kpi-today-sub">売上見込 ¥0</div>
+      </div>
+    </div>
+
+    <div class="goal-card">
+      <div class="dash-section-title">🎯 今日の目標達成</div>
+      <div class="goal-content">
+        <div class="goal-circle">
+          <svg width="90" height="90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f4f2" stroke-width="10"/>
+            <circle id="goal-arc" cx="50" cy="50" r="40" fill="none" stroke="#1D9E75" stroke-width="10" stroke-dasharray="251" stroke-dashoffset="251" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+            <text id="goal-pct" x="50" y="48" font-size="18" fill="#085041" text-anchor="middle" font-weight="700">0%</text>
+            <text x="50" y="62" font-size="7" fill="#6b8a78" text-anchor="middle">達成</text>
+          </svg>
+        </div>
+        <div class="goal-info">
+          <div class="goal-label">現在の売上</div>
+          <div class="goal-value" id="goal-current">¥0</div>
+          <div class="goal-label" style="margin-top:6px;">目標</div>
+          <div class="goal-value" id="goal-target">¥40,000</div>
+          <div class="goal-hint" id="goal-hint">目標達成まで集計中...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="dash-section-title" style="margin-bottom:0;">🏆 コーチ売上ランキング</div>
+        <div style="font-size:8px;color:var(--muted);">今月</div>
+      </div>
+      <div id="coach-ranking">
+        <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">集計中...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="dash-section-title">⭐ 今日のMVPコーチ</div>
+      <div id="mvp-container">
+        <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">本日の予約データから算出中...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="dash-section-title">📅 週間稼働率</div>
+      <div class="week-grid" id="week-grid">
+        <div class="week-bar vhigh"><span class="week-bar-val">92%</span></div>
+        <div class="week-bar mid"><span class="week-bar-val">78%</span></div>
+        <div class="week-bar high"><span class="week-bar-val">88%</span></div>
+        <div class="week-bar mid"><span class="week-bar-val">65%</span></div>
+        <div class="week-bar vhigh"><span class="week-bar-val">95%</span></div>
+        <div class="week-bar low"><span class="week-bar-val">45%</span></div>
+        <div class="week-bar low"><span class="week-bar-val">40%</span></div>
+      </div>
+      <div class="week-labels">
+        <div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div><div>日</div>
+      </div>
+      <div class="week-hint" id="week-hint">🔥 金曜がピーク!土日は強化余地あり</div>
+    </div>
+
+    <div class="card">
+      <div class="dash-section-title">📊 時間帯別予約数</div>
+      <svg width="100%" height="70" viewBox="0 0 340 70">
+        <rect x="10" y="50" width="28" height="15" fill="#9FE1CB" rx="2"/>
+        <rect x="48" y="35" width="28" height="30" fill="#5DCAA5" rx="2"/>
+        <rect x="86" y="22" width="28" height="43" fill="#1D9E75" rx="2"/>
+        <rect x="124" y="28" width="28" height="37" fill="#5DCAA5" rx="2"/>
+        <rect x="162" y="15" width="28" height="50" fill="#1D9E75" rx="2"/>
+        <rect x="200" y="18" width="28" height="47" fill="#1D9E75" rx="2"/>
+        <rect x="238" y="38" width="28" height="27" fill="#5DCAA5" rx="2"/>
+        <rect x="276" y="55" width="28" height="10" fill="#9FE1CB" rx="2"/>
+        <text x="24" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">9時</text>
+        <text x="62" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">10時</text>
+        <text x="100" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">11時</text>
+        <text x="138" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">12時</text>
+        <text x="176" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">14時</text>
+        <text x="214" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">15時</text>
+        <text x="252" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">17時</text>
+        <text x="290" y="69" font-size="7" fill="#6b8a78" text-anchor="middle">19時</text>
+      </svg>
+      <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:4px;" id="hour-hint">⏰ 人気時間帯:14-16時</div>
+    </div>
+
+    <div class="card">
+      <div class="dash-section-title">🏌 レッスン種別ランキング</div>
+      <div id="lesson-ranking">
+        <div class="lesson-rank-row"><span>🥇 インドアゴルフ</span><span class="lesson-rank-val">68%</span></div>
+        <div class="lesson-rank-bar"><div style="background:#1D9E75;height:100%;width:68%;"></div></div>
+        <div class="lesson-rank-row"><span>🥈 ラウンドレッスン</span><span class="lesson-rank-val">22%</span></div>
+        <div class="lesson-rank-bar"><div style="background:#5DCAA5;height:100%;width:22%;"></div></div>
+        <div class="lesson-rank-row"><span>🥉 同伴ラウンド</span><span class="lesson-rank-val">7%</span></div>
+        <div class="lesson-rank-bar"><div style="background:#9FE1CB;height:100%;width:7%;"></div></div>
+        <div class="lesson-rank-row" style="color:var(--muted);"><span>コンペ参加</span><span>2%</span></div>
+        <div class="lesson-rank-bar"><div style="background:var(--gl);height:100%;width:2%;"></div></div>
+        <div class="lesson-rank-row" style="color:var(--muted);"><span>独自プラン</span><span>1%</span></div>
+        <div class="lesson-rank-bar"><div style="background:var(--gl);height:100%;width:1%;"></div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="dash-section-title">👥 会員ランク別<span class="preview-badge">準備中</span></div>
+        <div class="mini-pie">
+          <svg width="100%" height="80" viewBox="0 0 120 80">
+            <circle cx="60" cy="40" r="30" fill="#FAEEDA"/>
+            <path d="M 60 40 L 60 10 A 30 30 0 0 1 88 52 Z" fill="#BA7517"/>
+            <path d="M 60 40 L 88 52 A 30 30 0 0 1 40 66 Z" fill="#EF9F27"/>
+            <path d="M 60 40 L 40 66 A 30 30 0 0 1 60 10 Z" fill="#FAC775"/>
+            <circle cx="60" cy="40" r="15" fill="#fff"/>
+            <text x="60" y="38" font-size="10" fill="#633806" text-anchor="middle" font-weight="700">--</text>
+            <text x="60" y="48" font-size="6" fill="#888" text-anchor="middle">会員</text>
+          </svg>
+        </div>
+        <div class="mini-pie-legend">
+          <div>● ゴールド --</div>
+          <div>● シルバー --</div>
+          <div>● 通常 --</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="dash-section-title">🗺 顧客エリア<span class="preview-badge">準備中</span></div>
+        <div class="area-block">
+          <div class="area-row"><div class="area-bar" style="background:var(--g);width:70%;">--%</div></div>
+          <div class="area-row"><div class="area-bar" style="background:#5DCAA5;width:40%;">--</div></div>
+          <div class="area-row"><div class="area-bar" style="background:#9FE1CB;width:25%;color:var(--gd);">--</div></div>
+        </div>
+        <div style="font-size:9px;color:var(--muted);text-align:center;margin-top:4px;">🎯 データ集計中</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="dash-section-title">🆚 昨対比較<span class="preview-badge">準備中</span></div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="background:#f8faf9;border-radius:6px;padding:6px;">
+            <div style="font-size:8px;color:var(--muted);">昨年同月</div>
+            <div style="font-size:13px;color:var(--muted);">データ蓄積中</div>
+          </div>
+          <div style="background:var(--gl);border-radius:6px;padding:6px;border:1px solid var(--g);">
+            <div style="font-size:8px;color:var(--gd);">今月</div>
+            <div style="font-size:13px;color:var(--gd);font-weight:700;" id="yoy-current">¥0</div>
+          </div>
+          <div style="font-size:9px;color:var(--muted);text-align:center;">来年から比較可能</div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="dash-section-title">🔮 来月予測</div>
+        <div style="font-size:20px;font-weight:700;color:var(--gd);" id="forecast-value">¥0</div>
+        <div style="font-size:9px;color:var(--g);margin:2px 0 6px;" id="forecast-delta">📈 予測算出中</div>
+        <svg width="100%" height="40" viewBox="0 0 120 40">
+          <polyline points="5,32 25,28 45,22 65,18 85,12" stroke="#1D9E75" stroke-width="1.5" fill="none"/>
+          <polyline points="85,12 100,8 115,5" stroke="#BA7517" stroke-width="1.5" stroke-dasharray="3,2" fill="none"/>
+          <circle cx="85" cy="12" r="2" fill="#1D9E75"/>
+          <circle cx="115" cy="5" r="3" fill="#BA7517" stroke="#fff" stroke-width="1"/>
+          <text x="115" y="18" font-size="6" fill="#BA7517" text-anchor="middle">来月予測</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="dash-section-title">⭐ レビュー評価<span class="preview-badge">準備中</span></div>
+      <div class="review-header">
+        <span class="review-score">--</span>
+        <div>
+          <div class="review-stars">★★★★★</div>
+          <div class="review-count">レビュー機能実装後に表示</div>
+        </div>
+      </div>
+      <div class="review-latest">💬 レビュー機能は近日実装予定です</div>
+    </div>
+
+    <div class="card">
+      <div class="dash-section-title">📢 通知センター</div>
+      <div id="notifications">
+        <div class="notification notification-success">🎉 MyCoach へようこそ!ダッシュボードが完成しました</div>
+      </div>
+    </div>
+
+    <div class="ai-card">
+      <div class="ai-header">
+        <span>🤖</span>
+        <span>AI経営アドバイス</span>
+      </div>
+      <div id="ai-advice">
+        <div class="ai-item">💡 データが蓄積されると、経営に役立つ具体的な提案が表示されます。</div>
       </div>
     </div>
 
@@ -209,11 +501,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- コーチ管理 -->
   <div class="page" id="page-coaches">
     <div class="msg" id="msg-coaches"></div>
-
-    <!-- 承認設定 -->
     <div class="card">
       <div class="card-title">⚙️ コーチ登録審査設定</div>
       <div class="form-group">
@@ -229,16 +518,12 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="btn-primary" style="margin-top:12px;" onclick="saveApprovalMode()">設定を保存</button>
     </div>
-
-    <!-- 承認待ち -->
     <div class="card">
       <div class="card-title">⏳ 承認待ち <span class="card-title-badge" id="pending-count">0件</span></div>
       <div id="pending-coaches">
         <div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;">承認待ちのコーチはいません</div>
       </div>
     </div>
-
-    <!-- 在籍コーチ -->
     <div class="card">
       <div class="card-title">✅ 在籍コーチ</div>
       <div id="approved-coaches">
@@ -247,7 +532,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- 打席管理 -->
   <div class="page" id="page-seats">
     <div class="msg" id="msg-seats"></div>
     <div class="card">
@@ -257,7 +541,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- 予約管理 -->
   <div class="page" id="page-bookings">
     <div class="card">
       <div class="card-title">📅 予約一覧</div>
@@ -279,11 +562,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- 設定 -->
   <div class="page" id="page-settings">
     <div class="msg" id="msg-settings"></div>
-
-    <!-- 営業設定 -->
     <div class="card">
       <div class="card-title">🕐 営業時間・曜日</div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
@@ -316,8 +596,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="btn-primary" onclick="saveStoreSettings()">保存する</button>
     </div>
-
-    <!-- 手数料設定 -->
     <div class="card">
       <div class="card-title">💰 手数料設定</div>
       <div class="form-group">
@@ -330,8 +608,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="btn-primary" onclick="saveFeeSettings()">保存する</button>
     </div>
-
-    <!-- インボイス設定 -->
     <div class="card">
       <div class="card-title">📄 インボイス設定</div>
       <div class="toggle-row">
@@ -345,8 +621,18 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         </label>
       </div>
     </div>
-
-    <!-- 掲示板投稿 -->
+    <div class="card">
+      <div class="card-title">🎯 日次売上目標設定</div>
+      <div class="form-group">
+        <label>1日の売上目標（円）</label>
+        <input type="number" id="daily-goal" placeholder="40000" min="0">
+      </div>
+      <div class="form-group">
+        <label>月間売上目標（円）</label>
+        <input type="number" id="monthly-goal" placeholder="1000000" min="0">
+      </div>
+      <button class="btn-primary" onclick="saveGoalSettings()">保存する</button>
+    </div>
     <div class="card">
       <div class="card-title">📢 掲示板に投稿</div>
       <div class="form-group">
@@ -358,7 +644,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <textarea id="board-body" placeholder="コーチへのお知らせを入力..."></textarea>
       </div>
       <button class="btn-primary" onclick="postBoard()">投稿する</button>
-
       <div style="margin-top:16px;border-top:0.5px solid var(--border);padding-top:12px;">
         <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">投稿済み</div>
         <div id="board-list">
@@ -374,7 +659,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
 </div>
 
-<!-- タブナビ -->
 <div class="tab-nav">
   <button class="tab-btn active" onclick="switchTab('home',this)">
     <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
@@ -398,7 +682,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   </button>
 </div>
 
-<!-- 打席追加モーダル -->
 <div class="modal-overlay" id="seat-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeSeatModal()">×</button>
@@ -440,6 +723,8 @@ var currentStore=null;
 var seats=[];
 var editSeatId=null;
 var approvalMode='interview';
+var dailyGoal=40000;
+var monthlyGoal=1000000;
 
 const approvalDescs={
   interview:'コーチが申請後、面接を経て承認します。',
@@ -447,7 +732,6 @@ const approvalDescs={
   auto:'コーチが申請すると自動的に承認されます。'
 };
 
-// 初期化
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
   if(!session){window.location.href='index.html?role=store';return;}
@@ -455,13 +739,376 @@ sb.auth.getSession().then(async function(res){
   var storeName=user.user_metadata&&user.user_metadata.store_name?user.user_metadata.store_name:'Golf Create 戸津池店';
   document.getElementById('store-badge').textContent=storeName;
   currentStore='kyoto';
-  loadStats();
+  var savedDaily=localStorage.getItem('gc_daily_goal_'+currentStore);
+  var savedMonthly=localStorage.getItem('gc_monthly_goal_'+currentStore);
+  if(savedDaily) dailyGoal=parseInt(savedDaily);
+  if(savedMonthly) monthlyGoal=parseInt(savedMonthly);
+  document.getElementById('daily-goal').value=dailyGoal;
+  document.getElementById('monthly-goal').value=monthlyGoal;
+  updateDateDisplay(user);
+  loadDashboard();
   loadPendingCoaches();
   loadApprovedCoaches();
   loadSeats();
 });
 
-// タブ切替
+function updateDateDisplay(user){
+  var name=user.user_metadata&&user.user_metadata.name?user.user_metadata.name:'森下啓介';
+  var now=new Date();
+  var yyyy=now.getFullYear();
+  var mm=now.getMonth()+1;
+  var dd=now.getDate();
+  var days=['日','月','火','水','木','金','土'];
+  var dow=days[now.getDay()];
+  document.getElementById('date-display').textContent=name+'さん・'+yyyy+'年'+mm+'月'+dd+'日('+dow+')';
+}
+
+async function loadDashboard(){
+  await loadMonthlyRevenue();
+  await loadKPIs();
+  await loadDailyGoal();
+  await loadCoachRanking();
+  await loadMVP();
+  await loadWeeklyOccupancy();
+  await loadHourlyBookings();
+  await loadLessonRanking();
+  await loadForecast();
+  await loadNotifications();
+  await loadAIAdvice();
+}
+
+async function loadMonthlyRevenue(){
+  try{
+    var now=new Date();
+    var monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    var nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('amount,slot_date').gte('slot_date',monthStart).lt('slot_date',nextMonth);
+    var total=0;
+    if(data){data.forEach(function(b){total+=parseInt(b.amount||0);});}
+    document.getElementById('hero-revenue').textContent='¥'+total.toLocaleString();
+    var prevMonth=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString().split('T')[0];
+    var{data:prev}=await sb.from('bookings').select('amount,slot_date').gte('slot_date',prevMonth).lt('slot_date',monthStart);
+    var prevTotal=0;
+    if(prev){prev.forEach(function(b){prevTotal+=parseInt(b.amount||0);});}
+    var delta=prevTotal>0?Math.round((total-prevTotal)/prevTotal*100):0;
+    var arrow=delta>=0?'▲':'▼';
+    document.getElementById('hero-delta').textContent=arrow+' '+Math.abs(delta)+'%';
+    var currentMonth=now.getMonth()+1;
+    for(var i=0;i<6;i++){
+      var m=currentMonth-5+i;
+      if(m<=0) m+=12;
+      document.getElementById('hero-lbl-'+i).textContent=m+'月';
+    }
+  }catch(e){
+    document.getElementById('hero-revenue').textContent='¥0';
+  }
+}
+
+async function loadKPIs(){
+  try{
+    var today=new Date().toISOString().split('T')[0];
+    var{data:todayBookings}=await sb.from('bookings').select('*').eq('slot_date',today);
+    var count=todayBookings?todayBookings.length:0;
+    document.getElementById('kpi-today-bookings').innerHTML=count+'<span style="font-size:11px;">件</span>';
+    var todayTotal=0;
+    if(todayBookings){todayBookings.forEach(function(b){todayTotal+=parseInt(b.amount||0);});}
+    document.getElementById('kpi-today-sub').textContent='売上見込 ¥'+todayTotal.toLocaleString();
+    var now=new Date();
+    var nowHour=now.getHours();
+    if(todayBookings&&todayBookings.length>0){
+      var upcoming=todayBookings.filter(function(b){return b.slot_hour>nowHour;}).sort(function(a,b){return a.slot_hour-b.slot_hour;});
+      if(upcoming.length>0){
+        var diff=upcoming[0].slot_hour-nowHour;
+        document.getElementById('kpi-next').innerHTML=diff+'<span style="font-size:11px;">h</span>';
+        document.getElementById('kpi-next-sub').textContent=upcoming[0].slot_hour+':00 予約あり';
+      }else{
+        document.getElementById('kpi-next').textContent='--';
+        document.getElementById('kpi-next-sub').textContent='本日終了';
+      }
+    }
+    var monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    var nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().split('T')[0];
+    var{data:monthBookings}=await sb.from('bookings').select('amount').gte('slot_date',monthStart).lt('slot_date',nextMonth);
+    var monthTotal=0;
+    if(monthBookings){monthBookings.forEach(function(b){monthTotal+=parseInt(b.amount||0);});}
+    var goalPct=monthlyGoal>0?Math.round(monthTotal/monthlyGoal*100):0;
+    document.getElementById('kpi-goal').textContent=goalPct+'%';
+    document.getElementById('kpi-goal-bar').style.width=Math.min(goalPct,100)+'%';
+    var remaining=monthlyGoal-monthTotal;
+    if(remaining>0){
+      document.getElementById('kpi-goal-sub').textContent='残¥'+remaining.toLocaleString()+'で達成';
+    }else{
+      document.getElementById('kpi-goal-sub').textContent='🎉 目標達成!';
+    }
+    document.getElementById('yoy-current').textContent='¥'+monthTotal.toLocaleString();
+    var{data:newCustomers}=await sb.from('customers').select('created_at').gte('created_at',monthStart).lt('created_at',nextMonth);
+    var{data:allCustomers}=await sb.from('customers').select('id');
+    var newCount=newCustomers?newCustomers.length:0;
+    var allCount=allCustomers?allCustomers.length:1;
+    var rate=Math.round(newCount/Math.max(allCount-newCount,1)*100);
+    document.getElementById('kpi-newmember').textContent='+'+rate+'%';
+  }catch(e){console.log('KPI:',e);}
+}
+
+async function loadDailyGoal(){
+  try{
+    var today=new Date().toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('amount').eq('slot_date',today);
+    var total=0;
+    if(data){data.forEach(function(b){total+=parseInt(b.amount||0);});}
+    var pct=dailyGoal>0?Math.round(total/dailyGoal*100):0;
+    document.getElementById('goal-current').textContent='¥'+total.toLocaleString();
+    document.getElementById('goal-target').textContent='¥'+dailyGoal.toLocaleString();
+    document.getElementById('goal-pct').textContent=pct+'%';
+    var arc=document.getElementById('goal-arc');
+    var circumference=251;
+    var offset=circumference*(1-Math.min(pct,100)/100);
+    arc.setAttribute('stroke-dashoffset',offset);
+    var remaining=dailyGoal-total;
+    if(remaining>0){
+      document.getElementById('goal-hint').textContent='🔥 残¥'+remaining.toLocaleString()+'で達成!';
+    }else{
+      document.getElementById('goal-hint').textContent='🎉 目標達成!';
+    }
+  }catch(e){}
+}
+
+async function loadCoachRanking(){
+  try{
+    var now=new Date();
+    var monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    var nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('coach_id,amount').gte('slot_date',monthStart).lt('slot_date',nextMonth);
+    var{data:coaches}=await sb.from('coaches').select('id,name').eq('store_key',currentStore).eq('is_approved',true);
+    var ranking={};
+    if(data){data.forEach(function(b){
+      if(!ranking[b.coach_id]) ranking[b.coach_id]=0;
+      ranking[b.coach_id]+=parseInt(b.amount||0);
+    });}
+    var list=[];
+    if(coaches){coaches.forEach(function(c){
+      list.push({id:c.id,name:c.name||'未設定',amount:ranking[c.id]||0});
+    });}
+    list.sort(function(a,b){return b.amount-a.amount;});
+    list=list.slice(0,3);
+    var html='';
+    if(list.length===0){
+      html='<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">在籍コーチがいません</div>';
+    }else{
+      var maxAmount=list[0].amount||1;
+      list.forEach(function(c,i){
+        var medal=['🥇','🥈','🥉'][i];
+        var medalCls=['medal-gold','medal-silver','medal-bronze'][i];
+        var barCls=['ranking-bar-1','ranking-bar-2','ranking-bar-3'][i];
+        var pct=maxAmount>0?c.amount/maxAmount*100:0;
+        var initial=c.name.charAt(0);
+        var amountDisp=c.amount>=1000?'¥'+Math.round(c.amount/1000)+'k':'¥'+c.amount;
+        html+='<div class="ranking-row">'+
+          '<div class="medal '+medalCls+'">'+medal+'</div>'+
+          '<div class="ranking-avatar">'+initial+'</div>'+
+          '<div class="ranking-main"><div class="ranking-name">'+c.name+'</div>'+
+          '<div class="ranking-bar"><div class="ranking-bar-fill '+barCls+'" style="width:'+pct+'%;"></div></div></div>'+
+          '<div class="ranking-amount">'+amountDisp+'</div></div>';
+      });
+    }
+    document.getElementById('coach-ranking').innerHTML=html;
+  }catch(e){}
+}
+
+async function loadMVP(){
+  try{
+    var today=new Date().toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('coach_id,amount').eq('slot_date',today);
+    var{data:coaches}=await sb.from('coaches').select('id,name').eq('store_key',currentStore).eq('is_approved',true);
+    var ranking={};
+    if(data){data.forEach(function(b){
+      if(!ranking[b.coach_id]){ranking[b.coach_id]={count:0,amount:0};}
+      ranking[b.coach_id].count++;
+      ranking[b.coach_id].amount+=parseInt(b.amount||0);
+    });}
+    var topCoach=null;
+    var topAmount=0;
+    Object.keys(ranking).forEach(function(k){
+      if(ranking[k].amount>topAmount){topAmount=ranking[k].amount;topCoach=k;}
+    });
+    if(topCoach&&coaches){
+      var coach=coaches.find(function(c){return c.id===topCoach;});
+      if(coach){
+        var initial=(coach.name||'?').charAt(0);
+        document.getElementById('mvp-container').innerHTML='<div class="mvp-card">'+
+          '<div class="mvp-avatar">'+initial+'</div>'+
+          '<div class="mvp-info"><div class="mvp-name">'+(coach.name||'未設定')+'さん</div>'+
+          '<div class="mvp-meta">今日の予約 '+ranking[topCoach].count+'件・売上 ¥'+ranking[topCoach].amount.toLocaleString()+'</div></div>'+
+          '<div class="mvp-badge">No.1</div></div>';
+        return;
+      }
+    }
+    document.getElementById('mvp-container').innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">本日の予約がありません</div>';
+  }catch(e){}
+}
+
+async function loadWeeklyOccupancy(){
+  try{
+    var now=new Date();
+    var dayOfWeek=now.getDay();
+    var monday=new Date(now);
+    monday.setDate(now.getDate()-(dayOfWeek===0?6:dayOfWeek-1));
+    monday.setHours(0,0,0,0);
+    var rates=[];
+    for(var i=0;i<7;i++){
+      var d=new Date(monday);
+      d.setDate(monday.getDate()+i);
+      var dateStr=d.toISOString().split('T')[0];
+      var{data:schedules}=await sb.from('schedules').select('id').eq('slot_date',dateStr);
+      var{data:bookings}=await sb.from('bookings').select('id').eq('slot_date',dateStr);
+      var total=schedules?schedules.length:0;
+      var booked=bookings?bookings.length:0;
+      var rate=total>0?Math.round(booked/total*100):0;
+      rates.push(rate);
+    }
+    var maxRate=Math.max.apply(null,rates);
+    var grid=document.getElementById('week-grid');
+    var bars=grid.querySelectorAll('.week-bar');
+    rates.forEach(function(r,i){
+      if(i>=bars.length) return;
+      var bar=bars[i];
+      bar.className='week-bar';
+      if(r>=90) bar.classList.add('vhigh');
+      else if(r>=70) bar.classList.add('high');
+      else if(r>=50) bar.classList.add('mid');
+      else bar.classList.add('low');
+      bar.querySelector('.week-bar-val').textContent=r+'%';
+    });
+    var days=['月','火','水','木','金','土','日'];
+    var maxIdx=rates.indexOf(maxRate);
+    if(maxRate>0){
+      document.getElementById('week-hint').textContent='🔥 '+days[maxIdx]+'曜がピーク!';
+    }
+  }catch(e){}
+}
+
+async function loadHourlyBookings(){
+  try{
+    var now=new Date();
+    var monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    var nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('slot_hour').gte('slot_date',monthStart).lt('slot_date',nextMonth);
+    var hourCount={};
+    if(data){data.forEach(function(b){
+      hourCount[b.slot_hour]=(hourCount[b.slot_hour]||0)+1;
+    });}
+    var peakHour=null;
+    var peakCount=0;
+    Object.keys(hourCount).forEach(function(h){
+      if(hourCount[h]>peakCount){peakCount=hourCount[h];peakHour=h;}
+    });
+    if(peakHour!==null){
+      document.getElementById('hour-hint').textContent='⏰ 人気時間帯:'+peakHour+'-'+(parseInt(peakHour)+1)+'時';
+    }
+  }catch(e){}
+}
+
+async function loadLessonRanking(){
+  try{
+    var now=new Date();
+    var monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    var nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('lesson_type').gte('slot_date',monthStart).lt('slot_date',nextMonth);
+    if(!data||data.length===0) return;
+    var counts={};
+    data.forEach(function(b){counts[b.lesson_type]=(counts[b.lesson_type]||0)+1;});
+    var total=data.length;
+    var order=['indoor','round','accompany','comp','custom'];
+    var labels={indoor:'インドアゴルフ',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'独自プラン'};
+    var medals=['🥇','🥈','🥉','',''];
+    var colors=['#1D9E75','#5DCAA5','#9FE1CB','#E1F5EE','#E1F5EE'];
+    var html='';
+    order.forEach(function(type,i){
+      var pct=counts[type]?Math.round(counts[type]/total*100):0;
+      var prefix=medals[i]?medals[i]+' ':'';
+      var style=i<3?'':'color:var(--muted);';
+      html+='<div class="lesson-rank-row" style="'+style+'"><span>'+prefix+labels[type]+'</span><span class="lesson-rank-val">'+pct+'%</span></div>'+
+            '<div class="lesson-rank-bar"><div style="background:'+colors[i]+';height:100%;width:'+pct+'%;"></div></div>';
+    });
+    document.getElementById('lesson-ranking').innerHTML=html;
+  }catch(e){}
+}
+
+async function loadForecast(){
+  try{
+    var now=new Date();
+    var totals=[];
+    for(var i=2;i>=0;i--){
+      var start=new Date(now.getFullYear(),now.getMonth()-i,1).toISOString().split('T')[0];
+      var end=new Date(now.getFullYear(),now.getMonth()-i+1,1).toISOString().split('T')[0];
+      var{data}=await sb.from('bookings').select('amount').gte('slot_date',start).lt('slot_date',end);
+      var sum=0;
+      if(data){data.forEach(function(b){sum+=parseInt(b.amount||0);});}
+      totals.push(sum);
+    }
+    var avg=(totals[0]+totals[1]+totals[2])/3;
+    var growth=totals[2]>0&&totals[1]>0?(totals[2]-totals[1])/totals[1]:0.05;
+    var forecast=Math.round(totals[2]+avg*growth)||Math.round(avg*1.05);
+    if(forecast<0) forecast=0;
+    document.getElementById('forecast-value').textContent='¥'+Math.round(forecast/1000)+'k';
+    var deltaPct=totals[2]>0?Math.round((forecast-totals[2])/totals[2]*100):0;
+    var arrow=deltaPct>=0?'📈':'📉';
+    document.getElementById('forecast-delta').textContent=arrow+' '+Math.abs(deltaPct)+'%変動見込み';
+  }catch(e){
+    document.getElementById('forecast-value').textContent='¥0';
+    document.getElementById('forecast-delta').textContent='📊 データ蓄積中';
+  }
+}
+
+async function loadNotifications(){
+  try{
+    var now=new Date();
+    var notifications=[];
+    var weekAgo=new Date();
+    weekAgo.setDate(weekAgo.getDate()-7);
+    var{data:newCustomers}=await sb.from('customers').select('name,created_at').gte('created_at',weekAgo.toISOString()).order('created_at',{ascending:false}).limit(1);
+    if(newCustomers&&newCustomers.length>0){
+      notifications.push({type:'success',text:'🎉 <strong>新規入会</strong>!'+newCustomers[0].name+'様'});
+    }
+    var{data:pending}=await sb.from('coaches').select('id').eq('store_key',currentStore).eq('is_approved',false).eq('is_rejected',false);
+    if(pending&&pending.length>0){
+      notifications.push({type:'warning',text:'⭐ <strong>'+pending.length+'名</strong>のコーチが承認待ちです'});
+    }
+    var tomorrow=new Date(now.getTime()+86400000).toISOString().split('T')[0];
+    var{data:tomorrowSch}=await sb.from('schedules').select('id').eq('slot_date',tomorrow).eq('status','available');
+    if(tomorrowSch&&tomorrowSch.length>0){
+      notifications.push({type:'danger',text:'⚠️ 明日<strong>'+tomorrowSch.length+'枠</strong>の空きあり・告知推奨'});
+    }
+    if(notifications.length===0){
+      notifications.push({type:'success',text:'🎉 MyCoach ダッシュボードへようこそ!'});
+    }
+    var html='';
+    notifications.forEach(function(n){
+      html+='<div class="notification notification-'+n.type+'">'+n.text+'</div>';
+    });
+    document.getElementById('notifications').innerHTML=html;
+  }catch(e){}
+}
+
+async function loadAIAdvice(){
+  try{
+    var advice=[];
+    advice.push('💡 土日の稼働率が低めの場合、<span class="ai-highlight">土日限定プラン</span>で集客改善の余地があります。');
+    var now=new Date();
+    var monthStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString().split('T')[0];
+    var nextMonth=new Date(now.getFullYear(),now.getMonth()+1,1).toISOString().split('T')[0];
+    var{data}=await sb.from('bookings').select('amount').gte('slot_date',monthStart).lt('slot_date',nextMonth);
+    if(data&&data.length>0){
+      advice.push('📈 今月の予約データは<span class="ai-highlight">'+data.length+'件</span>。データが溜まるほどAI分析の精度が向上します。');
+    }else{
+      advice.push('📊 予約データが蓄積されるほど、経営に役立つ<span class="ai-highlight">具体的な提案</span>が表示されます。');
+    }
+    var html='';
+    advice.forEach(function(a){html+='<div class="ai-item">'+a+'</div>';});
+    document.getElementById('ai-advice').innerHTML=html;
+  }catch(e){}
+}
+
 function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
@@ -469,26 +1116,14 @@ function switchTab(tab,btn){
   btn.classList.add('active');
 }
 
-// 統計
-function loadStats(){
-  document.getElementById('stat-coaches').textContent='3';
-  document.getElementById('stat-pending').textContent='1';
-  document.getElementById('stat-today-bookings').textContent='4';
-  document.getElementById('stat-month-sales').textContent='¥82k';
-}
-
-// 承認設定
 function setApprovalMode(mode,btn){
   approvalMode=mode;
   document.querySelectorAll('#approval-mode-btns .select-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
   document.getElementById('approval-mode-desc').textContent=approvalDescs[mode];
 }
-function saveApprovalMode(){
-  showMsg('msg-coaches','審査設定を保存しました！','success');
-}
+function saveApprovalMode(){showMsg('msg-coaches','審査設定を保存しました！','success');}
 
-// コーチ一覧
 async function loadPendingCoaches(){
   var{data}=await sb.from('coaches').select('*').eq('store_key',currentStore).eq('is_approved',false).eq('is_rejected',false);
   var list=document.getElementById('pending-coaches');
@@ -501,7 +1136,6 @@ async function loadPendingCoaches(){
   }
   count.textContent=data.length+'件';
   var html=data.map(function(c){
-    var avatar=c.photo_url?'<img src="'+c.photo_url+'" alt="">':c.name?c.name.charAt(0):'？';
     return '<div class="coach-item">'+
       '<div class="coach-avatar">'+(c.photo_url?'<img src="'+c.photo_url+'" alt="">':c.name?c.name.charAt(0):'？')+'</div>'+
       '<div class="coach-info"><div class="coach-name">'+(c.name||'未設定')+'</div><div class="coach-meta">'+(c.email||'')+'</div></div>'+
@@ -530,19 +1164,18 @@ async function approveCoach(id){
   if(!confirm('このコーチを承認しますか？'))return;
   await sb.from('coaches').update({is_approved:true}).eq('id',id);
   showMsg('msg-coaches','コーチを承認しました！','success');
-  loadPendingCoaches(); loadApprovedCoaches(); loadStats();
+  loadPendingCoaches(); loadApprovedCoaches();
 }
 async function rejectCoach(id){
   if(!confirm('このコーチを却下しますか？'))return;
   await sb.from('coaches').update({is_rejected:true}).eq('id',id);
   showMsg('msg-coaches','コーチを却下しました。','success');
-  loadPendingCoaches(); loadStats();
+  loadPendingCoaches();
 }
 function scheduleInterview(id){
   alert('面接日程調整機能は近日実装予定です。LINEでご連絡ください。');
 }
 
-// 打席管理
 function loadSeats(){
   var savedSeats=localStorage.getItem('gc_seats_'+currentStore);
   seats=savedSeats?JSON.parse(savedSeats):[
@@ -617,17 +1250,24 @@ function deleteSeat(id){
   renderSeats();
 }
 
-// 予約フィルター
 function filterBookings(range,btn){
   document.querySelectorAll('.page#page-bookings .select-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
 }
 
-// 設定保存
 function saveStoreSettings(){showMsg('msg-settings','営業設定を保存しました！','success');}
 function saveFeeSettings(){showMsg('msg-settings','手数料設定を保存しました！','success');}
+function saveGoalSettings(){
+  var d=parseInt(document.getElementById('daily-goal').value)||40000;
+  var m=parseInt(document.getElementById('monthly-goal').value)||1000000;
+  dailyGoal=d; monthlyGoal=m;
+  localStorage.setItem('gc_daily_goal_'+currentStore,d);
+  localStorage.setItem('gc_monthly_goal_'+currentStore,m);
+  showMsg('msg-settings','目標設定を保存しました!ホーム画面に反映されます','success');
+  loadDailyGoal();
+  loadKPIs();
+}
 
-// 掲示板
 function postBoard(){
   var title=document.getElementById('board-title').value.trim();
   var body=document.getElementById('board-body').value.trim();
@@ -641,7 +1281,6 @@ function postBoard(){
   showMsg('msg-settings','投稿しました！','success');
 }
 
-// メッセージ
 function showMsg(id,text,type){
   var el=document.getElementById(id);
   if(!el)return;
@@ -649,7 +1288,6 @@ function showMsg(id,text,type){
   setTimeout(function(){el.style.display='none';},3000);
 }
 
-// ログアウト
 async function doLogout(){
   await sb.auth.signOut();
   window.location.href='index.html?role=store';
