@@ -989,8 +989,8 @@ async function loadBookings(){
 function renderBookings(filter){
   currentBookingFilter=filter;
   var filtered=allBookings;
-  if(filter==='pending'){filtered=allBookings.filter(function(b){return (b.status||'pending')==='pending';});}
-  else if(filter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved';});}
+  if(filter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
+  else if(filter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
   else if(filter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
   if(filtered.length===0){
     document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">該当する予約がありません</div><div class="booking-empty-text">フィルタを変更してください</div></div>';
@@ -1015,15 +1015,23 @@ function renderBookingCard(b,idx){
   var coachName=coach.name||'コーチ';
   var coachInitial=coachName.charAt(0);
   var coachPhoto=coach.photo_url?'<img src="'+coach.photo_url+'" alt="'+coachName+'">':coachInitial;
-  var status=b.status||'pending';
-  var statusLabel={pending:'⏳ 承認待ち',approved:'✅ 承認済み',completed:'✓ 完了',cancelled:'🚫 キャンセル'}[status]||statusLabel;
-  if(!{pending:1,approved:1,completed:1,cancelled:1}[status]) statusLabel='⏳ 承認待ち';
+  var rawStatus=b.status||'pending_approval';
+  var status='pending';
+  if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
+  else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
+  else if(rawStatus==='completed') status='completed';
+  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
+  var statusLabel={pending:'⏳ 承認待ち',approved:'✅ 承認済み',completed:'✓ 完了',cancelled:'🚫 キャンセル'}[status]||'⏳ 承認待ち';
+  if(rawStatus==='approved_pending_payment') statusLabel='💳 決済待ち';
+  if(rawStatus==='confirmed') statusLabel='✅ 予約確定';
+  if(rawStatus==='rejected') statusLabel='🚫 却下';
   var msgMap={
     pending:'<div class="bk-msg pending">⏳ コーチの承認をお待ちしています。LINEに通知が届きます。</div>',
     approved:'<div class="bk-msg approved">✅ 承認されました!レッスン当日お待ちしています</div>',
     completed:'<div class="bk-msg completed">✓ レッスン完了しました。ぜひレビューをお願いします</div>',
     cancelled:''
   };
+  if(rawStatus==='approved_pending_payment'){msgMap.approved='<div class="bk-msg approved">💳 承認されました!LINEに届いた決済リンクからお支払いください</div>';}
   var dateStr=formatDateJP(b.booking_date);
   var timeStr=formatBookingTime(b.booking_time);
   var lessonLabel={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'}[b.lesson_type]||b.lesson_type||'レッスン';
@@ -1079,8 +1087,8 @@ function filterBookings(status,btn){
 
 function showBookingDetail(idx){
   var filtered=allBookings;
-  if(currentBookingFilter==='pending'){filtered=allBookings.filter(function(b){return (b.status||'pending')==='pending';});}
-  else if(currentBookingFilter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved';});}
+  if(currentBookingFilter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
+  else if(currentBookingFilter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
   else if(currentBookingFilter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
   var b=filtered[idx];
   if(!b) return;
@@ -1089,13 +1097,21 @@ function showBookingDetail(idx){
   var coachName=coach.name||'コーチ';
   var coachInitial=coachName.charAt(0);
   var coachPhoto=coach.photo_url?'<img src="'+coach.photo_url+'" alt="'+coachName+'">':coachInitial;
-  var status=b.status||'pending';
+  var rawStatus=b.status||'pending_approval';
+  var status='pending';
+  if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
+  else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
+  else if(rawStatus==='completed') status='completed';
+  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
   var statusInfo={
     pending:{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'},
     approved:{icon:'✅',title:'承認済み',sub:'レッスン当日お待ちしています'},
     completed:{icon:'✓',title:'完了',sub:'レッスンありがとうございました'},
     cancelled:{icon:'🚫',title:'キャンセル',sub:''}
   }[status]||{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'};
+  if(rawStatus==='approved_pending_payment'){statusInfo={icon:'💳',title:'決済待ち',sub:'LINEに届いた決済リンクからお支払いください'};}
+  if(rawStatus==='confirmed'){statusInfo={icon:'✅',title:'予約確定',sub:'レッスン当日お待ちしています'};}
+  if(rawStatus==='rejected'){statusInfo={icon:'🚫',title:'却下',sub:'別のコーチ・日程でお試しください'};}
   var countdownHTML='';
   if(status==='pending'||status==='approved'){
     var cd=calcCountdown(b.booking_date,b.booking_time);
