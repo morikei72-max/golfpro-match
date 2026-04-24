@@ -618,9 +618,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="form-group"><label>所属ゴルフ場</label><input type="text" id="mp-home-course" placeholder="例:宝が池ゴルフ場(なければ空欄)"></div>
       <div style="display:flex;gap:8px;margin-bottom:12px;">
         <div class="form-group" style="flex:1;margin-bottom:0;"><label>ハンディキャップ</label><input type="number" id="mp-handicap" placeholder="例:18" min="0" max="54"></div>
-        <div class="form-group" style="flex:1;margin-bottom:0;"><label>年齢層</label>
-          <select id="mp-age-group"><option value="">未選択</option><option value="10s">10代</option><option value="20s">20代</option><option value="30s">30代</option><option value="40s">40代</option><option value="50s">50代</option><option value="60s">60代以上</option></select>
-        </div>
+        <div class="form-group" style="flex:1;margin-bottom:0;"><label>生年月日</label><input type="date" id="mp-birth-date" max="2026-12-31" min="1920-01-01"></div>
       </div>
       <button class="btn-request" onclick="saveMyProfile()">保存する</button>
     </div>
@@ -784,9 +782,6 @@ function resetEntryCoach(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-/* 【2026/4/24 修正】
-   決済モーダルはログイン状態に関係なく最優先で表示する。
-   これによりLINE内ブラウザ(スマホ)でもセッションなしで動作する。 */
 checkPaymentConfirmUrl();
 
 sb.auth.getSession().then(async function(res){
@@ -798,14 +793,25 @@ sb.auth.getSession().then(async function(res){
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
   detectEntryMode();
-  var{data}=await sb.from('customers').select('store_key,member_number,member_type,is_approved').eq('user_id',currentUserId).single();
-  if(data&&data.is_approved){
-    var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-    var storeLabels={kyoto:'Golf Create 戸津池店'};
-    document.getElementById('auth-form').style.display='none';
-    document.getElementById('approved-badge').style.display='block';
-    document.getElementById('approved-detail').textContent=(storeLabels[data.store_key]||data.store_key)+' / '+(typeLabels[data.member_type]||data.member_type);
-    document.getElementById('line-register-area').style.display='none';
+  var{data}=await sb.from('customers').select('store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date').eq('user_id',currentUserId).single();
+  if(data){
+    if(data.is_approved){
+      var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
+      var storeLabels={kyoto:'Golf Create 戸津池店'};
+      document.getElementById('auth-form').style.display='none';
+      document.getElementById('approved-badge').style.display='block';
+      document.getElementById('approved-detail').textContent=(storeLabels[data.store_key]||data.store_key)+' / '+(typeLabels[data.member_type]||data.member_type);
+      document.getElementById('line-register-area').style.display='none';
+    }
+    /* 既存プロフィール情報の読み込み */
+    if(data.name) document.getElementById('mp-name').value=data.name;
+    if(data.furigana) document.getElementById('mp-furigana').value=data.furigana;
+    if(data.email) document.getElementById('mp-email').value=data.email;
+    if(data.phone) document.getElementById('mp-phone').value=data.phone;
+    if(data.golf_history) document.getElementById('mp-golf-history').value=data.golf_history;
+    if(data.home_course) document.getElementById('mp-home-course').value=data.home_course;
+    if(data.handicap) document.getElementById('mp-handicap').value=data.handicap;
+    if(data.birth_date) document.getElementById('mp-birth-date').value=data.birth_date;
   }
   handlePaymentReturn();
   loadBookings();
@@ -826,9 +832,6 @@ var selectedPlan=null;
 var allBookings=[];
 var currentBookingFilter='all';
 
-/* ============================================
-   決済確認モーダル処理(ログイン不要で動作)
-============================================ */
 function checkPaymentConfirmUrl(){
   var params=new URLSearchParams(window.location.search);
   var action=params.get('action');
@@ -1794,7 +1797,7 @@ async function saveMyProfile(){
     phone:document.getElementById('mp-phone').value,
     golf_history:document.getElementById('mp-golf-history').value,
     handicap:document.getElementById('mp-handicap').value||null,
-    age_group:document.getElementById('mp-age-group').value,
+    birth_date:document.getElementById('mp-birth-date').value||null,
     home_course:document.getElementById('mp-home-course').value,
     updated_at:new Date().toISOString()
   };
