@@ -18,16 +18,12 @@ const STORE_KEY_TO_NAME = {
 };
 
 /**
- * 【2026/4/24 追加】
  * 却下理由ボタン → お客様向け定型文のマッピング
- * キー: postback dataで送られる reason_code
- * 値: お客様への表示文
  */
 const REJECTION_REASON_MAP = {
   health: 'コーチの体調不良のため、万全の状態でレッスンをご提供することが難しく、今回は見送らせていただきます',
   schedule: '誠に恐れ入りますが、ご希望の日程でのご対応が難しく、別日程でのご調整をお願いしたく存じます',
   weather: '当日の天候不良が予想されるため、安全とレッスンの品質を考慮し、見送らせていただきます',
-  // 'other' はコーチ入力のテキストをそのまま使う
 };
 
 /**
@@ -312,9 +308,7 @@ function buildApprovalRequestFlex({ bookingId, customerName, lessonType, dateStr
 }
 
 /**
- * 【2026/4/24 追加】
  * 却下理由選択ボタン Flex Message（4ボタン方式）
- * コーチが[❌却下]を押した後に表示される
  */
 function buildRejectionButtonsFlex({ bookingId }) {
   return {
@@ -429,7 +423,6 @@ function _flexRow(label, value) {
 }
 
 /**
- * 【2026/4/24 更新】
  * コーチへの却下理由入力依頼メッセージ（「その他」選択時のみ使用）
  */
 function buildRejectionReasonPromptText() {
@@ -442,7 +435,6 @@ function buildRejectionReasonPromptText() {
 }
 
 /**
- * 【2026/4/24 更新】
  * コーチへの却下完了メッセージ
  */
 function buildRejectionCompleteText({ customerName }) {
@@ -454,7 +446,6 @@ function buildRejectionCompleteText({ customerName }) {
 }
 
 /**
- * 【2026/4/24 更新】
  * お客様への却下通知メッセージ（丁寧なお詫び文）
  */
 function buildRejectionNoticeText({ customerName, coachName, dateStr, timeStr, reason }) {
@@ -480,9 +471,12 @@ function buildRejectionNoticeText({ customerName, coachName, dateStr, timeStr, r
 }
 
 /**
+ * 【2026/4/24 更新】
  * お客様への承認完了＆決済案内メッセージ
+ * 引数に lessonType と minutes を追加（森下様ご指摘対応）
  */
-function buildApprovalCompleteText({ customerName, coachName, dateStr, timeStr, amount, paymentUrl }) {
+function buildApprovalCompleteText({ customerName, coachName, lessonType, minutes, dateStr, timeStr, amount, paymentUrl }) {
+  const minutesStr = minutes ? `${minutes}分` : '—';
   return (
     `【予約承認のお知らせ】\n\n` +
     `${customerName || 'お客様'}様\n\n` +
@@ -490,6 +484,8 @@ function buildApprovalCompleteText({ customerName, coachName, dateStr, timeStr, 
     `下記のリンクからお支払いへお進みください。\n\n` +
     `━━━━━━━━━━━━━━━\n` +
     `コーチ：${coachName || '—'}\n` +
+    `種別：${lessonType || '—'}\n` +
+    `時間：${minutesStr}\n` +
     `日時：${dateStr || '—'} ${timeStr || ''}\n` +
     `金額：¥${Number(amount || 0).toLocaleString()}\n` +
     `━━━━━━━━━━━━━━━\n\n` +
@@ -531,7 +527,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     process.env.SUPABASE_SERVICE_ROLE_KEY
   );
 
-  // 予約情報を取得
   const { data: booking, error: bookingErr } = await supabase
     .from('bookings')
     .select('*')
@@ -543,7 +538,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     return;
   }
 
-  // コーチ情報を取得
   let coach = null;
   if (booking.coach_id) {
     const { data } = await supabase
@@ -554,7 +548,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     coach = data;
   }
 
-  // お客様情報を取得（customer_id または customer_user_id で）
   let customer = null;
   const customerKey = booking.customer_id || booking.customer_user_id;
   if (customerKey) {
@@ -566,7 +559,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     customer = data;
   }
 
-  // 店舗情報
   let storeName = '—';
   if (booking.store_id) {
     const { data } = await supabase
@@ -579,7 +571,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     storeName = STORE_KEY_TO_NAME[booking.store_key] || booking.store_key;
   }
 
-  // 日時フォーマット
   const dateStr = booking.booking_date
     ? formatDateJa(booking.booking_date)
     : '—';
@@ -587,7 +578,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     ? booking.booking_time.substring(0, 5)
     : '';
 
-  // レッスン種別
   const lessonTypeMap = {
     indoor: 'インドアゴルフレッスン',
     round: 'ラウンドレッスン',
@@ -600,7 +590,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   const coachName = coach?.name || booking.coach_name || 'コーチ';
   const customerName = customer?.name || booking.customer_name || 'お客様';
 
-  // コーチへLINE通知
   if (coach?.line_user_id) {
     const coachText = buildCoachNewBookingText({
       coachName,
@@ -617,7 +606,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     console.log('[line-notify] coach has no line_user_id');
   }
 
-  // お客様へLINE通知
   if (customer?.line_user_id) {
     const customerText = buildBookingConfirmedText({
       customerName,
