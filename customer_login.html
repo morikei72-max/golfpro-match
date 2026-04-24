@@ -34,7 +34,7 @@ input::placeholder{color:rgba(255,255,255,0.3);}
 <button class="btn-register" onclick="doRegister()">新規登録はこちら</button>
 <script>
 const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
-(async()=>{const {data:{session}}=await sb.auth.getSession();if(session)location.replace('customer.html');})();
+(async()=>{const {data:{session}}=await sb.auth.getSession();if(session)location.replace('search_hub.html');})();
 async function doLogin(){
   const email=document.getElementById('email').value;
   const pass=document.getElementById('pass').value;
@@ -42,7 +42,7 @@ async function doLogin(){
   err.style.display='none';
   const {error}=await sb.auth.signInWithPassword({email,password:pass});
   if(error){err.textContent='メールアドレスまたはパスワードが正しくありません';err.style.display='block';return;}
-  location.replace('customer.html');
+  location.replace('search_hub.html');
 }
 async function doRegister(){
   const email=document.getElementById('email').value;
