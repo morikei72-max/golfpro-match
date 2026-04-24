@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -56,6 +55,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .store-badge{font-size:10px;font-weight:700;color:var(--g);background:var(--gl);border:1px solid var(--g);padding:3px 8px;border-radius:10px;cursor:pointer;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .header-right{display:flex;align-items:center;gap:8px;}
 .coach-name-hdr{font-size:12px;font-weight:500;}
+.status-badge{font-size:10px;font-weight:700;color:var(--gd);background:var(--gl);border:1px solid var(--g);padding:3px 8px;border-radius:10px;}
 .logout-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);padding:4px 10px;border-radius:20px;cursor:pointer;}
 
 /* ===== タブナビ ===== */
@@ -80,29 +80,145 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .form-input:focus{border-color:var(--g);background:#fff;}
 .form-textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:13px;background:#fafafa;outline:none;resize:none;height:80px;}
 .save-btn{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;}
-
-/* プライバシー注記 */
 .privacy-note{display:flex;align-items:flex-start;gap:6px;background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-bottom:4px;font-size:11px;color:var(--gd);line-height:1.7;}
 .privacy-note-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
 
-/* ===== ホーム ===== */
-.welcome-card{background:linear-gradient(135deg,var(--gd),var(--g));border-radius:16px;padding:20px;margin-bottom:12px;color:#fff;}
-.welcome-name{font-size:18px;font-weight:700;margin-bottom:2px;}
-.welcome-store{font-size:11px;color:rgba(255,255,255,0.6);margin-bottom:12px;}
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.stat-item{background:rgba(255,255,255,0.15);border-radius:10px;padding:10px;text-align:center;}
-.stat-num{font-size:18px;font-weight:900;font-family:'Montserrat',sans-serif;}
-.stat-label{font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;}
-.today-item{display:flex;align-items:center;gap:10px;padding:10px;background:#f7faf8;border-radius:10px;margin-bottom:6px;}
-.today-time{font-size:12px;font-weight:700;color:var(--g);min-width:50px;}
-.today-info{flex:1;}
-.today-name{font-size:13px;font-weight:500;}
-.today-type{font-size:11px;color:var(--muted);}
-.today-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;}
-.badge-indoor{background:var(--gl);color:var(--gd);}
-.badge-round{background:#fff3cd;color:#856404;}
+/* ===== ダッシュボード刷新用CSS ===== */
+.dash-date{font-size:11px;color:var(--muted);margin-bottom:10px;}
+.coach-profile-card{background:#fff;border-radius:12px;padding:12px;margin-bottom:12px;border:0.5px solid var(--border);display:flex;align-items:center;gap:10px;}
+.coach-avatar-lg{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#E1F5EE,#5DCAA5);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gd);font-weight:700;border:2px solid var(--g);overflow:hidden;flex-shrink:0;}
+.coach-avatar-lg img{width:100%;height:100%;object-fit:cover;}
+.coach-info-blk{flex:1;min-width:0;}
+.coach-name-lg{font-size:14px;color:var(--gd);font-weight:700;}
+.coach-meta-lg{font-size:9px;color:var(--muted);margin-top:2px;}
+.coach-level-badge{background:linear-gradient(135deg,#FAC775,#BA7517);color:#fff;padding:4px 8px;border-radius:10px;font-size:9px;font-weight:700;flex-shrink:0;}
 
-/* ===== 料金設定 ===== */
+.hero-revenue-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:12px;padding:14px;color:#fff;margin-bottom:12px;}
+.hero-rev-label{font-size:10px;opacity:0.85;}
+.hero-rev-value-row{display:flex;align-items:baseline;gap:8px;margin-top:2px;}
+.hero-rev-value{font-size:24px;font-weight:700;}
+.hero-rev-delta{font-size:11px;background:rgba(255,255,255,0.25);padding:2px 7px;border-radius:8px;font-weight:500;}
+.hero-rev-bar{display:flex;gap:2px;margin-top:8px;height:6px;border-radius:3px;overflow:hidden;}
+.hero-rev-bar-1{background:#FAC775;}
+.hero-rev-bar-2{background:#9FE1CB;}
+.hero-rev-bar-3{background:#E1F5EE;}
+.hero-rev-legend{display:flex;gap:8px;margin-top:4px;font-size:7px;opacity:0.9;flex-wrap:wrap;}
+
+/* タブ切替 */
+.dash-tabs{background:#fff;border-radius:8px;padding:3px;margin-bottom:12px;display:flex;gap:2px;border:1px solid var(--border);}
+.dash-tab{flex:1;text-align:center;padding:8px;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;border-radius:6px;transition:all .2s;border:none;background:transparent;font-family:inherit;}
+.dash-tab.active{background:linear-gradient(135deg,var(--gd),#0F6E56);color:#fff;font-weight:700;}
+
+/* ダッシュカードベース */
+.dash-card{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;border:0.5px solid var(--border);}
+.dash-section-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:6px;justify-content:space-between;}
+.dash-section-sub{font-size:8px;color:var(--muted);font-weight:400;}
+
+/* 店舗サマリー */
+.store-sum-grid{display:flex;gap:6px;}
+.store-sum-item{flex:1;background:#f8faf9;border-radius:6px;padding:6px;border:1px solid var(--border);text-align:center;}
+.store-sum-item.main{background:linear-gradient(135deg,var(--gl),#9FE1CB);border-color:var(--g);}
+.store-sum-name{font-size:9px;color:var(--gd);font-weight:700;}
+.store-sum-role{font-size:8px;color:#888;}
+.store-sum-item.main .store-sum-role{color:#0F6E56;}
+
+/* ランキングバー */
+.rnk-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.rnk-row:last-child{margin-bottom:0;}
+.rnk-medal{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+.rnk-main{flex:1;min-width:0;}
+.rnk-name-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.rnk-name{font-size:11px;color:var(--gd);font-weight:700;}
+.rnk-amount{font-size:11px;color:var(--gd);font-weight:700;}
+.rnk-bar{background:#f0f4f2;height:5px;border-radius:2px;overflow:hidden;}
+.rnk-bar-fill{height:100%;}
+.rnk-bar-1{background:var(--g);}
+.rnk-bar-2{background:#5DCAA5;}
+.rnk-bar-3{background:#9FE1CB;}
+.rnk-sub{font-size:8px;color:#888;margin-top:2px;}
+
+/* 単価ランキング */
+.price-rank-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+.price-rank-chip{color:#fff;padding:2px 7px;border-radius:3px;font-size:8px;font-weight:700;flex-shrink:0;}
+.price-rank-chip.high{background:var(--gold);}
+.price-rank-chip.mid{background:#5DCAA5;}
+.price-rank-chip.std{background:#9FE1CB;color:var(--gd);}
+.price-rank-name{flex:1;font-size:10px;color:var(--gd);}
+.price-rank-val{font-size:12px;color:var(--gd);font-weight:700;}
+
+/* 3カラム円グラフ */
+.three-circles{display:flex;gap:6px;}
+.tc-item{flex:1;text-align:center;}
+.tc-label{font-size:9px;color:var(--gd);font-weight:700;margin-top:2px;}
+
+/* 目標達成プログレス */
+.goal-progress-row{margin-bottom:8px;}
+.goal-prog-header{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px;}
+.goal-prog-label{color:var(--gd);}
+.goal-prog-val{color:var(--gd);font-weight:700;}
+.goal-prog-val.done{color:var(--gold);}
+.goal-prog-bar{background:#f0f4f2;height:8px;border-radius:4px;overflow:hidden;}
+.goal-prog-fill{background:linear-gradient(90deg,#5DCAA5,var(--g));height:100%;}
+.goal-prog-fill.done{background:linear-gradient(90deg,#FAC775,var(--gold));}
+.goal-prog-sub{font-size:8px;color:var(--muted);margin-top:2px;}
+
+/* AI経営アドバイス */
+.ai-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:10px;padding:14px;color:#fff;margin-bottom:12px;}
+.ai-header{display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;font-weight:700;}
+.ai-item{background:rgba(255,255,255,0.1);border-radius:6px;padding:8px;font-size:10px;line-height:1.6;margin-top:6px;}
+.ai-item:first-of-type{margin-top:0;}
+.ai-highlight{color:#FAC775;font-weight:700;}
+
+/* 累計金額ランキング */
+.cust-rnk-item{background:#f8faf9;border-radius:8px;padding:8px;display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.cust-rnk-item.vip{background:linear-gradient(90deg,#FAEEDA,#FAC775);}
+.cust-rnk-medal{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.cust-rnk-avatar{width:28px;height:28px;border-radius:50%;background:#E1F5EE;display:flex;align-items:center;justify-content:center;color:var(--gd);font-weight:700;font-size:11px;flex-shrink:0;}
+.cust-rnk-vip .cust-rnk-avatar{background:#fff;border:2px solid var(--gold);color:#633806;}
+.cust-rnk-info{flex:1;min-width:0;}
+.cust-rnk-name{font-size:11px;font-weight:700;color:var(--gd);}
+.cust-rnk-name.vip-txt{color:#633806;}
+.cust-rnk-sub{font-size:8px;color:#888;}
+.cust-rnk-sub.vip-sub{color:#BA7517;}
+.cust-rnk-amt{text-align:right;flex-shrink:0;}
+.cust-rnk-amt-val{font-size:12px;color:var(--gd);font-weight:700;}
+.cust-rnk-amt-val.vip-val{color:#633806;}
+.cust-rnk-amt-cnt{font-size:7px;color:#888;}
+
+/* 来店頻度 */
+.freq-row{display:flex;align-items:center;gap:4px;margin-bottom:4px;}
+.freq-num{color:#fff;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;}
+.freq-num-1{background:var(--g);}
+.freq-num-2{background:#5DCAA5;}
+.freq-num-3{background:#9FE1CB;color:var(--gd);}
+.freq-name{flex:1;font-size:9px;color:var(--gd);font-weight:700;}
+.freq-bar-wrap{flex:1;background:#f0f4f2;height:3px;border-radius:2px;}
+.freq-bar-fill{height:100%;border-radius:2px;}
+.freq-bar-fill.f1{background:var(--g);}
+.freq-bar-fill.f2{background:#5DCAA5;}
+.freq-bar-fill.f3{background:#9FE1CB;}
+.freq-cnt{font-size:9px;color:var(--gd);font-weight:700;}
+
+/* ファン */
+.fan-item{background:linear-gradient(90deg,#FFF9F0,transparent);border-left:2px solid var(--gold);padding:6px 8px;border-radius:0 4px 4px 0;margin-bottom:4px;}
+.fan-head{display:flex;justify-content:space-between;align-items:center;}
+.fan-name{font-size:10px;color:#633806;font-weight:700;}
+.fan-stars{color:var(--gold);font-size:9px;}
+.fan-comment{font-size:8px;color:#888;margin-top:2px;font-style:italic;}
+
+/* 要フォロー */
+.follow-item{background:#FCEBEB;border-radius:4px;padding:6px;display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.follow-item.warn{background:#FAEEDA;}
+.follow-avatar{width:24px;height:24px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#791F1F;flex-shrink:0;}
+.follow-item.warn .follow-avatar{color:#633806;}
+.follow-info{flex:1;min-width:0;}
+.follow-name{font-size:10px;color:#791F1F;font-weight:700;}
+.follow-item.warn .follow-name{color:#633806;}
+.follow-days{font-size:7px;color:#888;}
+.follow-btn{background:var(--red);color:#fff;border:none;padding:3px 6px;border-radius:3px;font-size:8px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.follow-item.warn .follow-btn{background:var(--gold);}
+
+/* ===== 料金設定 CSS(既存維持)===== */
 .fee-summary{background:#f7faf8;border-radius:12px;padding:12px;margin-bottom:16px;}
 .fee-summary-title{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;}
 .fee-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
@@ -113,69 +229,24 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .fee-pct.hq{color:var(--red);}
 .fee-pct.coach{color:var(--gd);}
 .fee-lbl{font-size:9px;color:var(--muted);margin-top:2px;}
-
 .price-section{margin-bottom:16px;}
 .price-section-title{font-size:12px;font-weight:700;color:var(--gd);background:var(--gl);padding:6px 10px;border-radius:8px;margin-bottom:8px;}
-
-/* 【第2バッチ】料金行（自由入力対応） */
-.price-item-row{
-  display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:8px;
-  background:#fafafa;border:1px solid var(--border);border-radius:10px;
-  flex-wrap:wrap;
-}
-.price-item-time{
-  width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;
-  font-family:inherit;font-size:12px;text-align:right;outline:none;background:#fff;
-}
-.price-item-bill{
-  width:80px;padding:6px 8px;border:1px solid var(--g);border-radius:6px;
-  font-family:inherit;font-size:12px;text-align:right;outline:none;background:#fff;
-}
-.price-item-take{
-  width:80px;padding:6px 8px;border:1px solid var(--g);border-radius:6px;
-  font-family:inherit;font-size:12px;text-align:right;outline:none;background:var(--gl);
-  font-weight:700;color:var(--gd);
-}
+.price-item-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:8px;background:#fafafa;border:1px solid var(--border);border-radius:10px;flex-wrap:wrap;}
+.price-item-time{width:70px;padding:6px 8px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;text-align:right;outline:none;background:#fff;}
+.price-item-bill{width:80px;padding:6px 8px;border:1px solid var(--g);border-radius:6px;font-family:inherit;font-size:12px;text-align:right;outline:none;background:#fff;}
+.price-item-take{width:80px;padding:6px 8px;border:1px solid var(--g);border-radius:6px;font-family:inherit;font-size:12px;text-align:right;outline:none;background:var(--gl);font-weight:700;color:var(--gd);}
 .price-swap-icon{font-size:13px;color:var(--g);font-weight:700;flex-shrink:0;}
 .price-unit-sm{font-size:10px;color:var(--muted);flex-shrink:0;}
-.price-delete-btn{
-  width:26px;height:26px;border:1px solid var(--border);background:#fff;color:var(--red);
-  border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-}
+.price-delete-btn{width:26px;height:26px;border:1px solid var(--border);background:#fff;color:var(--red);border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .price-delete-btn:hover{background:#fff0f0;border-color:var(--red);}
-.price-add-btn{
-  width:100%;padding:8px;background:#fff;color:var(--g);border:1px dashed var(--g);
-  border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
-  margin-top:4px;
-}
+.price-add-btn{width:100%;padding:8px;background:#fff;color:var(--g);border:1px dashed var(--g);border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;margin-top:4px;}
 .price-add-btn:hover{background:var(--gl);}
-
-/* 最低レッスン時間 */
-.min-lesson-box{
-  background:#fff8e1;border:1px solid var(--gold);border-radius:10px;
-  padding:10px 12px;margin-bottom:12px;
-}
+.min-lesson-box{background:#fff8e1;border:1px solid var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
 .min-lesson-box label{display:block;font-size:11px;color:#633806;margin-bottom:6px;font-weight:700;}
-.min-lesson-input{
-  width:80px;padding:6px 8px;border:1px solid var(--gold);border-radius:6px;
-  font-family:inherit;font-size:13px;text-align:right;outline:none;background:#fff;
-}
-
-/* 逆算注記 */
-.calc-note{
-  background:#f0f7f4;border:1px solid var(--g);border-radius:10px;
-  padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.6;
-}
-
-/* 手数料内訳チップ（料金行の下に表示） */
-.price-breakdown{
-  width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px;
-}
-.bd-chip{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:#fff;border-radius:6px;padding:4px;border:1px solid var(--border);text-align:center;
-}
+.min-lesson-input{width:80px;padding:6px 8px;border:1px solid var(--gold);border-radius:6px;font-family:inherit;font-size:13px;text-align:right;outline:none;background:#fff;}
+.calc-note{background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.6;}
+.price-breakdown{width:100%;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:4px;}
+.bd-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;border-radius:6px;padding:4px;border:1px solid var(--border);text-align:center;}
 .bd-chip.coach-chip{background:var(--gl);border-color:var(--g);}
 .bd-chip-label{font-size:9px;color:var(--muted);margin-bottom:1px;white-space:nowrap;}
 .bd-chip-val{font-size:11px;font-weight:700;font-family:'Montserrat',sans-serif;}
@@ -183,15 +254,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .bd-chip-val.v-store{color:var(--gold);}
 .bd-chip-val.v-hq{color:var(--red);}
 .bd-chip-val.v-coach{color:var(--gd);}
-
-/* 【カテゴリN】独自プラン */
-.custom-plan-card{
-  background:#fafafa;border:1px solid var(--border);border-radius:12px;
-  padding:12px;margin-bottom:10px;position:relative;
-}
-.custom-plan-header{
-  display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;
-}
+.custom-plan-card{background:#fafafa;border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;position:relative;}
+.custom-plan-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
 .custom-plan-num{font-size:11px;font-weight:700;color:var(--gd);}
 .custom-plan-body .form-group{margin-bottom:8px;}
 .custom-plan-body .form-label{font-size:10px;}
@@ -200,16 +264,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .plan-price-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .plan-participants-row{display:flex;gap:8px;}
 .plan-participants-row .form-group{flex:1;}
-.plan-checkbox-row{
-  display:flex;align-items:center;gap:8px;padding:8px 10px;
-  background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:6px;
-}
+.plan-checkbox-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-top:6px;}
 .plan-checkbox-row input[type="checkbox"]{accent-color:var(--g);width:16px;height:16px;}
 .plan-checkbox-row label{font-size:12px;cursor:pointer;flex:1;}
-.plan-greenfee-detail{
-  background:var(--gl);border-radius:8px;padding:10px;margin-top:8px;
-  border:1px solid var(--g);
-}
+.plan-greenfee-detail{background:var(--gl);border-radius:8px;padding:10px;margin-top:8px;border:1px solid var(--g);}
 .plan-greenfee-detail .form-group{margin-bottom:6px;}
 .plan-greenfee-detail .form-label{color:var(--gd);font-weight:700;}
 
@@ -243,8 +301,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .schedule-legend{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
 .legend-dot{width:10px;height:10px;border-radius:2px;}
-
-/* ===== 予約管理 ===== */
 .filter-wrap{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
 .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;}
 .filter-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
@@ -262,12 +318,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .btn-decline{flex:1;padding:8px;background:#fff;color:var(--red);border:1px solid var(--red);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
 .btn-done{flex:1;padding:8px;background:#f0f0f0;color:var(--muted);border:none;border-radius:8px;font-size:12px;cursor:pointer;}
 .btn-emergency{flex:1;padding:8px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
-
-/* キャンセルポリシー表示 */
 .cancel-policy-note{background:#fff0f0;border:1px solid #ffcccc;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#c0392b;line-height:1.8;}
 .cancel-policy-note strong{display:block;margin-bottom:4px;font-size:12px;}
 
-/* ===== 収入管理 ===== */
+/* 収入管理 */
 .income-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
 .income-card{border-radius:12px;padding:14px;color:#fff;text-align:center;}
 .income-card.green{background:linear-gradient(135deg,var(--gd),var(--g));}
@@ -292,7 +346,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .receipt-upload{border:1px dashed var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;margin-top:8px;}
 .pdf-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px;background:var(--gd);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px;}
 
-/* ===== お気に入り ===== */
+/* お気に入り */
 .fav-item{display:flex;align-items:center;gap:12px;padding:12px;background:#f7faf8;border-radius:12px;margin-bottom:8px;}
 .fav-avatar{width:44px;height:44px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--gd);flex-shrink:0;}
 .fav-info{flex:1;}
@@ -300,7 +354,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .fav-date{font-size:10px;color:var(--muted);margin-top:2px;}
 .fav-count{font-size:11px;color:var(--g);font-weight:700;}
 
-/* ===== 掲示板 ===== */
+/* 掲示板 */
 .board-tabs{display:flex;gap:6px;margin-bottom:12px;}
 .board-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;}
 .board-tab.active{background:var(--g);color:#fff;border-color:var(--g);}
@@ -324,12 +378,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .reply-submit{padding:8px 12px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
 .line-reply-btn{display:flex;align-items:center;gap:6px;width:100%;padding:10px;margin-top:6px;background:#06C755;color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;justify-content:center;}
 
-/* ===== メッセージ ===== */
 .msg{padding:10px 14px;border-radius:10px;font-size:12px;margin-bottom:12px;display:none;}
 .msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
 .msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
 
-/* 身分証 */
 .id-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:8px;}
 .id-upload-area:hover{border-color:var(--g);}
 .id-upload-area.uploaded{border-color:var(--g);background:var(--gl);}
@@ -337,7 +389,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .id-status.pending{background:#fff3cd;color:#856404;}
 .id-status.none{background:#f0f0f0;color:var(--muted);}
 
-/* インボイス */
 .invoice-wrap{background:#f7faf8;border-radius:12px;padding:12px;margin-bottom:12px;}
 .invoice-radio{display:flex;gap:16px;margin-bottom:8px;}
 .invoice-radio label{display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;}
@@ -367,10 +418,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
     <input type="text" class="cancel-other-input" id="cancel-other-text" placeholder="その他の理由を入力..." style="display:none">
     <div class="cancel-policy">
-      <strong>⚠️ キャンセルポリシー（コーチ都合の場合）</strong>
-      24時間以上前：ペナルティなし<br>
-      24時間以内：次回レッスン料金を割引（お客様への誠意）<br>
-      当日キャンセル：無料レッスン1回サービス
+      <strong>⚠️ キャンセルポリシー(コーチ都合の場合)</strong>
+      24時間以上前:ペナルティなし<br>
+      24時間以内:次回レッスン料金を割引(お客様への誠意)<br>
+      当日キャンセル:無料レッスン1回サービス
     </div>
     <div class="cancel-actions">
       <button class="btn-cancel-back" onclick="closeCancelModal()">戻る</button>
@@ -386,7 +437,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="store-badge" id="store-badge" onclick="showStoreSelect()">店舗未選択</div>
   </div>
   <div class="header-right">
-    <span class="coach-name-hdr" id="coach-name">コーチ</span>
+    <span class="status-badge">🔥 絶好調</span>
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
 </header>
@@ -395,21 +446,183 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 <main class="main">
   <div id="msg-global" class="msg"></div>
 
-  <!-- ホーム -->
+  <!-- ホーム(全面刷新) -->
   <div class="page active" id="page-home">
-    <div class="welcome-card">
-      <div class="welcome-name" id="welcome-name">こんにちは！</div>
-      <div class="welcome-store" id="welcome-store">店舗を選択してください</div>
-      <div class="stats-grid">
-        <div class="stat-item"><div class="stat-num" id="stat-today">0</div><div class="stat-label">今日の予約</div></div>
-        <div class="stat-item"><div class="stat-num" id="stat-month">0</div><div class="stat-label">今月レッスン</div></div>
-        <div class="stat-item"><div class="stat-num" id="stat-income">¥0</div><div class="stat-label">今月の収入</div></div>
+
+    <!-- 日付表示 -->
+    <div class="dash-date" id="dash-date"></div>
+
+    <!-- コーチプロフィールカード -->
+    <div class="coach-profile-card">
+      <div class="coach-avatar-lg" id="coach-avatar-lg">コ</div>
+      <div class="coach-info-blk">
+        <div class="coach-name-lg" id="welcome-name">コーチ</div>
+        <div class="coach-meta-lg" id="coach-meta-lg">登録:1店舗 · Lv.8</div>
+      </div>
+      <div class="coach-level-badge">Lv.8</div>
+    </div>
+
+    <!-- 今月の総売上ヒーローカード -->
+    <div class="hero-revenue-card">
+      <div class="hero-rev-label">💰 今月の総売上(全店舗合計)</div>
+      <div class="hero-rev-value-row">
+        <span class="hero-rev-value" id="hero-total-revenue">¥0</span>
+        <span class="hero-rev-delta" id="hero-total-delta">▲ --%</span>
+      </div>
+      <div class="hero-rev-bar">
+        <div class="hero-rev-bar-1" id="hero-bar-1" style="width:100%"></div>
+        <div class="hero-rev-bar-2" id="hero-bar-2" style="width:0%"></div>
+        <div class="hero-rev-bar-3" id="hero-bar-3" style="width:0%"></div>
+      </div>
+      <div class="hero-rev-legend" id="hero-legend"></div>
+    </div>
+
+    <!-- 2タブ切替 -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" id="tab-btn-stores" onclick="switchDashTab('stores')">🏪 店舗分析</button>
+      <button class="dash-tab" id="tab-btn-customers" onclick="switchDashTab('customers')">👥 お客様分析</button>
+    </div>
+
+    <!-- ========== タブA:店舗分析 ========== -->
+    <div id="dash-tab-stores">
+
+      <!-- 所属店舗サマリー -->
+      <div class="dash-card">
+        <div class="dash-section-title">🏪 所属店舗 <span class="dash-section-sub" id="store-count-sub">1店舗</span></div>
+        <div class="store-sum-grid" id="store-sum-grid">
+          <div class="store-sum-item main">
+            <div class="store-sum-name">戸津池</div>
+            <div class="store-sum-role">メイン</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 店舗別売上ランキング -->
+      <div class="dash-card">
+        <div class="dash-section-title">🏆 店舗別売上ランキング <span class="dash-section-sub">今月</span></div>
+        <div id="store-revenue-rank">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">データ集計中...</div>
+        </div>
+      </div>
+
+      <!-- 店舗別平均単価 -->
+      <div class="dash-card">
+        <div class="dash-section-title">💎 店舗別平均単価 <span class="dash-section-sub">1レッスンあたり</span></div>
+        <div id="store-price-rank">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">データ集計中...</div>
+        </div>
+      </div>
+
+      <!-- 店舗別リピート率 -->
+      <div class="dash-card">
+        <div class="dash-section-title">🔄 店舗別リピート率 <span class="dash-section-sub">準備中</span></div>
+        <div class="three-circles" id="store-repeat-circles">
+          <div class="tc-item">
+            <svg width="60" height="60" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0f4f2" stroke-width="12"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#1D9E75" stroke-width="12" stroke-dasharray="251" stroke-dashoffset="251" transform="rotate(-90 50 50)" stroke-linecap="round"/>
+              <text x="50" y="55" font-size="18" fill="#085041" text-anchor="middle" font-weight="700">--%</text>
+            </svg>
+            <div class="tc-label">戸津池</div>
+          </div>
+        </div>
+        <div style="background:var(--gl);border-radius:6px;padding:6px 8px;font-size:9px;color:var(--gd);margin-top:8px;">💡 お客様が継続して来てくれているかの指標です</div>
+      </div>
+
+      <!-- 店舗別目標達成率 -->
+      <div class="dash-card">
+        <div class="dash-section-title">🎯 店舗別目標達成率 <span class="dash-section-sub">準備中</span></div>
+        <div id="store-goal-list">
+          <div class="goal-progress-row">
+            <div class="goal-prog-header">
+              <span class="goal-prog-label">戸津池店</span>
+              <span class="goal-prog-val">--%</span>
+            </div>
+            <div class="goal-prog-bar"><div class="goal-prog-fill" style="width:0%"></div></div>
+            <div class="goal-prog-sub">目標設定後に表示されます</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AIキャリア最適化アドバイス -->
+      <div class="ai-card">
+        <div class="ai-header"><span>🤖</span>AIキャリア最適化アドバイス</div>
+        <div class="ai-item">
+          💡 複数店舗に登録すると、<span class="ai-highlight">店舗別比較</span>で最適な働き方が見えてきます。
+        </div>
+        <div class="ai-item">
+          📈 予約データが蓄積されると、<span class="ai-highlight">単価の高い店舗</span>や<span class="ai-highlight">リピート率の高い時間帯</span>を自動分析します。
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========== タブB:お客様分析 ========== -->
+    <div id="dash-tab-customers" style="display:none;">
+
+      <!-- 累計金額ランキング -->
+      <div class="dash-card">
+        <div class="dash-section-title">💰 累計金額ランキング <span class="dash-section-sub">Top 5</span></div>
+        <div id="customer-amount-rank">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">データ集計中...</div>
+        </div>
+      </div>
+
+      <!-- 来店頻度ランキング -->
+      <div class="dash-card">
+        <div class="dash-section-title">🔄 来店頻度ランキング <span class="dash-section-sub">今月</span></div>
+        <div id="customer-freq-rank">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">データ集計中...</div>
+        </div>
+      </div>
+
+      <!-- ★5評価のファン -->
+      <div class="dash-card">
+        <div class="dash-section-title">⭐ ★5評価のファン <span class="dash-section-sub">準備中</span></div>
+        <div id="customer-fan-list">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">レビュー機能実装後に表示されます</div>
+        </div>
+        <div style="background:#FFF9F0;border-radius:6px;padding:6px 8px;font-size:9px;color:#633806;margin-top:8px;">💛 お客様からの評価が見られる機能を準備中です</div>
+      </div>
+
+      <!-- 単価ランキング -->
+      <div class="dash-card">
+        <div class="dash-section-title">🎯 単価ランキング <span class="dash-section-sub">1回あたり</span></div>
+        <div id="customer-unit-rank">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">データ集計中...</div>
+        </div>
+      </div>
+
+      <!-- 要フォロー顧客 -->
+      <div class="dash-card">
+        <div class="dash-section-title">⚠️ 要フォロー(離脱予備軍)</div>
+        <div id="customer-follow-list">
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">データ集計中...</div>
+        </div>
+        <div style="background:var(--gl);border-radius:6px;padding:6px 8px;font-size:9px;color:var(--gd);margin-top:8px;">💡 30日以上来店のないお客様をお知らせします</div>
+      </div>
+
+      <!-- 顧客AI分析 -->
+      <div class="ai-card">
+        <div class="ai-header"><span>🤖</span>顧客AI分析</div>
+        <div class="ai-item" id="ai-customer-insight">
+          💎 予約データが蓄積されると、<span class="ai-highlight">VIP顧客の特定</span>や<span class="ai-highlight">離脱リスク</span>を自動で通知します。
+        </div>
+        <div class="ai-item">
+          🎯 高単価リピーターには<span class="ai-highlight">特別プラン</span>の提案が効果的です。
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 今日の予定(共通) -->
+    <div class="dash-card">
+      <div class="dash-section-title">📅 今日の予定</div>
+      <div id="today-list">
+        <div style="color:var(--muted);font-size:12px;text-align:center;padding:12px;">本日の予定はありません</div>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">今日の予定</div>
-      <div id="today-list"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">本日の予定はありません</div></div>
-    </div>
+
   </div>
 
   <!-- プロフィール -->
@@ -428,28 +641,20 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="card">
       <div class="card-title">基本情報</div>
       <div class="form-group"><label class="form-label">お名前 <span style="color:var(--red)">※必須</span> <span style="color:var(--g)">👁 お客様に表示されます</span></label><input type="text" class="form-input" id="prof-name" placeholder="森下 啓介"></div>
-
-      <!-- プライバシー注記 -->
       <div class="privacy-note">
         <span class="privacy-note-icon">🔒</span>
         <span>以下の住所・生年月日・電話番号はお客様には一切公開されません。本人確認の目的のみに使用し、第三者への提供は行いません。</span>
       </div>
-
       <div class="form-group"><label class="form-label">住所 <span style="color:var(--red)">※必須</span></label><input type="text" class="form-input" id="prof-address" placeholder="京都府八幡市〇〇町1-1"></div>
       <div class="form-group"><label class="form-label">生年月日 <span style="color:var(--red)">※必須</span></label><input type="date" class="form-input" id="prof-birth"></div>
       <div class="form-group"><label class="form-label">電話番号</label><input type="tel" class="form-input" id="prof-tel" placeholder="090-0000-0000"></div>
       <div class="form-group"><label class="form-label">自己紹介 <span style="color:var(--g)">👁 お客様に表示されます</span></label><textarea class="form-textarea" id="prof-bio" placeholder="コーチとしての経歴や指導スタイルを入力してください"></textarea></div>
-
-      <!-- 修正メモ㉓：保有資格欄追加 -->
       <div class="form-group">
         <label class="form-label">保有資格 <span style="color:var(--g)">👁 お客様に表示されます</span></label>
-        <input type="text" class="form-input" id="prof-license" placeholder="例：PGA公認ティーチングプロ、日本ゴルフ協会公認など">
+        <input type="text" class="form-input" id="prof-license" placeholder="例:PGA公認ティーチングプロ、日本ゴルフ協会公認など">
         <div style="font-size:10px;color:var(--muted);margin-top:4px;">複数ある場合は「、」で区切って入力してください</div>
       </div>
-
       <div class="form-group"><label class="form-label">得意分野 <span style="color:var(--g)">👁 お客様に表示されます</span></label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
-
-      <!-- SNS・リンク -->
       <div style="margin-top:16px;padding:12px;background:#f7faf8;border-radius:10px;border:1px solid var(--border);">
         <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:10px;">📱 SNS・リンク <span style="color:var(--g);font-weight:400;font-size:10px;">👁 お客様に表示されます</span></div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">SNSアカウントや公式サイトのURLを登録すると、お客様のコーチ選びの参考になります。</div>
@@ -460,12 +665,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="form-group"><label class="form-label">📘 Facebook</label><input type="url" class="form-input" id="prof-facebook" placeholder="https://facebook.com/your_account"></div>
         <div class="form-group"><label class="form-label">🌐 公式サイト</label><input type="url" class="form-input" id="prof-website" placeholder="https://your-site.com"></div>
       </div>
-
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
     </div>
 
     <div class="card">
-      <div class="card-title">身分証明書 <span style="font-size:10px;color:var(--red);font-weight:400">※必須（本人確認・なりすまし防止）</span></div>
+      <div class="card-title">身分証明書 <span style="font-size:10px;color:var(--red);font-weight:400">※必須(本人確認・なりすまし防止)</span></div>
       <div class="id-upload-area" id="id-upload-area" onclick="document.getElementById('id-input').click()">
         <div style="font-size:28px;margin-bottom:8px;">🪪</div>
         <div style="font-size:12px;color:var(--muted);">運転免許証・マイナンバーカード等<br>タップしてアップロード</div>
@@ -483,14 +687,14 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <label><input type="radio" name="invoice" value="yes" onchange="toggleInvoice(this)"> 登録あり</label>
           <label><input type="radio" name="invoice" value="no" onchange="toggleInvoice(this)" checked> 登録なし</label>
         </div>
-        <div id="invoice-num-wrap" style="display:none"><input type="text" class="form-input" id="invoice-num" placeholder="T1234567890123（13桁）"></div>
+        <div id="invoice-num-wrap" style="display:none"><input type="text" class="form-input" id="invoice-num" placeholder="T1234567890123(13桁)"></div>
         <div class="invoice-warning" id="invoice-warning">ℹ️ インボイス登録番号をお持ちの方は「登録あり」を選択して番号を入力してください。登録は任意です。→ <a href="https://www.nta.go.jp/taxes/shiraberu/zeimokubetsu/shohi/keigenzeiritsu/invoice_kojin.htm" target="_blank" style="color:var(--g)">国税庁サイトで確認</a></div>
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
   </div>
 
-  <!-- 料金設定（第2バッチ全面改修） -->
+  <!-- 料金設定 -->
   <div class="page" id="page-price">
     <div class="card">
       <div class="card-title">手数料一覧</div>
@@ -508,49 +712,35 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
     <div class="card">
       <div class="card-title">料金設定</div>
-
-      <!-- 最低レッスン時間（カテゴリL） -->
       <div class="min-lesson-box">
         <label>⏱ 最低レッスン時間(インドアのみ)</label>
         <input type="number" class="min-lesson-input" id="min-lesson-minutes" placeholder="30" min="5" step="5">
         <span style="font-size:11px;color:#633806;margin-left:4px;">分 ／ この時間未満の予約は受付不可</span>
       </div>
-
-      <!-- 料金逆算ガイド（カテゴリM） -->
       <div class="calc-note">
-        💡 <strong>料金逆算機能</strong>：請求額⇄手取り額はどちらからでも入力できます。<br>
+        💡 <strong>料金逆算機能</strong>:請求額⇄手取り額はどちらからでも入力できます。<br>
         手取り額から逆算する場合、請求額は100円単位で切り上げます。これによりコーチの目標手取りを確実に保証します。
       </div>
-
-      <!-- インドアレッスン（カテゴリL・自由入力） -->
       <div class="price-section">
         <div class="price-section-title">🏌 インドアゴルフレッスン</div>
         <div id="indoor-items"></div>
         <button class="price-add-btn" onclick="addPriceItem('indoor')">＋ 時間と料金を追加</button>
       </div>
-
-      <!-- ラウンドレッスン -->
       <div class="price-section">
         <div class="price-section-title">⛳ ラウンドレッスン</div>
         <div id="round-items"></div>
         <button class="price-add-btn" onclick="addPriceItem('round')">＋ 料金を追加</button>
       </div>
-
-      <!-- 同伴ラウンド -->
       <div class="price-section">
         <div class="price-section-title">🚗 同伴ラウンド</div>
         <div id="accompany-items"></div>
         <button class="price-add-btn" onclick="addPriceItem('accompany')">＋ 料金を追加</button>
       </div>
-
-      <!-- コンペ参加 -->
       <div class="price-section">
         <div class="price-section-title">🏆 コンペ参加</div>
         <div id="comp-items"></div>
         <button class="price-add-btn" onclick="addPriceItem('comp')">＋ 料金を追加</button>
       </div>
-
-      <!-- その他・コーチ独自プラン（カテゴリN） -->
       <div class="price-section">
         <div class="price-section-title">💡 その他・コーチ独自プラン</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.6;">
@@ -559,7 +749,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div id="custom-plans-container"></div>
         <button class="price-add-btn" onclick="addCustomPlan()">＋ 新しいプランを追加</button>
       </div>
-
       <button class="save-btn" onclick="savePrices()">料金を保存</button>
     </div>
   </div>
@@ -573,8 +762,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
         <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
       </div>
-
-      <!-- 週間ビュー -->
       <div id="view-week">
         <div class="week-nav">
           <button class="week-nav-btn" onclick="moveWeek(-1)">‹</button>
@@ -593,8 +780,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
         </div>
       </div>
-
-      <!-- 月間ビュー -->
       <div id="view-month" style="display:none">
         <div class="month-nav">
           <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
@@ -617,13 +802,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="card">
       <div class="card-title">予約管理</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="booking-store-label">店舗を選択してください</div>
-
-      <!-- キャンセルポリシー表示 -->
       <div class="cancel-policy-note">
         <strong>🚨 緊急キャンセルについて</strong>
         やむを得ない事情(病気・家族の緊急事態・事故等)の場合は「緊急キャンセル」ボタンを押してください。お客様・店舗へ自動通知されます。
       </div>
-
       <div class="filter-wrap">
         <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
         <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
@@ -711,15 +893,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- お気に入り -->
-  <div class="page" id="page-favorites">
-    <div class="card">
-      <div class="card-title">お気に入り登録者</div>
-      <div class="fav-item"><div class="fav-avatar">山</div><div class="fav-info"><div class="fav-name">山田 太郎</div><div class="fav-date">登録日：2026/04/01</div></div><div class="fav-count">予約3回</div></div>
-      <div class="fav-item"><div class="fav-avatar">鈴</div><div class="fav-info"><div class="fav-name">鈴木 花子</div><div class="fav-date">登録日：2026/03/20</div></div><div class="fav-count">予約1回</div></div>
-    </div>
-  </div>
-
   <!-- 掲示板 -->
   <div class="page" id="page-board">
     <div class="board-tabs">
@@ -761,7 +934,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>収入</button>
   <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>掲示板</button>
 </nav>
-
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -791,18 +963,25 @@ let customPlanCounter=0;
   if(!session){window.location.replace(BASE+'index.html?role=coach');return;}
   const user=session.user;
   currentAuthId=user.id;
-  // coachesテーブルから正しいcoach_idを取得(FK制約対応)
   const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name').eq('user_id',user.id).maybeSingle();
   if(coachErr){console.error('coach取得エラー',coachErr);alert('❌ コーチ情報の取得に失敗しました: '+coachErr.message);return;}
   if(!coachRow){alert('❌ このアカウントにはコーチ情報が登録されていません。\n先にプロフィール画面で基本情報を保存してください。');}
   currentCoachId=coachRow?coachRow.id:null;
   const name=coachRow?.name||user.user_metadata?.name||'コーチ';
-  document.getElementById('coach-name').textContent=name;
-  document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
+  document.getElementById('welcome-name').textContent=name;
+  /* アバターイニシャル */
+  const initial=name.charAt(0)||'コ';
+  document.getElementById('coach-avatar-lg').textContent=initial;
+  /* 今日の日付 */
+  const today=new Date();
+  const days=['日','月','火','水','木','金','土'];
+  const dateStr=`${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
+  document.getElementById('dash-date').textContent=`${name}さん・${dateStr}`;
   buildStoreOptions();
   buildWeekGrid();
   buildMonthGrid();
   await loadProfile(user.id);
+  await loadDashboardData();
 })();
 
 /* ===== 店舗選択 ===== */
@@ -819,7 +998,6 @@ async function selectStore(key){
   currentStore=key;const s=stores[key];
   document.getElementById('store-overlay').classList.add('hidden');
   document.getElementById('store-badge').textContent=s.name;
-  document.getElementById('welcome-store').textContent='📍 '+s.name;
   document.getElementById('schedule-store-label').textContent='📍 スケジュールは全店舗共通です';
   document.getElementById('booking-store-label').textContent='📍 '+s.name+' の予約';
   const coachPct=100-s.fees.indoor-s.hqFee-s.stripeFee;
@@ -827,24 +1005,347 @@ async function selectStore(key){
   document.getElementById('fee-store').textContent=s.fees.indoor+'%';
   document.getElementById('fee-hq').textContent=s.hqFee+'%';
   document.getElementById('fee-coach').textContent=coachPct.toFixed(1)+'%';
-  document.getElementById('stat-today').textContent='2';
-  document.getElementById('stat-month').textContent='18';
-  document.getElementById('stat-income').textContent='¥58,000';
-  document.getElementById('today-list').innerHTML=`
-    <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
-    <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
-  `;
-  // 店舗IDはstoresオブジェクトから取得(DB問合せ不要)
   if(s.id)currentStoreId=s.id;
-  // 料金データ読み込み
   await loadPrices();
-  // 全料金行を再計算
   recalcAllPrices();
+  await loadDashboardData();
 }
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
 
-/* ===== 【第2バッチ】料金計算ユーティリティ ===== */
-// 既存のcalcTake関数：請求額→手取り計算(単体数値版)
+/* ===== ダッシュボードデータ読み込み ===== */
+async function loadDashboardData(){
+  if(!currentCoachId){
+    document.getElementById('today-list').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px;">コーチ情報を設定してください</div>';
+    return;
+  }
+
+  /* 今月の範囲 */
+  const now=new Date();
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const monthStartStr=monthStart.toISOString().split('T')[0];
+
+  /* 今月の予約データ取得 */
+  const {data:bookings,error:bErr}=await sb.from('bookings')
+    .select('id,customer_id,store_id,slot_date,slot_hour,lesson_type,amount,status')
+    .eq('coach_id',currentCoachId)
+    .gte('slot_date',monthStartStr);
+
+  if(bErr){console.error('予約データ取得エラー',bErr);}
+  const myBookings=bookings||[];
+
+  /* 総売上計算 */
+  const validBookings=myBookings.filter(b=>b.status!=='cancelled');
+  const totalRevenue=validBookings.reduce((s,b)=>s+(parseInt(b.amount)||0),0);
+  document.getElementById('hero-total-revenue').textContent='¥'+totalRevenue.toLocaleString();
+
+  /* 前月比較のプレースホルダー */
+  document.getElementById('hero-total-delta').textContent=validBookings.length>0?'▲ 集計中':'データなし';
+
+  /* 店舗ごとに集計 */
+  const storeBookings={};
+  validBookings.forEach(b=>{
+    const sid=b.store_id||'unknown';
+    if(!storeBookings[sid])storeBookings[sid]={revenue:0,count:0,amounts:[],customers:new Set()};
+    storeBookings[sid].revenue+=parseInt(b.amount)||0;
+    storeBookings[sid].count++;
+    storeBookings[sid].amounts.push(parseInt(b.amount)||0);
+    if(b.customer_id)storeBookings[sid].customers.add(b.customer_id);
+  });
+
+  /* 店舗名マッピング(現状は戸津池のみ) */
+  const storeNameMap={};
+  Object.values(stores).forEach(s=>{storeNameMap[s.id]=s.name;});
+
+  /* 店舗バー */
+  const storeIds=Object.keys(storeBookings);
+  if(totalRevenue>0&&storeIds.length>0){
+    const sorted=storeIds.sort((a,b)=>storeBookings[b].revenue-storeBookings[a].revenue);
+    const pcts=sorted.map(id=>(storeBookings[id].revenue/totalRevenue*100));
+    document.getElementById('hero-bar-1').style.width=(pcts[0]||0)+'%';
+    document.getElementById('hero-bar-2').style.width=(pcts[1]||0)+'%';
+    document.getElementById('hero-bar-3').style.width=(pcts[2]||0)+'%';
+    let legendHTML='';
+    sorted.slice(0,3).forEach((id,i)=>{
+      const name=(storeNameMap[id]||'店舗').replace('Golf Create ','');
+      legendHTML+=`<span>● ${name} ¥${Math.floor(storeBookings[id].revenue/1000)}k</span>`;
+    });
+    document.getElementById('hero-legend').innerHTML=legendHTML;
+  }
+
+  /* タブA:店舗分析データ */
+  loadStoreAnalysis(storeBookings,storeNameMap);
+
+  /* タブB:お客様分析データ */
+  await loadCustomerAnalysis(myBookings);
+
+  /* 今日の予定 */
+  const todayStr=now.toISOString().split('T')[0];
+  const todayBookings=myBookings.filter(b=>b.slot_date===todayStr&&b.status!=='cancelled');
+  const todayList=document.getElementById('today-list');
+  if(todayBookings.length===0){
+    todayList.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:12px;">本日の予定はありません</div>';
+  }else{
+    /* 顧客情報取得 */
+    const custIds=todayBookings.map(b=>b.customer_id).filter(Boolean);
+    const {data:custs}=await sb.from('customers').select('id,name').in('id',custIds);
+    const custMap={};
+    (custs||[]).forEach(c=>{custMap[c.id]=c.name;});
+    const lessonTypeLabels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
+    todayList.innerHTML=todayBookings.sort((a,b)=>(a.slot_hour||0)-(b.slot_hour||0)).map(b=>{
+      const storeName=storeNameMap[b.store_id]||'';
+      const custName=custMap[b.customer_id]||'お客様';
+      const typeLabel=lessonTypeLabels[b.lesson_type]||b.lesson_type||'レッスン';
+      const hour=b.slot_hour?`${b.slot_hour}:00`:'';
+      return `<div style="display:flex;gap:10px;align-items:center;padding:8px;background:#E1F5EE;border-radius:6px;border-left:3px solid #1D9E75;margin-bottom:6px;">
+        <div style="font-size:12px;color:#085041;font-weight:700;min-width:44px;">${hour}</div>
+        <div style="flex:1;">
+          <div style="font-size:12px;color:#333;font-weight:500;">${custName}様</div>
+          <div style="font-size:10px;color:#888;">🏪 ${storeName} · ${typeLabel}</div>
+        </div>
+        <div style="font-size:10px;color:#085041;font-weight:700;">¥${(parseInt(b.amount)||0).toLocaleString()}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ===== タブA:店舗分析 ===== */
+function loadStoreAnalysis(storeBookings,storeNameMap){
+  const storeIds=Object.keys(storeBookings);
+
+  /* 所属店舗サマリー */
+  const sumGrid=document.getElementById('store-sum-grid');
+  if(storeIds.length===0){
+    sumGrid.innerHTML='<div class="store-sum-item main"><div class="store-sum-name">戸津池</div><div class="store-sum-role">メイン</div></div>';
+    document.getElementById('store-count-sub').textContent='1店舗';
+  }else{
+    const sorted=storeIds.sort((a,b)=>storeBookings[b].revenue-storeBookings[a].revenue);
+    sumGrid.innerHTML=sorted.slice(0,3).map((id,i)=>{
+      const name=(storeNameMap[id]||'店舗').replace('Golf Create ','');
+      const role=i===0?'メイン':(storeBookings[id].count>=5?'週3':'週1');
+      return `<div class="store-sum-item${i===0?' main':''}"><div class="store-sum-name">${name}</div><div class="store-sum-role">${role}</div></div>`;
+    }).join('');
+    document.getElementById('store-count-sub').textContent=`${sorted.length}店舗`;
+  }
+
+  /* 店舗別売上ランキング */
+  const revRank=document.getElementById('store-revenue-rank');
+  if(storeIds.length===0){
+    revRank.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">予約データが蓄積されると表示されます</div>';
+  }else{
+    const sorted=storeIds.sort((a,b)=>storeBookings[b].revenue-storeBookings[a].revenue);
+    const maxRev=storeBookings[sorted[0]].revenue||1;
+    const medals=['🥇','🥈','🥉'];
+    revRank.innerHTML=sorted.slice(0,3).map((id,i)=>{
+      const s=storeBookings[id];
+      const name=storeNameMap[id]||'店舗';
+      const pct=(s.revenue/maxRev*100);
+      return `<div class="rnk-row">
+        <div class="rnk-medal">${medals[i]}</div>
+        <div class="rnk-main">
+          <div class="rnk-name-row">
+            <span class="rnk-name">${name}</span>
+            <span class="rnk-amount">¥${Math.floor(s.revenue/1000)}k</span>
+          </div>
+          <div class="rnk-bar"><div class="rnk-bar-fill rnk-bar-${i+1}" style="width:${pct}%"></div></div>
+          <div class="rnk-sub">${i===0?'メイン店舗':''} · ${s.count}件のレッスン</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  /* 店舗別単価ランキング */
+  const priceRank=document.getElementById('store-price-rank');
+  if(storeIds.length===0){
+    priceRank.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">予約データが蓄積されると表示されます</div>';
+  }else{
+    const withAvg=storeIds.map(id=>{
+      const s=storeBookings[id];
+      const avg=s.count>0?Math.floor(s.revenue/s.count):0;
+      return {id,avg,name:storeNameMap[id]||'店舗'};
+    }).sort((a,b)=>b.avg-a.avg);
+    const chips=['high','mid','std'];
+    const labels=['高','中','標'];
+    priceRank.innerHTML=withAvg.slice(0,3).map((item,i)=>{
+      return `<div class="price-rank-row">
+        <span class="price-rank-chip ${chips[i]||'std'}">${labels[i]||'標'}</span>
+        <span class="price-rank-name">${item.name}</span>
+        <span class="price-rank-val">¥${item.avg.toLocaleString()}</span>
+      </div>`;
+    }).join('');
+    if(withAvg.length>1){
+      priceRank.innerHTML+=`<div style="background:#FFF9F0;border-radius:6px;padding:6px 8px;font-size:9px;color:#633806;margin-top:8px;">💡 <strong>${withAvg[0].name}の単価が最高</strong>。稼働を増やすと収益UP!</div>`;
+    }
+  }
+
+  /* 店舗別目標達成(準備中) */
+  const goalList=document.getElementById('store-goal-list');
+  if(storeIds.length>0){
+    goalList.innerHTML=storeIds.slice(0,3).map(id=>{
+      const s=storeBookings[id];
+      const name=(storeNameMap[id]||'店舗').replace('Golf Create ','');
+      return `<div class="goal-progress-row">
+        <div class="goal-prog-header">
+          <span class="goal-prog-label">${name}</span>
+          <span class="goal-prog-val">--%</span>
+        </div>
+        <div class="goal-prog-bar"><div class="goal-prog-fill" style="width:0%"></div></div>
+        <div class="goal-prog-sub">目標設定後に表示されます</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+/* ===== タブB:お客様分析 ===== */
+async function loadCustomerAnalysis(myBookings){
+  const validBookings=myBookings.filter(b=>b.status!=='cancelled');
+
+  /* 顧客別集計 */
+  const custStats={};
+  validBookings.forEach(b=>{
+    if(!b.customer_id)return;
+    if(!custStats[b.customer_id]){
+      custStats[b.customer_id]={total:0,count:0,amounts:[],lastDate:null};
+    }
+    custStats[b.customer_id].total+=parseInt(b.amount)||0;
+    custStats[b.customer_id].count++;
+    custStats[b.customer_id].amounts.push(parseInt(b.amount)||0);
+    if(!custStats[b.customer_id].lastDate||b.slot_date>custStats[b.customer_id].lastDate){
+      custStats[b.customer_id].lastDate=b.slot_date;
+    }
+  });
+
+  const custIds=Object.keys(custStats);
+
+  /* 顧客情報取得 */
+  let custMap={};
+  if(custIds.length>0){
+    const {data:custs}=await sb.from('customers').select('id,name,created_at').in('id',custIds);
+    (custs||[]).forEach(c=>{custMap[c.id]={name:c.name||'お客様',created_at:c.created_at};});
+  }
+
+  /* 累計金額ランキング */
+  const amtRank=document.getElementById('customer-amount-rank');
+  if(custIds.length===0){
+    amtRank.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">予約データが蓄積されると表示されます</div>';
+  }else{
+    const sorted=custIds.sort((a,b)=>custStats[b].total-custStats[a].total).slice(0,5);
+    const medals=['🥇','🥈','🥉','4','5'];
+    amtRank.innerHTML=sorted.map((id,i)=>{
+      const s=custStats[id];
+      const name=custMap[id]?.name||'お客様';
+      const initial=name.charAt(0);
+      const isVip=i===0;
+      return `<div class="cust-rnk-item${isVip?' vip':''}">
+        <div class="cust-rnk-medal">${medals[i]}</div>
+        <div class="cust-rnk-avatar${isVip?' vip':''}">${initial}</div>
+        <div class="cust-rnk-info">
+          <div class="cust-rnk-name${isVip?' vip-txt':''}">${name} 様</div>
+          <div class="cust-rnk-sub${isVip?' vip-sub':''}">${isVip?'VIP顧客':'常連'}</div>
+        </div>
+        <div class="cust-rnk-amt">
+          <div class="cust-rnk-amt-val${isVip?' vip-val':''}">¥${s.total.toLocaleString()}</div>
+          <div class="cust-rnk-amt-cnt">${s.count}回</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  /* 来店頻度ランキング */
+  const freqRank=document.getElementById('customer-freq-rank');
+  if(custIds.length===0){
+    freqRank.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">予約データが蓄積されると表示されます</div>';
+  }else{
+    const sorted=custIds.sort((a,b)=>custStats[b].count-custStats[a].count).slice(0,3);
+    const maxCnt=custStats[sorted[0]].count||1;
+    freqRank.innerHTML=sorted.map((id,i)=>{
+      const s=custStats[id];
+      const name=custMap[id]?.name||'お客様';
+      const pct=(s.count/maxCnt*100);
+      return `<div class="freq-row">
+        <div class="freq-num freq-num-${i+1}">${i+1}</div>
+        <div class="freq-name">${name}様</div>
+        <div class="freq-bar-wrap"><div class="freq-bar-fill f${i+1}" style="width:${pct}%"></div></div>
+        <div class="freq-cnt">${s.count}回</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* 単価ランキング */
+  const unitRank=document.getElementById('customer-unit-rank');
+  if(custIds.length===0){
+    unitRank.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">予約データが蓄積されると表示されます</div>';
+  }else{
+    const withUnit=custIds.map(id=>{
+      const s=custStats[id];
+      const unit=s.count>0?Math.max(...s.amounts):0;
+      return {id,unit,count:s.count};
+    }).sort((a,b)=>b.unit-a.unit).slice(0,3);
+    unitRank.innerHTML=withUnit.map((item,i)=>{
+      const name=custMap[item.id]?.name||'お客様';
+      const initial=name.charAt(0);
+      return `<div style="display:flex;align-items:center;gap:6px;padding:6px;background:${i===0?'linear-gradient(90deg,#FAEEDA,transparent)':'#f8faf9'};border-radius:6px;margin-bottom:4px;">
+        ${i===0?'<div style="font-size:12px;">👑</div>':''}
+        <div class="cust-rnk-avatar">${initial}</div>
+        <div style="flex:1;">
+          <div style="font-size:10px;color:#085041;font-weight:${i===0?'700':'500'};">${name}様</div>
+        </div>
+        <div style="font-size:12px;color:#085041;font-weight:700;">¥${item.unit.toLocaleString()}</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* 要フォロー顧客 */
+  const followList=document.getElementById('customer-follow-list');
+  const now=new Date();
+  const followCandidates=custIds.map(id=>{
+    const s=custStats[id];
+    if(!s.lastDate)return null;
+    const last=new Date(s.lastDate);
+    const daysSince=Math.floor((now-last)/(1000*60*60*24));
+    if(daysSince<21)return null;
+    return {id,daysSince,total:s.total};
+  }).filter(Boolean).sort((a,b)=>b.daysSince-a.daysSince).slice(0,3);
+
+  if(followCandidates.length===0){
+    followList.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">全員順調にご来店されています!</div>';
+  }else{
+    followList.innerHTML=followCandidates.map(item=>{
+      const name=custMap[item.id]?.name||'お客様';
+      const initial=name.charAt(0);
+      const isVip=item.total>=50000;
+      const warn=item.daysSince>=30?'':' warn';
+      return `<div class="follow-item${warn}">
+        <div class="follow-avatar">${initial}</div>
+        <div class="follow-info">
+          <div class="follow-name">${name}様${isVip?'(VIP)':''}</div>
+          <div class="follow-days">${item.daysSince}日来店なし</div>
+        </div>
+        <button class="follow-btn" onclick="alert('LINE通知機能は準備中です')">LINE</button>
+      </div>`;
+    }).join('');
+  }
+
+  /* AI顧客インサイト更新 */
+  if(custIds.length>0){
+    const sorted=custIds.sort((a,b)=>custStats[b].total-custStats[a].total);
+    const topId=sorted[0];
+    const topName=custMap[topId]?.name||'お客様';
+    const topTotal=custStats[topId].total;
+    if(topTotal>0){
+      document.getElementById('ai-customer-insight').innerHTML=`💎 ${topName}様は<span class="ai-highlight">累計¥${topTotal.toLocaleString()}</span>のVIP顧客。感謝メッセージを送ると関係性UP!`;
+    }
+  }
+}
+
+/* ===== ダッシュボードタブ切替 ===== */
+function switchDashTab(tab){
+  document.getElementById('tab-btn-stores').classList.toggle('active',tab==='stores');
+  document.getElementById('tab-btn-customers').classList.toggle('active',tab==='customers');
+  document.getElementById('dash-tab-stores').style.display=tab==='stores'?'block':'none';
+  document.getElementById('dash-tab-customers').style.display=tab==='customers'?'block':'none';
+}
+
+/* ===== 料金計算ユーティリティ ===== */
 function calcTakeAmount(billAmount,lessonType){
   if(!currentStore||!billAmount||billAmount<=0)return null;
   const s=stores[currentStore];
@@ -857,8 +1358,6 @@ function calcTakeAmount(billAmount,lessonType){
   const take=total-stripe-storeFee-hqFee;
   return{total,stripe,storeFee,hqFee,take,stripePct:s.stripeFee,storePct,hqPct:s.hqFee};
 }
-
-// 【カテゴリM】逆算：手取り→請求額(100円切り上げ)
 function calcBillFromTake(takeAmount,lessonType){
   if(!currentStore||!takeAmount||takeAmount<=0)return 0;
   const s=stores[currentStore];
@@ -866,11 +1365,9 @@ function calcBillFromTake(takeAmount,lessonType){
   const storePct=feeMap[lessonType]||s.fees.indoor;
   const totalFeePct=(s.stripeFee+storePct+s.hqFee)/100;
   const rawBill=takeAmount/(1-totalFeePct);
-  // 100円単位で切り上げ(コーチの目標手取りを保証)
   return Math.ceil(rawBill/100)*100;
 }
 
-/* ===== 【第2バッチ】料金行の動的追加・削除 ===== */
 function addPriceItem(lessonType,preset){
   priceItemCounter++;
   const rowId='price-item-'+priceItemCounter;
@@ -879,15 +1376,12 @@ function addPriceItem(lessonType,preset){
   row.className='price-item-row';
   row.id=rowId;
   row.dataset.lessonType=lessonType;
-
   let timeInputHTML='';
   if(lessonType==='indoor'){
     timeInputHTML=`<input type="number" class="price-item-time" placeholder="60" min="5" step="5" value="${preset?.minutes||''}" oninput="recalcRow('${rowId}')"><span class="price-unit-sm">分</span>`;
   }else{
-    // ラウンド系：R数(1.0 / 0.5)
     timeInputHTML=`<input type="number" class="price-item-time" placeholder="1" min="0.5" step="0.5" value="${preset?.round_count||''}" oninput="recalcRow('${rowId}')"><span class="price-unit-sm">R</span>`;
   }
-
   row.innerHTML=`
     ${timeInputHTML}
     <input type="number" class="price-item-bill" placeholder="請求額" min="0" step="100" value="${preset?.price||''}" oninput="onBillInput('${rowId}')">
@@ -902,30 +1396,19 @@ function addPriceItem(lessonType,preset){
   if(preset?.price)recalcRow(rowId);
   return rowId;
 }
-
-function deletePriceItem(rowId){
-  const row=document.getElementById(rowId);
-  if(row)row.remove();
-}
-
+function deletePriceItem(rowId){const row=document.getElementById(rowId);if(row)row.remove();}
 function onBillInput(rowId){
-  const row=document.getElementById(rowId);
-  if(!row)return;
+  const row=document.getElementById(rowId);if(!row)return;
   const billInput=row.querySelector('.price-item-bill');
   const takeInput=row.querySelector('.price-item-take');
   const lessonType=row.dataset.lessonType;
   const bill=parseInt(billInput.value)||0;
   if(bill<=0){takeInput.value='';updateBreakdown(rowId,null);return;}
   const result=calcTakeAmount(bill,lessonType);
-  if(result){
-    takeInput.value=result.take;
-    updateBreakdown(rowId,result);
-  }
+  if(result){takeInput.value=result.take;updateBreakdown(rowId,result);}
 }
-
 function onTakeInput(rowId){
-  const row=document.getElementById(rowId);
-  if(!row)return;
+  const row=document.getElementById(rowId);if(!row)return;
   const billInput=row.querySelector('.price-item-bill');
   const takeInput=row.querySelector('.price-item-take');
   const lessonType=row.dataset.lessonType;
@@ -936,18 +1419,13 @@ function onTakeInput(rowId){
   const result=calcTakeAmount(bill,lessonType);
   if(result)updateBreakdown(rowId,result);
 }
-
 function recalcRow(rowId){
-  const row=document.getElementById(rowId);
-  if(!row)return;
-  const billInput=row.querySelector('.price-item-bill');
-  const bill=parseInt(billInput.value)||0;
+  const row=document.getElementById(rowId);if(!row)return;
+  const bill=parseInt(row.querySelector('.price-item-bill').value)||0;
   if(bill>0)onBillInput(rowId);
 }
-
 function updateBreakdown(rowId,result){
-  const bdEl=document.getElementById('bd-'+rowId);
-  if(!bdEl)return;
+  const bdEl=document.getElementById('bd-'+rowId);if(!bdEl)return;
   if(!result){bdEl.innerHTML='';return;}
   bdEl.innerHTML=`
     <div class="bd-chip"><div class="bd-chip-label">決済(${result.stripePct}%)</div><div class="bd-chip-val v-stripe">▲¥${result.stripe.toLocaleString()}</div></div>
@@ -956,20 +1434,16 @@ function updateBreakdown(rowId,result){
     <div class="bd-chip coach-chip"><div class="bd-chip-label">手取り</div><div class="bd-chip-val v-coach">¥${result.take.toLocaleString()}</div></div>
   `;
 }
-
 function recalcAllPrices(){
   document.querySelectorAll('.price-item-row').forEach(row=>{
     const bill=parseInt(row.querySelector('.price-item-bill').value)||0;
     if(bill>0)onBillInput(row.id);
   });
-  // 独自プランの再計算
   document.querySelectorAll('.custom-plan-card').forEach(card=>{
     const bill=parseInt(card.querySelector('.custom-plan-bill').value)||0;
     if(bill>0)onCustomPlanBillInput(card.id);
   });
 }
-
-/* ===== 【カテゴリN】独自プラン ===== */
 function addCustomPlan(preset){
   customPlanCounter++;
   const cardId='custom-plan-'+customPlanCounter;
@@ -977,32 +1451,18 @@ function addCustomPlan(preset){
   const card=document.createElement('div');
   card.className='custom-plan-card';
   card.id=cardId;
-
   const greenfeeChecked=preset?.coach_pays_greenfee?'checked':'';
   const greenfeeDisplay=preset?.coach_pays_greenfee?'block':'none';
-
   card.innerHTML=`
     <div class="custom-plan-header">
       <div class="custom-plan-num">プラン ${customPlanCounter}</div>
       <button class="price-delete-btn" onclick="deleteCustomPlan('${cardId}')" title="削除">×</button>
     </div>
     <div class="custom-plan-body">
-      <div class="form-group">
-        <label class="form-label">プラン名 <span style="color:var(--red)">※必須</span></label>
-        <input type="text" class="form-input custom-plan-name" placeholder="例：アプローチ特化30分レッスン" value="${preset?.plan_name||''}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">時間 <span style="color:var(--red)">※必須</span></label>
-        <input type="text" class="form-input custom-plan-duration" placeholder="例：60分 / 半日 / 9H" value="${preset?.duration_text||''}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">場所</label>
-        <input type="text" class="form-input custom-plan-location" placeholder="例：Golf Create 戸津池 / 京都ゴルフ倶楽部" value="${preset?.location||''}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">集合時間</label>
-        <input type="time" class="form-input custom-plan-meeting" value="${preset?.meeting_time||''}">
-      </div>
+      <div class="form-group"><label class="form-label">プラン名 <span style="color:var(--red)">※必須</span></label><input type="text" class="form-input custom-plan-name" placeholder="例:アプローチ特化30分レッスン" value="${preset?.plan_name||''}"></div>
+      <div class="form-group"><label class="form-label">時間 <span style="color:var(--red)">※必須</span></label><input type="text" class="form-input custom-plan-duration" placeholder="例:60分 / 半日 / 9H" value="${preset?.duration_text||''}"></div>
+      <div class="form-group"><label class="form-label">場所</label><input type="text" class="form-input custom-plan-location" placeholder="例:Golf Create 戸津池" value="${preset?.location||''}"></div>
+      <div class="form-group"><label class="form-label">集合時間</label><input type="time" class="form-input custom-plan-meeting" value="${preset?.meeting_time||''}"></div>
       <div class="form-group">
         <label class="form-label">料金(請求額⇄手取り)<span style="color:var(--red)">※必須</span></label>
         <div class="plan-price-row">
@@ -1015,32 +1475,17 @@ function addCustomPlan(preset){
         <div class="price-breakdown" id="bd-${cardId}" style="margin-top:6px"></div>
       </div>
       <div class="plan-participants-row">
-        <div class="form-group">
-          <label class="form-label">最低催行人数</label>
-          <input type="number" class="form-input custom-plan-min" placeholder="例：3" min="1" step="1" value="${preset?.min_participants||''}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">募集人数(定員)</label>
-          <input type="number" class="form-input custom-plan-max" placeholder="例:8" min="1" step="1" value="${preset?.max_participants||''}">
-        </div>
+        <div class="form-group"><label class="form-label">最低催行人数</label><input type="number" class="form-input custom-plan-min" placeholder="例:3" min="1" step="1" value="${preset?.min_participants||''}"></div>
+        <div class="form-group"><label class="form-label">募集人数(定員)</label><input type="number" class="form-input custom-plan-max" placeholder="例:8" min="1" step="1" value="${preset?.max_participants||''}"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label">プラン説明文 <span style="color:var(--red)">※必須</span> <span style="color:var(--g)">👁 お客様に表示されます</span></label>
-        <textarea class="form-textarea custom-plan-desc" placeholder="このプランの魅力・対象者・指導内容をお客様向けに説明してください">${preset?.description||''}</textarea>
-      </div>
+      <div class="form-group"><label class="form-label">プラン説明文 <span style="color:var(--red)">※必須</span></label><textarea class="form-textarea custom-plan-desc" placeholder="このプランの魅力・対象者・指導内容をお客様向けに説明してください">${preset?.description||''}</textarea></div>
       <div class="plan-checkbox-row">
         <input type="checkbox" id="greenfee-${cardId}" class="custom-plan-greenfee" ${greenfeeChecked} onchange="toggleGreenfee('${cardId}')">
         <label for="greenfee-${cardId}">コーチがプレーフィーを負担する(指定ゴルフ場あり)</label>
       </div>
       <div class="plan-greenfee-detail" id="greenfee-detail-${cardId}" style="display:${greenfeeDisplay}">
-        <div class="form-group">
-          <label class="form-label">指定ゴルフ場 <span style="color:var(--red)">※必須</span></label>
-          <input type="text" class="form-input custom-plan-course" placeholder="例：京都ゴルフ倶楽部" value="${preset?.golf_course_name||''}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">スタート時間 <span style="color:var(--red)">※必須</span></label>
-          <input type="time" class="form-input custom-plan-starttime" value="${preset?.start_time||''}">
-        </div>
+        <div class="form-group"><label class="form-label">指定ゴルフ場 <span style="color:var(--red)">※必須</span></label><input type="text" class="form-input custom-plan-course" placeholder="例:京都ゴルフ倶楽部" value="${preset?.golf_course_name||''}"></div>
+        <div class="form-group"><label class="form-label">スタート時間 <span style="color:var(--red)">※必須</span></label><input type="time" class="form-input custom-plan-starttime" value="${preset?.start_time||''}"></div>
       </div>
     </div>
   `;
@@ -1048,36 +1493,23 @@ function addCustomPlan(preset){
   if(preset?.price)onCustomPlanBillInput(cardId);
   return cardId;
 }
-
-function deleteCustomPlan(cardId){
-  const card=document.getElementById(cardId);
-  if(card)card.remove();
-}
-
+function deleteCustomPlan(cardId){const card=document.getElementById(cardId);if(card)card.remove();}
 function toggleGreenfee(cardId){
   const cb=document.getElementById('greenfee-'+cardId);
   const detail=document.getElementById('greenfee-detail-'+cardId);
   detail.style.display=cb.checked?'block':'none';
 }
-
 function onCustomPlanBillInput(cardId){
-  const card=document.getElementById(cardId);
-  if(!card)return;
+  const card=document.getElementById(cardId);if(!card)return;
   const billInput=card.querySelector('.custom-plan-bill');
   const takeInput=card.querySelector('.custom-plan-take');
   const bill=parseInt(billInput.value)||0;
   if(bill<=0){takeInput.value='';updateBreakdownForCard(cardId,null);return;}
-  // 独自プランはインドア扱い(その他カテゴリ)
   const result=calcTakeAmount(bill,'indoor');
-  if(result){
-    takeInput.value=result.take;
-    updateBreakdownForCard(cardId,result);
-  }
+  if(result){takeInput.value=result.take;updateBreakdownForCard(cardId,result);}
 }
-
 function onCustomPlanTakeInput(cardId){
-  const card=document.getElementById(cardId);
-  if(!card)return;
+  const card=document.getElementById(cardId);if(!card)return;
   const billInput=card.querySelector('.custom-plan-bill');
   const takeInput=card.querySelector('.custom-plan-take');
   const take=parseInt(takeInput.value)||0;
@@ -1087,10 +1519,8 @@ function onCustomPlanTakeInput(cardId){
   const result=calcTakeAmount(bill,'indoor');
   if(result)updateBreakdownForCard(cardId,result);
 }
-
 function updateBreakdownForCard(cardId,result){
-  const bdEl=document.getElementById('bd-'+cardId);
-  if(!bdEl)return;
+  const bdEl=document.getElementById('bd-'+cardId);if(!bdEl)return;
   if(!result){bdEl.innerHTML='';return;}
   bdEl.innerHTML=`
     <div class="bd-chip"><div class="bd-chip-label">決済(${result.stripePct}%)</div><div class="bd-chip-val v-stripe">▲¥${result.stripe.toLocaleString()}</div></div>
@@ -1100,23 +1530,14 @@ function updateBreakdownForCard(cardId,result){
   `;
 }
 
-/* ===== 【第2バッチ】料金保存・読込 ===== */
 async function savePrices(){
   if(!currentCoachId){alert('❌ ログイン情報が取得できません');return;}
   if(!currentStore){alert('❌ 店舗を選択してください');return;}
-
   try{
-    // ① 最低レッスン時間をcoachesテーブルに保存
     const minLesson=document.getElementById('min-lesson-minutes').value.trim();
-    if(minLesson){
-      await sb.from('coaches').update({min_lesson:minLesson,updated_at:new Date().toISOString()}).eq('user_id',currentAuthId);
-    }
-
-    // ② 料金アイテム(カテゴリL)の保存
-    // 既存データを削除してから再挿入(シンプル・確実)
+    if(minLesson){await sb.from('coaches').update({min_lesson:minLesson,updated_at:new Date().toISOString()}).eq('user_id',currentAuthId);}
     const {error:delErr}=await sb.from('coach_price_items').delete().eq('coach_id',currentCoachId);
     if(delErr){console.error('既存料金削除エラー',delErr);}
-
     const priceItems=[];
     let displayOrder=0;
     document.querySelectorAll('.price-item-row').forEach(row=>{
@@ -1125,31 +1546,17 @@ async function savePrices(){
       const bill=parseInt(row.querySelector('.price-item-bill').value)||0;
       const take=parseInt(row.querySelector('.price-item-take').value)||0;
       if(bill<=0||take<=0)return;
-      const item={
-        coach_id:currentCoachId,
-        store_id:currentStoreId,
-        lesson_type:lessonType,
-        price:bill,
-        take_home:take,
-        display_order:displayOrder++
-      };
-      if(lessonType==='indoor'){
-        item.minutes=parseInt(timeVal)||null;
-      }else{
-        item.round_count=parseFloat(timeVal)||1.0;
-      }
+      const item={coach_id:currentCoachId,store_id:currentStoreId,lesson_type:lessonType,price:bill,take_home:take,display_order:displayOrder++};
+      if(lessonType==='indoor'){item.minutes=parseInt(timeVal)||null;}
+      else{item.round_count=parseFloat(timeVal)||1.0;}
       priceItems.push(item);
     });
-
     if(priceItems.length>0){
       const {error:insErr}=await sb.from('coach_price_items').insert(priceItems);
       if(insErr){alert('❌ 料金保存に失敗しました\n'+insErr.message);return;}
     }
-
-    // ③ 独自プラン(カテゴリN)の保存
     const {error:delPlanErr}=await sb.from('coach_custom_plans').delete().eq('coach_id',currentCoachId);
     if(delPlanErr){console.error('既存プラン削除エラー',delPlanErr);}
-
     const customPlans=[];
     let planOrder=0;
     document.querySelectorAll('.custom-plan-card').forEach(card=>{
@@ -1166,77 +1573,36 @@ async function savePrices(){
       const coachPays=card.querySelector('.custom-plan-greenfee').checked;
       const course=card.querySelector('.custom-plan-course')?.value.trim()||null;
       const startTime=card.querySelector('.custom-plan-starttime')?.value||null;
-      if(coachPays&&(!course||!startTime)){
-        alert('❌ コーチ負担プランは指定ゴルフ場とスタート時間が必須です');
-        throw new Error('validation');
-      }
-      customPlans.push({
-        coach_id:currentCoachId,
-        store_id:currentStoreId,
-        plan_name:name,
-        duration_text:duration,
-        location:location,
-        meeting_time:meetingTime,
-        price:bill,
-        take_home:take,
-        min_participants:minP,
-        max_participants:maxP,
-        description:desc,
-        coach_pays_greenfee:coachPays,
-        golf_course_name:coachPays?course:null,
-        start_time:coachPays?startTime:null,
-        display_order:planOrder++,
-        is_active:true
-      });
+      if(coachPays&&(!course||!startTime)){alert('❌ コーチ負担プランは指定ゴルフ場とスタート時間が必須です');throw new Error('validation');}
+      customPlans.push({coach_id:currentCoachId,store_id:currentStoreId,plan_name:name,duration_text:duration,location:location,meeting_time:meetingTime,price:bill,take_home:take,min_participants:minP,max_participants:maxP,description:desc,coach_pays_greenfee:coachPays,golf_course_name:coachPays?course:null,start_time:coachPays?startTime:null,display_order:planOrder++,is_active:true});
     });
-
     if(customPlans.length>0){
       const {error:insPlanErr}=await sb.from('coach_custom_plans').insert(customPlans);
       if(insPlanErr){alert('❌ 独自プラン保存に失敗しました\n'+insPlanErr.message);return;}
     }
-
     alert('✅ 料金設定を保存しました!');
     showMsg('料金設定を保存しました!','success');
   }catch(e){
-    if(e.message!=='validation'){
-      console.error('savePrices例外',e);
-      alert('❌ 保存中にエラーが発生しました\n'+e.message);
-    }
+    if(e.message!=='validation'){console.error('savePrices例外',e);alert('❌ 保存中にエラーが発生しました\n'+e.message);}
   }
 }
 
 async function loadPrices(){
   if(!currentCoachId)return;
   try{
-    // 最低レッスン時間の読込
     const {data:coachRow}=await sb.from('coaches').select('min_lesson').eq('user_id',currentAuthId).maybeSingle();
-    if(coachRow?.min_lesson){
-      document.getElementById('min-lesson-minutes').value=coachRow.min_lesson;
-    }
-
-    // 既存UI行をクリア
-    ['indoor','round','accompany','comp'].forEach(t=>{
-      document.getElementById(t+'-items').innerHTML='';
-    });
+    if(coachRow?.min_lesson){document.getElementById('min-lesson-minutes').value=coachRow.min_lesson;}
+    ['indoor','round','accompany','comp'].forEach(t=>{document.getElementById(t+'-items').innerHTML='';});
     document.getElementById('custom-plans-container').innerHTML='';
-
-    // 料金アイテムの読込
     const {data:items,error}=await sb.from('coach_price_items').select('*').eq('coach_id',currentCoachId).order('display_order',{ascending:true});
     if(error){console.error('料金読込エラー',error);}
-    else if(items&&items.length>0){
-      items.forEach(item=>addPriceItem(item.lesson_type,item));
-    }
-
-    // 独自プランの読込
+    else if(items&&items.length>0){items.forEach(item=>addPriceItem(item.lesson_type,item));}
     const {data:plans,error:planErr}=await sb.from('coach_custom_plans').select('*').eq('coach_id',currentCoachId).order('display_order',{ascending:true});
     if(planErr){console.error('プラン読込エラー',planErr);}
-    else if(plans&&plans.length>0){
-      plans.forEach(plan=>addCustomPlan(plan));
-    }
+    else if(plans&&plans.length>0){plans.forEach(plan=>addCustomPlan(plan));}
   }catch(e){console.error('loadPrices例外',e);}
 }
 
-/* ===== タブ ===== */
 function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -1258,7 +1624,6 @@ function switchScheduleMode(mode){
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
 }
 
-/* ===== 週間スケジュール(スワイプ対応) ===== */
 function buildWeekGrid(){
   const days=['日','月','火','水','木','金','土'];
   const today=new Date();
@@ -1287,7 +1652,6 @@ function buildWeekGrid(){
       grid.appendChild(slot);
     }
   }
-  /* スワイプ */
   const wrap=document.getElementById('week-wrap');
   let startX=0;
   wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
@@ -1298,7 +1662,6 @@ function buildWeekGrid(){
 }
 function moveWeek(dir){weekOffset+=dir;buildWeekGrid();}
 
-/* ===== 月間スケジュール ===== */
 function buildMonthGrid(){
   const days=['日','月','火','水','木','金','土'];
   const hdr=document.getElementById('month-header');hdr.innerHTML='';
@@ -1324,7 +1687,6 @@ function buildMonthGrid(){
 }
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
-/* ===== 予約操作 ===== */
 function approveBooking(btn){
   const item=btn.closest('.booking-item');item.dataset.status='approved';
   item.querySelector('.booking-status').className='booking-status status-approved';
@@ -1348,8 +1710,6 @@ function filterBookings(status,btn){
 function filterIncome(period,btn){
   document.querySelectorAll('#page-income .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
 }
-
-/* ===== 緊急キャンセル ===== */
 function openCancelModal(btn){
   cancelTargetItem=btn.closest('.booking-item');
   document.getElementById('cancel-modal').classList.add('open');
@@ -1376,19 +1736,16 @@ function submitCancel(){
   closeCancelModal();
   showMsg('緊急キャンセルをお客様・店舗へ通知しました。LINEにも転送されました。','success');
 }
-
-/* ===== 返信 ===== */
 function submitReply(btn){
   const form=btn.closest('.reply-form');const input=form.querySelector('.reply-input');
   const text=input.value.trim();if(!text)return;
   const section=form.closest('.reply-section');
   const item=document.createElement('div');item.className='reply-item';
-  item.innerHTML=`<div class="reply-author">${document.getElementById('coach-name').textContent}</div><div class="reply-text">${text}</div><div class="reply-date">たった今</div>`;
+  item.innerHTML=`<div class="reply-author">${document.getElementById('welcome-name').textContent}</div><div class="reply-text">${text}</div><div class="reply-date">たった今</div>`;
   section.insertBefore(item,form);input.value='';
 }
 function replyWithLine(){window.open('https://line.me/R/','_blank');}
 
-/* ===== ファイルアップロード ===== */
 function uploadPhoto(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();reader.onload=e=>{document.getElementById('profile-img').src=e.target.result;};
@@ -1403,18 +1760,13 @@ function uploadId(input){
 }
 function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg('領収書をアップロードしました!','success');}
 
-/* ===== PDF出力 ===== */
 function downloadPDF(){
   const storeName=currentStore?stores[currentStore].name:'店舗未選択';
-  const coachName=document.getElementById('coach-name').textContent;
+  const coachName=document.getElementById('welcome-name').textContent;
   const now=new Date();
   const month=now.getFullYear()+'年'+(now.getMonth()+1)+'月';
-
   const html=`<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<style>
+<html lang="ja"><head><meta charset="UTF-8"><style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans JP',sans-serif;background:#fff;color:#1a2e24;padding:40px;}
@@ -1455,81 +1807,22 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 .fee-minus{color:#E24B4A;}
 .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e0ece6;font-size:10px;color:#6b8a78;text-align:center;line-height:1.8;}
 @media print{body{padding:20px;}}
-</style>
-</head>
-<body>
-<div class="header">
-  <div>
-    <div class="logo">My<span>Coach</span></div>
-    <div class="logo-sub">Golf Matching Service</div>
-  </div>
-  <div class="doc-title">
-    <h1>月次収入明細書</h1>
-    <p>${month}分 発行日：${now.toLocaleDateString('ja-JP')}</p>
-  </div>
-</div>
-
-<div class="info-grid">
-  <div class="info-box">
-    <div class="info-box-label">コーチ名</div>
-    <div class="info-box-value">${coachName}</div>
-  </div>
-  <div class="info-box">
-    <div class="info-box-label">所属店舗</div>
-    <div class="info-box-value">${storeName}</div>
-  </div>
-</div>
-
-<div class="summary">
-  <div class="summary-card green">
-    <div class="summary-amount">¥44,312</div>
-    <div class="summary-label">今月の手取り収入</div>
-  </div>
-  <div class="summary-card gold">
-    <div class="summary-amount">¥280,000</div>
-    <div class="summary-label">累計手取り収入</div>
-  </div>
-</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>日付</th>
-      <th>お客様</th>
-      <th>種別</th>
-      <th>時間</th>
-      <th>請求額</th>
-      <th>手取り</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td>4/10</td><td>山田 太郎</td><td><span class="badge indoor">インドア</span></td><td>50分</td><td class="amount">¥5,000</td><td class="amount">¥3,820</td></tr>
-    <tr><td>4/9</td><td>佐藤 花子</td><td><span class="badge round">ラウンド</span></td><td>1R</td><td class="amount">¥20,000</td><td class="amount">¥15,280</td></tr>
-    <tr><td>4/8</td><td>田中 次郎</td><td><span class="badge accompany">同伴</span></td><td>1R</td><td class="amount">¥15,000</td><td class="amount">¥11,460</td></tr>
-    <tr><td>4/7</td><td>鈴木 一郎</td><td><span class="badge indoor">インドア</span></td><td>90分</td><td class="amount">¥8,000</td><td class="amount">¥6,112</td></tr>
-    <tr><td>4/5</td><td>高橋 二郎</td><td><span class="badge comp">コンペ</span></td><td>1R</td><td class="amount">¥10,000</td><td class="amount">¥7,640</td></tr>
-    <tr class="total-row"><td colspan="4" style="text-align:right">合計</td><td class="amount">¥58,000</td><td class="amount">¥44,312</td></tr>
-  </tbody>
-</table>
-
-<div class="fee-box">
-  <div class="fee-box-title">手数料内訳(今月合計)</div>
-  <div class="fee-row"><span>お客様請求額合計</span><span class="amount">¥58,000</span></div>
-  <div class="fee-row"><span>決済手数料 (3.6%)</span><span class="fee-minus amount">▲¥2,088</span></div>
-  <div class="fee-row"><span>店舗使用料</span><span class="fee-minus amount">▲¥8,700</span></div>
-  <div class="fee-row"><span>本部手数料 (5%)</span><span class="fee-minus amount">▲¥2,900</span></div>
-  <div class="fee-row"><span>コーチ手取り合計</span><span class="amount">¥44,312</span></div>
-</div>
-
-<div class="footer">
-  本明細書はMyCoach(株式会社ケイエスケー)システムより自動発行されます。<br>
-  Golf Create 戸津池 ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー
-</div>
-
+</style></head><body>
+<div class="header"><div><div class="logo">My<span>Coach</span></div><div class="logo-sub">Golf Matching Service</div></div><div class="doc-title"><h1>月次収入明細書</h1><p>${month}分 発行日:${now.toLocaleDateString('ja-JP')}</p></div></div>
+<div class="info-grid"><div class="info-box"><div class="info-box-label">コーチ名</div><div class="info-box-value">${coachName}</div></div><div class="info-box"><div class="info-box-label">所属店舗</div><div class="info-box-value">${storeName}</div></div></div>
+<div class="summary"><div class="summary-card green"><div class="summary-amount">¥44,312</div><div class="summary-label">今月の手取り収入</div></div><div class="summary-card gold"><div class="summary-amount">¥280,000</div><div class="summary-label">累計手取り収入</div></div></div>
+<table><thead><tr><th>日付</th><th>お客様</th><th>種別</th><th>時間</th><th>請求額</th><th>手取り</th></tr></thead><tbody>
+<tr><td>4/10</td><td>山田 太郎</td><td><span class="badge indoor">インドア</span></td><td>50分</td><td class="amount">¥5,000</td><td class="amount">¥3,820</td></tr>
+<tr><td>4/9</td><td>佐藤 花子</td><td><span class="badge round">ラウンド</span></td><td>1R</td><td class="amount">¥20,000</td><td class="amount">¥15,280</td></tr>
+<tr><td>4/8</td><td>田中 次郎</td><td><span class="badge accompany">同伴</span></td><td>1R</td><td class="amount">¥15,000</td><td class="amount">¥11,460</td></tr>
+<tr><td>4/7</td><td>鈴木 一郎</td><td><span class="badge indoor">インドア</span></td><td>90分</td><td class="amount">¥8,000</td><td class="amount">¥6,112</td></tr>
+<tr><td>4/5</td><td>高橋 二郎</td><td><span class="badge comp">コンペ</span></td><td>1R</td><td class="amount">¥10,000</td><td class="amount">¥7,640</td></tr>
+<tr class="total-row"><td colspan="4" style="text-align:right">合計</td><td class="amount">¥58,000</td><td class="amount">¥44,312</td></tr>
+</tbody></table>
+<div class="fee-box"><div class="fee-box-title">手数料内訳(今月合計)</div><div class="fee-row"><span>お客様請求額合計</span><span class="amount">¥58,000</span></div><div class="fee-row"><span>決済手数料 (3.6%)</span><span class="fee-minus amount">▲¥2,088</span></div><div class="fee-row"><span>店舗使用料</span><span class="fee-minus amount">▲¥8,700</span></div><div class="fee-row"><span>本部手数料 (5%)</span><span class="fee-minus amount">▲¥2,900</span></div><div class="fee-row"><span>コーチ手取り合計</span><span class="amount">¥44,312</span></div></div>
+<div class="footer">本明細書はMyCoach(株式会社ケイエスケー)システムより自動発行されます。<br>Golf Create 戸津池 ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー</div>
 <script>window.onload=function(){window.print();}<\/script>
-</body>
-</html>`;
-
+</body></html>`;
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
@@ -1540,7 +1833,6 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
   showMsg('明細書を開きました。印刷でPDF保存できます!','success');
 }
 
-/* ===== プロフィール保存・読み込み ===== */
 async function saveProfile(){
   if(!currentAuthId){alert('❌ ログイン情報が取得できません');showMsg('ログイン情報が取得できません','error');return;}
   const name=document.getElementById('prof-name').value.trim();
@@ -1563,11 +1855,10 @@ async function saveProfile(){
     updated_at:new Date().toISOString()
   };
   const {data:saved,error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'}).select().maybeSingle();
-  if(error){alert('❌ 保存に失敗しました\n'+error.message);showMsg('保存に失敗しました：'+error.message,'error');return;}
-  // upsert後の coaches.id を currentCoachId に反映(初回登録時にも正しくセット)
+  if(error){alert('❌ 保存に失敗しました\n'+error.message);showMsg('保存に失敗しました:'+error.message,'error');return;}
   if(saved?.id)currentCoachId=saved.id;
-  document.getElementById('coach-name').textContent=name;
-  document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
+  document.getElementById('welcome-name').textContent=name;
+  document.getElementById('coach-avatar-lg').textContent=name.charAt(0);
   alert('✅ 基本情報を保存しました!');
   showMsg('プロフィールを保存しました!','success');
 }
@@ -1579,8 +1870,8 @@ async function loadProfile(userId){
     if(!data)return;
     if(data.name){
       document.getElementById('prof-name').value=data.name;
-      document.getElementById('coach-name').textContent=data.name;
-      document.getElementById('welcome-name').textContent=data.name+'さん、こんにちは!';
+      document.getElementById('welcome-name').textContent=data.name;
+      document.getElementById('coach-avatar-lg').textContent=data.name.charAt(0);
     }
     if(data.address)document.getElementById('prof-address').value=data.address;
     if(data.birth)document.getElementById('prof-birth').value=data.birth;
@@ -1599,13 +1890,11 @@ async function loadProfile(userId){
   }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
-/* ===== メッセージ ===== */
 function showMsg(text,type){
   const el=document.getElementById('msg-global');el.textContent=text;el.className='msg '+type;
   setTimeout(()=>{el.className='msg';el.textContent='';},4000);
 }
 
-/* ===== ログアウト ===== */
 async function doLogout(){
   await sb.auth.signOut();localStorage.removeItem('gc_user_type');
   window.location.replace(BASE+'index.html?role=coach');
