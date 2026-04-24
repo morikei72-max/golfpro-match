@@ -97,7 +97,6 @@ exports.handler = async (event) => {
       // ----- 1. 友だち追加 -----
       if (ev.type === 'follow') {
         console.log('New follower:', lineUserId);
-        // 現時点では line_user_id 未紐付け状態で保留
       }
 
       // ----- 2. 友だち解除 -----
@@ -131,7 +130,7 @@ exports.handler = async (event) => {
   } catch (err) {
     console.error('line-webhook error:', err);
     return {
-      statusCode: 200, // LINEに再送させないため200を返す
+      statusCode: 200,
       body: JSON.stringify({ ok: false, error: err.message })
     };
   }
@@ -153,26 +152,21 @@ async function handlePostback({ ev, lineUserId, supabase }) {
     return;
   }
 
-  // --- 承認 ---
   if (action === 'approve_booking') {
     await handleApprove({ bookingId, lineUserId, supabase });
     return;
   }
 
-  // --- 却下ボタン押下(理由選択画面を表示) ---
   if (action === 'reject_booking') {
     await handleRejectInit({ bookingId, lineUserId, supabase });
     return;
   }
 
-  // --- 却下理由選択（定型ボタン／その他） ---
   if (action === 'reject_reason') {
     const reasonCode = params.reason_code;
     if (reasonCode === 'other') {
-      // その他 → 理由入力待ちにする
       await handleRejectOther({ bookingId, lineUserId, supabase });
     } else {
-      // 定型理由 → 即座に却下処理
       await handleRejectWithPresetReason({ bookingId, lineUserId, reasonCode, supabase });
     }
     return;
@@ -185,12 +179,11 @@ async function handlePostback({ ev, lineUserId, supabase }) {
 // 承認処理
 // ============================================
 async function handleApprove({ bookingId, lineUserId, supabase }) {
-  // bookingsを approved_pending_payment に更新
   const { error: updateErr } = await supabase
     .from('bookings')
     .update({ status: 'approved_pending_payment' })
     .eq('id', bookingId)
-    .eq('status', 'pending_approval'); // 重複承認防止
+    .eq('status', 'pending_approval');
 
   if (updateErr) {
     console.error('[approve] update error:', updateErr);
@@ -198,7 +191,6 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     return;
   }
 
-  // bookings・coach・customer情報を取得
   const { data: booking } = await supabase
     .from('bookings')
     .select('*')
@@ -210,7 +202,6 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     return;
   }
 
-  // ステータスが approved_pending_payment でなければ既に処理済み
   if (booking.status !== 'approved_pending_payment') {
     await pushMessage(lineUserId, 'この予約は既に処理されています。');
     return;
@@ -240,11 +231,17 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
   const amount = booking.total_price || 0;
   const paymentUrl = `${BASE_URL}/customer.html?action=pay&booking_id=${bookingId}`;
 
+  // 【2026/4/24 追加】レッスン種別・時間を取得（森下様ご指摘対応）
+  const lessonType = LESSON_TYPE_LABEL[booking.lesson_type] || booking.lesson_type || '—';
+  const minutes = booking.minutes || null;
+
   // お客様に決済案内送信
   if (customer?.line_user_id) {
     const customerMsg = buildApprovalCompleteText({
       customerName,
       coachName,
+      lessonType,   // ★追加
+      minutes,      // ★追加
       dateStr,
       timeStr,
       amount,
@@ -269,7 +266,6 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
 // 却下ボタン押下(理由選択画面表示)
 // ============================================
 async function handleRejectInit({ bookingId, lineUserId, supabase }) {
-  // bookingの状態チェック(既に処理済みでないか)
   const { data: booking } = await supabase
     .from('bookings')
     .select('id, status')
@@ -286,7 +282,6 @@ async function handleRejectInit({ bookingId, lineUserId, supabase }) {
     return;
   }
 
-  // 却下理由選択ボタン送信
   const flexContent = buildRejectionButtonsFlex({ bookingId });
   await pushFlexMessage(
     lineUserId,
@@ -317,7 +312,6 @@ async function handleRejectWithPresetReason({ bookingId, lineUserId, reasonCode,
 // 却下理由:その他(自由入力)
 // ============================================
 async function handleRejectOther({ bookingId, lineUserId, supabase }) {
-  // bookingの状態チェック
   const { data: booking } = await supabase
     .from('bookings')
     .select('id, status')
@@ -329,7 +323,6 @@ async function handleRejectOther({ bookingId, lineUserId, supabase }) {
     return;
   }
 
-  // pending_rejections に挿入(同じコーチ・同じ予約の既存レコードは先に削除)
   await supabase
     .from('pending_rejections')
     .delete()
@@ -349,7 +342,6 @@ async function handleRejectOther({ bookingId, lineUserId, supabase }) {
     return;
   }
 
-  // コーチに理由入力依頼
   await pushMessage(lineUserId, buildRejectionReasonPromptText());
 }
 
@@ -359,7 +351,6 @@ async function handleRejectOther({ bookingId, lineUserId, supabase }) {
 async function handleTextMessage({ ev, lineUserId, supabase }) {
   const text = (ev.message.text || '').trim();
 
-  // pending_rejections を検索(有効期限内)
   const { data: pending } = await supabase
     .from('pending_rejections')
     .select('*')
@@ -370,7 +361,6 @@ async function handleTextMessage({ ev, lineUserId, supabase }) {
     .maybeSingle();
 
   if (pending) {
-    // 却下理由の入力として処理
     await handleRejectionReasonInput({
       pending,
       text,
@@ -380,7 +370,6 @@ async function handleTextMessage({ ev, lineUserId, supabase }) {
     return;
   }
 
-  // 通常のメッセージ(ログのみ)
   console.log('Message from', lineUserId, ':', text);
 }
 
@@ -388,7 +377,6 @@ async function handleTextMessage({ ev, lineUserId, supabase }) {
 // 却下理由入力の処理
 // ============================================
 async function handleRejectionReasonInput({ pending, text, lineUserId, supabase }) {
-  // 3文字未満チェック
   if (text.length < 3) {
     await pushMessage(
       lineUserId,
@@ -397,7 +385,6 @@ async function handleRejectionReasonInput({ pending, text, lineUserId, supabase 
     return;
   }
 
-  // 却下処理実行
   await finalizeRejection({
     bookingId: pending.booking_id,
     lineUserId,
@@ -405,7 +392,6 @@ async function handleRejectionReasonInput({ pending, text, lineUserId, supabase 
     supabase,
   });
 
-  // pending_rejections レコード削除
   await supabase
     .from('pending_rejections')
     .delete()
@@ -416,7 +402,6 @@ async function handleRejectionReasonInput({ pending, text, lineUserId, supabase 
 // 却下処理の共通処理
 // ============================================
 async function finalizeRejection({ bookingId, lineUserId, reasonText, supabase }) {
-  // bookingsを rejected に更新
   const { error: updateErr } = await supabase
     .from('bookings')
     .update({
@@ -424,7 +409,7 @@ async function finalizeRejection({ bookingId, lineUserId, reasonText, supabase }
       rejection_reason: reasonText,
     })
     .eq('id', bookingId)
-    .eq('status', 'pending_approval'); // 重複処理防止
+    .eq('status', 'pending_approval');
 
   if (updateErr) {
     console.error('[finalize_reject] update error:', updateErr);
@@ -432,7 +417,6 @@ async function finalizeRejection({ bookingId, lineUserId, reasonText, supabase }
     return;
   }
 
-  // bookings情報を再取得
   const { data: booking } = await supabase
     .from('bookings')
     .select('*')
@@ -444,7 +428,6 @@ async function finalizeRejection({ bookingId, lineUserId, reasonText, supabase }
     return;
   }
 
-  // coach・customer情報取得
   const { data: coach } = await supabase
     .from('coaches')
     .select('id, name')
@@ -467,7 +450,6 @@ async function finalizeRejection({ bookingId, lineUserId, reasonText, supabase }
   const dateStr = formatDateJa(booking.booking_date);
   const timeStr = booking.booking_time ? booking.booking_time.substring(0, 5) : '';
 
-  // お客様に丁寧なお詫び文送信
   if (customer?.line_user_id) {
     const customerMsg = buildRejectionNoticeText({
       customerName,
@@ -482,7 +464,6 @@ async function finalizeRejection({ bookingId, lineUserId, reasonText, supabase }
     console.warn('[finalize_reject] customer has no line_user_id');
   }
 
-  // コーチに完了通知
   const coachMsg = buildRejectionCompleteText({ customerName });
   await pushMessage(lineUserId, coachMsg);
 }
