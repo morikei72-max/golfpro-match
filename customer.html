@@ -230,7 +230,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .mdl-btn-cancel{background:#fff;color:var(--red);border:1px solid var(--red);}
 .mdl-cancel-note{background:#fff0f0;border-radius:6px;padding:8px;font-size:9px;color:#791F1F;line-height:1.5;margin-top:8px;}
 
-/* 【2026/4/24 追加】決済確認モーダル専用スタイル */
 .pay-confirm-header{background:linear-gradient(135deg,var(--g),var(--gd));color:#fff;padding:20px 16px;text-align:center;border-radius:14px 14px 0 0;}
 .pay-confirm-icon{font-size:42px;margin-bottom:6px;}
 .pay-confirm-title{font-size:18px;font-weight:700;margin-bottom:4px;}
@@ -274,7 +273,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <button class="snb" id="snb-review" onclick="tab(this,'s-review')">レビュー</button>
   </div>
 
-  <!-- コーチを探す -->
   <div class="screen on" id="s-search">
     <div class="coach-entry-area" id="coach-entry-area" style="display:none;">
       <div class="coach-entry-title">👤 コーチを選んでください</div>
@@ -372,7 +370,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- 予約一覧 -->
   <div class="screen" id="s-bookings">
     <div style="font-size:14px;font-weight:700;color:var(--gd);margin-bottom:12px;">📋 ご予約一覧</div>
     <div id="bookings-filter" style="display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;">
@@ -390,7 +387,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- 予約詳細モーダル -->
   <div class="modal-overlay" id="booking-detail-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -401,7 +397,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- 【2026/4/24 追加】決済確認モーダル(承認済み予約用) -->
   <div class="modal-overlay" id="payment-confirm-modal">
     <div class="modal-content">
       <div class="pay-confirm-header">
@@ -415,7 +410,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- 依頼する(内部画面) -->
   <div class="screen" id="s-request">
     <div class="stepbar">
       <div class="stepc done">1</div><div class="stepl done"></div>
@@ -559,7 +553,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- お気に入り -->
   <div class="screen" id="s-fav">
     <div class="fav-notice">♥ お気に入り登録すると、コーチにあなたのお名前が通知されます。(利用規約第4条)</div>
     <div class="ccard">
@@ -576,7 +569,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- マイページ -->
   <div class="screen" id="s-mypage">
     <div id="member-auth-block" style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Golf Create 会員認証</div>
@@ -634,7 +626,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
-  <!-- レビュー -->
   <div class="screen" id="s-review">
     <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;">田中コーチへの評価(必須)</div>
@@ -793,6 +784,11 @@ function resetEntryCoach(){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
+/* 【2026/4/24 修正】
+   決済モーダルはログイン状態に関係なく最優先で表示する。
+   これによりLINE内ブラウザ(スマホ)でもセッションなしで動作する。 */
+checkPaymentConfirmUrl();
+
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
   if(!session){console.warn('セッションなし'); return;}
@@ -812,7 +808,6 @@ sb.auth.getSession().then(async function(res){
     document.getElementById('line-register-area').style.display='none';
   }
   handlePaymentReturn();
-  checkPaymentConfirmUrl();
   loadBookings();
 });
 
@@ -832,7 +827,7 @@ var allBookings=[];
 var currentBookingFilter='all';
 
 /* ============================================
-   【2026/4/24 追加】決済確認モーダル処理
+   決済確認モーダル処理(ログイン不要で動作)
 ============================================ */
 function checkPaymentConfirmUrl(){
   var params=new URLSearchParams(window.location.search);
@@ -913,11 +908,12 @@ async function proceedToStripePayment(bookingId){
   try{
     var{data:booking,error}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
     if(error||!booking){alert('予約情報の取得に失敗しました');if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}return;}
-    var sres=await sb.auth.getSession();
-    var session=sres.data.session;
-    if(!session){alert('ログインが必要です');window.location.href='customer_login.html?from=top';return;}
-    var customerEmail=session.user.email||'';
+    var customerEmail='';
     var customerName=booking.customer_name||'';
+    try{
+      var sres=await sb.auth.getSession();
+      if(sres.data.session){customerEmail=sres.data.session.user.email||'';}
+    }catch(e){}
     var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
     var lessonLabel=typeLabelMap[booking.lesson_type]||booking.lesson_type;
     var resp=await fetch('/.netlify/functions/create-checkout-session',{
@@ -949,7 +945,6 @@ async function proceedToStripePayment(bookingId){
   }
 }
 
-/* ===== 予約一覧機能 ===== */
 async function loadBookings(){
   if(!currentUserId){
     var res=await sb.auth.getSession();
@@ -1161,7 +1156,6 @@ function calcCountdown(dateStr,timeStr){
   return days+'日 '+hours+'時間';
 }
 
-/* ===== 既存の予約フロー機能 ===== */
 function selType(card,type){
   document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('on');});
   card.classList.add('on');
