@@ -96,6 +96,55 @@ async function multicastMessage(toUserIds, text) {
   }
 }
 
+/**
+ * 【2026/4/24 追加】
+ * Flex Messageを送信（承認ボタン付き等のリッチメッセージ）
+ * @param {string} toUserId - LINE user ID
+ * @param {string} altText - 通知一覧に表示されるテキスト（〜400文字）
+ * @param {object} flexContent - Flex Message の contents オブジェクト
+ */
+async function pushFlexMessage(toUserId, altText, flexContent) {
+  if (!toUserId) {
+    console.log('[line-notify] flex skip: no userId');
+    return { ok: false, skipped: true };
+  }
+
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  if (!token) {
+    console.error('[line-notify] LINE_CHANNEL_ACCESS_TOKEN not set');
+    return { ok: false, error: 'no_token' };
+  }
+
+  try {
+    const res = await fetch(LINE_PUSH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        to: toUserId,
+        messages: [{
+          type: 'flex',
+          altText: (altText || '新しい通知').substring(0, 400),
+          contents: flexContent,
+        }],
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('[line-notify] flex push failed:', res.status, errText);
+      return { ok: false, status: res.status, error: errText };
+    }
+
+    return { ok: true };
+  } catch (err) {
+    console.error('[line-notify] flex push error:', err);
+    return { ok: false, error: err.message };
+  }
+}
+
 /* ===== 定型文テンプレート ===== */
 
 function buildBookingConfirmedText({ customerName, coachName, lessonType, dateStr, timeStr, storeName, amount }) {
@@ -152,6 +201,206 @@ function buildCancellationText({ customerName, coachName, dateStr, timeStr, reas
     `日時：${dateStr || '—'} ${timeStr || ''}\n` +
     (reason ? `理由：${reason}\n` : '') +
     `━━━━━━━━━━━━━━━\n\n` +
+    `— MyCoach`
+  );
+}
+
+/**
+ * 【2026/4/24 追加】
+ * コーチへの承認依頼メッセージ（テキスト、altText用）
+ */
+function buildApprovalRequestText({ coachName, customerName, lessonType, dateStr, timeStr, storeName, amount }) {
+  return (
+    `【承認依頼】\n\n` +
+    `${coachName || 'コーチ'}様\n\n` +
+    `新しいご予約依頼が届いています。\n\n` +
+    `お客様：${customerName || '—'}様\n` +
+    `種別：${lessonType || '—'}\n` +
+    `日時：${dateStr || '—'} ${timeStr || ''}\n` +
+    `場所：${storeName || '—'}\n` +
+    `金額：¥${Number(amount || 0).toLocaleString()}\n\n` +
+    `LINEで承認／却下をお選びください。`
+  );
+}
+
+/**
+ * 【2026/4/24 追加】
+ * コーチへの承認依頼 Flex Message（承認／却下ボタン付き）
+ * postbackで「approve_booking:{bookingId}」「reject_booking:{bookingId}」が返る
+ */
+function buildApprovalRequestFlex({ bookingId, customerName, lessonType, dateStr, timeStr, storeName, amount }) {
+  return {
+    type: 'bubble',
+    size: 'mega',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#2E7D32',
+      paddingAll: '16px',
+      contents: [
+        {
+          type: 'text',
+          text: '🏌 新しいご予約依頼',
+          color: '#FFFFFF',
+          weight: 'bold',
+          size: 'lg',
+        },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'md',
+      contents: [
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('お客様', `${customerName || '—'} 様`),
+            _flexRow('種別', lessonType || '—'),
+            _flexRow('日時', `${dateStr || '—'} ${timeStr || ''}`.trim()),
+            _flexRow('場所', storeName || '—'),
+            _flexRow('金額', `¥${Number(amount || 0).toLocaleString()}`),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'lg',
+        },
+        {
+          type: 'text',
+          text: '下のボタンから承認または却下してください',
+          size: 'xs',
+          color: '#888888',
+          margin: 'md',
+          wrap: true,
+        },
+      ],
+    },
+    footer: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'sm',
+      contents: [
+        {
+          type: 'button',
+          style: 'primary',
+          color: '#2E7D32',
+          action: {
+            type: 'postback',
+            label: '✅ 承認する',
+            data: `action=approve_booking&booking_id=${bookingId}`,
+            displayText: '予約を承認しました',
+          },
+        },
+        {
+          type: 'button',
+          style: 'secondary',
+          action: {
+            type: 'postback',
+            label: '❌ 却下する',
+            data: `action=reject_booking&booking_id=${bookingId}`,
+            displayText: '予約を却下します',
+          },
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * Flex Message の1行（ラベル：値）
+ */
+function _flexRow(label, value) {
+  return {
+    type: 'box',
+    layout: 'baseline',
+    spacing: 'sm',
+    contents: [
+      {
+        type: 'text',
+        text: label,
+        color: '#666666',
+        size: 'sm',
+        flex: 2,
+      },
+      {
+        type: 'text',
+        text: String(value || '—'),
+        wrap: true,
+        color: '#222222',
+        size: 'sm',
+        flex: 5,
+      },
+    ],
+  };
+}
+
+/**
+ * 【2026/4/24 追加】
+ * コーチへの却下理由入力依頼メッセージ
+ */
+function buildRejectionReasonPromptText() {
+  return (
+    `却下の理由を3文字以上で返信してください。\n` +
+    `お客様にも伝わる内容をお願いします。\n\n` +
+    `例：\n` +
+    `・その時間は別のご予約が入っています\n` +
+    `・体調不良のため対応できません\n` +
+    `・別の日程でお願いします\n\n` +
+    `※10分以内にご返信ください`
+  );
+}
+
+/**
+ * 【2026/4/24 追加】
+ * コーチへの却下完了メッセージ
+ */
+function buildRejectionCompleteText({ customerName }) {
+  return (
+    `却下しました。\n` +
+    `${customerName || 'お客様'}様にLINEでご連絡済みです。\n` +
+    `— MyCoach`
+  );
+}
+
+/**
+ * 【2026/4/24 追加】
+ * お客様への却下通知メッセージ
+ */
+function buildRejectionNoticeText({ customerName, coachName, dateStr, timeStr, reason }) {
+  return (
+    `【ご予約についてのご連絡】\n\n` +
+    `${customerName || 'お客様'}様\n\n` +
+    `申し訳ございません。\n` +
+    `コーチの都合により、以下のご予約がお受けできませんでした。\n\n` +
+    `━━━━━━━━━━━━━━━\n` +
+    `コーチ：${coachName || '—'}\n` +
+    `日時：${dateStr || '—'} ${timeStr || ''}\n` +
+    `理由：${reason || '—'}\n` +
+    `━━━━━━━━━━━━━━━\n\n` +
+    `他のコーチ・日程でぜひお試しください。\n` +
+    `— MyCoach`
+  );
+}
+
+/**
+ * 【2026/4/24 追加】
+ * お客様への承認完了＆決済案内メッセージ
+ */
+function buildApprovalCompleteText({ customerName, coachName, dateStr, timeStr, amount, paymentUrl }) {
+  return (
+    `【予約承認のお知らせ】\n\n` +
+    `${customerName || 'お客様'}様\n\n` +
+    `コーチより予約が承認されました。\n` +
+    `下記のリンクからお支払いへお進みください。\n\n` +
+    `━━━━━━━━━━━━━━━\n` +
+    `コーチ：${coachName || '—'}\n` +
+    `日時：${dateStr || '—'} ${timeStr || ''}\n` +
+    `金額：¥${Number(amount || 0).toLocaleString()}\n` +
+    `━━━━━━━━━━━━━━━\n\n` +
+    `▼お支払いはこちら\n${paymentUrl || ''}\n\n` +
     `— MyCoach`
   );
 }
@@ -319,9 +568,17 @@ function formatDateJa(dateStr) {
 module.exports = {
   pushMessage,
   multicastMessage,
+  pushFlexMessage,
   buildBookingConfirmedText,
   buildPaymentCompletedText,
   buildCoachNewBookingText,
   buildCancellationText,
+  buildApprovalRequestText,
+  buildApprovalRequestFlex,
+  buildRejectionReasonPromptText,
+  buildRejectionCompleteText,
+  buildRejectionNoticeText,
+  buildApprovalCompleteText,
   notify,
+  formatDateJa,
 };
