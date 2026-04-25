@@ -2153,11 +2153,28 @@ var cancelRequestTotalPrice=0;
 function openCancelRequestModal(bookingId,totalPrice){
   cancelRequestBookingId=bookingId;
   cancelRequestTotalPrice=parseInt(totalPrice)||0;
-  var cancelFee=Math.round(cancelRequestTotalPrice*0.036);
-  var refundAmount=cancelRequestTotalPrice-cancelFee;
+  // 該当予約のレッスン日時を取得して返金額を動的計算
+  var booking=null;
+  if(allBookings){
+    for(var i=0;i<allBookings.length;i++){
+      if(allBookings[i].id===bookingId){booking=allBookings[i];break;}
+    }
+  }
+  var refundCalc=calculateRefundForCancel(booking,cancelRequestTotalPrice);
+  cancelRequestPolicy=refundCalc.policy;
+  cancelRequestRefundAmount=refundCalc.refundAmount;
+  cancelRequestCancelFee=refundCalc.cancelFee;
+  // ポリシー表示更新
+  var policyLabelEl=document.getElementById('cancel-policy-applied');
+  if(policyLabelEl){
+    if(refundCalc.policy==='full_refund') policyLabelEl.textContent='✅ 適用ポリシー:48時間以上前(全額返金)';
+    else if(refundCalc.policy==='half_refund') policyLabelEl.textContent='⚠️ 適用ポリシー:48時間以内(50%返金)';
+    else policyLabelEl.textContent='🚫 適用ポリシー:当日キャンセル(返金なし)';
+    policyLabelEl.style.color=refundCalc.policy==='no_refund'?'#B71C1C':refundCalc.policy==='half_refund'?'#E65100':'#2E7D32';
+  }
   document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString();
-  document.getElementById('cancel-fee-display').textContent='¥'+cancelFee.toLocaleString();
-  document.getElementById('cancel-refund-display').textContent='¥'+refundAmount.toLocaleString();
+  document.getElementById('cancel-fee-display').textContent='¥'+refundCalc.cancelFee.toLocaleString();
+  document.getElementById('cancel-refund-display').textContent='¥'+refundCalc.refundAmount.toLocaleString();
   document.getElementById('cancel-reason-category').value='';
   document.getElementById('cancel-reason-text').value='';
   document.getElementById('cancel-agree-chk').checked=false;
@@ -2165,6 +2182,31 @@ function openCancelRequestModal(bookingId,totalPrice){
   closeBookingDetail();
   document.getElementById('cancel-request-modal').classList.add('open');
 }
+
+function calculateRefundForCancel(booking,totalPrice){
+  var STRIPE_FEE_RATE=0.036;
+  var stripeFee=Math.round(totalPrice*STRIPE_FEE_RATE);
+  if(!booking||!booking.booking_date){
+    return {policy:'full_refund',cancelFee:stripeFee,refundAmount:totalPrice-stripeFee};
+  }
+  var timeStr=(booking.booking_time||'00:00:00').substring(0,8);
+  var lessonDateTime=new Date(booking.booking_date+'T'+timeStr+'+09:00');
+  var now=new Date();
+  var hoursUntilLesson=(lessonDateTime-now)/(1000*60*60);
+  if(hoursUntilLesson>=48){
+    return {policy:'full_refund',cancelFee:stripeFee,refundAmount:totalPrice-stripeFee};
+  }else if(hoursUntilLesson>0){
+    var halfFee=Math.round(totalPrice*0.5);
+    var fee=halfFee+stripeFee;
+    return {policy:'half_refund',cancelFee:fee,refundAmount:totalPrice-fee};
+  }else{
+    return {policy:'no_refund',cancelFee:totalPrice,refundAmount:0};
+  }
+}
+
+var cancelRequestPolicy='full_refund';
+var cancelRequestRefundAmount=0;
+var cancelRequestCancelFee=0;
 
 function closeCancelRequestModal(){
   document.getElementById('cancel-request-modal').classList.remove('open');
@@ -2177,7 +2219,6 @@ function checkCancelAgree(){
   var btn=document.getElementById('cancel-submit-btn');
   if(btn) btn.disabled=!chk.checked;
 }
-
 async function submitCancelRequest(){
   if(!cancelRequestBookingId){alert('予約情報が取得できません');return;}
   var category=document.getElementById('cancel-reason-category').value;
@@ -2186,9 +2227,21 @@ async function submitCancelRequest(){
   if(!agreeChk){alert('キャンセルポリシーに同意してください');return;}
   if(!category){alert('キャンセル理由を選択してください');return;}
   if(!reasonText){alert('キャンセル理由の詳細を入力してください');return;}
+  // 最終確認ダイアログ
+  var policyText=cancelRequestPolicy==='full_refund'?'全額返金(48時間以上前)':cancelRequestPolicy==='half_refund'?'50%返金(48時間以内)':'返金なし(当日キャンセル)';
+  var confirmMsg='【最終確認】\n\n本当にこのご予約をキャンセルしますか?\n\n'+
+    '■ 適用ポリシー:\n'+policyText+'\n\n'+
+    '■ 返金内容:\n'+
+    '・決済額:¥'+cancelRequestTotalPrice.toLocaleString()+'\n'+
+    '・キャンセル料:¥'+cancelRequestCancelFee.toLocaleString()+'\n'+
+    '・返金額:¥'+cancelRequestRefundAmount.toLocaleString()+'\n\n'+
+    '※この処理は取り消せません。\n'+
+    '※返金は数日以内にカード会社経由で反映されます。\n\n'+
+    'よろしいですか?';
+  if(!confirm(confirmMsg)){return;}
   var btn=document.getElementById('cancel-submit-btn');
   btn.disabled=true;
-  btn.textContent='送信中...';
+  btn.textContent='処理中...';
   try{
     var resp=await fetch('/.netlify/functions/customer-cancel-request',{
       method:'POST',
@@ -2201,12 +2254,19 @@ async function submitCancelRequest(){
     });
     var json=await resp.json();
     if(!resp.ok||!json.ok){
-      alert('キャンセル申請の送信に失敗しました\n'+(json.error||'不明なエラー'));
+      alert('キャンセル処理に失敗しました\n'+(json.error||'不明なエラー'));
       btn.disabled=false;
       btn.textContent='キャンセル申請を送信';
       return;
     }
-    alert('✅ キャンセル申請を受け付けました\n\n店舗より返金処理後、LINEで完了通知をお送りいたします。\n\n返金予定額:¥'+(json.refund_amount||0).toLocaleString());
+    var successMsg='✅ キャンセル処理が完了しました\n\n';
+    if(json.refund_amount>0){
+      successMsg+='返金額:¥'+(json.refund_amount||0).toLocaleString()+'\n';
+      successMsg+='\n返金は数日以内にご利用のクレジットカードへ反映されます。';
+    }else{
+      successMsg+='当日キャンセルのため、返金はございません。';
+    }
+    alert(successMsg);
     closeCancelRequestModal();
     loadBookings();
   }catch(e){
@@ -2215,7 +2275,7 @@ async function submitCancelRequest(){
     btn.disabled=false;
     btn.textContent='キャンセル申請を送信';
   }
-}  
+}
 </script>
 </body>
 </html>
