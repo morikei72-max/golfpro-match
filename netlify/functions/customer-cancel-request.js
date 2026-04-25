@@ -1,6 +1,6 @@
 // netlify/functions/customer-cancel-request.js
 // お客様からのキャンセル申請を受け付けて自動返金を実行するAPI
-// 【2026/4/25 v4】
+// 【2026/4/25 v5】
 //   ■ キャンセルポリシー(更新版):
 //     - 48時間以上前    : 96.4%返金(手数料3.6%のみ控除)
 //     - 48時間~当日前  : 46.4%返金(50%キャンセル料+手数料3.6%控除)
@@ -12,6 +12,7 @@
 //     → カード保有者へ直接返金
 //   ■ bookings.status = 'cancelled' に更新
 //   ■ 3者へLINE通知(お客様・コーチ・店舗)
+//     ※ 店長兼コーチの場合も店舗通知を必ず送信(役割別の情報分離)
 
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
@@ -379,9 +380,9 @@ exports.handler = async (event) => {
 
     // ============================================
     // ③ 店舗(森下啓介様)へLINE通知
-    //   ※ コーチと店舗が同一LINEの場合は重複送信を回避
+    //   ※ 店長兼コーチの場合でも必ず送信(役割別の情報分離のため)
     // ============================================
-    if (STORE_ADMIN_LINE_USER_ID && STORE_ADMIN_LINE_USER_ID !== coachLineUserId) {
+    if (STORE_ADMIN_LINE_USER_ID) {
       const adminFlex = buildAdminCancelNoticeFlex({
         customerName, coachName, lessonType, minutesStr,
         dateStr, timeStr, storeName, totalPrice, cancelFee, refundAmount,
