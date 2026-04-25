@@ -2195,12 +2195,14 @@ function calculateRefundForCancel(booking,totalPrice){
   var hoursUntilLesson=(lessonDateTime-now)/(1000*60*60);
   if(hoursUntilLesson>=48){
     return {policy:'full_refund',cancelFee:stripeFee,refundAmount:totalPrice-stripeFee};
-  }else if(hoursUntilLesson>0){
+  }else if(hoursUntilLesson>=24){
     var halfFee=Math.round(totalPrice*0.5);
-    var fee=halfFee+stripeFee;
-    return {policy:'half_refund',cancelFee:fee,refundAmount:totalPrice-fee};
+    var fee2=halfFee+stripeFee;
+    return {policy:'half_refund',cancelFee:fee2,refundAmount:totalPrice-fee2};
   }else{
-    return {policy:'no_refund',cancelFee:totalPrice,refundAmount:0};
+    var eightyFee=Math.round(totalPrice*0.8);
+    var fee3=eightyFee+stripeFee;
+    return {policy:'sameday_refund',cancelFee:fee3,refundAmount:totalPrice-fee3};
   }
 }
 
@@ -2228,7 +2230,7 @@ async function submitCancelRequest(){
   if(!category){alert('キャンセル理由を選択してください');return;}
   if(!reasonText){alert('キャンセル理由の詳細を入力してください');return;}
   // 最終確認ダイアログ
-  var policyText=cancelRequestPolicy==='full_refund'?'全額返金(48時間以上前)':cancelRequestPolicy==='half_refund'?'50%返金(48時間以内)':'返金なし(当日キャンセル)';
+  var policyText=cancelRequestPolicy==='full_refund'?'全額返金(48時間以上前)':cancelRequestPolicy==='half_refund'?'50%返金(24~48時間前)':'20%返金(24時間以内・当日)';
   var confirmMsg='【最終確認】\n\n本当にこのご予約をキャンセルしますか?\n\n'+
     '■ 適用ポリシー:\n'+policyText+'\n\n'+
     '■ 返金内容:\n'+
