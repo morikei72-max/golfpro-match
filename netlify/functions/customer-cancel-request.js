@@ -1,6 +1,6 @@
 // netlify/functions/customer-cancel-request.js
 // お客様からのキャンセル申請を受け付けて自動返金を実行するAPI
-// 【2026/4/25 v3】
+// 【2026/4/25 v4】
 //   ■ キャンセルポリシー(更新版):
 //     - 48時間以上前    : 96.4%返金(手数料3.6%のみ控除)
 //     - 48時間~当日前  : 46.4%返金(50%キャンセル料+手数料3.6%控除)
@@ -8,8 +8,8 @@
 //   ■ Stripe決済情報の取得:
 //     1. Checkout Session 検索(過去の決済対応)
 //     2. payment_intent.search 検索(新規決済対応・予備)
-//   ■ Stripe Refund API(reverse_transfer: true)で自動返金
-//     → 店舗・本部・コーチから比例配分で引き戻し
+//   ■ Stripe Refund API(通常決済)で自動返金
+//     → カード保有者へ直接返金
 //   ■ bookings.status = 'cancelled' に更新
 //   ■ 3者へLINE通知(お客様・コーチ・店舗)
 
@@ -268,12 +268,10 @@ exports.handler = async (event) => {
         stripePaymentIntentId = paymentInfo.paymentIntentId;
         console.log('[cancel-request] PaymentIntent found:', stripePaymentIntentId);
 
-        // 返金実行(reverse_transfer: true で4者から比例配分引き戻し)
+        // 返金実行(通常決済・カード保有者へ直接返金)
         refundResult = await stripe.refunds.create({
           payment_intent: stripePaymentIntentId,
           amount: refundAmount,
-          reverse_transfer: true,
-          refund_application_fee: true,
           metadata: {
             booking_id: booking_id,
             cancel_policy: policy,
@@ -643,7 +641,7 @@ function buildAdminCancelNoticeFlex({
         { type: 'separator', margin: 'lg' },
         {
           type: 'text',
-          text: 'Stripe側で4者から自動引き戻し済み',
+          text: 'カード保有者へ自動返金完了',
           size: 'xs', color: '#555555', wrap: true, margin: 'md', align: 'center',
         },
       ],
