@@ -1,6 +1,6 @@
 // netlify/functions/create-checkout-session.js
 // MyCoach 決済セッション作成
-// 【2026/4/25 更新】approved_booking_id 対応(既存予約からの決済)
+// 【2026/4/25 v2】payment_intent_data.metadata 追加(自動返金対応)
 //
 // 処理の流れ:
 // Pattern A: approved_booking_id あり
@@ -10,6 +10,9 @@
 // Pattern B: approved_booking_id なし(従来フロー・後方互換)
 //   → bookings に pending_payment で新規INSERT
 //   → Stripe Checkout セッション作成
+//
+// 【重要】payment_intent_data.metadata.booking_id を必ず付与
+//   → これにより自動返金時に Stripe Search API で検索可能になる
 
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
@@ -107,6 +110,15 @@ exports.handler = async (event) => {
 
       const amount = parseInt(existingBooking.total_price, 10);
 
+      // metadata 共通定義(Session と PaymentIntent 両方に付与)
+      const metadata = {
+        booking_id:  approvedBookingId,
+        customer_id: existingBooking.customer_id || '',
+        coach_id:    existingBooking.coach_id || '',
+        store_key:   existingBooking.store_key || '',
+        lesson_type: existingBooking.lesson_type || '',
+      };
+
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
@@ -122,12 +134,11 @@ exports.handler = async (event) => {
         ],
         success_url: `${origin}/customer.html?payment=success&booking_id=${approvedBookingId}`,
         cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${approvedBookingId}`,
-        metadata: {
-          booking_id:  approvedBookingId,
-          customer_id: existingBooking.customer_id || '',
-          coach_id:    existingBooking.coach_id || '',
-          store_key:   existingBooking.store_key || '',
-          lesson_type: existingBooking.lesson_type || '',
+        metadata: metadata,
+        // 【重要】PaymentIntent にも同じ metadata を付与
+        // これがないと自動返金時に Stripe Search API で検索できない
+        payment_intent_data: {
+          metadata: metadata,
         },
       });
 
@@ -204,6 +215,15 @@ exports.handler = async (event) => {
         ? `${coachName} コーチ / ${lessonTypeLabel(lessonType)}`
         : `MyCoach ${lessonTypeLabel(lessonType)}`;
 
+    // metadata 共通定義
+    const metadataB = {
+      booking_id:  bookingId,
+      customer_id: customerId,
+      coach_id:    coachId,
+      store_key:   storeKey,
+      lesson_type: lessonType,
+    };
+
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['card'],
@@ -219,12 +239,10 @@ exports.handler = async (event) => {
       ],
       success_url: `${origin}/customer.html?payment=success&booking_id=${bookingId}`,
       cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${bookingId}`,
-      metadata: {
-        booking_id:  bookingId,
-        customer_id: customerId,
-        coach_id:    coachId,
-        store_key:   storeKey,
-        lesson_type: lessonType,
+      metadata: metadataB,
+      // 【重要】PaymentIntent にも同じ metadata を付与
+      payment_intent_data: {
+        metadata: metadataB,
       },
     });
 
