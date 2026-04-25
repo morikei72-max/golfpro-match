@@ -416,10 +416,25 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .invoice-radio{display:flex;gap:16px;margin-bottom:8px;}
 .invoice-radio label{display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;}
 .invoice-warning{font-size:11px;color:var(--gold);background:#fff8e1;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.6;}
+
+/* ===== LINE連携 ===== */
+.line-link-box{background:#f7faf8;border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:12px;}
+.line-link-title{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:4px;}
+.line-link-sub{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.line-link-status-ok{background:var(--gl);border:1px solid var(--g);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--gd);font-weight:700;}
+.line-link-status-ok-sub{font-size:10px;color:var(--gd);font-weight:400;margin-top:2px;}
+.line-link-btn{display:block;width:100%;padding:11px;background:#06C755;color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;text-align:center;}
+.line-link-btn:hover{background:#04a847;}
+.line-link-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.line-link-code-box{background:#fff;border:2px solid var(--g);border-radius:10px;padding:14px;margin-top:8px;text-align:center;}
+.line-link-code-num{font-family:'Montserrat',sans-serif;font-size:32px;font-weight:900;color:var(--gd);letter-spacing:0.15em;margin:6px 0;}
+.line-link-code-howto{font-size:11px;color:var(--muted);line-height:1.7;margin-top:8px;text-align:left;}
+.line-link-code-howto a{color:var(--g);font-weight:700;text-decoration:none;}
+.line-link-countdown{font-size:11px;color:var(--gold);font-weight:700;margin-top:6px;}
+.line-link-countdown.expired{color:var(--red);}
 </style>
 </head>
 <body>
-
 <!-- 店舗選択オーバーレイ -->
 <div class="store-overlay" id="store-overlay">
   <div class="store-logo">My<span>Coach</span></div>
@@ -715,6 +730,18 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
+
+    <!-- ===== LINE連携(新規追加) ===== -->
+    <div class="card">
+      <div class="card-title">📱 LINE連携</div>
+      <div class="line-link-box" id="line-link-box">
+        <div class="line-link-title">公式LINEと連携</div>
+        <div class="line-link-sub">公式LINEと連携すると、予約依頼の通知や決済完了をトークで受け取れます</div>
+        <div id="line-link-content">
+          <div style="text-align:center;color:#888;font-size:12px;padding:10px;">読み込み中...</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 料金設定 -->
@@ -941,8 +968,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>予約管理<span class="tab-badge" id="tab-badge-bookings">0</span></button>
   <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>収入</button>
   <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>掲示板</button>
-</nav>
-<script>
+</nav> 
+ <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
@@ -967,6 +994,9 @@ let customPlanCounter=0;
 /* 予約管理用 */
 let allCoachBookings=[];
 let currentBookingFilter='pending';
+/* LINE連携用 */
+let lineLinkCountdownTimer=null;
+let lineLinkPollingTimer=null;
 
 /* ===== 認証チェック ===== */
 (async()=>{
@@ -974,7 +1004,7 @@ let currentBookingFilter='pending';
   if(!session){window.location.replace(BASE+'index.html?role=coach');return;}
   const user=session.user;
   currentAuthId=user.id;
-  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name').eq('user_id',user.id).maybeSingle();
+  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,line_user_id').eq('user_id',user.id).maybeSingle();
   if(coachErr){console.error('coach取得エラー',coachErr);alert('❌ コーチ情報の取得に失敗しました: '+coachErr.message);return;}
   if(!coachRow){alert('❌ このアカウントにはコーチ情報が登録されていません。\n先にプロフィール画面で基本情報を保存してください。');}
   currentCoachId=coachRow?coachRow.id:null;
@@ -994,6 +1024,8 @@ let currentBookingFilter='pending';
   await loadProfile(user.id);
   await loadDashboardData();
   await loadCoachBookings();
+  /* LINE連携ステータス更新 */
+  updateLineLinkStatus(coachRow?.line_user_id);
 })();
 
 /* ===== 店舗選択 ===== */
@@ -2120,6 +2152,132 @@ async function doLogout(){
   await sb.auth.signOut();localStorage.removeItem('gc_user_type');
   window.location.replace(BASE+'index.html?role=coach');
 }
+
+/* ===== LINE連携機能 ===== */
+function updateLineLinkStatus(lineUserId){
+  const content=document.getElementById('line-link-content');
+  if(!content)return;
+  if(lineUserId){
+    content.innerHTML=`
+      <div class="line-link-status-ok">
+        ✅ LINE連携済み
+        <div class="line-link-status-ok-sub">予約通知や決済完了をLINEで受け取れます</div>
+      </div>
+    `;
+  }else{
+    content.innerHTML=`
+      <button class="line-link-btn" id="line-link-issue-btn" onclick="issueLineLinkCode()">📱 連携コードを発行する</button>
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6;">公式LINEを友だち追加後、6桁コードを送信して連携完了します</div>
+    `;
+  }
+}
+
+async function issueLineLinkCode(){
+  if(!currentCoachId){alert('❌ コーチ情報が取得できません\n先にプロフィール画面で基本情報を保存してください');return;}
+  const btn=document.getElementById('line-link-issue-btn');
+  if(btn){btn.disabled=true;btn.textContent='発行中...';}
+  try{
+    const resp=await fetch(BASE+'.netlify/functions/generate-link-code',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_type:'coach',user_id:currentCoachId})
+    });
+    const json=await resp.json();
+    if(!resp.ok||!json.ok){
+      console.error('連携コード発行エラー:',json);
+      if(json.already_linked){
+        alert('✅ 既にLINE連携済みです');
+        updateLineLinkStatus(json.line_user_id||'linked');
+        return;
+      }
+      alert('❌ 連携コード発行に失敗しました\n'+(json.error||'不明なエラー'));
+      if(btn){btn.disabled=false;btn.textContent='📱 連携コードを発行する';}
+      return;
+    }
+    showLineLinkCode(json.code,json.expires_at);
+    startLineLinkPolling();
+  }catch(e){
+    console.error('連携コード発行例外:',e);
+    alert('❌ エラーが発生しました\n'+e.message);
+    if(btn){btn.disabled=false;btn.textContent='📱 連携コードを発行する';}
+  }
+}
+
+function showLineLinkCode(code,expiresAt){
+  const content=document.getElementById('line-link-content');
+  if(!content)return;
+  content.innerHTML=`
+    <div class="line-link-code-box">
+      <div style="font-size:11px;color:var(--gd);font-weight:700;">📱 連携コードを発行しました</div>
+      <div class="line-link-code-num">${code}</div>
+      <div class="line-link-countdown" id="line-link-countdown">⏱ 残り 10:00</div>
+      <div class="line-link-code-howto">
+        <strong>連携手順:</strong><br>
+        1. <a href="https://lin.ee/VkQyw4n" target="_blank">MyCoach公式LINE</a> を友だち追加<br>
+        2. トークで上記の <strong>${code}</strong> を送信<br>
+        3. 自動で連携完了します
+      </div>
+    </div>
+  `;
+  startLineLinkCountdown(expiresAt);
+}
+
+function startLineLinkCountdown(expiresAt){
+  stopLineLinkCountdown();
+  var expires=new Date(expiresAt).getTime();
+  var update=function(){
+    var now=Date.now();
+    var diff=expires-now;
+    var el=document.getElementById('line-link-countdown');
+    if(!el)return;
+    if(diff<=0){
+      el.textContent='⏱ コードの有効期限が切れました';
+      el.classList.add('expired');
+      stopLineLinkCountdown();
+      return;
+    }
+    var totalSec=Math.floor(diff/1000);
+    var min=Math.floor(totalSec/60);
+    var sec=totalSec%60;
+    el.textContent='⏱ 残り '+min+':'+(sec<10?'0'+sec:sec);
+  };
+  update();
+  lineLinkCountdownTimer=setInterval(update,1000);
+}
+
+function stopLineLinkCountdown(){
+  if(lineLinkCountdownTimer){
+    clearInterval(lineLinkCountdownTimer);
+    lineLinkCountdownTimer=null;
+  }
+}
+
+function startLineLinkPolling(){
+  stopLineLinkPolling();
+  lineLinkPollingTimer=setInterval(async function(){
+    if(!currentAuthId){stopLineLinkPolling();return;}
+    try{
+      var{data}=await sb.from('coaches').select('line_user_id').eq('user_id',currentAuthId).maybeSingle();
+      if(data&&data.line_user_id){
+        stopLineLinkTimers();
+        updateLineLinkStatus(data.line_user_id);
+        alert('✅ LINE連携が完了しました!');
+      }
+    }catch(e){console.warn('polling error',e);}
+  },5000);
+}
+
+function stopLineLinkPolling(){
+  if(lineLinkPollingTimer){
+    clearInterval(lineLinkPollingTimer);
+    lineLinkPollingTimer=null;
+  }
+}
+
+function stopLineLinkTimers(){
+  stopLineLinkCountdown();
+  stopLineLinkPolling();
+}
 </script>
 </body>
-</html>
+</html> 
