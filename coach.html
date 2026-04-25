@@ -60,9 +60,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
 /* ===== タブナビ ===== */
 .tab-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(7,1fr);height:60px;}
-.tab-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:9px;color:var(--muted);transition:color .2s;padding:4px 2px;}
+.tab-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:9px;color:var(--muted);transition:color .2s;padding:4px 2px;position:relative;}
 .tab-btn svg{width:20px;height:20px;}
 .tab-btn.active{color:var(--g);}
+.tab-badge{position:absolute;top:2px;right:6px;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;display:none;}
+.tab-badge.show{display:inline-block;}
 
 /* ===== メイン ===== */
 .main{margin-top:56px;margin-bottom:60px;padding:14px;}
@@ -302,24 +304,45 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
 .legend-dot{width:10px;height:10px;border-radius:2px;}
 .filter-wrap{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;}
-.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;position:relative;}
 .filter-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
-.booking-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;}
+.filter-btn .filter-count{font-size:10px;font-weight:700;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;margin-left:4px;}
+.filter-btn.active .filter-count{background:#fff;color:var(--g);}
+.booking-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;background:#fff;}
+.booking-item.pending{border:2px solid var(--gold);background:#FFF9F0;}
+.booking-item.confirmed{border-color:var(--g);}
 .booking-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
 .booking-date{font-size:12px;font-weight:700;color:var(--gd);}
 .booking-status{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:700;}
-.status-pending{background:#fff3cd;color:#856404;}
-.status-approved{background:var(--gl);color:var(--gd);}
+.status-pending{background:linear-gradient(135deg,#FAC775,#BA7517);color:#fff;}
+.status-approved-pending-payment{background:#cfe8ff;color:#0c5c8a;}
+.status-confirmed{background:var(--g);color:#fff;}
+.status-rejected{background:#ffe0e0;color:var(--red);}
 .status-cancelled{background:#ffe0e0;color:var(--red);}
-.booking-customer{font-size:13px;font-weight:500;margin-bottom:4px;}
+.status-completed{background:var(--gl);color:var(--gd);}
+.booking-customer{font-size:13px;font-weight:700;margin-bottom:2px;color:var(--gd);}
+.booking-meta{font-size:10px;color:var(--muted);margin-bottom:4px;}
 .booking-detail{font-size:11px;color:var(--muted);margin-bottom:8px;}
-.booking-actions{display:flex;gap:6px;flex-wrap:wrap;}
-.btn-approve{flex:1;padding:8px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
-.btn-decline{flex:1;padding:8px;background:#fff;color:var(--red);border:1px solid var(--red);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.booking-elapsed{font-size:10px;color:var(--muted);}
+.booking-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.btn-approve{flex:1;padding:10px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-approve:hover{background:var(--gd);}
+.btn-approve:disabled{background:#ccc;cursor:not-allowed;}
+.btn-decline{flex:1;padding:10px;background:#fff;color:var(--red);border:1px solid var(--red);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-decline:hover{background:#fff0f0;}
+.btn-decline:disabled{opacity:0.5;cursor:not-allowed;}
 .btn-done{flex:1;padding:8px;background:#f0f0f0;color:var(--muted);border:none;border-radius:8px;font-size:12px;cursor:pointer;}
 .btn-emergency{flex:1;padding:8px;background:var(--red);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;}
 .cancel-policy-note{background:#fff0f0;border:1px solid #ffcccc;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:#c0392b;line-height:1.8;}
 .cancel-policy-note strong{display:block;margin-bottom:4px;font-size:12px;}
+.bookings-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+.bk-sum{background:#f7faf8;border-radius:8px;padding:8px 6px;text-align:center;border:1px solid var(--border);}
+.bk-sum.urgent{background:#FFF9F0;border-color:var(--gold);}
+.bk-sum-num{font-size:18px;font-weight:900;color:var(--gd);font-family:'Montserrat',sans-serif;}
+.bk-sum.urgent .bk-sum-num{color:var(--gold);}
+.bk-sum-lbl{font-size:9px;color:var(--muted);margin-top:2px;}
+.empty-bookings{padding:32px 16px;text-align:center;color:var(--muted);font-size:12px;}
+.empty-bookings .empty-icon{font-size:36px;margin-bottom:8px;display:block;}
 
 /* 収入管理 */
 .income-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
@@ -797,49 +820,34 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
   </div>
 
-  <!-- 予約管理 -->
+  <!-- 予約管理(刷新) -->
   <div class="page" id="page-bookings">
     <div class="card">
-      <div class="card-title">予約管理</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="booking-store-label">店舗を選択してください</div>
+      <div class="card-title">📋 予約管理</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">お客様からの予約依頼の承認・確認ができます</div>
+      
+      <!-- サマリー -->
+      <div class="bookings-summary" id="bookings-summary">
+        <div class="bk-sum urgent"><div class="bk-sum-num" id="sum-pending">0</div><div class="bk-sum-lbl">⏳ 承認待ち</div></div>
+        <div class="bk-sum"><div class="bk-sum-num" id="sum-payment">0</div><div class="bk-sum-lbl">💳 決済待ち</div></div>
+        <div class="bk-sum"><div class="bk-sum-num" id="sum-confirmed">0</div><div class="bk-sum-lbl">✅ 確定</div></div>
+        <div class="bk-sum"><div class="bk-sum-num" id="sum-completed">0</div><div class="bk-sum-lbl">✓ 完了</div></div>
+      </div>
+
       <div class="cancel-policy-note">
         <strong>🚨 緊急キャンセルについて</strong>
         やむを得ない事情(病気・家族の緊急事態・事故等)の場合は「緊急キャンセル」ボタンを押してください。お客様・店舗へ自動通知されます。
       </div>
+      
       <div class="filter-wrap">
-        <button class="filter-btn active" onclick="filterBookings('all',this)">すべて</button>
-        <button class="filter-btn" onclick="filterBookings('pending',this)">承認待ち</button>
+        <button class="filter-btn active" onclick="filterBookings('pending',this)">⏳ 承認待ち <span class="filter-count" id="filter-count-pending" style="display:none">0</span></button>
+        <button class="filter-btn" onclick="filterBookings('all',this)">すべて</button>
         <button class="filter-btn" onclick="filterBookings('approved',this)">承認済み</button>
+        <button class="filter-btn" onclick="filterBookings('completed',this)">完了</button>
         <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
       </div>
       <div id="bookings-list">
-        <div class="booking-item" data-status="pending">
-          <div class="booking-header"><div class="booking-date">2026/04/15(水)11:00</div><span class="booking-status status-pending">承認待ち</span></div>
-          <div class="booking-customer">山田 太郎</div>
-          <div class="booking-detail">インドアゴルフレッスン・50分 ¥5,000</div>
-          <div class="booking-actions">
-            <button class="btn-approve" onclick="approveBooking(this)">承認する</button>
-            <button class="btn-decline" onclick="declineBooking(this)">断る</button>
-          </div>
-        </div>
-        <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/12(日)10:00</div><span class="booking-status status-approved">承認済み</span></div>
-          <div class="booking-customer">田中 次郎</div>
-          <div class="booking-detail">インドアゴルフレッスン・90分 ¥8,000</div>
-          <div class="booking-actions">
-            <button class="btn-done" onclick="completeBooking(this)">完了</button>
-            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
-          </div>
-        </div>
-        <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/18(土)ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
-          <div class="booking-customer">鈴木 花子</div>
-          <div class="booking-detail">ラウンドレッスン・1ラウンド ¥20,000</div>
-          <div class="booking-actions">
-            <button class="btn-done" onclick="completeBooking(this)">完了</button>
-            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
-          </div>
-        </div>
+        <div class="empty-bookings"><span class="empty-icon">📋</span>読み込み中...</div>
       </div>
     </div>
   </div>
@@ -930,7 +938,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <button class="tab-btn" onclick="switchTab('profile',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>プロフィール</button>
   <button class="tab-btn" onclick="switchTab('price',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>料金設定</button>
   <button class="tab-btn" onclick="switchTab('schedule',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>スケジュール</button>
-  <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>予約管理</button>
+  <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>予約管理<span class="tab-badge" id="tab-badge-bookings">0</span></button>
   <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>収入</button>
   <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>掲示板</button>
 </nav>
@@ -956,6 +964,9 @@ let currentMonth=new Date();
 let cancelTargetItem=null;
 let priceItemCounter=0;
 let customPlanCounter=0;
+/* 予約管理用 */
+let allCoachBookings=[];
+let currentBookingFilter='pending';
 
 /* ===== 認証チェック ===== */
 (async()=>{
@@ -982,6 +993,7 @@ let customPlanCounter=0;
   buildMonthGrid();
   await loadProfile(user.id);
   await loadDashboardData();
+  await loadCoachBookings();
 })();
 
 /* ===== 店舗選択 ===== */
@@ -999,7 +1011,6 @@ async function selectStore(key){
   document.getElementById('store-overlay').classList.add('hidden');
   document.getElementById('store-badge').textContent=s.name;
   document.getElementById('schedule-store-label').textContent='📍 スケジュールは全店舗共通です';
-  document.getElementById('booking-store-label').textContent='📍 '+s.name+' の予約';
   const coachPct=100-s.fees.indoor-s.hqFee-s.stripeFee;
   document.getElementById('fee-store-name').textContent=s.name+' の手数料';
   document.getElementById('fee-store').textContent=s.fees.indoor+'%';
@@ -1011,6 +1022,236 @@ async function selectStore(key){
   await loadDashboardData();
 }
 function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
+
+/* ===== 予約管理:データ読込 ===== */
+async function loadCoachBookings(){
+  if(!currentCoachId){
+    document.getElementById('bookings-list').innerHTML='<div class="empty-bookings"><span class="empty-icon">⚠️</span>コーチ情報が設定されていません<br>プロフィール画面で基本情報を保存してください</div>';
+    return;
+  }
+  try{
+    const {data:bookings,error}=await sb.from('bookings')
+      .select('*')
+      .eq('coach_id',currentCoachId)
+      .order('created_at',{ascending:false});
+    if(error){console.error('予約読込エラー',error);document.getElementById('bookings-list').innerHTML='<div class="empty-bookings"><span class="empty-icon">⚠️</span>予約データの読み込みに失敗しました<br>'+error.message+'</div>';return;}
+    allCoachBookings=bookings||[];
+    /* お客様情報を取得 */
+    const customerIds=[...new Set(allCoachBookings.map(b=>b.customer_id).filter(Boolean))];
+    if(customerIds.length>0){
+      const {data:customers}=await sb.from('customers').select('id,name,birth_date,member_type').in('id',customerIds);
+      const custMap={};
+      (customers||[]).forEach(c=>{custMap[c.id]=c;});
+      window._coachCustMap=custMap;
+    }else{
+      window._coachCustMap={};
+    }
+    updateBookingsSummary();
+    renderCoachBookings();
+  }catch(e){
+    console.error('loadCoachBookings例外',e);
+    document.getElementById('bookings-list').innerHTML='<div class="empty-bookings"><span class="empty-icon">⚠️</span>エラーが発生しました<br>'+e.message+'</div>';
+  }
+}
+
+function updateBookingsSummary(){
+  const counts={pending_approval:0,approved_pending_payment:0,confirmed:0,completed:0,rejected:0,cancelled:0};
+  allCoachBookings.forEach(b=>{
+    const s=b.status||'pending_approval';
+    if(counts[s]!==undefined)counts[s]++;
+  });
+  document.getElementById('sum-pending').textContent=counts.pending_approval;
+  document.getElementById('sum-payment').textContent=counts.approved_pending_payment;
+  document.getElementById('sum-confirmed').textContent=counts.confirmed;
+  document.getElementById('sum-completed').textContent=counts.completed;
+  /* タブバッジ */
+  const badge=document.getElementById('tab-badge-bookings');
+  if(counts.pending_approval>0){
+    badge.textContent=counts.pending_approval;
+    badge.classList.add('show');
+  }else{
+    badge.classList.remove('show');
+  }
+  /* フィルタボタン件数 */
+  const fc=document.getElementById('filter-count-pending');
+  if(counts.pending_approval>0){
+    fc.textContent=counts.pending_approval;
+    fc.style.display='inline-block';
+  }else{
+    fc.style.display='none';
+  }
+}
+
+function renderCoachBookings(){
+  let filtered=allCoachBookings;
+  if(currentBookingFilter==='pending'){
+    filtered=allCoachBookings.filter(b=>(b.status||'pending_approval')==='pending_approval');
+  }else if(currentBookingFilter==='approved'){
+    filtered=allCoachBookings.filter(b=>b.status==='approved_pending_payment'||b.status==='confirmed');
+  }else if(currentBookingFilter==='completed'){
+    filtered=allCoachBookings.filter(b=>b.status==='completed');
+  }else if(currentBookingFilter==='cancelled'){
+    filtered=allCoachBookings.filter(b=>b.status==='cancelled'||b.status==='rejected');
+  }
+  const list=document.getElementById('bookings-list');
+  if(filtered.length===0){
+    let msg='該当する予約がありません';
+    if(currentBookingFilter==='pending')msg='承認待ちの予約はありません';
+    list.innerHTML='<div class="empty-bookings"><span class="empty-icon">📋</span>'+msg+'</div>';
+    return;
+  }
+  list.innerHTML=filtered.map((b,idx)=>renderCoachBookingCard(b,idx)).join('');
+}
+
+function renderCoachBookingCard(b,idx){
+  const custMap=window._coachCustMap||{};
+  const cust=custMap[b.customer_id]||{};
+  const custName=cust.name||b.customer_name||'お客様';
+  const age=calcAge(cust.birth_date);
+  const memberType=cust.member_type==='member'?'会員':'非会員';
+  const rawStatus=b.status||'pending_approval';
+  let statusLabel='⏳ 承認待ち';
+  let statusClass='status-pending';
+  let cardClass='pending';
+  if(rawStatus==='approved_pending_payment'){statusLabel='💳 決済待ち';statusClass='status-approved-pending-payment';cardClass='confirmed';}
+  else if(rawStatus==='confirmed'){statusLabel='✅ 予約確定';statusClass='status-confirmed';cardClass='confirmed';}
+  else if(rawStatus==='completed'){statusLabel='✓ 完了';statusClass='status-completed';cardClass='';}
+  else if(rawStatus==='rejected'){statusLabel='🚫 却下';statusClass='status-rejected';cardClass='';}
+  else if(rawStatus==='cancelled'){statusLabel='🚫 キャンセル';statusClass='status-cancelled';cardClass='';}
+  const dateStr=formatBookingDate(b.booking_date,b.booking_time);
+  const lessonTypeMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'独自プラン'};
+  const lessonType=lessonTypeMap[b.lesson_type]||b.lesson_type||'レッスン';
+  const minutes=b.minutes?b.minutes+'分':'';
+  const price=b.total_price||b.amount||0;
+  const elapsed=getElapsedTime(b.created_at);
+  let actions='';
+  if(rawStatus==='pending_approval'){
+    actions=`
+      <div class="booking-actions">
+        <button class="btn-approve" onclick="coachApproveBooking('${b.id}',this)">✅ 承認する</button>
+        <button class="btn-decline" onclick="coachRejectBooking('${b.id}',this)">❌ 却下する</button>
+      </div>`;
+  }else if(rawStatus==='confirmed'){
+    actions=`
+      <div class="booking-actions">
+        <button class="btn-done" onclick="alert('完了処理は準備中です')">完了にする</button>
+      </div>`;
+  }
+  return `
+    <div class="booking-item ${cardClass}" data-id="${b.id}" data-status="${rawStatus}">
+      <div class="booking-header">
+        <div class="booking-date">📅 ${dateStr}</div>
+        <span class="booking-status ${statusClass}">${statusLabel}</span>
+      </div>
+      <div class="booking-customer">${custName} 様 ${age?'('+age+'歳)':''}</div>
+      <div class="booking-meta">${memberType} · 申込から${elapsed}</div>
+      <div class="booking-detail">${lessonType}${minutes?' · '+minutes:''} · ¥${parseInt(price).toLocaleString()}</div>
+      ${actions}
+    </div>`;
+}
+
+function calcAge(birthDate){
+  if(!birthDate)return null;
+  try{
+    const b=new Date(birthDate);
+    const today=new Date();
+    let age=today.getFullYear()-b.getFullYear();
+    const m=today.getMonth()-b.getMonth();
+    if(m<0||(m===0&&today.getDate()<b.getDate()))age--;
+    return age;
+  }catch(e){return null;}
+}
+
+function formatBookingDate(date,time){
+  if(!date)return '日時未定';
+  try{
+    const d=new Date(date+'T00:00:00');
+    const days=['日','月','火','水','木','金','土'];
+    const dayStr=days[d.getDay()];
+    const m=d.getMonth()+1;
+    const day=d.getDate();
+    const t=time?time.substring(0,5):'';
+    return `${m}/${day}(${dayStr}) ${t}`;
+  }catch(e){return date+(time?' '+time:'');}
+}
+
+function getElapsedTime(createdAt){
+  if(!createdAt)return '';
+  try{
+    const created=new Date(createdAt);
+    const now=new Date();
+    const diff=Math.floor((now-created)/1000);
+    if(diff<60)return diff+'秒前';
+    if(diff<3600)return Math.floor(diff/60)+'分前';
+    if(diff<86400)return Math.floor(diff/3600)+'時間前';
+    if(diff<2592000)return Math.floor(diff/86400)+'日前';
+    return Math.floor(diff/2592000)+'ヶ月前';
+  }catch(e){return '';}
+}
+
+async function coachApproveBooking(bookingId,btn){
+  if(!confirm('この予約を承認しますか?\nお客様のLINEに決済リンクが送信されます。'))return;
+  btn.disabled=true;btn.textContent='処理中...';
+  const card=btn.closest('.booking-item');
+  const declineBtn=card.querySelector('.btn-decline');
+  if(declineBtn)declineBtn.disabled=true;
+  try{
+    const resp=await fetch(BASE+'.netlify/functions/coach-approve-booking',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({booking_id:bookingId})
+    });
+    const json=await resp.json();
+    if(!resp.ok||!json.ok){
+      console.error('approve error:',json);
+      alert('承認に失敗しました\n'+(json.error||json.detail||'不明なエラー'));
+      btn.disabled=false;btn.textContent='✅ 承認する';
+      if(declineBtn)declineBtn.disabled=false;
+      return;
+    }
+    alert('✅ 承認しました!\nお客様のLINEに決済リンクを送信しました。');
+    showMsg('予約を承認しました','success');
+    await loadCoachBookings();
+  }catch(e){
+    console.error('approve例外',e);
+    alert('承認処理中にエラーが発生しました\n'+e.message);
+    btn.disabled=false;btn.textContent='✅ 承認する';
+    if(declineBtn)declineBtn.disabled=false;
+  }
+}
+
+async function coachRejectBooking(bookingId,btn){
+  const reason=prompt('却下理由を入力してください(お客様には伝わりません):','スケジュールが合わないため');
+  if(reason===null)return;
+  if(!confirm('この予約を却下しますか?\nお客様のLINEに却下通知が送信されます。'))return;
+  btn.disabled=true;btn.textContent='処理中...';
+  const card=btn.closest('.booking-item');
+  const approveBtn=card.querySelector('.btn-approve');
+  if(approveBtn)approveBtn.disabled=true;
+  try{
+    const resp=await fetch(BASE+'.netlify/functions/coach-reject-booking',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({booking_id:bookingId,reason:reason||''})
+    });
+    const json=await resp.json();
+    if(!resp.ok||!json.ok){
+      console.error('reject error:',json);
+      alert('却下に失敗しました\n'+(json.error||json.detail||'不明なエラー'));
+      btn.disabled=false;btn.textContent='❌ 却下する';
+      if(approveBtn)approveBtn.disabled=false;
+      return;
+    }
+    alert('予約を却下しました\nお客様のLINEに通知を送信しました。');
+    showMsg('予約を却下しました','success');
+    await loadCoachBookings();
+  }catch(e){
+    console.error('reject例外',e);
+    alert('却下処理中にエラーが発生しました\n'+e.message);
+    btn.disabled=false;btn.textContent='❌ 却下する';
+    if(approveBtn)approveBtn.disabled=false;
+  }
+}
 
 /* ===== ダッシュボードデータ読み込み ===== */
 async function loadDashboardData(){
@@ -1607,6 +1848,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
+  if(tab==='bookings')loadCoachBookings();
 }
 function switchBoard(type,btn){
   document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -1687,25 +1929,10 @@ function buildMonthGrid(){
 }
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
-function approveBooking(btn){
-  const item=btn.closest('.booking-item');item.dataset.status='approved';
-  item.querySelector('.booking-status').className='booking-status status-approved';
-  item.querySelector('.booking-status').textContent='承認済み';
-  item.querySelector('.booking-actions').innerHTML='<button class="btn-done" onclick="completeBooking(this)">完了</button><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
-}
-function declineBooking(btn){
-  const item=btn.closest('.booking-item');item.dataset.status='cancelled';
-  item.querySelector('.booking-status').className='booking-status status-cancelled';
-  item.querySelector('.booking-status').textContent='キャンセル';
-  item.querySelector('.booking-actions').remove();
-}
-function completeBooking(btn){
-  const btn2=btn;btn2.textContent='完了済み';btn2.disabled=true;
-  btn2.style.background='var(--gl)';btn2.style.color='var(--gd)';
-}
 function filterBookings(status,btn){
-  document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('.booking-item').forEach(item=>{item.style.display=(status==='all'||item.dataset.status===status)?'block':'none';});
+  document.querySelectorAll('#page-bookings .filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  currentBookingFilter=status;
+  renderCoachBookings();
 }
 function filterIncome(period,btn){
   document.querySelectorAll('#page-income .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
@@ -1727,14 +1954,8 @@ function closeCancelModal(){document.getElementById('cancel-modal').classList.re
 function submitCancel(){
   const selected=document.querySelector('input[name="cancel-reason"]:checked');
   if(!selected){alert('キャンセル理由を選択してください');return;}
-  if(cancelTargetItem){
-    cancelTargetItem.dataset.status='cancelled';
-    cancelTargetItem.querySelector('.booking-status').className='booking-status status-cancelled';
-    cancelTargetItem.querySelector('.booking-status').textContent='緊急キャンセル';
-    cancelTargetItem.querySelector('.booking-actions').innerHTML='<div style="font-size:11px;color:var(--red);padding:6px 0;">🚨 キャンセル通知を送信しました<br>お客様・店舗へ自動通知済み・LINEにも転送されました</div>';
-  }
   closeCancelModal();
-  showMsg('緊急キャンセルをお客様・店舗へ通知しました。LINEにも転送されました。','success');
+  showMsg('緊急キャンセル機能は準備中です','success');
 }
 function submitReply(btn){
   const form=btn.closest('.reply-form');const input=form.querySelector('.reply-input');
