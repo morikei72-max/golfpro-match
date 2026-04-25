@@ -429,7 +429,52 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       </div>
     </div>
   </div>
-
+<div class="modal-overlay" id="cancel-request-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--red);">🚨 予約キャンセル申請</div>
+        <button class="modal-close" onclick="closeCancelRequestModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="background:#fff8e1;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:8px;">📋 キャンセルポリシー</div>
+          <div style="font-size:11px;color:#7a5c00;line-height:1.8;">
+            ・48時間前まで:全額返金<br>
+            ・48時間前〜当日前:50%返金<br>
+            ・当日・ノーショー:返金なし
+          </div>
+        </div>
+        <div style="background:#fff0f0;border:1px solid var(--red);border-radius:10px;padding:12px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px;">⚠️ 重要:キャンセル料について</div>
+          <div style="font-size:11px;color:#791F1F;line-height:1.8;">
+            キャンセル時、決済手数料(3.6%)はお客様のご負担となります。<br>
+            ・決済額:<span id="cancel-total-display" style="font-weight:700;">¥0</span><br>
+            ・キャンセル料:<span id="cancel-fee-display" style="font-weight:700;">¥0</span><br>
+            ・返金予定額:<span id="cancel-refund-display" style="font-weight:700;color:var(--red);">¥0</span>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">キャンセル理由(必須)</label>
+          <select id="cancel-reason-category" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;outline:none;margin-bottom:8px;">
+            <option value="">選択してください</option>
+            <option value="体調不良">体調不良</option>
+            <option value="急な予定変更">急な予定変更</option>
+            <option value="仕事の都合">仕事の都合</option>
+            <option value="その他">その他</option>
+          </select>
+          <textarea id="cancel-reason-text" placeholder="詳細をご記入ください(必須)" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;outline:none;resize:vertical;min-height:80px;"></textarea>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;font-weight:500;padding:12px;border:1px solid var(--red);border-radius:8px;cursor:pointer;margin-bottom:14px;background:#fff5f5;">
+          <input type="checkbox" id="cancel-agree-chk" onchange="checkCancelAgree()" style="flex-shrink:0;width:16px;height:16px;accent-color:var(--red);margin-top:2px;">
+          <span>上記のキャンセルポリシーとキャンセル料の発生について確認し、同意した上でキャンセル申請します</span>
+        </label>
+        <div style="display:flex;gap:8px;">
+          <button class="mdl-btn" style="flex:1;background:#f0f0f0;color:#666;" onclick="closeCancelRequestModal()">戻る</button>
+          <button class="mdl-btn" id="cancel-submit-btn" style="flex:1;background:var(--red);color:#fff;" disabled onclick="submitCancelRequest()">キャンセル申請を送信</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="screen" id="s-request">
     <div class="stepbar">
       <div class="stepc done">1</div><div class="stepl done"></div>
@@ -1155,9 +1200,9 @@ function showBookingDetail(idx){
   var timeStr=formatBookingTime(b.booking_time)||'-';
   var lessonLabel={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'}[b.lesson_type]||b.lesson_type||'レッスン';
   var buttonsHTML='';
-  if(status==='pending'||status==='approved'){
+  if(rawStatus==='confirmed'){
     buttonsHTML='<button class="mdl-btn mdl-btn-line" onclick="window.open(\'https://line.me/R/\',\'_blank\')">💬 コーチに問い合わせ(LINE)</button>'+
-      '<button class="mdl-btn mdl-btn-cancel" onclick="alert(\'キャンセル機能は準備中です。店舗までご連絡ください\')">予約をキャンセル</button>'+
+'<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal(\''+b.id+'\','+(parseInt(b.total_price)||0)+')">予約をキャンセル</button>'+
       '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:48時間前まで無料。以降50%、当日100%</div>';
   }
   var price=parseInt(b.total_price)||0;
@@ -2099,6 +2144,78 @@ function stopLineLinkTimers(){
   stopLineLinkCountdown();
   stopLineLinkPolling();
 }
+/* ============================================
+   キャンセル申請機能
+============================================ */
+var cancelRequestBookingId=null;
+var cancelRequestTotalPrice=0;
+
+function openCancelRequestModal(bookingId,totalPrice){
+  cancelRequestBookingId=bookingId;
+  cancelRequestTotalPrice=parseInt(totalPrice)||0;
+  var cancelFee=Math.round(cancelRequestTotalPrice*0.036);
+  var refundAmount=cancelRequestTotalPrice-cancelFee;
+  document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString();
+  document.getElementById('cancel-fee-display').textContent='¥'+cancelFee.toLocaleString();
+  document.getElementById('cancel-refund-display').textContent='¥'+refundAmount.toLocaleString();
+  document.getElementById('cancel-reason-category').value='';
+  document.getElementById('cancel-reason-text').value='';
+  document.getElementById('cancel-agree-chk').checked=false;
+  document.getElementById('cancel-submit-btn').disabled=true;
+  closeBookingDetail();
+  document.getElementById('cancel-request-modal').classList.add('open');
+}
+
+function closeCancelRequestModal(){
+  document.getElementById('cancel-request-modal').classList.remove('open');
+  cancelRequestBookingId=null;
+  cancelRequestTotalPrice=0;
+}
+
+function checkCancelAgree(){
+  var chk=document.getElementById('cancel-agree-chk');
+  var btn=document.getElementById('cancel-submit-btn');
+  if(btn) btn.disabled=!chk.checked;
+}
+
+async function submitCancelRequest(){
+  if(!cancelRequestBookingId){alert('予約情報が取得できません');return;}
+  var category=document.getElementById('cancel-reason-category').value;
+  var reasonText=document.getElementById('cancel-reason-text').value.trim();
+  var agreeChk=document.getElementById('cancel-agree-chk').checked;
+  if(!agreeChk){alert('キャンセルポリシーに同意してください');return;}
+  if(!category){alert('キャンセル理由を選択してください');return;}
+  if(!reasonText){alert('キャンセル理由の詳細を入力してください');return;}
+  var btn=document.getElementById('cancel-submit-btn');
+  btn.disabled=true;
+  btn.textContent='送信中...';
+  try{
+    var resp=await fetch('/.netlify/functions/customer-cancel-request',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        booking_id:cancelRequestBookingId,
+        reason_category:category,
+        reason_text:reasonText
+      })
+    });
+    var json=await resp.json();
+    if(!resp.ok||!json.ok){
+      alert('キャンセル申請の送信に失敗しました\n'+(json.error||'不明なエラー'));
+      btn.disabled=false;
+      btn.textContent='キャンセル申請を送信';
+      return;
+    }
+    alert('✅ キャンセル申請を受け付けました\n\n店舗より返金処理後、LINEで完了通知をお送りいたします。\n\n返金予定額:¥'+(json.refund_amount||0).toLocaleString());
+    closeCancelRequestModal();
+    loadBookings();
+  }catch(e){
+    console.error('submitCancelRequest error',e);
+    alert('通信エラー:'+e.message);
+    btn.disabled=false;
+    btn.textContent='キャンセル申請を送信';
+  }
+}  
 </script>
 </body>
 </html>
