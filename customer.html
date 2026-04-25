@@ -248,6 +248,26 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .pay-btn-main:disabled{background:#aaa;cursor:not-allowed;}
 .pay-loading{text-align:center;padding:30px 14px;color:#888;}
 .pay-error{background:#ffe5e5;border:1px solid var(--red);border-radius:8px;padding:12px;color:#a00;font-size:12px;text-align:center;}
+
+/* ============== LINE連携セクション ============== */
+.line-link-box{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);}
+.line-link-title{font-size:13px;font-weight:500;margin-bottom:4px;}
+.line-link-sub{font-size:11px;color:#888;margin-bottom:12px;line-height:1.5;}
+.line-link-status-linked{background:var(--gl);border:0.5px solid var(--g);border-radius:8px;padding:10px 12px;}
+.line-link-status-linked-title{font-size:12px;font-weight:700;color:var(--gd);}
+.line-link-status-linked-sub{font-size:11px;color:var(--gd);margin-top:2px;}
+.line-link-btn-issue{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#06C755;color:#fff;border:none;border-radius:8px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.line-link-btn-issue:disabled{background:#aaa;cursor:not-allowed;opacity:0.7;}
+.line-link-code-display{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:10px;padding:16px;text-align:center;color:#fff;margin-bottom:10px;}
+.line-link-code-label{font-size:11px;opacity:0.85;margin-bottom:6px;}
+.line-link-code-value{font-size:36px;font-weight:900;letter-spacing:6px;font-family:'Noto Sans JP',monospace;}
+.line-link-countdown{font-size:11px;margin-top:8px;opacity:0.9;}
+.line-link-countdown.expired{color:#ffd0d0;}
+.line-link-instruction{background:#FFF9F0;border:0.5px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:11px;color:#7a5c00;line-height:1.6;margin-bottom:10px;}
+.line-link-actions{display:flex;flex-direction:column;gap:6px;}
+.line-link-btn-open{display:flex;align-items:center;justify-content:center;gap:6px;background:#06C755;color:#fff;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit;}
+.line-link-btn-reissue{background:#fff;color:var(--g);border:1px solid var(--g);border-radius:8px;padding:9px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;}
+.line-link-error{background:#ffe5e5;border:1px solid var(--red);border-radius:6px;padding:8px 10px;font-size:11px;color:#a00;margin-top:8px;}
 </style>
 </head>
 <body>
@@ -622,6 +642,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       </div>
       <button class="btn-request" onclick="saveMyProfile()">保存する</button>
     </div>
+
+    <div class="line-link-box" id="line-link-box">
+      <div class="line-link-title">📱 LINE連携</div>
+      <div class="line-link-sub">公式LINEと連携すると、予約状況や決済案内をトークで受け取れます</div>
+      <div id="line-link-content">
+        <div style="text-align:center;color:#888;font-size:12px;padding:10px;">読み込み中...</div>
+      </div>
+    </div>
   </div>
 
   <div class="screen" id="s-review">
@@ -793,8 +821,9 @@ sb.auth.getSession().then(async function(res){
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
   detectEntryMode();
-  var{data}=await sb.from('customers').select('store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date').eq('user_id',currentUserId).single();
+  var{data}=await sb.from('customers').select('id,store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date,line_user_id').eq('user_id',currentUserId).single();
   if(data){
+    window._customerRowId=data.id;
     if(data.is_approved){
       var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
       var storeLabels={kyoto:'Golf Create 戸津池店'};
@@ -812,6 +841,8 @@ sb.auth.getSession().then(async function(res){
     if(data.home_course) document.getElementById('mp-home-course').value=data.home_course;
     if(data.handicap) document.getElementById('mp-handicap').value=data.handicap;
     if(data.birth_date) document.getElementById('mp-birth-date').value=data.birth_date;
+    /* LINE連携状態の反映 */
+    updateLineLinkStatus(data.line_user_id);
   }
   handlePaymentReturn();
   loadBookings();
@@ -823,6 +854,7 @@ function tab(btn,id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
   document.getElementById(id).classList.add('on');
   if(id==='s-bookings'){loadBookings();}
+  if(id==='s-mypage'){refreshLineLinkStatus();}
 }
 
 var currentType='indoor';
@@ -1915,6 +1947,157 @@ function handlePaymentReturn(){
     alert('決済がキャンセルされました。');
     window.history.replaceState({},document.title,window.location.pathname);
   }
+}
+
+/* ============================================
+   LINE連携機能
+   ============================================ */
+var lineLinkCountdownTimer=null;
+var lineLinkPollingTimer=null;
+var lineLinkCurrentCode=null;
+
+function updateLineLinkStatus(lineUserId){
+  var contentEl=document.getElementById('line-link-content');
+  if(!contentEl) return;
+  if(lineUserId){
+    /* 連携済み */
+    contentEl.innerHTML='<div class="line-link-status-linked">'+
+      '<div class="line-link-status-linked-title">✅ LINE連携済み</div>'+
+      '<div class="line-link-status-linked-sub">予約状況や決済案内をLINEで受け取れます</div>'+
+    '</div>';
+    stopLineLinkTimers();
+  }else{
+    /* 未連携 */
+    contentEl.innerHTML='<button class="line-link-btn-issue" onclick="issueLineLinkCode()">'+
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>'+
+      '連携コードを発行する'+
+    '</button>';
+  }
+}
+
+async function refreshLineLinkStatus(){
+  if(!currentUserId) return;
+  try{
+    var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
+    if(data){updateLineLinkStatus(data.line_user_id);}
+  }catch(e){console.error('refreshLineLinkStatus error',e);}
+}
+
+async function issueLineLinkCode(){
+  var contentEl=document.getElementById('line-link-content');
+  if(!contentEl) return;
+  if(!window._customerRowId){
+    contentEl.innerHTML='<div class="line-link-error">❌ お客様情報が取得できません。<br>会員認証を完了してから再度お試しください。</div>'+
+      '<button class="line-link-btn-issue" style="margin-top:10px;" onclick="issueLineLinkCode()">再試行</button>';
+    return;
+  }
+  contentEl.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:20px;">コード発行中...</div>';
+  try{
+    var resp=await fetch('/.netlify/functions/generate-link-code',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_type:'customer',user_id:window._customerRowId})
+    });
+    var json=await resp.json();
+    if(!resp.ok||!json.success){
+      if(json.already_linked){
+        await refreshLineLinkStatus();
+        return;
+      }
+      contentEl.innerHTML='<div class="line-link-error">❌ '+(json.error||'コードの発行に失敗しました')+'</div>'+
+        '<button class="line-link-btn-issue" style="margin-top:10px;" onclick="issueLineLinkCode()">再試行</button>';
+      return;
+    }
+    lineLinkCurrentCode=json.code;
+    var expiresAt=new Date(json.expires_at).getTime();
+    showLineLinkCode(json.code,expiresAt);
+    startLineLinkPolling();
+  }catch(e){
+    console.error('issueLineLinkCode error',e);
+    contentEl.innerHTML='<div class="line-link-error">❌ 通信エラーが発生しました</div>'+
+      '<button class="line-link-btn-issue" style="margin-top:10px;" onclick="issueLineLinkCode()">再試行</button>';
+  }
+}
+
+function showLineLinkCode(code,expiresAt){
+  var contentEl=document.getElementById('line-link-content');
+  if(!contentEl) return;
+  contentEl.innerHTML=
+    '<div class="line-link-code-display">'+
+      '<div class="line-link-code-label">📱 連携コード</div>'+
+      '<div class="line-link-code-value">'+code+'</div>'+
+      '<div class="line-link-countdown" id="line-link-countdown">⏰ 残り時間を計算中...</div>'+
+    '</div>'+
+    '<div class="line-link-instruction">'+
+      '<strong>📌 連携手順</strong><br>'+
+      '1. 下のボタンからMyCoach公式LINEを開く<br>'+
+      '2. 友だち追加(初回のみ)<br>'+
+      '3. トーク画面で <strong>'+code+'</strong> を送信'+
+    '</div>'+
+    '<div class="line-link-actions">'+
+      '<a href="https://lin.ee/VkQyw4n" target="_blank" class="line-link-btn-open">'+
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>'+
+        'MyCoach公式LINEを開く'+
+      '</a>'+
+      '<button class="line-link-btn-reissue" onclick="issueLineLinkCode()">コードを再発行</button>'+
+    '</div>';
+  startLineLinkCountdown(expiresAt);
+}
+
+function startLineLinkCountdown(expiresAt){
+  stopLineLinkCountdown();
+  var update=function(){
+    var now=Date.now();
+    var diff=expiresAt-now;
+    var el=document.getElementById('line-link-countdown');
+    if(!el) return;
+    if(diff<=0){
+      el.textContent='⏰ コードの有効期限が切れました';
+      el.classList.add('expired');
+      stopLineLinkCountdown();
+      return;
+    }
+    var totalSec=Math.floor(diff/1000);
+    var min=Math.floor(totalSec/60);
+    var sec=totalSec%60;
+    el.textContent='⏰ 残り '+min+':'+(sec<10?'0'+sec:sec);
+  };
+  update();
+  lineLinkCountdownTimer=setInterval(update,1000);
+}
+
+function stopLineLinkCountdown(){
+  if(lineLinkCountdownTimer){
+    clearInterval(lineLinkCountdownTimer);
+    lineLinkCountdownTimer=null;
+  }
+}
+
+function startLineLinkPolling(){
+  stopLineLinkPolling();
+  lineLinkPollingTimer=setInterval(async function(){
+    if(!currentUserId){stopLineLinkPolling();return;}
+    try{
+      var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
+      if(data&&data.line_user_id){
+        stopLineLinkTimers();
+        updateLineLinkStatus(data.line_user_id);
+        alert('✅ LINE連携が完了しました!');
+      }
+    }catch(e){console.warn('polling error',e);}
+  },5000);
+}
+
+function stopLineLinkPolling(){
+  if(lineLinkPollingTimer){
+    clearInterval(lineLinkPollingTimer);
+    lineLinkPollingTimer=null;
+  }
+}
+
+function stopLineLinkTimers(){
+  stopLineLinkCountdown();
+  stopLineLinkPolling();
 }
 </script>
 </body>
