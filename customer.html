@@ -1877,7 +1877,14 @@ async function submitBooking(){
     var json=await resp.json();
     if(!resp.ok||!json.ok){
       console.error('booking request error:',json);
-      alert('予約申込の送信に失敗しました\n'+(json.error||json.detail||''));
+      var errMsg=(json.error||'')+(json.detail||'');
+      var userMsg='';
+      if(errMsg.indexOf('duplicate')>=0||errMsg.indexOf('unique')>=0||errMsg.indexOf('idx_bookings_unique_active')>=0||errMsg.indexOf('insert failed')>=0){
+        userMsg='申し訳ございません。\n\nこの時間は既に他の方の予約が入っております。\n別の日時をお選びください。';
+      }else{
+        userMsg='予約申込の送信に失敗しました。\n\nお手数ですが、しばらくしてから再度お試しください。\n問題が続く場合は店舗までご連絡ください。';
+      }
+      alert(userMsg);
       btn.disabled=false;btn.textContent='同意して依頼を確定する →';return;
     }
     alert('✅ コーチへ承認依頼を送信しました。\n\nコーチの承認後、決済リンクがLINEに届きます。\n\n予約一覧でステータスをご確認ください。');
