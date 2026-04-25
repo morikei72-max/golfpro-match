@@ -432,6 +432,19 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .line-link-code-howto a{color:var(--g);font-weight:700;text-decoration:none;}
 .line-link-countdown{font-size:11px;color:var(--gold);font-weight:700;margin-top:6px;}
 .line-link-countdown.expired{color:var(--red);}
+
+/* ===== SNSアコーディオン(新規追加) ===== */
+.sns-accordion{margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:#f7faf8;}
+.sns-accordion-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;user-select:none;background:#f7faf8;transition:background .2s;}
+.sns-accordion-header:hover{background:#eef5f1;}
+.sns-accordion-title{font-size:12px;font-weight:700;color:var(--gd);display:flex;align-items:center;gap:6px;}
+.sns-accordion-meta{display:flex;align-items:center;gap:8px;}
+.sns-accordion-count{font-size:10px;color:var(--g);font-weight:700;background:var(--gl);padding:2px 8px;border-radius:10px;}
+.sns-accordion-arrow{font-size:12px;color:var(--muted);transition:transform .2s;}
+.sns-accordion.open .sns-accordion-arrow{transform:rotate(180deg);}
+.sns-accordion-body{display:none;padding:12px 14px;border-top:1px solid var(--border);background:#fff;}
+.sns-accordion.open .sns-accordion-body{display:block;}
+.sns-accordion-desc{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;}
 </style>
 </head>
 <body>
@@ -693,16 +706,27 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div style="font-size:10px;color:var(--muted);margin-top:4px;">複数ある場合は「、」で区切って入力してください</div>
       </div>
       <div class="form-group"><label class="form-label">得意分野 <span style="color:var(--g)">👁 お客様に表示されます</span></label><input type="text" class="form-input" id="prof-tags" placeholder="インドアレッスン, 初心者歓迎"></div>
-      <div style="margin-top:16px;padding:12px;background:#f7faf8;border-radius:10px;border:1px solid var(--border);">
-        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:10px;">📱 SNS・リンク <span style="color:var(--g);font-weight:400;font-size:10px;">👁 お客様に表示されます</span></div>
-        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">SNSアカウントや公式サイトのURLを登録すると、お客様のコーチ選びの参考になります。</div>
-        <div class="form-group"><label class="form-label">📸 Instagram</label><input type="url" class="form-input" id="prof-instagram" placeholder="https://instagram.com/your_account"></div>
-        <div class="form-group"><label class="form-label">🎵 TikTok</label><input type="url" class="form-input" id="prof-tiktok" placeholder="https://tiktok.com/@your_account"></div>
-        <div class="form-group"><label class="form-label">📺 YouTube</label><input type="url" class="form-input" id="prof-youtube" placeholder="https://youtube.com/@your_channel"></div>
-        <div class="form-group"><label class="form-label">🐦 X (旧Twitter)</label><input type="url" class="form-input" id="prof-x" placeholder="https://x.com/your_account"></div>
-        <div class="form-group"><label class="form-label">📘 Facebook</label><input type="url" class="form-input" id="prof-facebook" placeholder="https://facebook.com/your_account"></div>
-        <div class="form-group"><label class="form-label">🌐 公式サイト</label><input type="url" class="form-input" id="prof-website" placeholder="https://your-site.com"></div>
+
+      <!-- ===== SNS・リンク アコーディオン化(変更箇所) ===== -->
+      <div class="sns-accordion" id="sns-accordion">
+        <div class="sns-accordion-header" onclick="toggleSnsAccordion()">
+          <div class="sns-accordion-title">📱 SNS・リンク <span style="color:var(--g);font-weight:400;font-size:10px;">👁 お客様に表示</span></div>
+          <div class="sns-accordion-meta">
+            <span class="sns-accordion-count" id="sns-count">登録 0件</span>
+            <span class="sns-accordion-arrow">▼</span>
+          </div>
+        </div>
+        <div class="sns-accordion-body">
+          <div class="sns-accordion-desc">SNSアカウントや公式サイトのURLを登録すると、お客様のコーチ選びの参考になります。</div>
+          <div class="form-group"><label class="form-label">📸 Instagram</label><input type="url" class="form-input" id="prof-instagram" placeholder="https://instagram.com/your_account" oninput="updateSnsCount()"></div>
+          <div class="form-group"><label class="form-label">🎵 TikTok</label><input type="url" class="form-input" id="prof-tiktok" placeholder="https://tiktok.com/@your_account" oninput="updateSnsCount()"></div>
+          <div class="form-group"><label class="form-label">📺 YouTube</label><input type="url" class="form-input" id="prof-youtube" placeholder="https://youtube.com/@your_channel" oninput="updateSnsCount()"></div>
+          <div class="form-group"><label class="form-label">🐦 X (旧Twitter)</label><input type="url" class="form-input" id="prof-x" placeholder="https://x.com/your_account" oninput="updateSnsCount()"></div>
+          <div class="form-group"><label class="form-label">📘 Facebook</label><input type="url" class="form-input" id="prof-facebook" placeholder="https://facebook.com/your_account" oninput="updateSnsCount()"></div>
+          <div class="form-group"><label class="form-label">🌐 公式サイト</label><input type="url" class="form-input" id="prof-website" placeholder="https://your-site.com" oninput="updateSnsCount()"></div>
+        </div>
       </div>
+
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
     </div>
 
@@ -731,7 +755,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <button class="save-btn" onclick="saveInvoice()">インボイス情報を保存</button>
     </div>
 
-    <!-- ===== LINE連携(新規追加) ===== -->
+    <!-- ===== LINE連携 ===== -->
     <div class="card">
       <div class="card-title">📱 LINE連携</div>
       <div class="line-link-box" id="line-link-box">
@@ -968,7 +992,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>予約管理<span class="tab-badge" id="tab-badge-bookings">0</span></button>
   <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>収入</button>
   <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>掲示板</button>
-</nav> 
+</nav>  
  <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -2140,6 +2164,8 @@ async function loadProfile(userId){
     if(data.website_url)document.getElementById('prof-website').value=data.website_url;
     if(data.photo_url)document.getElementById('profile-img').src=data.photo_url;
     if(data.min_lesson)document.getElementById('min-lesson-minutes').value=data.min_lesson;
+    /* SNS登録件数を更新 */
+    updateSnsCount();
   }catch(e){console.error('プロフィール読み込み例外:',e);}
 }
 
@@ -2151,6 +2177,23 @@ function showMsg(text,type){
 async function doLogout(){
   await sb.auth.signOut();localStorage.removeItem('gc_user_type');
   window.location.replace(BASE+'index.html?role=coach');
+}
+
+/* ===== SNSアコーディオン(新規追加) ===== */
+function toggleSnsAccordion(){
+  var el=document.getElementById('sns-accordion');
+  if(el)el.classList.toggle('open');
+}
+
+function updateSnsCount(){
+  var ids=['prof-instagram','prof-tiktok','prof-youtube','prof-x','prof-facebook','prof-website'];
+  var count=0;
+  ids.forEach(function(id){
+    var input=document.getElementById(id);
+    if(input&&input.value.trim()!=='')count++;
+  });
+  var el=document.getElementById('sns-count');
+  if(el)el.textContent='登録 '+count+'件';
 }
 
 /* ===== LINE連携機能 ===== */
