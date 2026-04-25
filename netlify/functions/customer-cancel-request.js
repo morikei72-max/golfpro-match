@@ -1,15 +1,17 @@
 // netlify/functions/customer-cancel-request.js
 // お客様からのキャンセル申請を受け付けて自動返金を実行するAPI
-// 【2026/4/25 v2】自動返金システム
-//   - キャンセルポリシーに基づき返金額を自動計算
-//     ・48時間以上前:96.4%返金(手数料3.6%のみ控除)
-//     ・48時間~当日前:46.4%返金(50%キャンセル料+手数料3.6%控除)
-//     ・当日:0%返金
-//   - Stripe Search APIでpayment_intentを取得
-//   - Stripe Refund API(reverse_transfer: true)で自動返金
+// 【2026/4/25 v3】
+//   ■ キャンセルポリシー(更新版):
+//     - 48時間以上前    : 96.4%返金(手数料3.6%のみ控除)
+//     - 48時間~当日前  : 46.4%返金(50%キャンセル料+手数料3.6%控除)
+//     - 当日キャンセル  : 16.4%返金(80%キャンセル料+手数料3.6%控除)
+//   ■ Stripe決済情報の取得:
+//     1. Checkout Session 検索(過去の決済対応)
+//     2. payment_intent.search 検索(新規決済対応・予備)
+//   ■ Stripe Refund API(reverse_transfer: true)で自動返金
 //     → 店舗・本部・コーチから比例配分で引き戻し
-//   - bookings.status = 'cancelled' に更新
-//   - 3者へLINE通知(お客様・コーチ・店舗)
+//   ■ bookings.status = 'cancelled' に更新
+//   ■ 3者へLINE通知(お客様・コーチ・店舗)
 
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
@@ -60,20 +62,87 @@ function calculateRefund(bookingDate, bookingTime, totalPrice) {
     policy = 'full_refund';
     cancelFee = stripeFee;
     refundAmount = totalPrice - stripeFee;
-  } else if (hoursUntilLesson > 0) {
-    // 48時間~当日前:46.4%返金(50%+手数料控除)
+  } else if (hoursUntilLesson >= 24) {
+    // 24時間~48時間前:46.4%返金(50%+手数料控除)
     policy = 'half_refund';
     const halfFee = Math.round(totalPrice * 0.5);
     cancelFee = halfFee + stripeFee;
     refundAmount = totalPrice - cancelFee;
   } else {
-    // 当日・過ぎている:0%返金
-    policy = 'no_refund';
-    cancelFee = totalPrice;
-    refundAmount = 0;
+    // 24時間以内(当日含む):16.4%返金(80%+手数料控除)
+    policy = 'sameday_refund';
+    const eightyFee = Math.round(totalPrice * 0.8);
+    cancelFee = eightyFee + stripeFee;
+    refundAmount = totalPrice - cancelFee;
   }
 
   return { policy, refundAmount, cancelFee, hoursUntilLesson, stripeFee };
+}
+
+/**
+ * Stripe Checkout Session または PaymentIntent から booking_id に対応する決済情報を検索
+ * @param {string} bookingId
+ * @returns {Promise<{paymentIntentId: string, sessionId: string|null}|null>}
+ */
+async function findStripePaymentInfo(bookingId) {
+  // Method 1: Checkout Session を直近100件取得して metadata で検索
+  // (古い決済でも metadata は保存されているのでヒット率が高い)
+  try {
+    let allSessions = [];
+    let hasMore = true;
+    let startingAfter = null;
+    let pageCount = 0;
+    const MAX_PAGES = 5; // 最大500件まで遡る
+
+    while (hasMore && pageCount < MAX_PAGES) {
+      const params = { limit: 100 };
+      if (startingAfter) params.starting_after = startingAfter;
+
+      const result = await stripe.checkout.sessions.list(params);
+      allSessions = allSessions.concat(result.data);
+
+      hasMore = result.has_more;
+      if (result.data.length > 0) {
+        startingAfter = result.data[result.data.length - 1].id;
+      }
+      pageCount++;
+
+      // ヒットしたら早期終了
+      const hit = result.data.find(s => s.metadata?.booking_id === bookingId);
+      if (hit) {
+        if (hit.payment_intent) {
+          console.log('[cancel-request] Method1 hit (Checkout Session):', hit.id, 'PI:', hit.payment_intent);
+          return { paymentIntentId: hit.payment_intent, sessionId: hit.id };
+        }
+      }
+    }
+
+    // 全件検索後にもヒットしない
+    const found = allSessions.find(s => s.metadata?.booking_id === bookingId);
+    if (found && found.payment_intent) {
+      console.log('[cancel-request] Method1 hit (full scan):', found.id);
+      return { paymentIntentId: found.payment_intent, sessionId: found.id };
+    }
+  } catch (e) {
+    console.error('[cancel-request] Method1 error:', e.message);
+  }
+
+  // Method 2: PaymentIntent Search API(新規決済で metadata 付与済みの場合)
+  try {
+    const searchResult = await stripe.paymentIntents.search({
+      query: `metadata['booking_id']:'${bookingId}' AND status:'succeeded'`,
+      limit: 1,
+    });
+    if (searchResult.data && searchResult.data.length > 0) {
+      const pi = searchResult.data[0];
+      console.log('[cancel-request] Method2 hit (PaymentIntent search):', pi.id);
+      return { paymentIntentId: pi.id, sessionId: null };
+    }
+  } catch (e) {
+    console.error('[cancel-request] Method2 error:', e.message);
+  }
+
+  return null;
 }
 
 exports.handler = async (event) => {
@@ -181,14 +250,11 @@ exports.handler = async (event) => {
 
     if (refundAmount > 0) {
       try {
-        // metadata.booking_id から PaymentIntent を検索
-        const searchResult = await stripe.paymentIntents.search({
-          query: `metadata['booking_id']:'${booking_id}' AND status:'succeeded'`,
-          limit: 1,
-        });
+        // Stripe決済情報を検索
+        const paymentInfo = await findStripePaymentInfo(booking_id);
 
-        if (!searchResult.data || searchResult.data.length === 0) {
-          console.error('[cancel-request] PaymentIntent not found for booking:', booking_id);
+        if (!paymentInfo) {
+          console.error('[cancel-request] Stripe payment info not found for booking:', booking_id);
           return {
             statusCode: 500,
             headers,
@@ -199,7 +265,7 @@ exports.handler = async (event) => {
           };
         }
 
-        stripePaymentIntentId = searchResult.data[0].id;
+        stripePaymentIntentId = paymentInfo.paymentIntentId;
         console.log('[cancel-request] PaymentIntent found:', stripePaymentIntentId);
 
         // 返金実行(reverse_transfer: true で4者から比例配分引き戻し)
@@ -236,8 +302,8 @@ exports.handler = async (event) => {
     // ============================================
     const cancelTimestamp = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
     const policyLabel = policy === 'full_refund' ? '全額返金(48時間以上前)'
-                      : policy === 'half_refund' ? '50%返金(48時間以内)'
-                      : '返金なし(当日)';
+                      : policy === 'half_refund' ? '50%返金(24~48時間前)'
+                      : '20%返金(24時間以内・当日)';
     const cancelNote = `【キャンセル完了】\n申請日時:${cancelTimestamp}\nカテゴリ:${reason_category}\n詳細:${reason_text.trim()}\n適用ポリシー:${policyLabel}\n決済額:¥${totalPrice.toLocaleString()}\nキャンセル料:¥${cancelFee.toLocaleString()}\n返金額:¥${refundAmount.toLocaleString()}` +
       (refundResult ? `\nStripe Refund ID:${refundResult.id}` : '');
     const newComment = booking.comment ? `${booking.comment}\n\n${cancelNote}` : cancelNote;
@@ -252,7 +318,6 @@ exports.handler = async (event) => {
 
     if (updateErr) {
       console.error('[cancel-request] bookings update error:', updateErr);
-      // 返金は成功しているので、ここではエラーにしない(ログのみ)
     }
 
     // ============================================
@@ -315,7 +380,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // ③ 店舗(森下啓介様)へLINE通知(キャンセル発生・情報共有)
+    // ③ 店舗(森下啓介様)へLINE通知
     //   ※ コーチと店舗が同一LINEの場合は重複送信を回避
     // ============================================
     if (STORE_ADMIN_LINE_USER_ID && STORE_ADMIN_LINE_USER_ID !== coachLineUserId) {
@@ -364,8 +429,8 @@ function buildCustomerCancelCompleteFlex({
   dateStr, timeStr, storeName, totalPrice, cancelFee, refundAmount, policy,
 }) {
   const policyText = policy === 'full_refund' ? '48時間以上前のキャンセル(全額返金)'
-                    : policy === 'half_refund' ? '48時間以内のキャンセル(50%返金)'
-                    : '当日のキャンセル(返金なし)';
+                    : policy === 'half_refund' ? '24~48時間前のキャンセル(50%返金)'
+                    : '24時間以内のキャンセル(20%返金)';
 
   return {
     type: 'bubble',
@@ -417,9 +482,7 @@ function buildCustomerCancelCompleteFlex({
         { type: 'separator', margin: 'lg' },
         {
           type: 'text',
-          text: refundAmount > 0
-            ? '返金は数日以内にご利用のクレジットカードへ反映されます'
-            : '当日キャンセルのため返金はございません',
+          text: '返金は数日以内にご利用のクレジットカードへ反映されます',
           size: 'xs', color: '#555555', wrap: true, margin: 'md', align: 'center',
         },
       ],
@@ -508,8 +571,8 @@ function buildAdminCancelNoticeFlex({
   reason_category, reason_text, policy, refundId,
 }) {
   const policyLabel = policy === 'full_refund' ? '全額返金(48時間以上前)'
-                    : policy === 'half_refund' ? '50%返金(48時間以内)'
-                    : '返金なし(当日)';
+                    : policy === 'half_refund' ? '50%返金(24~48時間前)'
+                    : '20%返金(24時間以内・当日)';
 
   return {
     type: 'bubble',
@@ -580,9 +643,7 @@ function buildAdminCancelNoticeFlex({
         { type: 'separator', margin: 'lg' },
         {
           type: 'text',
-          text: refundId
-            ? '※Stripe側で4者から自動引き戻し済み'
-            : '※当日キャンセルのため返金処理なし',
+          text: 'Stripe側で4者から自動引き戻し済み',
           size: 'xs', color: '#555555', wrap: true, margin: 'md', align: 'center',
         },
       ],
