@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MyCoach — コーチ画面</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
@@ -13,6 +13,8 @@
   --accent:#5dd4a8;--gold:#BA7517;--red:#E24B4A;
   --border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;
   --stripe:#635bff;
+  --tab-nav-height:64px;
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
 }
 html,body{height:100%;background:#f0f7f4;}
 body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
@@ -72,7 +74,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .btn-cancel-back{flex:1;padding:13px;background:#f0f0f0;color:var(--muted);border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;}
 
 /* ===== ヘッダー ===== */
-.header{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;}
+.header{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 14px;padding-top:env(safe-area-inset-top, 0px);}
 .header-left{display:flex;align-items:center;gap:8px;}
 .header-logo{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:var(--gd);}
 .header-logo span{color:var(--accent);}
@@ -81,14 +83,55 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .coach-name-hdr{font-size:12px;font-weight:500;}
 .logout-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);padding:4px 10px;border-radius:20px;cursor:pointer;}
 
-/* ===== タブナビ ===== */
-.tab-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(7,1fr);height:60px;}
-.tab-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;font-family:inherit;font-size:9px;color:var(--muted);transition:color .2s;padding:4px 2px;}
-.tab-btn svg{width:20px;height:20px;}
+/* ===== タブナビ(修正版:safe-area対応・高さ確保) ===== */
+.tab-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:100;
+  background:#fff;
+  border-top:1px solid var(--border);
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  height:calc(var(--tab-nav-height) + var(--safe-bottom));
+  padding-bottom:var(--safe-bottom);
+  box-shadow:0 -2px 8px rgba(0,0,0,0.04);
+}
+.tab-btn{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-family:inherit;
+  font-size:9px;
+  color:var(--muted);
+  transition:color .2s;
+  padding:6px 2px;
+  min-width:0;
+}
+.tab-btn svg{width:20px;height:20px;flex-shrink:0;}
+.tab-btn span{
+  font-size:9px;
+  line-height:1.1;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+}
 .tab-btn.active{color:var(--g);}
 
-/* ===== メイン ===== */
-.main{margin-top:56px;margin-bottom:60px;padding:14px;}
+/* ===== メイン(修正版:タブナビとsafe-area分の下余白を確保) ===== */
+.main{
+  margin-top:56px;
+  padding:14px;
+  padding-bottom:calc(var(--tab-nav-height) + var(--safe-bottom) + 24px);
+  min-height:calc(100vh - 56px);
+}
 .page{display:none;}
 .page.active{display:block;}
 
@@ -733,13 +776,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
 <!-- タブナビ -->
 <nav class="tab-nav">
-  <button class="tab-btn active" onclick="switchTab('home',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>ホーム</button>
-  <button class="tab-btn" onclick="switchTab('profile',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>プロフィール</button>
-  <button class="tab-btn" onclick="switchTab('price',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>料金設定</button>
-  <button class="tab-btn" onclick="switchTab('schedule',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>スケジュール</button>
-  <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>予約管理</button>
-  <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>収入</button>
-  <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>掲示板</button>
+  <button class="tab-btn active" onclick="switchTab('home',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>ホーム</span></button>
+  <button class="tab-btn" onclick="switchTab('profile',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>プロフ</span></button>
+  <button class="tab-btn" onclick="switchTab('price',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>料金</span></button>
+  <button class="tab-btn" onclick="switchTab('schedule',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>予定</span></button>
+  <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>予約</span></button>
+  <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>収入</span></button>
+  <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>掲示板</span></button>
 </nav>
 
 <script>
@@ -1340,6 +1383,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
   if(tab==='schedule'){updateScheduleLockUI();}
+  window.scrollTo(0,0);
 }
 function switchBoard(type,btn){
   document.querySelectorAll('.board-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
