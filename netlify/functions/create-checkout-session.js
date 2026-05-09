@@ -1,18 +1,22 @@
 // netlify/functions/create-checkout-session.js
 // MyCoach 決済セッション作成
-// 【2026/4/25 v2】payment_intent_data.metadata 追加(自動返金対応)
+// 【2026/5/9 v3】Stripe Connect 自動振り分け実装
 //
-// 処理の流れ:
-// Pattern A: approved_booking_id あり
-//   → 既存の bookings レコードを流用
-//   → Stripe Checkout セッションだけ作成
+// 振り分けロジック:
+//   application_fee_amount = 本部手数料 + 店舗手数料
+//   transfer_data.destination = コーチのStripe Connectアカウント
+//   → 残額が自動的にコーチへ送金される
 //
-// Pattern B: approved_booking_id なし(従来フロー・後方互換)
-//   → bookings に pending_payment で新規INSERT
-//   → Stripe Checkout セッション作成
+// 手数料率の取得:
+//   ・本部手数料率: コード内固定値 HQ_FEE_RATE = 0.15
+//   ・店舗手数料率: stores.[lesson_type]_fee_rate (DB最新値・動的取得)
 //
-// 【重要】payment_intent_data.metadata.booking_id を必ず付与
-//   → これにより自動返金時に Stripe Search API で検索可能になる
+// レッスンタイプ別の店舗手数料カラム:
+//   indoor    → stores.indoor_fee_rate
+//   round     → stores.round_fee_rate
+//   accompany → stores.accompany_fee_rate
+//   comp      → stores.comp_fee_rate
+//   custom    → stores.custom_fee_rate
 
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
@@ -25,6 +29,11 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
+
+// ============================================
+// 本部手数料率(コード内固定値・将来DB化可能)
+// ============================================
+const HQ_FEE_RATE = 0.15;
 
 exports.handler = async (event) => {
   // CORS
@@ -86,7 +95,7 @@ exports.handler = async (event) => {
         };
       }
 
-      // ステータスチェック:approved_pending_payment のみ許可
+      // ステータスチェック
       if (existingBooking.status !== 'approved_pending_payment') {
         return {
           statusCode: 409,
@@ -98,7 +107,24 @@ exports.handler = async (event) => {
         };
       }
 
-      // Stripe Checkout セッション作成
+      // ============================================
+      // 振り分け処理(Pattern A)
+      // ============================================
+      const splitResult = await calculateFeeSplit({
+        coachId: existingBooking.coach_id,
+        storeKey: existingBooking.store_key,
+        lessonType: existingBooking.lesson_type,
+        amount: parseInt(existingBooking.total_price, 10),
+      });
+
+      if (splitResult.error) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: splitResult.error }),
+        };
+      }
+
       const origin =
         event.headers.origin ||
         event.headers.Origin ||
@@ -110,15 +136,20 @@ exports.handler = async (event) => {
 
       const amount = parseInt(existingBooking.total_price, 10);
 
-      // metadata 共通定義(Session と PaymentIntent 両方に付与)
+      // metadata 共通定義
       const metadata = {
         booking_id:  approvedBookingId,
         customer_id: existingBooking.customer_id || '',
         coach_id:    existingBooking.coach_id || '',
         store_key:   existingBooking.store_key || '',
         lesson_type: existingBooking.lesson_type || '',
+        hq_fee:      String(splitResult.hqFee),
+        store_fee:   String(splitResult.storeFee),
+        application_fee: String(splitResult.applicationFee),
+        coach_amount:    String(splitResult.coachAmount),
       };
 
+      // Stripe Checkout セッション作成(振り分け付き)
       const session = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
@@ -135,14 +166,24 @@ exports.handler = async (event) => {
         success_url: `${origin}/customer.html?payment=success&booking_id=${approvedBookingId}`,
         cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${approvedBookingId}`,
         metadata: metadata,
-        // 【重要】PaymentIntent にも同じ metadata を付与
-        // これがないと自動返金時に Stripe Search API で検索できない
         payment_intent_data: {
+          application_fee_amount: splitResult.applicationFee,
+          transfer_data: {
+            destination: splitResult.coachStripeAccountId,
+          },
           metadata: metadata,
         },
       });
 
-      console.log('[create-checkout-session] stripe session created for approved booking:', session.id);
+      console.log('[create-checkout-session] stripe session created (Pattern A):', {
+        sessionId: session.id,
+        amount,
+        hqFee: splitResult.hqFee,
+        storeFee: splitResult.storeFee,
+        applicationFee: splitResult.applicationFee,
+        coachAmount: splitResult.coachAmount,
+        coachStripeAccountId: splitResult.coachStripeAccountId,
+      });
 
       return {
         statusCode: 200,
@@ -151,6 +192,13 @@ exports.handler = async (event) => {
           url: session.url,
           booking_id: approvedBookingId,
           mode: 'existing',
+          fee_breakdown: {
+            total: amount,
+            hq_fee: splitResult.hqFee,
+            store_fee: splitResult.storeFee,
+            application_fee: splitResult.applicationFee,
+            coach_amount: splitResult.coachAmount,
+          },
         }),
       };
     }
@@ -169,6 +217,24 @@ exports.handler = async (event) => {
           error: '必須項目が不足しています',
           received: { customerId, coachId, totalPrice, bookingDate, bookingTime },
         }),
+      };
+    }
+
+    // ============================================
+    // 振り分け処理(Pattern B)
+    // ============================================
+    const splitResultB = await calculateFeeSplit({
+      coachId: coachId,
+      storeKey: storeKey,
+      lessonType: lessonType,
+      amount: totalPrice,
+    });
+
+    if (splitResultB.error) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: splitResultB.error }),
       };
     }
 
@@ -204,7 +270,7 @@ exports.handler = async (event) => {
 
     const bookingId = booking.id;
 
-    // 2) Stripe Checkout セッション作成
+    // 2) Stripe Checkout セッション作成(振り分け付き)
     const origin =
       event.headers.origin ||
       event.headers.Origin ||
@@ -215,13 +281,16 @@ exports.handler = async (event) => {
         ? `${coachName} コーチ / ${lessonTypeLabel(lessonType)}`
         : `MyCoach ${lessonTypeLabel(lessonType)}`;
 
-    // metadata 共通定義
     const metadataB = {
       booking_id:  bookingId,
       customer_id: customerId,
       coach_id:    coachId,
       store_key:   storeKey,
       lesson_type: lessonType,
+      hq_fee:      String(splitResultB.hqFee),
+      store_fee:   String(splitResultB.storeFee),
+      application_fee: String(splitResultB.applicationFee),
+      coach_amount:    String(splitResultB.coachAmount),
     };
 
     const session = await stripe.checkout.sessions.create({
@@ -240,16 +309,40 @@ exports.handler = async (event) => {
       success_url: `${origin}/customer.html?payment=success&booking_id=${bookingId}`,
       cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${bookingId}`,
       metadata: metadataB,
-      // 【重要】PaymentIntent にも同じ metadata を付与
       payment_intent_data: {
+        application_fee_amount: splitResultB.applicationFee,
+        transfer_data: {
+          destination: splitResultB.coachStripeAccountId,
+        },
         metadata: metadataB,
       },
+    });
+
+    console.log('[create-checkout-session] stripe session created (Pattern B):', {
+      sessionId: session.id,
+      amount: totalPrice,
+      hqFee: splitResultB.hqFee,
+      storeFee: splitResultB.storeFee,
+      applicationFee: splitResultB.applicationFee,
+      coachAmount: splitResultB.coachAmount,
+      coachStripeAccountId: splitResultB.coachStripeAccountId,
     });
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ url: session.url, booking_id: bookingId, mode: 'new' }),
+      body: JSON.stringify({
+        url: session.url,
+        booking_id: bookingId,
+        mode: 'new',
+        fee_breakdown: {
+          total: totalPrice,
+          hq_fee: splitResultB.hqFee,
+          store_fee: splitResultB.storeFee,
+          application_fee: splitResultB.applicationFee,
+          coach_amount: splitResultB.coachAmount,
+        },
+      }),
     };
   } catch (err) {
     console.error('create-checkout-session error:', err);
@@ -263,6 +356,82 @@ exports.handler = async (event) => {
     };
   }
 };
+
+// ============================================
+// 振り分け計算関数
+// ============================================
+async function calculateFeeSplit({ coachId, storeKey, lessonType, amount }) {
+  // 1. コーチの Stripe アカウント情報取得
+  const { data: coach, error: coachErr } = await supabase
+    .from('coaches')
+    .select('stripe_account_id, stripe_charges_enabled')
+    .eq('user_id', coachId)
+    .maybeSingle();
+
+  if (coachErr) {
+    console.error('[calculateFeeSplit] coach fetch error:', coachErr);
+    return { error: 'コーチ情報の取得に失敗しました' };
+  }
+  if (!coach) {
+    return { error: 'コーチが見つかりませんでした' };
+  }
+  if (!coach.stripe_account_id) {
+    return { error: 'このコーチはStripe登録が完了していません(stripe_account_id未設定)' };
+  }
+  if (!coach.stripe_charges_enabled) {
+    return { error: 'このコーチはStripe決済受付が有効になっていません' };
+  }
+
+  // 2. 店舗の手数料率取得
+  const { data: store, error: storeErr } = await supabase
+    .from('stores')
+    .select('indoor_fee_rate, round_fee_rate, accompany_fee_rate, comp_fee_rate, custom_fee_rate')
+    .eq('store_key', storeKey)
+    .maybeSingle();
+
+  if (storeErr) {
+    console.error('[calculateFeeSplit] store fetch error:', storeErr);
+    return { error: '店舗情報の取得に失敗しました' };
+  }
+  if (!store) {
+    return { error: '店舗が見つかりませんでした(store_key=' + storeKey + ')' };
+  }
+
+  // 3. レッスンタイプに応じた店舗手数料率取得
+  let storeFeeRate = 0;
+  switch (lessonType) {
+    case 'indoor':    storeFeeRate = parseFloat(store.indoor_fee_rate)    || 0; break;
+    case 'round':     storeFeeRate = parseFloat(store.round_fee_rate)     || 0; break;
+    case 'accompany': storeFeeRate = parseFloat(store.accompany_fee_rate) || 0; break;
+    case 'comp':      storeFeeRate = parseFloat(store.comp_fee_rate)      || 0; break;
+    case 'custom':    storeFeeRate = parseFloat(store.custom_fee_rate)    || 0; break;
+    default:          storeFeeRate = 0;
+  }
+
+  // 4. 振り分け計算(円単位・整数化)
+  const hqFee    = Math.floor(amount * HQ_FEE_RATE);
+  const storeFee = Math.floor(amount * storeFeeRate);
+  const applicationFee = hqFee + storeFee;
+  const coachAmount = amount - applicationFee;
+
+  // 5. バリデーション
+  if (applicationFee < 0 || applicationFee >= amount) {
+    return { error: '手数料計算エラー(application_fee=' + applicationFee + ', amount=' + amount + ')' };
+  }
+  if (coachAmount <= 0) {
+    return { error: 'コーチ受取額が0以下です(rates設定を確認してください)' };
+  }
+
+  return {
+    coachStripeAccountId: coach.stripe_account_id,
+    hqFee,
+    storeFee,
+    applicationFee,
+    coachAmount,
+    hqFeeRate: HQ_FEE_RATE,
+    storeFeeRate,
+  };
+}
 
 function lessonTypeLabel(t) {
   switch (t) {
