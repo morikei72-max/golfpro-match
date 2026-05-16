@@ -20,7 +20,6 @@
 html,body{height:100%;background:var(--bg);}
 body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
-/* ヘッダー */
 .header{position:sticky;top:0;left:0;right:0;z-index:100;height:56px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;}
 .header-left{display:flex;align-items:center;gap:8px;}
 .header-logo{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:900;color:var(--gd);}
@@ -30,7 +29,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .status-badge{font-size:10px;font-weight:700;color:var(--gd);background:var(--gl);border:1px solid var(--g);padding:3px 8px;border-radius:10px;}
 .logout-btn{font-size:11px;color:var(--muted);background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-family:inherit;}
 
-/* タブナビ */
 .tab-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:#fff;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);}
 .tab-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:transparent;cursor:pointer;padding:8px 4px 10px;font-family:inherit;}
 .tab-btn svg{width:20px;height:20px;}
@@ -39,17 +37,14 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .tab-btn.active svg{stroke:var(--g);}
 .tab-btn svg{stroke:#999;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 
-/* メイン */
 .main{margin-top:56px;margin-bottom:60px;padding:14px;}
 .page{display:none;}
 .page.active{display:block;}
 
-/* カード */
 .card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);}
 .card-title{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 .card-title-badge{font-size:10px;background:var(--gl);color:var(--g);border-radius:10px;padding:2px 8px;}
 
-/* バッジ */
 .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;}
 .badge-pending{background:#fff8e1;color:#7a5c00;}
 .badge-approved{background:var(--gl);color:var(--gd);}
@@ -58,7 +53,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .badge-stripe-ok{background:#e8e6ff;color:var(--stripe);border:1px solid var(--stripe);}
 .badge-id-ok{background:var(--gl);color:var(--gd);border:1px solid var(--g);}
 
-/* コーチリスト */
 .coach-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:0.5px solid var(--border);flex-wrap:wrap;}
 .coach-item:last-child{border-bottom:none;}
 .coach-avatar{width:42px;height:42px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--gd);flex-shrink:0;overflow:hidden;}
@@ -75,7 +69,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .btn-view-id{font-size:11px;padding:5px 10px;background:#fff;color:var(--gd);border:1px solid var(--gd);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:700;}
 .btn-view-id:hover{background:var(--gl);}
 
-/* 身分証プレビューモーダル */
 .id-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:300;align-items:center;justify-content:center;padding:20px;}
 .id-modal-overlay.open{display:flex;}
 .id-modal-content{background:#fff;border-radius:12px;padding:20px;max-width:90vw;max-height:90vh;overflow-y:auto;width:600px;}
@@ -88,7 +81,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .id-modal-body iframe{width:100%;height:60vh;border:none;border-radius:6px;background:#fff;}
 .id-modal-loading{font-size:13px;color:var(--muted);padding:60px 0;}
 
-/* 打席カード */
 .seat-card{background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:8px;}
 .seat-name{font-size:14px;font-weight:700;color:var(--gd);}
 .seat-type{font-size:11px;color:var(--muted);margin-top:2px;}
@@ -97,7 +89,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .btn-edit-seat{font-size:11px;padding:4px 10px;background:#fff;color:var(--gd);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-family:inherit;margin-top:8px;}
 .btn-delete-seat{font-size:11px;padding:4px 10px;background:#fff;color:var(--red);border:1px solid #ffcccc;border-radius:6px;cursor:pointer;font-family:inherit;margin-top:8px;margin-left:6px;}
 
-/* フォーム */
 .form-group{margin-bottom:12px;}
 .form-group label{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px;}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:var(--text);background:#fafdf9;outline:none;}
@@ -106,7 +97,6 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .btn-primary{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;}
 .btn-outline{width:100%;padding:11px;background:#fff;color:var(--g);border:1.5px solid var(--g);border-radius:10px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;margin-top:8px;}
 
-/* 設定トグル */
 .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);}
 .toggle-row:last-child{border-bottom:none;}
 .toggle-label{font-size:13px;}
@@ -118,12 +108,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .toggle-switch input:checked+.toggle-slider{background:var(--g);}
 .toggle-switch input:checked+.toggle-slider:before{transform:translateX(20px);}
 
-/* 選択ボタン */
 .select-btns{display:flex;gap:6px;flex-wrap:wrap;}
 .select-btn{padding:7px 14px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:12px;color:var(--muted);cursor:pointer;}
 .select-btn.active{border-color:var(--g);background:var(--gl);color:var(--gd);font-weight:700;}
 
-/* 予約リスト */
 .booking-item{display:flex;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);align-items:flex-start;}
 .booking-item:last-child{border-bottom:none;}
 .booking-time{font-size:11px;color:var(--muted);min-width:50px;flex-shrink:0;margin-top:2px;}
@@ -131,31 +119,42 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .booking-title{font-size:13px;font-weight:500;}
 .booking-meta{font-size:11px;color:var(--muted);margin-top:2px;}
 
-/* 掲示板 */
 .board-item{padding:12px 0;border-bottom:0.5px solid var(--border);}
 .board-item:last-child{border-bottom:none;}
 .board-title{font-size:13px;font-weight:700;}
 .board-body{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.6;}
 .board-date{font-size:10px;color:#aaa;margin-top:4px;}
 
-/* モーダル */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal{background:#fff;border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
 .modal-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:16px;}
 .modal-close{float:right;background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;margin-top:-4px;}
 
-/* msg */
 .msg{padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none;line-height:1.5;}
 .msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
 .msg.error{background:#fff0f0;color:var(--red);border:1px solid var(--red);display:block;}
 
-/* チェックボックス */
 .check-row{display:flex;align-items:center;gap:8px;padding:6px 0;}
 .check-row input{accent-color:var(--g);width:16px;height:16px;}
 .check-row label{font-size:13px;}
 
-/* ====================== ダッシュボード全面刷新 ====================== */
+/* 手数料設定UI(新規) */
+.fee-info-box{background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;}
+.fee-info-box strong{display:block;margin-bottom:4px;font-size:12px;color:var(--gd);}
+.fee-stripe-display{background:#f0f3ff;border:1px solid var(--stripe);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.fee-stripe-display .label{font-size:12px;color:var(--gd);font-weight:700;}
+.fee-stripe-display .value{font-size:14px;color:var(--stripe);font-weight:900;font-family:'Montserrat',sans-serif;}
+.fee-stripe-note{font-size:10px;color:var(--muted);margin-top:2px;}
+.fee-input-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.fee-input-row .fee-label{flex:1;font-size:12px;color:var(--gd);font-weight:500;}
+.fee-input-row input{width:80px;text-align:right;}
+.fee-input-row .unit{font-size:11px;color:var(--muted);}
+.fee-preview{background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-top:12px;font-size:11px;color:var(--gd);line-height:1.8;}
+.fee-preview-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+.fee-warning{background:#fff8e1;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:11px;color:#633806;margin-bottom:10px;line-height:1.6;display:none;}
+.fee-warning.show{display:block;}
+
 .date-display{font-size:11px;color:var(--muted);margin-bottom:10px;}
 .hero-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;}
 .hero-label{font-size:10px;opacity:0.85;}
@@ -619,18 +618,76 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="btn-primary" onclick="saveStoreSettings()">保存する</button>
     </div>
+
+    <!-- 手数料設定UI(実機実装版) -->
     <div class="card">
       <div class="card-title">💰 手数料設定</div>
-      <div class="form-group">
-        <label>インドアレッスン 店舗手数料（%）</label>
-        <input type="number" id="fee-indoor" placeholder="15" min="0" max="50">
+
+      <div class="fee-info-box">
+        <strong>📋 手数料の仕組み</strong>
+        お客様請求額から「決済手数料」と「店舗手数料」を差し引いた残額がコーチへ振り込まれます。<br>
+        全レッスン種別で個別に手数料を設定できます。
       </div>
-      <div class="form-group">
-        <label>ラウンド系 店舗手数料（%）</label>
-        <input type="number" id="fee-round" placeholder="8" min="0" max="50">
+
+      <div class="fee-stripe-display">
+        <div>
+          <div class="label">💳 決済手数料(Stripe)</div>
+          <div class="fee-stripe-note">※ Stripe社規定・変更不可</div>
+        </div>
+        <div class="value">3.6%(固定)</div>
       </div>
-      <button class="btn-primary" onclick="saveFeeSettings()">保存する</button>
+
+      <div class="fee-warning" id="fee-warning">
+        ⚠️ 手数料の合計(決済+店舗)が30%を超えるとコーチ取り分が大幅に減少します。慎重に設定してください。
+      </div>
+
+      <div style="font-size:11px;color:var(--gd);font-weight:700;margin-bottom:6px;">店舗手数料(レッスン種別ごと)</div>
+
+      <div class="fee-input-row">
+        <div class="fee-label">🏌 インドアゴルフレッスン</div>
+        <input type="number" id="fee-indoor" placeholder="16.4" min="0" max="30" step="0.1" oninput="updateFeePreview()">
+        <span class="unit">%</span>
+      </div>
+
+      <div class="fee-input-row">
+        <div class="fee-label">⛳ ラウンドレッスン</div>
+        <input type="number" id="fee-round" placeholder="16.4" min="0" max="30" step="0.1" oninput="updateFeePreview()">
+        <span class="unit">%</span>
+      </div>
+
+      <div class="fee-input-row">
+        <div class="fee-label">🚗 同伴ラウンド</div>
+        <input type="number" id="fee-accompany" placeholder="16.4" min="0" max="30" step="0.1" oninput="updateFeePreview()">
+        <span class="unit">%</span>
+      </div>
+
+      <div class="fee-input-row">
+        <div class="fee-label">🏆 コンペ参加</div>
+        <input type="number" id="fee-comp" placeholder="16.4" min="0" max="30" step="0.1" oninput="updateFeePreview()">
+        <span class="unit">%</span>
+      </div>
+
+      <div class="fee-input-row">
+        <div class="fee-label">💡 独自プラン</div>
+        <input type="number" id="fee-custom" placeholder="16.4" min="0" max="30" step="0.1" oninput="updateFeePreview()">
+        <span class="unit">%</span>
+      </div>
+
+      <div class="fee-preview">
+        <div class="fee-preview-title">💡 コーチ取り分プレビュー(¥10,000の例)</div>
+        <div id="fee-preview-content">
+          設定値を入力すると、ここに各レッスン種別のコーチ取り分が表示されます。
+        </div>
+      </div>
+
+      <button class="btn-primary" style="margin-top:12px;" onclick="saveFeeSettings()">手数料を保存する</button>
+
+      <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;">
+        ※ 保存すると、コーチ画面の料金計算に即座に反映されます。<br>
+        ※ 既存の予約には影響しません(新規予約から適用)。
+      </div>
     </div>
+
     <div class="card">
       <div class="card-title">📄 インボイス設定</div>
       <div class="toggle-row">
@@ -647,11 +704,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="card">
       <div class="card-title">🎯 日次売上目標設定</div>
       <div class="form-group">
-        <label>1日の売上目標（円）</label>
+        <label>1日の売上目標(円)</label>
         <input type="number" id="daily-goal" placeholder="40000" min="0">
       </div>
       <div class="form-group">
-        <label>月間売上目標（円）</label>
+        <label>月間売上目標(円)</label>
         <input type="number" id="monthly-goal" placeholder="1000000" min="0">
       </div>
       <button class="btn-primary" onclick="saveGoalSettings()">保存する</button>
@@ -660,7 +717,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="card-title">📢 掲示板に投稿</div>
       <div class="form-group">
         <label>タイトル</label>
-        <input type="text" id="board-title" placeholder="例：今月のキャンペーンについて">
+        <input type="text" id="board-title" placeholder="例:今月のキャンペーンについて">
       </div>
       <div class="form-group">
         <label>内容</label>
@@ -711,7 +768,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     <div class="modal-title" id="seat-modal-title">打席を追加</div>
     <div class="form-group">
       <label>打席名</label>
-      <input type="text" id="seat-name" placeholder="例：1番打席・個室A">
+      <input type="text" id="seat-name" placeholder="例:1番打席・個室A">
     </div>
     <div class="form-group">
       <label>タイプ</label>
@@ -723,20 +780,19 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
     <div class="form-group">
       <label>収容人数</label>
-      <input type="number" id="seat-capacity" placeholder="例：2" min="1" max="10">
+      <input type="number" id="seat-capacity" placeholder="例:2" min="1" max="10">
     </div>
     <div class="form-group">
       <label>利用可能サービス</label>
       <div class="check-row"><input type="checkbox" id="srv-indoor" checked><label for="srv-indoor">インドアレッスン</label></div>
       <div class="check-row"><input type="checkbox" id="srv-round" checked><label for="srv-round">ラウンド練習</label></div>
-      <div class="check-row"><input type="checkbox" id="srv-other"><label for="srv-other">その他（将来対応）</label></div>
+      <div class="check-row"><input type="checkbox" id="srv-other"><label for="srv-other">その他(将来対応)</label></div>
     </div>
     <button class="btn-primary" onclick="saveSeat()">保存する</button>
     <button class="btn-outline" onclick="closeSeatModal()">キャンセル</button>
   </div>
 </div>
 
-<!-- 身分証プレビューモーダル -->
 <div class="id-modal-overlay" id="id-preview-modal" onclick="if(event.target===this)closeIdPreview()">
   <div class="id-modal-content">
     <div class="id-modal-header">
@@ -760,11 +816,13 @@ const{createClient}=supabase;
 const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:window.localStorage}});
 
 var currentStore=null;
+var currentStoreId=null;
 var seats=[];
 var editSeatId=null;
 var approvalMode='interview';
 var dailyGoal=40000;
 var monthlyGoal=1000000;
+const STRIPE_FEE_PCT=3.6;
 
 const approvalDescs={
   interview:'コーチが申請後、面接を経て承認します。',
@@ -786,6 +844,7 @@ sb.auth.getSession().then(async function(res){
   document.getElementById('daily-goal').value=dailyGoal;
   document.getElementById('monthly-goal').value=monthlyGoal;
   updateDateDisplay(user);
+  await loadFeeSettings();
   loadDashboard();
   loadPendingCoaches();
   loadApprovedCoaches();
@@ -801,6 +860,114 @@ function updateDateDisplay(user){
   var days=['日','月','火','水','木','金','土'];
   var dow=days[now.getDay()];
   document.getElementById('date-display').textContent=name+'さん・'+yyyy+'年'+mm+'月'+dd+'日('+dow+')';
+}
+
+/* ===== 手数料設定:DB読み込み(B案版) ===== */
+async function loadFeeSettings(){
+  try{
+    var{data,error}=await sb.from('stores').select('id,indoor_fee_rate,round_fee_rate,accompany_fee_rate,comp_fee_rate,custom_fee_rate').eq('store_key',currentStore).maybeSingle();
+    if(error){console.error('手数料読込エラー',error);return;}
+    if(!data) return;
+    currentStoreId=data.id;
+    document.getElementById('fee-indoor').value=(parseFloat(data.indoor_fee_rate)*100).toFixed(1);
+    document.getElementById('fee-round').value=(parseFloat(data.round_fee_rate)*100).toFixed(1);
+    document.getElementById('fee-accompany').value=(parseFloat(data.accompany_fee_rate)*100).toFixed(1);
+    document.getElementById('fee-comp').value=(parseFloat(data.comp_fee_rate)*100).toFixed(1);
+    document.getElementById('fee-custom').value=(parseFloat(data.custom_fee_rate)*100).toFixed(1);
+    updateFeePreview();
+  }catch(e){console.error('loadFeeSettings例外',e);}
+}
+
+/* ===== 手数料プレビュー(コーチ取り分計算) ===== */
+function updateFeePreview(){
+  var types=[
+    {id:'fee-indoor',label:'🏌 インドア'},
+    {id:'fee-round',label:'⛳ ラウンド'},
+    {id:'fee-accompany',label:'🚗 同伴'},
+    {id:'fee-comp',label:'🏆 コンペ'},
+    {id:'fee-custom',label:'💡 独自'}
+  ];
+  var html='';
+  var hasWarning=false;
+  types.forEach(function(t){
+    var rate=parseFloat(document.getElementById(t.id).value)||0;
+    var totalFee=rate+STRIPE_FEE_PCT;
+    var coachAmount=Math.round(10000*(100-totalFee)/100);
+    var coachPct=(100-totalFee).toFixed(1);
+    if(totalFee>30) hasWarning=true;
+    html+='<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #d4e6dd;">'+
+      '<span>'+t.label+'</span>'+
+      '<span><strong>¥'+coachAmount.toLocaleString()+'</strong>('+coachPct+'%)</span>'+
+      '</div>';
+  });
+  document.getElementById('fee-preview-content').innerHTML=html;
+  document.getElementById('fee-warning').classList.toggle('show',hasWarning);
+}
+
+/* ===== 手数料設定:DB保存(実機実装) ===== */
+async function saveFeeSettings(){
+  if(!currentStoreId){
+    showMsg('msg-settings','店舗情報の読み込みに失敗しています。ページを再読み込みしてください。','error');
+    return;
+  }
+
+  var feeIndoor=parseFloat(document.getElementById('fee-indoor').value);
+  var feeRound=parseFloat(document.getElementById('fee-round').value);
+  var feeAccompany=parseFloat(document.getElementById('fee-accompany').value);
+  var feeComp=parseFloat(document.getElementById('fee-comp').value);
+  var feeCustom=parseFloat(document.getElementById('fee-custom').value);
+
+  // 入力値検証
+  var fees=[
+    {name:'インドア',val:feeIndoor},
+    {name:'ラウンド',val:feeRound},
+    {name:'同伴',val:feeAccompany},
+    {name:'コンペ',val:feeComp},
+    {name:'独自プラン',val:feeCustom}
+  ];
+  for(var i=0;i<fees.length;i++){
+    if(isNaN(fees[i].val)||fees[i].val<0||fees[i].val>30){
+      showMsg('msg-settings',fees[i].name+'の手数料は0〜30%の範囲で入力してください','error');
+      return;
+    }
+  }
+
+  // 確認ダイアログ
+  var confirmMsg='【手数料変更の確認】\n\n';
+  confirmMsg+='以下の手数料に変更します:\n';
+  confirmMsg+='・インドア:'+feeIndoor.toFixed(1)+'%\n';
+  confirmMsg+='・ラウンド:'+feeRound.toFixed(1)+'%\n';
+  confirmMsg+='・同伴:'+feeAccompany.toFixed(1)+'%\n';
+  confirmMsg+='・コンペ:'+feeComp.toFixed(1)+'%\n';
+  confirmMsg+='・独自プラン:'+feeCustom.toFixed(1)+'%\n\n';
+  confirmMsg+='※ 既存予約には影響しません(新規予約から適用)\n';
+  confirmMsg+='※ コーチ画面の料金計算に即座に反映されます\n\n';
+  confirmMsg+='保存しますか?';
+
+  if(!confirm(confirmMsg))return;
+
+  try{
+    var{error}=await sb.from('stores').update({
+      indoor_fee_rate:feeIndoor/100,
+      round_fee_rate:feeRound/100,
+      accompany_fee_rate:feeAccompany/100,
+      comp_fee_rate:feeComp/100,
+      custom_fee_rate:feeCustom/100,
+      updated_at:new Date().toISOString()
+    }).eq('id',currentStoreId);
+
+    if(error){
+      console.error('手数料保存エラー',error);
+      showMsg('msg-settings','手数料の保存に失敗しました:'+error.message,'error');
+      return;
+    }
+
+    alert('✅ 手数料設定を保存しました!\nコーチ画面に即座に反映されます。');
+    showMsg('msg-settings','手数料設定を保存しました!','success');
+  }catch(e){
+    console.error('saveFeeSettings例外',e);
+    showMsg('msg-settings','保存中にエラーが発生しました:'+e.message,'error');
+  }
 }
 
 async function loadDashboard(){
@@ -1162,9 +1329,8 @@ function setApprovalMode(mode,btn){
   btn.classList.add('active');
   document.getElementById('approval-mode-desc').textContent=approvalDescs[mode];
 }
-function saveApprovalMode(){showMsg('msg-coaches','審査設定を保存しました！','success');}
+function saveApprovalMode(){showMsg('msg-coaches','審査設定を保存しました!','success');}
 
-/* ===== 承認待ちコーチ:身分証あり&Stripe完了済みのみ表示 ===== */
 async function loadPendingCoaches(){
   var{data}=await sb.from('coaches')
     .select('*')
@@ -1221,7 +1387,6 @@ async function loadApprovedCoaches(){
   }).join('');
 }
 
-/* ===== 身分証画像プレビュー(signed URL取得) ===== */
 async function viewIdCard(coachId){
   var modal=document.getElementById('id-preview-modal');
   var title=document.getElementById('id-modal-title');
@@ -1249,7 +1414,6 @@ async function viewIdCard(coachId){
     var uploadDate=coach.id_card_uploaded_at?new Date(coach.id_card_uploaded_at).toLocaleString('ja-JP'):'-';
     meta.innerHTML='ステータス:<strong>'+(statusLabel[coach.id_card_status]||'-')+'</strong> ／ アップロード日時:'+uploadDate;
 
-    // Storage signed URL生成(60秒有効)
     var{data:signed,error:signErr}=await sb.storage
       .from('coach-id-cards')
       .createSignedUrl(coach.id_card_url,60);
@@ -1260,13 +1424,12 @@ async function viewIdCard(coachId){
       return;
     }
 
-    // ファイル種別判定
     var url=signed.signedUrl;
     var ext=(coach.id_card_url.split('.').pop()||'').toLowerCase();
     if(ext==='pdf'){
       body.innerHTML='<iframe src="'+url+'" title="身分証PDF"></iframe>';
     }else{
-      body.innerHTML='<img src="'+url+'" alt="身分証画像" onerror="this.parentNode.innerHTML=\'<div class=&quot;id-modal-loading&quot; style=&quot;color:var(--red);&quot;>画像読み込み失敗&quot;</div>\'">';
+      body.innerHTML='<img src="'+url+'" alt="身分証画像" onerror="this.parentNode.innerHTML=\'<div class=&quot;id-modal-loading&quot; style=&quot;color:var(--red);&quot;>画像読み込み失敗</div>\'">';
     }
   }catch(e){
     console.error('viewIdCard例外',e);
@@ -1278,9 +1441,8 @@ function closeIdPreview(){
   document.getElementById('id-preview-modal').classList.remove('open');
 }
 
-/* ===== 承認/却下処理(身分証ステータス・日時も更新) ===== */
 async function approveCoach(id){
-  if(!confirm('このコーチを承認しますか？\n承認後、コーチは予約を受け付けられるようになります。'))return;
+  if(!confirm('このコーチを承認しますか?\n承認後、コーチは予約を受け付けられるようになります。'))return;
   var nowIso=new Date().toISOString();
   var{error}=await sb.from('coaches').update({
     is_approved:true,
@@ -1293,12 +1455,12 @@ async function approveCoach(id){
     showMsg('msg-coaches','承認処理に失敗しました:'+error.message,'error');
     return;
   }
-  showMsg('msg-coaches','コーチを承認しました！','success');
+  showMsg('msg-coaches','コーチを承認しました!','success');
   loadPendingCoaches(); loadApprovedCoaches();
 }
 
 async function rejectCoach(id){
-  if(!confirm('このコーチを却下しますか？\n却下後、再アップロードがない限り承認画面には表示されません。'))return;
+  if(!confirm('このコーチを却下しますか?\n却下後、再アップロードがない限り承認画面には表示されません。'))return;
   var nowIso=new Date().toISOString();
   var{error}=await sb.from('coaches').update({
     is_approved:false,
@@ -1384,10 +1546,10 @@ function saveSeat(){
   }
   localStorage.setItem('gc_seats_'+currentStore,JSON.stringify(seats));
   renderSeats(); closeSeatModal();
-  showMsg('msg-seats','打席情報を保存しました！','success');
+  showMsg('msg-seats','打席情報を保存しました!','success');
 }
 function deleteSeat(id){
-  if(!confirm('この打席を削除しますか？'))return;
+  if(!confirm('この打席を削除しますか?'))return;
   seats=seats.filter(function(s){return s.id!==id;});
   localStorage.setItem('gc_seats_'+currentStore,JSON.stringify(seats));
   renderSeats();
@@ -1398,8 +1560,8 @@ function filterBookings(range,btn){
   btn.classList.add('active');
 }
 
-function saveStoreSettings(){showMsg('msg-settings','営業設定を保存しました！','success');}
-function saveFeeSettings(){showMsg('msg-settings','手数料設定を保存しました！','success');}
+function saveStoreSettings(){showMsg('msg-settings','営業設定を保存しました!','success');}
+
 function saveGoalSettings(){
   var d=parseInt(document.getElementById('daily-goal').value)||40000;
   var m=parseInt(document.getElementById('monthly-goal').value)||1000000;
@@ -1421,7 +1583,7 @@ function postBoard(){
   document.getElementById('board-list').insertAdjacentHTML('afterbegin',newItem);
   document.getElementById('board-title').value='';
   document.getElementById('board-body').value='';
-  showMsg('msg-settings','投稿しました！','success');
+  showMsg('msg-settings','投稿しました!','success');
 }
 
 function showMsg(id,text,type){
