@@ -1175,7 +1175,7 @@ body{font-family:'Hiragino Sans','Yu Gothic UI','Meiryo',system-ui,-apple-system
 /* ===== 定数 ===== */
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'golfcoach_session',storage:localStorage,autoRefreshToken:true}});
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 
 const STORE_KEY='tozuike';
@@ -1228,7 +1228,7 @@ function showMsg(text,type){
 /* ===== 認証 ===== */
 (async()=>{
   const {data:{session}}=await sb.auth.getSession();
-  if(!session){window.location.replace(BASE+'index.html?role=coach');return;}
+  if(!session){window.location.replace(BASE+'coach_login.html');return;}
   const user=session.user;
   currentAuthId=user.id;
   const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name').eq('user_id',user.id).maybeSingle();
@@ -2018,7 +2018,7 @@ function downloadPDF(){
 async function doLogout(){
   if(!confirm('ログアウトしますか?'))return;
   await sb.auth.signOut();localStorage.removeItem('gc_user_type');
-  window.location.replace(BASE+'index.html?role=coach');
+  window.location.replace(BASE+'coach_login.html');
 }
 </script>
 </body>
