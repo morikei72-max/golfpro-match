@@ -1302,7 +1302,8 @@ async function loadAllHomeData(){
 
     const {data:schedules}=await sb.from('coach_schedules').select('*').eq('coach_id',currentCoachId).gte('date',fmtDate(monthStart)).lte('date',fmtDate(monthEnd));
     schedulesData=schedules||[];
-    const emptyCount=schedulesData.filter(s=>s.status==='available').length;
+    // times配列の合計枠数
+    const emptyCount=schedulesData.filter(s=>s.status==='available').reduce((sum,s)=>sum+(Array.isArray(s.times)?s.times.length:0),0);
     document.getElementById('kpi-empty-slots').textContent=emptyCount;
 
     const {data:allBookings,count:totalCount}=await sb.from('bookings').select('*',{count:'exact'}).eq('coach_id',currentCoachId).eq('status','completed');
@@ -1479,17 +1480,31 @@ async function saveSelectedSlots(){
   if(selectedTimeslots.length===0){alert('登録する時間を選択してください');return;}
   if(!currentCoachId){alert('ログイン情報が取得できません');return;}
   const dateStr=fmtDate(currentRegisterDate);
-  const slots=selectedTimeslots.map(m=>{
+  // times配列(["10:00","11:00",...])で保存
+  const timesArr=selectedTimeslots.sort((a,b)=>a-b).map(m=>{
     const hour=Math.floor(m/60),min=m%60;
-    const startTime=pad(hour)+':'+pad(min)+':00';
-    const endMin=m+currentLessonDuration;
-    const eh=Math.floor(endMin/60),em=endMin%60;
-    const endTime=pad(eh)+':'+pad(em)+':00';
-    return{coach_id:currentCoachId,store_id:STORE_ID,date:dateStr,start_time:startTime,end_time:endTime,lesson_type:currentLessonType,status:'available'};
+    return pad(hour)+':'+pad(min);
   });
+  const slotData={
+    coach_id:currentCoachId,
+    store_key:STORE_KEY,
+    date:dateStr,
+    times:timesArr,
+    lesson_type:currentLessonType,
+    status:'available'
+  };
   try{
-    const {error}=await sb.from('coach_schedules').insert(slots);
-    if(error){alert('❌ 保存に失敗しました\n'+error.message);return;}
+    // 同日同lesson_typeが既にあれば更新、なければ新規
+    const {data:existing}=await sb.from('coach_schedules').select('id,times').eq('coach_id',currentCoachId).eq('date',dateStr).eq('lesson_type',currentLessonType).maybeSingle();
+    if(existing){
+      // 既存timesに追加(重複除外)
+      const merged=Array.from(new Set([...(existing.times||[]),...timesArr])).sort();
+      const {error}=await sb.from('coach_schedules').update({times:merged,status:'available'}).eq('id',existing.id);
+      if(error){alert('❌ 保存に失敗しました\n'+error.message);return;}
+    }else{
+      const {error}=await sb.from('coach_schedules').insert(slotData);
+      if(error){alert('❌ 保存に失敗しました\n'+error.message);return;}
+    }
     showMsg(selectedTimeslots.length+'枠を登録しました!','success');
     closeLessonRegisterModal();
     await loadAllHomeData();
@@ -1511,14 +1526,23 @@ function openDayDetailModal(date){
   const daySchedules=schedulesData.filter(s=>s.date===dateStr&&s.status==='available');
 
   document.getElementById('day-stat-bookings').textContent=dayBookings.length;
-  document.getElementById('day-stat-empty').textContent=daySchedules.length;
+  // times配列の合計
+  const emptyTotalCount=daySchedules.reduce((sum,s)=>sum+(Array.isArray(s.times)?s.times.length:0),0);
+  document.getElementById('day-stat-empty').textContent=emptyTotalCount;
   const sales=dayBookings.reduce((s,b)=>s+(b.price||0),0);
   document.getElementById('day-stat-sales').textContent=fmtMoney(sales);
 
   const list=document.getElementById('day-detail-list');list.innerHTML='';
   const items=[];
   dayBookings.forEach(b=>{const dt=new Date(b.scheduled_at);items.push({type:'booking',time:dt.getHours()*60+dt.getMinutes(),data:b});});
-  daySchedules.forEach(s=>{const [h,m]=s.start_time.split(':').map(Number);items.push({type:'empty',time:h*60+m,data:s});});
+  // times配列を展開
+  daySchedules.forEach(s=>{
+    if(!Array.isArray(s.times))return;
+    s.times.forEach(t=>{
+      const [h,m]=t.split(':').map(Number);
+      items.push({type:'empty',time:h*60+m,data:{...s,_displayTime:t}});
+    });
+  });
   items.sort((a,b)=>a.time-b.time);
 
   if(items.length===0){list.innerHTML='<div class="day-empty-msg">予約・空き枠はまだありません</div>';return;}
@@ -1529,9 +1553,13 @@ function openDayDetailModal(date){
       const endTime=new Date(dt.getTime()+50*60000);
       list.innerHTML+='<div class="day-slot-booked"><div class="day-slot-header"><div class="day-slot-time">'+pad(dt.getHours())+':'+pad(dt.getMinutes())+' 〜 '+pad(endTime.getHours())+':'+pad(endTime.getMinutes())+'</div><span class="day-slot-badge">予約済</span></div><div class="day-slot-customer">'+(it.data.customer_name||'お客様')+' 様</div><div class="day-slot-detail">'+(it.data.lesson_type||'インドア')+' ・ ¥'+fmtMoney(it.data.price||0)+' ・ '+getBookingNumber(it.data.id)+'</div></div>';
     }else{
-      const st=it.data.start_time.substring(0,5);
-      const et=it.data.end_time.substring(0,5);
-      list.innerHTML+='<div class="day-slot-empty"><div class="day-slot-header"><div class="day-slot-time-empty">'+st+' 〜 '+et+'</div><span class="day-slot-badge-empty">空き</span></div><div class="day-slot-detail-empty">'+(it.data.lesson_type||'インドア')+'・お客様の予約待ち</div></div>';
+      const st=it.data._displayTime||'';
+      const [h,m]=st.split(':').map(Number);
+      const lessonType=it.data.lesson_type||'indoor';
+      const duration=lessonType==='indoor'?50:240;
+      const endMin=h*60+m+duration;
+      const et=pad(Math.floor(endMin/60))+':'+pad(endMin%60);
+      list.innerHTML+='<div class="day-slot-empty"><div class="day-slot-header"><div class="day-slot-time-empty">'+st+' 〜 '+et+'</div><span class="day-slot-badge-empty">空き</span></div><div class="day-slot-detail-empty">'+lessonType+'・お客様の予約待ち</div></div>';
     }
   });
   document.getElementById('day-detail-modal').classList.add('open');
