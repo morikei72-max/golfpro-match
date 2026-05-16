@@ -176,6 +176,65 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .bh-closed-check input{accent-color:var(--red);width:16px;height:16px;cursor:pointer;}
 .bh-closed-check label{font-size:11px;color:var(--muted);cursor:pointer;}
 
+/* カレンダーUI(Phase 2新規) */
+.cal-info-box{background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;}
+.cal-info-box strong{display:block;margin-bottom:4px;font-size:12px;}
+.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cal-nav-btn{padding:6px 14px;border-radius:8px;border:1.5px solid var(--g);background:#fff;color:var(--gd);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.cal-nav-btn:hover{background:var(--gl);}
+.cal-title{font-size:15px;font-weight:700;color:var(--gd);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:10px;}
+.cal-head{font-size:10px;font-weight:700;color:var(--muted);text-align:center;padding:4px 0;}
+.cal-head.sat{color:var(--blue);}
+.cal-head.sun{color:var(--red);}
+.cal-cell{aspect-ratio:1/1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:3px 2px;font-size:11px;cursor:pointer;border:1px solid transparent;background:#fafdf9;position:relative;transition:transform 0.1s;}
+.cal-cell:hover{transform:scale(1.05);border-color:var(--g);}
+.cal-cell.empty{cursor:default;background:transparent;}
+.cal-cell.empty:hover{transform:none;border-color:transparent;}
+.cal-cell.today{border:2px solid var(--gd);font-weight:700;}
+.cal-cell.sat .cal-day-num{color:var(--blue);}
+.cal-cell.sun .cal-day-num{color:var(--red);}
+.cal-cell.weekday-closed{background:#f5f5f5;color:#aaa;}
+.cal-cell.holiday{background:#E1F5EE;border-color:var(--g);}
+.cal-cell.holiday .cal-day-num{color:var(--gd);font-weight:700;}
+.cal-cell.sp-closed{background:#fff0f0;border:1.5px solid var(--red);}
+.cal-cell.sp-closed .cal-day-num{color:var(--red);font-weight:700;}
+.cal-cell.sp-special{background:#e3f2fd;border:1.5px solid var(--blue);}
+.cal-cell.sp-special .cal-day-num{color:var(--blue);font-weight:700;}
+.cal-cell.sp-event{background:#fff8e1;border:1.5px solid var(--gold);}
+.cal-cell.sp-event .cal-day-num{color:var(--gold);font-weight:700;}
+.cal-day-num{font-size:13px;font-weight:500;}
+.cal-mark{font-size:8px;line-height:1.1;color:var(--gd);margin-top:1px;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cal-legend{display:flex;gap:6px;flex-wrap:wrap;font-size:9px;color:var(--muted);margin-top:6px;padding-top:8px;border-top:1px dashed var(--border);}
+.cal-legend-item{display:flex;align-items:center;gap:3px;}
+.cal-legend-box{width:10px;height:10px;border-radius:2px;display:inline-block;}
+.cal-day-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:250;align-items:center;justify-content:center;padding:20px;}
+.cal-day-modal.open{display:flex;}
+.cal-day-modal-content{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;}
+.cal-day-modal-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:4px;}
+.cal-day-modal-sub{font-size:11px;color:var(--muted);margin-bottom:14px;}
+.cal-type-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.cal-type-btn{padding:10px 8px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-family:inherit;font-size:11px;color:var(--gd);cursor:pointer;text-align:center;}
+.cal-type-btn.active{border-color:var(--g);background:var(--gl);color:var(--gd);font-weight:700;}
+.cal-time-row{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
+.cal-time-row select{flex:1;padding:8px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;background:#fafdf9;}
+.cal-modal-btns{display:flex;gap:6px;margin-top:14px;}
+.cal-modal-btn-save{flex:1;padding:11px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.cal-modal-btn-clear{padding:11px 14px;background:#fff;color:var(--red);border:1.5px solid var(--red);border-radius:8px;font-family:inherit;font-size:12px;cursor:pointer;}
+.cal-modal-btn-cancel{padding:11px 14px;background:#fff;color:var(--muted);border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;cursor:pointer;}
+
+/* 祝日ルール設定UI(Phase 2新規) */
+.hr-info-box{background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;}
+.hr-info-box strong{display:block;margin-bottom:4px;font-size:12px;}
+.hr-radio-list{display:flex;flex-direction:column;gap:6px;}
+.hr-radio-row{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fafdf9;cursor:pointer;transition:all 0.15s;}
+.hr-radio-row:hover{border-color:var(--g);}
+.hr-radio-row.active{border-color:var(--g);background:var(--gl);}
+.hr-radio-row input{accent-color:var(--g);margin-top:2px;flex-shrink:0;}
+.hr-radio-text{flex:1;}
+.hr-radio-title{font-size:12px;font-weight:700;color:var(--gd);}
+.hr-radio-desc{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.5;}
+
 .date-display{font-size:11px;color:var(--muted);margin-bottom:10px;}
 .hero-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;}
 .hero-label{font-size:10px;opacity:0.85;}
@@ -636,6 +695,105 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
     </div>
 
+    <!-- 祝日ルール設定UI(Phase 2新規) -->
+    <div class="card">
+      <div class="card-title">🎌 祝日の営業ルール</div>
+
+      <div class="hr-info-box">
+        <strong>📋 祝日の扱い方</strong>
+        日本の祝日(2026〜2030年)を自動認識します。<br>
+        祝日の営業形態をここで一括設定できます。
+      </div>
+
+      <div class="hr-radio-list" id="holiday-rule-list">
+        <label class="hr-radio-row" data-rule="closed">
+          <input type="radio" name="holiday-rule" value="closed">
+          <div class="hr-radio-text">
+            <div class="hr-radio-title">🚫 祝日は休業</div>
+            <div class="hr-radio-desc">祝日は一律でお休みになります</div>
+          </div>
+        </label>
+
+        <label class="hr-radio-row" data-rule="sunday">
+          <input type="radio" name="holiday-rule" value="sunday" checked>
+          <div class="hr-radio-text">
+            <div class="hr-radio-title">📅 祝日は日曜と同じ</div>
+            <div class="hr-radio-desc">日曜の営業時間を祝日にも適用します</div>
+          </div>
+        </label>
+
+        <label class="hr-radio-row" data-rule="saturday">
+          <input type="radio" name="holiday-rule" value="saturday">
+          <div class="hr-radio-text">
+            <div class="hr-radio-title">📅 祝日は土曜と同じ</div>
+            <div class="hr-radio-desc">土曜の営業時間を祝日にも適用します</div>
+          </div>
+        </label>
+
+        <label class="hr-radio-row" data-rule="normal">
+          <input type="radio" name="holiday-rule" value="normal">
+          <div class="hr-radio-text">
+            <div class="hr-radio-title">⚪ 祝日も通常営業</div>
+            <div class="hr-radio-desc">祝日も曜日通りの営業時間を適用します</div>
+          </div>
+        </label>
+
+        <label class="hr-radio-row" data-rule="manual">
+          <input type="radio" name="holiday-rule" value="manual">
+          <div class="hr-radio-text">
+            <div class="hr-radio-title">✏️ 個別に設定</div>
+            <div class="hr-radio-desc">カレンダーから1日ずつ手動で設定します</div>
+          </div>
+        </label>
+      </div>
+
+      <button class="btn-primary" style="margin-top:12px;" onclick="saveHolidayRule()">祝日ルールを保存する</button>
+    </div>
+
+    <!-- カレンダーUI(Phase 2新規:個別日設定) -->
+    <div class="card">
+      <div class="card-title">📅 カレンダー(個別日設定)</div>
+
+      <div class="cal-info-box">
+        <strong>📋 個別日設定の役割</strong>
+        特定の日だけの臨時休業・特別営業時間・イベント日を設定できます。<br>
+        個別設定は曜日設定・祝日ルールよりも<strong>優先</strong>されます。
+      </div>
+
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeCalMonth(-1)">‹ 前月</button>
+        <div class="cal-title" id="cal-title">2026年 5月</div>
+        <button class="cal-nav-btn" onclick="changeCalMonth(1)">翌月 ›</button>
+      </div>
+
+      <div class="cal-grid">
+        <div class="cal-head">月</div>
+        <div class="cal-head">火</div>
+        <div class="cal-head">水</div>
+        <div class="cal-head">木</div>
+        <div class="cal-head">金</div>
+        <div class="cal-head sat">土</div>
+        <div class="cal-head sun">日</div>
+      </div>
+
+      <div class="cal-grid" id="cal-grid">
+        <div style="grid-column:1/-1;font-size:12px;color:var(--muted);text-align:center;padding:20px;">読み込み中...</div>
+      </div>
+
+      <div class="cal-legend">
+        <div class="cal-legend-item"><span class="cal-legend-box" style="background:#E1F5EE;border:1px solid var(--g);"></span>祝日</div>
+        <div class="cal-legend-item"><span class="cal-legend-box" style="background:#fff0f0;border:1.5px solid var(--red);"></span>臨時休業</div>
+        <div class="cal-legend-item"><span class="cal-legend-box" style="background:#e3f2fd;border:1.5px solid var(--blue);"></span>特別営業</div>
+        <div class="cal-legend-item"><span class="cal-legend-box" style="background:#fff8e1;border:1.5px solid var(--gold);"></span>イベント日</div>
+        <div class="cal-legend-item"><span class="cal-legend-box" style="background:#f5f5f5;"></span>定休日</div>
+      </div>
+
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6;">
+        ※ 日付をタップすると個別設定ダイアログが開きます。<br>
+        ※ 個別設定を解除すると、曜日設定・祝日ルールに戻ります。
+      </div>
+    </div>
+
     <!-- 手数料設定UI(実機実装版) -->
     <div class="card">
       <div class="card-title">💰 手数料設定</div>
@@ -826,6 +984,41 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   </div>
 </div>
 
+<!-- 個別日設定モーダル(Phase 2新規) -->
+<div class="cal-day-modal" id="cal-day-modal" onclick="if(event.target===this)closeCalDayModal()">
+  <div class="cal-day-modal-content">
+    <div class="cal-day-modal-title" id="cal-day-modal-title">日付を選択</div>
+    <div class="cal-day-modal-sub" id="cal-day-modal-sub">この日の設定を選んでください</div>
+
+    <div class="cal-type-btns">
+      <button class="cal-type-btn" data-type="normal" onclick="selectDayType('normal',this)">⚪ 通常営業</button>
+      <button class="cal-type-btn" data-type="closed" onclick="selectDayType('closed',this)">🚫 臨時休業</button>
+      <button class="cal-type-btn" data-type="special" onclick="selectDayType('special',this)">⏰ 特別営業時間</button>
+      <button class="cal-type-btn" data-type="event" onclick="selectDayType('event',this)">🎉 イベント日</button>
+    </div>
+
+    <div id="cal-special-time" style="display:none;">
+      <div style="font-size:11px;color:var(--gd);font-weight:700;margin-bottom:6px;">営業時間</div>
+      <div class="cal-time-row">
+        <select id="cal-special-open"></select>
+        <span style="color:var(--muted);">〜</span>
+        <select id="cal-special-close"></select>
+      </div>
+    </div>
+
+    <div id="cal-note-row" style="display:none;">
+      <div style="font-size:11px;color:var(--gd);font-weight:700;margin-bottom:6px;">メモ(任意)</div>
+      <input type="text" id="cal-note" placeholder="例:設備点検・コンペ開催" style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;background:#fafdf9;outline:none;">
+    </div>
+
+    <div class="cal-modal-btns">
+      <button class="cal-modal-btn-clear" onclick="clearDaySetting()">解除</button>
+      <button class="cal-modal-btn-cancel" onclick="closeCalDayModal()">キャンセル</button>
+      <button class="cal-modal-btn-save" onclick="saveDaySetting()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -877,6 +1070,7 @@ sb.auth.getSession().then(async function(res){
   updateDateDisplay(user);
   await loadFeeSettings();
   await loadBusinessHours();
+  await loadCalendarData();
   loadDashboard();
   loadPendingCoaches();
   loadApprovedCoaches();
@@ -1110,9 +1304,442 @@ async function saveBusinessHours(){
 
     alert('✅ 営業時間を保存しました!\nコーチ画面のスケジュール登録に即座に反映されます。');
     showMsg('msg-settings','営業時間を保存しました!','success');
+    if(typeof renderCalendar==='function') renderCalendar();
   }catch(e){
     console.error('saveBusinessHours例外',e);
     showMsg('msg-settings','保存中にエラーが発生しました:'+e.message,'error');
+  }
+}
+
+/* ============================================================
+   Phase 2: カレンダー個別日設定 + 祝日ルール
+   ============================================================ */
+
+/* ===== 日本の祝日マスタ(2026〜2030年・振替休日含む) ===== */
+const HOLIDAYS={
+  // 2026年
+  '2026-01-01':'元日',
+  '2026-01-12':'成人の日',
+  '2026-02-11':'建国記念の日',
+  '2026-02-23':'天皇誕生日',
+  '2026-03-20':'春分の日',
+  '2026-04-29':'昭和の日',
+  '2026-05-03':'憲法記念日',
+  '2026-05-04':'みどりの日',
+  '2026-05-05':'こどもの日',
+  '2026-05-06':'振替休日',
+  '2026-07-20':'海の日',
+  '2026-08-11':'山の日',
+  '2026-09-21':'敬老の日',
+  '2026-09-22':'国民の休日',
+  '2026-09-23':'秋分の日',
+  '2026-10-12':'スポーツの日',
+  '2026-11-03':'文化の日',
+  '2026-11-23':'勤労感謝の日',
+  // 2027年
+  '2027-01-01':'元日',
+  '2027-01-11':'成人の日',
+  '2027-02-11':'建国記念の日',
+  '2027-02-23':'天皇誕生日',
+  '2027-03-21':'春分の日',
+  '2027-03-22':'振替休日',
+  '2027-04-29':'昭和の日',
+  '2027-05-03':'憲法記念日',
+  '2027-05-04':'みどりの日',
+  '2027-05-05':'こどもの日',
+  '2027-07-19':'海の日',
+  '2027-08-11':'山の日',
+  '2027-09-20':'敬老の日',
+  '2027-09-23':'秋分の日',
+  '2027-10-11':'スポーツの日',
+  '2027-11-03':'文化の日',
+  '2027-11-23':'勤労感謝の日',
+  // 2028年
+  '2028-01-01':'元日',
+  '2028-01-10':'成人の日',
+  '2028-02-11':'建国記念の日',
+  '2028-02-23':'天皇誕生日',
+  '2028-03-20':'春分の日',
+  '2028-04-29':'昭和の日',
+  '2028-05-03':'憲法記念日',
+  '2028-05-04':'みどりの日',
+  '2028-05-05':'こどもの日',
+  '2028-07-17':'海の日',
+  '2028-08-11':'山の日',
+  '2028-09-18':'敬老の日',
+  '2028-09-22':'秋分の日',
+  '2028-10-09':'スポーツの日',
+  '2028-11-03':'文化の日',
+  '2028-11-23':'勤労感謝の日',
+  // 2029年
+  '2029-01-01':'元日',
+  '2029-01-08':'成人の日',
+  '2029-02-11':'建国記念の日',
+  '2029-02-12':'振替休日',
+  '2029-02-23':'天皇誕生日',
+  '2029-03-20':'春分の日',
+  '2029-04-29':'昭和の日',
+  '2029-04-30':'振替休日',
+  '2029-05-03':'憲法記念日',
+  '2029-05-04':'みどりの日',
+  '2029-05-05':'こどもの日',
+  '2029-07-16':'海の日',
+  '2029-08-11':'山の日',
+  '2029-09-17':'敬老の日',
+  '2029-09-23':'秋分の日',
+  '2029-09-24':'振替休日',
+  '2029-10-08':'スポーツの日',
+  '2029-11-03':'文化の日',
+  '2029-11-23':'勤労感謝の日',
+  // 2030年
+  '2030-01-01':'元日',
+  '2030-01-14':'成人の日',
+  '2030-02-11':'建国記念の日',
+  '2030-02-23':'天皇誕生日',
+  '2030-03-20':'春分の日',
+  '2030-04-29':'昭和の日',
+  '2030-05-03':'憲法記念日',
+  '2030-05-04':'みどりの日',
+  '2030-05-05':'こどもの日',
+  '2030-05-06':'振替休日',
+  '2030-07-15':'海の日',
+  '2030-08-11':'山の日',
+  '2030-09-16':'敬老の日',
+  '2030-09-23':'秋分の日',
+  '2030-10-14':'スポーツの日',
+  '2030-11-03':'文化の日',
+  '2030-11-23':'勤労感謝の日'
+};
+
+/* ===== カレンダー状態 ===== */
+var calYear=new Date().getFullYear();
+var calMonth=new Date().getMonth(); // 0-11
+var holidayRule='sunday';
+var specialDates={};
+var currentEditDate=null;
+var currentEditType=null;
+
+/* ===== カレンダーデータ:DB読み込み ===== */
+async function loadCalendarData(){
+  try{
+    var{data,error}=await sb.from('stores').select('id,holiday_rule,special_dates').eq('store_key',currentStore).maybeSingle();
+    if(error){
+      console.error('カレンダーデータ読込エラー',error);
+      renderCalendar();
+      renderHolidayRule();
+      return;
+    }
+    if(!data){
+      renderCalendar();
+      renderHolidayRule();
+      return;
+    }
+    if(!currentStoreId) currentStoreId=data.id;
+    if(data.holiday_rule) holidayRule=data.holiday_rule;
+    if(data.special_dates) specialDates=data.special_dates||{};
+    renderHolidayRule();
+    renderCalendar();
+    populateSpecialTimeSelects();
+  }catch(e){
+    console.error('loadCalendarData例外',e);
+    renderCalendar();
+    renderHolidayRule();
+  }
+}
+
+/* ===== 祝日ルール UI描画 ===== */
+function renderHolidayRule(){
+  document.querySelectorAll('input[name="holiday-rule"]').forEach(function(r){
+    r.checked=(r.value===holidayRule);
+  });
+  document.querySelectorAll('.hr-radio-row').forEach(function(row){
+    if(row.getAttribute('data-rule')===holidayRule){
+      row.classList.add('active');
+    }else{
+      row.classList.remove('active');
+    }
+  });
+  // クリックで active class 同期
+  document.querySelectorAll('input[name="holiday-rule"]').forEach(function(r){
+    r.onchange=function(){
+      holidayRule=this.value;
+      document.querySelectorAll('.hr-radio-row').forEach(function(row){
+        if(row.getAttribute('data-rule')===holidayRule){
+          row.classList.add('active');
+        }else{
+          row.classList.remove('active');
+        }
+      });
+      renderCalendar();
+    };
+  });
+}
+
+/* ===== 祝日ルール:DB保存 ===== */
+async function saveHolidayRule(){
+  if(!currentStoreId){
+    showMsg('msg-settings','店舗情報の読み込みに失敗しています。ページを再読み込みしてください。','error');
+    return;
+  }
+  var selected=document.querySelector('input[name="holiday-rule"]:checked');
+  if(!selected){
+    showMsg('msg-settings','祝日ルールを選択してください','error');
+    return;
+  }
+  holidayRule=selected.value;
+
+  var labels={closed:'祝日は休業',sunday:'祝日は日曜と同じ',saturday:'祝日は土曜と同じ',normal:'祝日も通常営業',manual:'個別に設定'};
+  if(!confirm('祝日ルールを「'+labels[holidayRule]+'」に設定します。\n保存しますか?')) return;
+
+  try{
+    var{error}=await sb.from('stores').update({
+      holiday_rule:holidayRule,
+      updated_at:new Date().toISOString()
+    }).eq('id',currentStoreId);
+    if(error){
+      console.error('祝日ルール保存エラー',error);
+      showMsg('msg-settings','祝日ルールの保存に失敗しました:'+error.message,'error');
+      return;
+    }
+    alert('✅ 祝日ルールを保存しました!');
+    showMsg('msg-settings','祝日ルールを保存しました!','success');
+    renderCalendar();
+  }catch(e){
+    console.error('saveHolidayRule例外',e);
+    showMsg('msg-settings','保存中にエラーが発生しました:'+e.message,'error');
+  }
+}
+
+/* ===== カレンダー:月切替 ===== */
+function changeCalMonth(delta){
+  calMonth+=delta;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+
+/* ===== 日付ユーティリティ:YYYY-MM-DD ===== */
+function fmtDate(y,m,d){
+  var mm=(m+1)<10?'0'+(m+1):''+(m+1);
+  var dd=d<10?'0'+d:''+d;
+  return y+'-'+mm+'-'+dd;
+}
+
+/* ===== カレンダー:描画 ===== */
+function renderCalendar(){
+  document.getElementById('cal-title').textContent=calYear+'年 '+(calMonth+1)+'月';
+  var firstDay=new Date(calYear,calMonth,1);
+  var lastDay=new Date(calYear,calMonth+1,0);
+  var firstWeekday=firstDay.getDay(); // 0=日,1=月...6=土
+  // 月曜始まりにするため:月曜=0,...,日曜=6 に変換
+  var offset=firstWeekday===0?6:firstWeekday-1;
+  var daysInMonth=lastDay.getDate();
+  var today=new Date();
+  var todayStr=fmtDate(today.getFullYear(),today.getMonth(),today.getDate());
+
+  var html='';
+  // 月初の空白セル
+  for(var i=0;i<offset;i++){
+    html+='<div class="cal-cell empty"></div>';
+  }
+  // 各日付
+  for(var d=1;d<=daysInMonth;d++){
+    var dateStr=fmtDate(calYear,calMonth,d);
+    var dt=new Date(calYear,calMonth,d);
+    var dow=dt.getDay(); // 0=日,6=土
+
+    var classes=['cal-cell'];
+    if(dow===0) classes.push('sun');
+    if(dow===6) classes.push('sat');
+    if(dateStr===todayStr) classes.push('today');
+
+    // 個別日設定が最優先
+    var sp=specialDates[dateStr];
+    var holidayName=HOLIDAYS[dateStr];
+    var markText='';
+
+    if(sp){
+      // 個別日設定
+      if(sp.type==='closed'){classes.push('sp-closed');markText='休';}
+      else if(sp.type==='special'){classes.push('sp-special');markText='特別';}
+      else if(sp.type==='event'){classes.push('sp-event');markText='🎉';}
+      else if(sp.type==='normal'){/* 通常営業として上書き(個別解除と同じ動作だが明示的) */}
+    }else if(holidayName){
+      // 祝日
+      classes.push('holiday');
+      markText=holidayName.length>4?holidayName.substring(0,4):holidayName;
+      // 祝日ルールで休業判定
+      if(holidayRule==='closed') markText='祝・休';
+    }else{
+      // 曜日定休日判定(business_hoursから)
+      var dayKey=['sun','mon','tue','wed','thu','fri','sat'][dow];
+      if(businessHours[dayKey]&&businessHours[dayKey].closed){
+        classes.push('weekday-closed');
+        markText='定休';
+      }
+    }
+
+    html+='<div class="'+classes.join(' ')+'" onclick="openCalDayModal(\''+dateStr+'\')">'+
+      '<div class="cal-day-num">'+d+'</div>'+
+      (markText?'<div class="cal-mark">'+markText+'</div>':'')+
+      '</div>';
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+/* ===== 個別日設定モーダル:30分刻みのoption生成 ===== */
+function populateSpecialTimeSelects(){
+  var openSel=document.getElementById('cal-special-open');
+  var closeSel=document.getElementById('cal-special-close');
+  if(!openSel||!closeSel) return;
+  var openHtml='';
+  var closeHtml='';
+  for(var h=0;h<=23;h++){
+    for(var m=0;m<60;m+=30){
+      var hh=h<10?'0'+h:''+h;
+      var mm=m<10?'0'+m:''+m;
+      var val=hh+':'+mm;
+      openHtml+='<option value="'+val+'">'+val+'</option>';
+      closeHtml+='<option value="'+val+'">'+val+'</option>';
+    }
+  }
+  closeHtml+='<option value="24:00">24:00</option>';
+  openSel.innerHTML=openHtml;
+  closeSel.innerHTML=closeHtml;
+}
+
+/* ===== 個別日設定モーダル:開く ===== */
+function openCalDayModal(dateStr){
+  currentEditDate=dateStr;
+  populateSpecialTimeSelects();
+
+  var dt=new Date(dateStr);
+  var dowLabels=['日','月','火','水','木','金','土'];
+  var dow=dowLabels[dt.getDay()];
+  var title=(dt.getMonth()+1)+'月'+dt.getDate()+'日('+dow+')';
+  var sub='';
+  var holidayName=HOLIDAYS[dateStr];
+  if(holidayName) sub='🎌 '+holidayName;
+
+  document.getElementById('cal-day-modal-title').textContent=title;
+  document.getElementById('cal-day-modal-sub').textContent=sub||'この日の設定を選んでください';
+
+  // 既存設定があれば反映
+  var sp=specialDates[dateStr];
+  if(sp){
+    currentEditType=sp.type;
+    selectDayType(sp.type,document.querySelector('.cal-type-btn[data-type="'+sp.type+'"]'));
+    if(sp.type==='special'){
+      if(sp.open) document.getElementById('cal-special-open').value=sp.open;
+      if(sp.close) document.getElementById('cal-special-close').value=sp.close;
+    }
+    if(sp.note) document.getElementById('cal-note').value=sp.note;
+  }else{
+    currentEditType=null;
+    document.querySelectorAll('.cal-type-btn').forEach(function(b){b.classList.remove('active');});
+    document.getElementById('cal-special-time').style.display='none';
+    document.getElementById('cal-note-row').style.display='none';
+    document.getElementById('cal-note').value='';
+    document.getElementById('cal-special-open').value='10:00';
+    document.getElementById('cal-special-close').value='22:00';
+  }
+
+  document.getElementById('cal-day-modal').classList.add('open');
+}
+
+function closeCalDayModal(){
+  document.getElementById('cal-day-modal').classList.remove('open');
+  currentEditDate=null;
+  currentEditType=null;
+}
+
+/* ===== 個別日設定モーダル:タイプ選択 ===== */
+function selectDayType(type,btn){
+  currentEditType=type;
+  document.querySelectorAll('.cal-type-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  // 特別営業時間の入力欄表示切替
+  document.getElementById('cal-special-time').style.display=(type==='special')?'block':'none';
+  // メモ欄は closed / special / event で表示
+  document.getElementById('cal-note-row').style.display=(type==='closed'||type==='special'||type==='event')?'block':'none';
+}
+
+/* ===== 個別日設定モーダル:保存 ===== */
+async function saveDaySetting(){
+  if(!currentStoreId){
+    alert('店舗情報の読み込みに失敗しています。ページを再読み込みしてください。');
+    return;
+  }
+  if(!currentEditDate){
+    alert('日付が選択されていません');
+    return;
+  }
+  if(!currentEditType){
+    alert('設定タイプを選択してください');
+    return;
+  }
+
+  if(currentEditType==='normal'){
+    // 通常営業 = 個別設定を削除と同じ動作
+    delete specialDates[currentEditDate];
+  }else{
+    var data={type:currentEditType};
+    if(currentEditType==='special'){
+      var openVal=document.getElementById('cal-special-open').value;
+      var closeVal=document.getElementById('cal-special-close').value;
+      function toMin(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);}
+      if(toMin(closeVal)<=toMin(openVal)){
+        alert('終了時間は開始時間より後にしてください');
+        return;
+      }
+      data.open=openVal;
+      data.close=closeVal;
+    }
+    var noteVal=document.getElementById('cal-note').value.trim();
+    if(noteVal) data.note=noteVal;
+    specialDates[currentEditDate]=data;
+  }
+
+  try{
+    var{error}=await sb.from('stores').update({
+      special_dates:specialDates,
+      updated_at:new Date().toISOString()
+    }).eq('id',currentStoreId);
+    if(error){
+      console.error('個別日設定保存エラー',error);
+      alert('保存に失敗しました:'+error.message);
+      return;
+    }
+    closeCalDayModal();
+    renderCalendar();
+    showMsg('msg-settings','個別日設定を保存しました!','success');
+  }catch(e){
+    console.error('saveDaySetting例外',e);
+    alert('保存中にエラーが発生しました:'+e.message);
+  }
+}
+
+/* ===== 個別日設定モーダル:解除 ===== */
+async function clearDaySetting(){
+  if(!currentEditDate) return;
+  if(!confirm('この日の個別設定を解除します。よろしいですか?')) return;
+  delete specialDates[currentEditDate];
+  try{
+    var{error}=await sb.from('stores').update({
+      special_dates:specialDates,
+      updated_at:new Date().toISOString()
+    }).eq('id',currentStoreId);
+    if(error){
+      console.error('個別日設定解除エラー',error);
+      alert('解除に失敗しました:'+error.message);
+      return;
+    }
+    closeCalDayModal();
+    renderCalendar();
+    showMsg('msg-settings','個別日設定を解除しました','success');
+  }catch(e){
+    console.error('clearDaySetting例外',e);
+    alert('解除中にエラーが発生しました:'+e.message);
   }
 }
 
