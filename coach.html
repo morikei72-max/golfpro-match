@@ -34,9 +34,16 @@ body{font-family:'Hiragino Sans','Yu Gothic UI','Meiryo',system-ui,-apple-system
 .tab-badge.show{display:block;}
 
 /* ===== メイン ===== */
-.main{margin-top:54px;margin-bottom:56px;padding:12px;}
+.main{margin-top:54px;margin-bottom:56px;padding:12px;max-width:480px;margin-left:auto;margin-right:auto;}
 .page{display:none;}
 .page.active{display:block;}
+
+/* ヘッダー・タブナビもメイン領域に合わせる */
+.header,.tab-nav{max-width:480px;margin-left:auto;margin-right:auto;left:0;right:0;}
+@media(min-width:481px){
+  .header,.tab-nav{box-shadow:0 0 0 1px rgba(0,0,0,0.05);}
+  body{background:#e8eef0;}
+}
 
 /* ===== ホーム:KPIグリッド ===== */
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
