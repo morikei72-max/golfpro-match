@@ -168,6 +168,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .bh-day-label{font-size:13px;font-weight:700;color:var(--gd);width:30px;flex-shrink:0;}
 .bh-day-label.sat{color:var(--blue);}
 .bh-day-label.sun{color:var(--red);}
+.bh-day-label.hol{color:var(--g);}
+.bh-row.hol-row{background:#f0f7f4;border-radius:6px;padding:8px;margin-top:4px;border-top:2px dashed var(--g)!important;}
 .bh-time-group{display:flex;align-items:center;gap:4px;flex:1;}
 .bh-time-group select{padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;color:var(--text);background:#fafdf9;outline:none;flex:1;min-width:65px;}
 .bh-time-group select:focus{border-color:var(--g);}
@@ -691,64 +693,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <button class="btn-primary" style="margin-top:12px;" onclick="saveBusinessHours()">営業時間を保存する</button>
 
       <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;">
+        ※ 「🎌祝」行は日本の祝日(2026〜2030年)に自動適用されます。<br>
         ※ 休業日にすると、その曜日はコーチが空き枠を登録できません。<br>
         ※ 設定変更は即座に反映されます(既存予約には影響しません)。
       </div>
-    </div>
-
-    <!-- 祝日ルール設定UI(Phase 2新規) -->
-    <div class="card">
-      <div class="card-title">🎌 祝日の営業ルール</div>
-
-      <div class="hr-info-box">
-        <strong>📋 祝日の扱い方</strong>
-        日本の祝日(2026〜2030年)を自動認識します。<br>
-        祝日の営業形態をここで一括設定できます。
-      </div>
-
-      <div class="hr-radio-list" id="holiday-rule-list">
-        <label class="hr-radio-row" data-rule="closed">
-          <input type="radio" name="holiday-rule" value="closed">
-          <div class="hr-radio-text">
-            <div class="hr-radio-title">🚫 祝日は休業</div>
-            <div class="hr-radio-desc">祝日は一律でお休みになります</div>
-          </div>
-        </label>
-
-        <label class="hr-radio-row" data-rule="sunday">
-          <input type="radio" name="holiday-rule" value="sunday" checked>
-          <div class="hr-radio-text">
-            <div class="hr-radio-title">📅 祝日は日曜と同じ</div>
-            <div class="hr-radio-desc">日曜の営業時間を祝日にも適用します</div>
-          </div>
-        </label>
-
-        <label class="hr-radio-row" data-rule="saturday">
-          <input type="radio" name="holiday-rule" value="saturday">
-          <div class="hr-radio-text">
-            <div class="hr-radio-title">📅 祝日は土曜と同じ</div>
-            <div class="hr-radio-desc">土曜の営業時間を祝日にも適用します</div>
-          </div>
-        </label>
-
-        <label class="hr-radio-row" data-rule="normal">
-          <input type="radio" name="holiday-rule" value="normal">
-          <div class="hr-radio-text">
-            <div class="hr-radio-title">⚪ 祝日も通常営業</div>
-            <div class="hr-radio-desc">祝日も曜日通りの営業時間を適用します</div>
-          </div>
-        </label>
-
-        <label class="hr-radio-row" data-rule="manual">
-          <input type="radio" name="holiday-rule" value="manual">
-          <div class="hr-radio-text">
-            <div class="hr-radio-title">✏️ 個別に設定</div>
-            <div class="hr-radio-desc">カレンダーから1日ずつ手動で設定します</div>
-          </div>
-        </label>
-      </div>
-
-      <button class="btn-primary" style="margin-top:12px;" onclick="saveHolidayRule()">祝日ルールを保存する</button>
     </div>
 
     <!-- カレンダーUI(Phase 2新規:個別日設定) -->
@@ -1038,8 +986,8 @@ var monthlyGoal=1000000;
 const STRIPE_FEE_PCT=3.6;
 
 /* ===== 営業時間設定 ===== */
-const DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun'];
-const DAY_LABELS={mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',sun:'日'};
+const DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun','hol'];
+const DAY_LABELS={mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',sun:'日',hol:'祝'};
 // 営業時間データの初期値(DBから読み込まれるまでのデフォルト)
 var businessHours={
   mon:{open:'10:00',close:'22:00',closed:false},
@@ -1048,7 +996,8 @@ var businessHours={
   thu:{open:'10:00',close:'22:00',closed:false},
   fri:{open:'10:00',close:'22:00',closed:false},
   sat:{open:'10:00',close:'22:00',closed:false},
-  sun:{open:'10:00',close:'22:00',closed:false}
+  sun:{open:'10:00',close:'21:00',closed:false},
+  hol:{open:'10:00',close:'21:00',closed:false}
 };
 
 const approvalDescs={
@@ -1144,12 +1093,16 @@ function renderBusinessHours(){
   DAY_KEYS.forEach(function(d){
     var data=businessHours[d];
     var rowClass=data.closed?'bh-row closed':'bh-row';
+    if(d==='hol') rowClass+=' hol-row';
     var labelClass='bh-day-label';
     if(d==='sat') labelClass+=' sat';
     if(d==='sun') labelClass+=' sun';
+    if(d==='hol') labelClass+=' hol';
     var disabled=data.closed?'disabled':'';
+    var dayLabel=DAY_LABELS[d];
+    if(d==='hol') dayLabel='🎌祝';
     html+='<div class="'+rowClass+'" id="bh-row-'+d+'">'+
-      '<div class="'+labelClass+'">'+DAY_LABELS[d]+'</div>'+
+      '<div class="'+labelClass+'" style="'+(d==='hol'?'width:auto;min-width:36px;font-size:12px;':'')+'">'+dayLabel+'</div>'+
       '<div class="bh-time-group">'+
         '<select id="bh-open-'+d+'" '+disabled+'>'+timeOptions+'</select>'+
         '<span class="bh-tilde">〜</span>'+
@@ -1232,7 +1185,8 @@ function bulkSetHours(target){
   var targetDays=[];
   if(target==='weekday') targetDays=['mon','tue','wed','thu','fri'];
   else if(target==='weekend') targetDays=['sat','sun'];
-  else if(target==='all') targetDays=DAY_KEYS.slice();
+  else if(target==='all') targetDays=['mon','tue','wed','thu','fri','sat','sun']; // 祝日hol は除外
+  else if(target==='holiday') targetDays=['hol']; // 祝日のみ
 
   targetDays.forEach(function(d){
     businessHours[d].open=openInput;
@@ -1417,7 +1371,6 @@ const HOLIDAYS={
 /* ===== カレンダー状態 ===== */
 var calYear=new Date().getFullYear();
 var calMonth=new Date().getMonth(); // 0-11
-var holidayRule='sunday';
 var specialDates={};
 var currentEditDate=null;
 var currentEditType=null;
@@ -1425,94 +1378,27 @@ var currentEditType=null;
 /* ===== カレンダーデータ:DB読み込み ===== */
 async function loadCalendarData(){
   try{
-    var{data,error}=await sb.from('stores').select('id,holiday_rule,special_dates').eq('store_key',currentStore).maybeSingle();
+    var{data,error}=await sb.from('stores').select('id,special_dates').eq('store_key',currentStore).maybeSingle();
     if(error){
       console.error('カレンダーデータ読込エラー',error);
       renderCalendar();
-      renderHolidayRule();
       return;
     }
     if(!data){
       renderCalendar();
-      renderHolidayRule();
       return;
     }
     if(!currentStoreId) currentStoreId=data.id;
-    if(data.holiday_rule) holidayRule=data.holiday_rule;
     if(data.special_dates) specialDates=data.special_dates||{};
-    renderHolidayRule();
     renderCalendar();
     populateSpecialTimeSelects();
   }catch(e){
     console.error('loadCalendarData例外',e);
     renderCalendar();
-    renderHolidayRule();
   }
 }
 
 /* ===== 祝日ルール UI描画 ===== */
-function renderHolidayRule(){
-  document.querySelectorAll('input[name="holiday-rule"]').forEach(function(r){
-    r.checked=(r.value===holidayRule);
-  });
-  document.querySelectorAll('.hr-radio-row').forEach(function(row){
-    if(row.getAttribute('data-rule')===holidayRule){
-      row.classList.add('active');
-    }else{
-      row.classList.remove('active');
-    }
-  });
-  // クリックで active class 同期
-  document.querySelectorAll('input[name="holiday-rule"]').forEach(function(r){
-    r.onchange=function(){
-      holidayRule=this.value;
-      document.querySelectorAll('.hr-radio-row').forEach(function(row){
-        if(row.getAttribute('data-rule')===holidayRule){
-          row.classList.add('active');
-        }else{
-          row.classList.remove('active');
-        }
-      });
-      renderCalendar();
-    };
-  });
-}
-
-/* ===== 祝日ルール:DB保存 ===== */
-async function saveHolidayRule(){
-  if(!currentStoreId){
-    showMsg('msg-settings','店舗情報の読み込みに失敗しています。ページを再読み込みしてください。','error');
-    return;
-  }
-  var selected=document.querySelector('input[name="holiday-rule"]:checked');
-  if(!selected){
-    showMsg('msg-settings','祝日ルールを選択してください','error');
-    return;
-  }
-  holidayRule=selected.value;
-
-  var labels={closed:'祝日は休業',sunday:'祝日は日曜と同じ',saturday:'祝日は土曜と同じ',normal:'祝日も通常営業',manual:'個別に設定'};
-  if(!confirm('祝日ルールを「'+labels[holidayRule]+'」に設定します。\n保存しますか?')) return;
-
-  try{
-    var{error}=await sb.from('stores').update({
-      holiday_rule:holidayRule,
-      updated_at:new Date().toISOString()
-    }).eq('id',currentStoreId);
-    if(error){
-      console.error('祝日ルール保存エラー',error);
-      showMsg('msg-settings','祝日ルールの保存に失敗しました:'+error.message,'error');
-      return;
-    }
-    alert('✅ 祝日ルールを保存しました!');
-    showMsg('msg-settings','祝日ルールを保存しました!','success');
-    renderCalendar();
-  }catch(e){
-    console.error('saveHolidayRule例外',e);
-    showMsg('msg-settings','保存中にエラーが発生しました:'+e.message,'error');
-  }
-}
-
 /* ===== カレンダー:月切替 ===== */
 function changeCalMonth(delta){
   calMonth+=delta;
@@ -1568,11 +1454,11 @@ function renderCalendar(){
       else if(sp.type==='event'){classes.push('sp-event');markText='🎉';}
       else if(sp.type==='normal'){/* 通常営業として上書き(個別解除と同じ動作だが明示的) */}
     }else if(holidayName){
-      // 祝日
+      // 祝日:hol行の設定を参照
       classes.push('holiday');
       markText=holidayName.length>4?holidayName.substring(0,4):holidayName;
-      // 祝日ルールで休業判定
-      if(holidayRule==='closed') markText='祝・休';
+      // 祝日(hol)行が休業に設定されていれば「祝・休」表示
+      if(businessHours.hol&&businessHours.hol.closed) markText='祝・休';
     }else{
       // 曜日定休日判定(business_hoursから)
       var dayKey=['sun','mon','tue','wed','thu','fri','sat'][dow];
