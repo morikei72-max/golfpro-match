@@ -13,6 +13,7 @@
   --g:#1D9E75;--gd:#085041;--gl:#E1F5EE;
   --accent:#5dd4a8;--gold:#BA7517;--red:#E24B4A;
   --blue:#1976D2;--blue-l:#E3F2FD;
+  --stripe:#635bff;
   --border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;
   --bg:#f0f7f4;
 }
@@ -54,19 +55,38 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .badge-approved{background:var(--gl);color:var(--gd);}
 .badge-rejected{background:#fff0f0;color:var(--red);}
 .badge-interview{background:#e3f2fd;color:var(--blue);}
+.badge-stripe-ok{background:#e8e6ff;color:var(--stripe);border:1px solid var(--stripe);}
+.badge-id-ok{background:var(--gl);color:var(--gd);border:1px solid var(--g);}
 
 /* コーチリスト */
-.coach-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.coach-item{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:0.5px solid var(--border);flex-wrap:wrap;}
 .coach-item:last-child{border-bottom:none;}
 .coach-avatar{width:42px;height:42px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--gd);flex-shrink:0;overflow:hidden;}
 .coach-avatar img{width:100%;height:100%;object-fit:cover;}
-.coach-info{flex:1;}
+.coach-info{flex:1;min-width:0;}
 .coach-name{font-size:13px;font-weight:700;}
 .coach-meta{font-size:11px;color:var(--muted);margin-top:2px;}
-.coach-actions{display:flex;gap:6px;flex-shrink:0;}
+.coach-status-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.coach-actions{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;}
 .btn-approve{font-size:11px;padding:5px 10px;background:var(--g);color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit;font-weight:700;}
+.btn-approve:disabled{background:#ccc;cursor:not-allowed;}
 .btn-reject{font-size:11px;padding:5px 10px;background:#fff;color:var(--red);border:1px solid var(--red);border-radius:6px;cursor:pointer;font-family:inherit;}
 .btn-interview{font-size:11px;padding:5px 10px;background:var(--blue-l);color:var(--blue);border:1px solid var(--blue);border-radius:6px;cursor:pointer;font-family:inherit;}
+.btn-view-id{font-size:11px;padding:5px 10px;background:#fff;color:var(--gd);border:1px solid var(--gd);border-radius:6px;cursor:pointer;font-family:inherit;font-weight:700;}
+.btn-view-id:hover{background:var(--gl);}
+
+/* 身分証プレビューモーダル */
+.id-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.id-modal-overlay.open{display:flex;}
+.id-modal-content{background:#fff;border-radius:12px;padding:20px;max-width:90vw;max-height:90vh;overflow-y:auto;width:600px;}
+.id-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.id-modal-title{font-size:14px;font-weight:700;color:var(--gd);}
+.id-modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;}
+.id-modal-meta{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7;}
+.id-modal-body{text-align:center;background:#f0f0f0;border-radius:8px;padding:10px;min-height:200px;}
+.id-modal-body img{max-width:100%;max-height:70vh;object-fit:contain;border-radius:6px;}
+.id-modal-body iframe{width:100%;height:60vh;border:none;border-radius:6px;background:#fff;}
+.id-modal-loading{font-size:13px;color:var(--muted);padding:60px 0;}
 
 /* 打席カード */
 .seat-card{background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:8px;}
@@ -520,6 +540,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
     <div class="card">
       <div class="card-title">⏳ 承認待ち <span class="card-title-badge" id="pending-count">0件</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.6;background:#f7faf8;padding:8px 10px;border-radius:6px;">
+        ℹ️ 承認待ちには <strong>身分証アップロード済み</strong> かつ <strong>Stripe Connect登録完了</strong> のコーチのみ表示されます。
+      </div>
       <div id="pending-coaches">
         <div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;">承認待ちのコーチはいません</div>
       </div>
@@ -710,6 +733,23 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
     </div>
     <button class="btn-primary" onclick="saveSeat()">保存する</button>
     <button class="btn-outline" onclick="closeSeatModal()">キャンセル</button>
+  </div>
+</div>
+
+<!-- 身分証プレビューモーダル -->
+<div class="id-modal-overlay" id="id-preview-modal" onclick="if(event.target===this)closeIdPreview()">
+  <div class="id-modal-content">
+    <div class="id-modal-header">
+      <div class="id-modal-title" id="id-modal-title">身分証明書プレビュー</div>
+      <button class="id-modal-close" onclick="closeIdPreview()">×</button>
+    </div>
+    <div class="id-modal-meta" id="id-modal-meta">読み込み中...</div>
+    <div class="id-modal-body" id="id-modal-body">
+      <div class="id-modal-loading">読み込み中...</div>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--muted);line-height:1.6;background:#fff8e1;border:1px solid var(--gold);padding:8px 10px;border-radius:6px;">
+      ⚠️ この身分証画像は店舗管理者のみ閲覧可能です。本人確認・なりすまし防止・契約管理・法的措置の目的でのみ使用してください。第三者への開示・転送は禁止です。
+    </div>
   </div>
 </div>
 
@@ -1070,7 +1110,7 @@ async function loadNotifications(){
     if(newCustomers&&newCustomers.length>0){
       notifications.push({type:'success',text:'🎉 <strong>新規入会</strong>!'+newCustomers[0].name+'様'});
     }
-    var{data:pending}=await sb.from('coaches').select('id').eq('store_key',currentStore).eq('is_approved',false).eq('is_rejected',false);
+    var{data:pending}=await sb.from('coaches').select('id').eq('store_key',currentStore).eq('is_approved',false).eq('is_rejected',false).eq('id_card_status','pending').eq('stripe_charges_enabled',true);
     if(pending&&pending.length>0){
       notifications.push({type:'warning',text:'⭐ <strong>'+pending.length+'名</strong>のコーチが承認待ちです'});
     }
@@ -1124,8 +1164,16 @@ function setApprovalMode(mode,btn){
 }
 function saveApprovalMode(){showMsg('msg-coaches','審査設定を保存しました！','success');}
 
+/* ===== 承認待ちコーチ:身分証あり&Stripe完了済みのみ表示 ===== */
 async function loadPendingCoaches(){
-  var{data}=await sb.from('coaches').select('*').eq('store_key',currentStore).eq('is_approved',false).eq('is_rejected',false);
+  var{data}=await sb.from('coaches')
+    .select('*')
+    .eq('store_key',currentStore)
+    .eq('is_approved',false)
+    .eq('is_rejected',false)
+    .eq('id_card_status','pending')
+    .eq('stripe_charges_enabled',true)
+    .order('id_card_uploaded_at',{ascending:true});
   var list=document.getElementById('pending-coaches');
   var listHome=document.getElementById('pending-coaches-home');
   var count=document.getElementById('pending-count');
@@ -1136,10 +1184,19 @@ async function loadPendingCoaches(){
   }
   count.textContent=data.length+'件';
   var html=data.map(function(c){
+    var avatar=c.photo_url?'<img src="'+c.photo_url+'" alt="">':(c.name?c.name.charAt(0):'？');
+    var statusRow='<div class="coach-status-row">'+
+      '<span class="badge badge-id-ok">🪪 身分証提出済</span>'+
+      '<span class="badge badge-stripe-ok">💳 Stripe完了</span>'+
+      '</div>';
+    var idBtn=c.id_card_url?'<button class="btn-view-id" onclick="viewIdCard(\''+c.id+'\')">身分証確認</button>':'';
     return '<div class="coach-item">'+
-      '<div class="coach-avatar">'+(c.photo_url?'<img src="'+c.photo_url+'" alt="">':c.name?c.name.charAt(0):'？')+'</div>'+
-      '<div class="coach-info"><div class="coach-name">'+(c.name||'未設定')+'</div><div class="coach-meta">'+(c.email||'')+'</div></div>'+
+      '<div class="coach-avatar">'+avatar+'</div>'+
+      '<div class="coach-info"><div class="coach-name">'+(c.name||'未設定')+'</div>'+
+      '<div class="coach-meta">'+(c.email||'')+'</div>'+
+      statusRow+'</div>'+
       '<div class="coach-actions">'+
+        idBtn+
         (approvalMode==='interview'?'<button class="btn-interview" onclick="scheduleInterview(\''+c.id+'\')">面接</button>':'')+
         '<button class="btn-approve" onclick="approveCoach(\''+c.id+'\')">承認</button>'+
         '<button class="btn-reject" onclick="rejectCoach(\''+c.id+'\')">却下</button>'+
@@ -1153,25 +1210,111 @@ async function loadApprovedCoaches(){
   var list=document.getElementById('approved-coaches');
   if(!data||data.length===0){list.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;">在籍コーチはいません</div>';return;}
   list.innerHTML=data.map(function(c){
+    var avatar=c.photo_url?'<img src="'+c.photo_url+'" alt="">':(c.name?c.name.charAt(0):'？');
+    var idBtn=c.id_card_url?'<button class="btn-view-id" onclick="viewIdCard(\''+c.id+'\')">身分証</button>':'';
     return '<div class="coach-item">'+
-      '<div class="coach-avatar">'+(c.photo_url?'<img src="'+c.photo_url+'" alt="">':c.name?c.name.charAt(0):'？')+'</div>'+
-      '<div class="coach-info"><div class="coach-name">'+(c.name||'未設定')+'</div><div class="coach-meta">'+(c.bio||'プロフィール未設定')+'</div></div>'+
-      '<span class="badge badge-approved">在籍中</span></div>';
+      '<div class="coach-avatar">'+avatar+'</div>'+
+      '<div class="coach-info"><div class="coach-name">'+(c.name||'未設定')+'</div>'+
+      '<div class="coach-meta">'+(c.bio||'プロフィール未設定')+'</div></div>'+
+      '<div class="coach-actions">'+idBtn+'<span class="badge badge-approved">在籍中</span></div>'+
+      '</div>';
   }).join('');
 }
 
+/* ===== 身分証画像プレビュー(signed URL取得) ===== */
+async function viewIdCard(coachId){
+  var modal=document.getElementById('id-preview-modal');
+  var title=document.getElementById('id-modal-title');
+  var meta=document.getElementById('id-modal-meta');
+  var body=document.getElementById('id-modal-body');
+  modal.classList.add('open');
+  title.textContent='身分証明書プレビュー';
+  meta.textContent='読み込み中...';
+  body.innerHTML='<div class="id-modal-loading">読み込み中...</div>';
+
+  try{
+    var{data:coach,error:coachErr}=await sb.from('coaches').select('name,id_card_url,id_card_status,id_card_uploaded_at').eq('id',coachId).maybeSingle();
+    if(coachErr||!coach){
+      body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">コーチ情報の取得に失敗しました</div>';
+      return;
+    }
+    if(!coach.id_card_url){
+      body.innerHTML='<div class="id-modal-loading" style="color:var(--muted);">身分証明書がアップロードされていません</div>';
+      meta.textContent=(coach.name||'未設定')+' / 身分証なし';
+      return;
+    }
+
+    title.textContent=(coach.name||'未設定')+' の身分証明書';
+    var statusLabel={none:'未アップロード',pending:'審査待ち',approved:'承認済み',rejected:'却下'};
+    var uploadDate=coach.id_card_uploaded_at?new Date(coach.id_card_uploaded_at).toLocaleString('ja-JP'):'-';
+    meta.innerHTML='ステータス:<strong>'+(statusLabel[coach.id_card_status]||'-')+'</strong> ／ アップロード日時:'+uploadDate;
+
+    // Storage signed URL生成(60秒有効)
+    var{data:signed,error:signErr}=await sb.storage
+      .from('coach-id-cards')
+      .createSignedUrl(coach.id_card_url,60);
+
+    if(signErr||!signed||!signed.signedUrl){
+      console.error('signed URL生成エラー',signErr);
+      body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">画像URL取得に失敗しました<br>('+(signErr?signErr.message:'不明なエラー')+')</div>';
+      return;
+    }
+
+    // ファイル種別判定
+    var url=signed.signedUrl;
+    var ext=(coach.id_card_url.split('.').pop()||'').toLowerCase();
+    if(ext==='pdf'){
+      body.innerHTML='<iframe src="'+url+'" title="身分証PDF"></iframe>';
+    }else{
+      body.innerHTML='<img src="'+url+'" alt="身分証画像" onerror="this.parentNode.innerHTML=\'<div class=&quot;id-modal-loading&quot; style=&quot;color:var(--red);&quot;>画像読み込み失敗&quot;</div>\'">';
+    }
+  }catch(e){
+    console.error('viewIdCard例外',e);
+    body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">エラーが発生しました<br>'+e.message+'</div>';
+  }
+}
+
+function closeIdPreview(){
+  document.getElementById('id-preview-modal').classList.remove('open');
+}
+
+/* ===== 承認/却下処理(身分証ステータス・日時も更新) ===== */
 async function approveCoach(id){
-  if(!confirm('このコーチを承認しますか？'))return;
-  await sb.from('coaches').update({is_approved:true}).eq('id',id);
+  if(!confirm('このコーチを承認しますか？\n承認後、コーチは予約を受け付けられるようになります。'))return;
+  var nowIso=new Date().toISOString();
+  var{error}=await sb.from('coaches').update({
+    is_approved:true,
+    is_rejected:false,
+    id_card_status:'approved',
+    approved_at:nowIso,
+    updated_at:nowIso
+  }).eq('id',id);
+  if(error){
+    showMsg('msg-coaches','承認処理に失敗しました:'+error.message,'error');
+    return;
+  }
   showMsg('msg-coaches','コーチを承認しました！','success');
   loadPendingCoaches(); loadApprovedCoaches();
 }
+
 async function rejectCoach(id){
-  if(!confirm('このコーチを却下しますか？'))return;
-  await sb.from('coaches').update({is_rejected:true}).eq('id',id);
+  if(!confirm('このコーチを却下しますか？\n却下後、再アップロードがない限り承認画面には表示されません。'))return;
+  var nowIso=new Date().toISOString();
+  var{error}=await sb.from('coaches').update({
+    is_approved:false,
+    is_rejected:true,
+    id_card_status:'rejected',
+    rejected_at:nowIso,
+    updated_at:nowIso
+  }).eq('id',id);
+  if(error){
+    showMsg('msg-coaches','却下処理に失敗しました:'+error.message,'error');
+    return;
+  }
   showMsg('msg-coaches','コーチを却下しました。','success');
   loadPendingCoaches();
 }
+
 function scheduleInterview(id){
   alert('面接日程調整機能は近日実装予定です。LINEでご連絡ください。');
 }
