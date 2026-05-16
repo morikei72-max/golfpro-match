@@ -340,9 +340,14 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .id-upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:8px;}
 .id-upload-area:hover{border-color:var(--g);}
 .id-upload-area.uploaded{border-color:var(--g);background:var(--gl);}
+.id-upload-area.uploading{border-color:var(--gold);background:#fff8e1;cursor:wait;}
 .id-status{font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px;display:inline-block;margin-top:6px;}
 .id-status.pending{background:#fff3cd;color:#856404;}
+.id-status.approved{background:var(--gl);color:var(--gd);}
+.id-status.rejected{background:#ffe0e0;color:var(--red);}
 .id-status.none{background:#f0f0f0;color:var(--muted);}
+.id-status.uploading{background:#fff3cd;color:#856404;}
+.id-preview-link{display:inline-block;margin-top:8px;font-size:11px;color:var(--g);text-decoration:underline;}
 
 .invoice-wrap{background:#f7faf8;border-radius:12px;padding:12px;margin-bottom:12px;}
 .invoice-radio{display:flex;gap:16px;margin-bottom:8px;}
@@ -480,13 +485,19 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
     <div class="card">
       <div class="card-title">身分証明書 <span style="font-size:10px;color:var(--red);font-weight:400">※必須(本人確認・なりすまし防止)</span></div>
-      <div class="id-upload-area" id="id-upload-area" onclick="document.getElementById('id-input').click()">
+      <div class="id-upload-area" id="id-upload-area" onclick="triggerIdUpload()">
         <div style="font-size:28px;margin-bottom:8px;">🪪</div>
         <div style="font-size:12px;color:var(--muted);">運転免許証・マイナンバーカード等<br>タップしてアップロード</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;">対応形式:JPEG / PNG / HEIC / PDF(最大5MB)</div>
         <span class="id-status none" id="id-status">未アップロード</span>
+        <div id="id-preview-wrap"></div>
       </div>
-      <input type="file" id="id-input" accept="image/*,.pdf" style="display:none" onchange="uploadId(this)">
-      <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.6;">※ 本人確認目的のみに使用。暗号化保管。退会後30日以内に削除されます。</div>
+      <input type="file" id="id-input" accept="image/jpeg,image/png,image/heic,image/heif,application/pdf" style="display:none" onchange="uploadId(this)">
+      <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.7;">
+        ※ 本人確認・なりすまし防止・契約管理・法的措置の目的でのみ使用します。<br>
+        ※ 暗号化のうえ非公開で保管し、店舗管理者および本人以外は閲覧できません。<br>
+        ※ コーチ契約終了後7年間保管し、その後完全削除します(消滅時効・商法準拠)。
+      </div>
     </div>
 
     <div class="card">
@@ -811,6 +822,8 @@ let priceItemCounter=0;
 let customPlanCounter=0;
 let stripeChargesEnabled=false;
 let stripeAccountId=null;
+let idCardStatus='none';
+let idCardUrl=null;
 
 /* ===== 認証チェック ===== */
 (async()=>{
@@ -819,7 +832,7 @@ let stripeAccountId=null;
   const user=session.user;
   currentAuthId=user.id;
   currentCoachEmail=user.email;
-  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted').eq('user_id',user.id).maybeSingle();
+  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,store_key,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted,id_card_url,id_card_status').eq('user_id',user.id).maybeSingle();
   if(coachErr){console.error('coach取得エラー',coachErr);alert('❌ コーチ情報の取得に失敗しました: '+coachErr.message);return;}
   if(!coachRow){alert('❌ このアカウントにはコーチ情報が登録されていません。\n先にプロフィール画面で基本情報を保存してください。');}
   currentCoachId=coachRow?coachRow.id:null;
@@ -830,10 +843,19 @@ let stripeAccountId=null;
 
   stripeAccountId=coachRow?.stripe_account_id||null;
   stripeChargesEnabled=!!coachRow?.stripe_charges_enabled;
+  idCardStatus=coachRow?.id_card_status||'none';
+  idCardUrl=coachRow?.id_card_url||null;
   updateStripeStatusUI(coachRow);
   updateScheduleLockUI();
+  updateIdCardUI();
 
-  buildStoreOptions();
+  // 店舗紐付けが既にある場合は自動選択(オーバーレイをスキップ)
+  if(coachRow?.store_key&&stores[coachRow.store_key]){
+    await selectStore(coachRow.store_key);
+  }else{
+    buildStoreOptions();
+  }
+
   buildWeekGrid();
   buildMonthGrid();
   await loadProfile(user.id);
@@ -872,6 +894,34 @@ function updateStripeStatusUI(coachRow){
     text.innerHTML='レッスン料の受取先を設定してください。<br>登録が完了するまでスケジュール設定ができません。';
     btn.textContent='Stripe Connect 登録を開始する';
     btn.style.background='var(--stripe)';
+  }
+}
+
+/* ===== 身分証ステータスUI更新 ===== */
+function updateIdCardUI(){
+  const area=document.getElementById('id-upload-area');
+  const status=document.getElementById('id-status');
+  const previewWrap=document.getElementById('id-preview-wrap');
+  if(!area||!status||!previewWrap)return;
+
+  area.classList.remove('uploaded','uploading');
+  previewWrap.innerHTML='';
+
+  if(idCardStatus==='pending'){
+    area.classList.add('uploaded');
+    status.className='id-status pending';
+    status.textContent='審査待ち(アップロード済み)';
+    previewWrap.innerHTML='<div style="font-size:11px;color:var(--gd);margin-top:6px;">✓ 身分証は店舗管理者へ送信されました。承認をお待ちください。</div>';
+  }else if(idCardStatus==='approved'){
+    area.classList.add('uploaded');
+    status.className='id-status approved';
+    status.textContent='✓ 承認済み';
+  }else if(idCardStatus==='rejected'){
+    status.className='id-status rejected';
+    status.textContent='却下されました(再アップロードしてください)';
+  }else{
+    status.className='id-status none';
+    status.textContent='未アップロード';
   }
 }
 
@@ -1008,10 +1058,23 @@ async function selectStore(key){
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
   if(s.id)currentStoreId=s.id;
+
+  // 店舗紐付けをDBに保存(まだ保存されていない場合のみ)
+  if(currentAuthId){
+    try{
+      await sb.from('coaches').update({store_key:key,updated_at:new Date().toISOString()}).eq('user_id',currentAuthId);
+    }catch(e){
+      console.error('store_key保存エラー',e);
+    }
+  }
+
   await loadPrices();
   recalcAllPrices();
 }
-function showStoreSelect(){document.getElementById('store-overlay').classList.remove('hidden');}
+function showStoreSelect(){
+  buildStoreOptions();
+  document.getElementById('store-overlay').classList.remove('hidden');
+}
 
 /* ===== 料金計算ユーティリティ ===== */
 function calcTakeAmount(billAmount,lessonType){
@@ -1542,13 +1605,111 @@ function uploadPhoto(input){
   const reader=new FileReader();reader.onload=e=>{document.getElementById('profile-img').src=e.target.result;};
   reader.readAsDataURL(file);showMsg('写真をアップロードしました!','success');
 }
-function uploadId(input){
-  const file=input.files[0];if(!file)return;
-  document.getElementById('id-upload-area').classList.add('uploaded');
-  document.getElementById('id-status').className='id-status pending';
-  document.getElementById('id-status').textContent='審査待ち';
-  showMsg('身分証をアップロードしました。審査をお待ちください。','success');
+
+/* ===== 身分証アップロード(Supabase Storage実機実装) ===== */
+function triggerIdUpload(){
+  if(!currentAuthId){
+    alert('❌ ログイン情報が取得できません');
+    return;
+  }
+  document.getElementById('id-input').click();
 }
+
+async function uploadId(input){
+  const file=input.files[0];
+  if(!file)return;
+
+  // ファイル形式チェック
+  const allowedTypes=['image/jpeg','image/png','image/heic','image/heif','application/pdf'];
+  if(!allowedTypes.includes(file.type)){
+    alert('❌ 対応していないファイル形式です\n対応形式:JPEG / PNG / HEIC / PDF');
+    input.value='';
+    return;
+  }
+
+  // ファイルサイズチェック(5MB)
+  const MAX_SIZE=5*1024*1024;
+  if(file.size>MAX_SIZE){
+    alert('❌ ファイルサイズが大きすぎます\n最大5MBまでアップロード可能です\n(現在:'+(file.size/1024/1024).toFixed(2)+'MB)');
+    input.value='';
+    return;
+  }
+
+  if(!currentAuthId){
+    alert('❌ ログイン情報が取得できません');
+    input.value='';
+    return;
+  }
+
+  // UI:アップロード中表示
+  const area=document.getElementById('id-upload-area');
+  const status=document.getElementById('id-status');
+  const previewWrap=document.getElementById('id-preview-wrap');
+  area.classList.remove('uploaded');
+  area.classList.add('uploading');
+  status.className='id-status uploading';
+  status.textContent='アップロード中...';
+  previewWrap.innerHTML='';
+
+  try{
+    // ファイルパス生成:{user_id}/id_card_{タイムスタンプ}.{拡張子}
+    const ext=file.name.split('.').pop().toLowerCase();
+    const timestamp=Date.now();
+    const filePath=currentAuthId+'/id_card_'+timestamp+'.'+ext;
+
+    // Supabase Storage アップロード
+    const {data:uploadData,error:uploadError}=await sb.storage
+      .from('coach-id-cards')
+      .upload(filePath,file,{
+        cacheControl:'3600',
+        upsert:false,
+        contentType:file.type
+      });
+
+    if(uploadError){
+      console.error('身分証アップロードエラー',uploadError);
+      throw new Error(uploadError.message||'ストレージへのアップロードに失敗しました');
+    }
+
+    // DB更新:id_card_url, id_card_status, id_card_uploaded_at
+    const nowIso=new Date().toISOString();
+    const {error:dbError}=await sb.from('coaches').update({
+      id_card_url:filePath,
+      id_card_status:'pending',
+      id_card_uploaded_at:nowIso,
+      updated_at:nowIso
+    }).eq('user_id',currentAuthId);
+
+    if(dbError){
+      console.error('身分証DB更新エラー',dbError);
+      // Storage側はアップロード済みなのでロールバック
+      try{
+        await sb.storage.from('coach-id-cards').remove([filePath]);
+      }catch(rollbackErr){
+        console.error('ロールバック失敗',rollbackErr);
+      }
+      throw new Error(dbError.message||'データベース更新に失敗しました');
+    }
+
+    // 成功
+    idCardStatus='pending';
+    idCardUrl=filePath;
+    updateIdCardUI();
+    alert('✅ 身分証をアップロードしました!\n店舗管理者の承認をお待ちください。');
+    showMsg('身分証をアップロードしました。審査をお待ちください。','success');
+
+  }catch(e){
+    console.error('uploadId例外',e);
+    area.classList.remove('uploading');
+    status.className='id-status none';
+    status.textContent='未アップロード';
+    alert('❌ 身分証のアップロードに失敗しました\n'+e.message);
+    showMsg('身分証のアップロードに失敗しました:'+e.message,'error');
+  }finally{
+    input.value='';
+  }
+}
+
 function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg('領収書をアップロードしました!','success');}
 
 /* ===== PDF出力 ===== */
@@ -1652,6 +1813,10 @@ async function saveProfile(){
     website_url:document.getElementById('prof-website').value.trim()||null,
     updated_at:new Date().toISOString()
   };
+  // store_keyが選択されている場合のみ保存
+  if(currentStore){
+    data.store_key=currentStore;
+  }
   const {data:saved,error}=await sb.from('coaches').upsert(data,{onConflict:'user_id'}).select().maybeSingle();
   if(error){alert('❌ 保存に失敗しました\n'+error.message);showMsg('保存に失敗しました:'+error.message,'error');return;}
   if(saved?.id)currentCoachId=saved.id;
