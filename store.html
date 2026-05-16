@@ -738,7 +738,7 @@ sb.auth.getSession().then(async function(res){
   var user=session.user;
   var storeName=user.user_metadata&&user.user_metadata.store_name?user.user_metadata.store_name:'Golf Create 戸津池店';
   document.getElementById('store-badge').textContent=storeName;
-  currentStore='kyoto';
+  currentStore='tozuike';
   var savedDaily=localStorage.getItem('gc_daily_goal_'+currentStore);
   var savedMonthly=localStorage.getItem('gc_monthly_goal_'+currentStore);
   if(savedDaily) dailyGoal=parseInt(savedDaily);
