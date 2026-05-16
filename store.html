@@ -155,6 +155,27 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .fee-warning{background:#fff8e1;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;font-size:11px;color:#633806;margin-bottom:10px;line-height:1.6;display:none;}
 .fee-warning.show{display:block;}
 
+/* 営業時間UI(Phase 1新規) */
+.bh-info-box{background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;}
+.bh-info-box strong{display:block;margin-bottom:4px;font-size:12px;}
+.bh-bulk-btns{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.bh-bulk-btn{padding:7px 12px;border-radius:8px;border:1.5px solid var(--g);background:var(--gl);color:var(--gd);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;}
+.bh-bulk-btn:hover{background:var(--g);color:#fff;}
+.bh-row{display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:0.5px solid var(--border);transition:opacity 0.2s;}
+.bh-row:last-child{border-bottom:none;}
+.bh-row.closed{opacity:0.5;}
+.bh-row.closed select{background:#f0f0f0;color:#999;}
+.bh-day-label{font-size:13px;font-weight:700;color:var(--gd);width:30px;flex-shrink:0;}
+.bh-day-label.sat{color:var(--blue);}
+.bh-day-label.sun{color:var(--red);}
+.bh-time-group{display:flex;align-items:center;gap:4px;flex:1;}
+.bh-time-group select{padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;color:var(--text);background:#fafdf9;outline:none;flex:1;min-width:65px;}
+.bh-time-group select:focus{border-color:var(--g);}
+.bh-tilde{font-size:11px;color:var(--muted);flex-shrink:0;}
+.bh-closed-check{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.bh-closed-check input{accent-color:var(--red);width:16px;height:16px;cursor:pointer;}
+.bh-closed-check label{font-size:11px;color:var(--muted);cursor:pointer;}
+
 .date-display{font-size:11px;color:var(--muted);margin-bottom:10px;}
 .hero-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;}
 .hero-label{font-size:10px;opacity:0.85;}
@@ -586,37 +607,33 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
   <div class="page" id="page-settings">
     <div class="msg" id="msg-settings"></div>
+
+    <!-- 営業時間UI(Phase 1 全面実装版) -->
     <div class="card">
-      <div class="card-title">🕐 営業時間・曜日</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
-        <div class="form-group" style="flex:1;margin-bottom:0;">
-          <label>開始時間</label>
-          <select id="lesson-start">
-            <option value="8">8:00</option><option value="9">9:00</option>
-            <option value="10" selected>10:00</option><option value="11">11:00</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1;margin-bottom:0;">
-          <label>終了時間</label>
-          <select id="lesson-end">
-            <option value="20">20:00</option><option value="21">21:00</option>
-            <option value="22" selected>22:00</option><option value="23">23:00</option>
-          </select>
-        </div>
+      <div class="card-title">🕐 曜日別営業時間設定</div>
+
+      <div class="bh-info-box">
+        <strong>📋 営業時間の役割</strong>
+        コーチが空き枠を登録できる時間帯を制限します。<br>
+        営業時間外には予約を受け付けません。
       </div>
-      <div class="form-group">
-        <label>営業曜日</label>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <label class="check-row"><input type="checkbox" checked> 月</label>
-          <label class="check-row"><input type="checkbox" checked> 火</label>
-          <label class="check-row"><input type="checkbox" checked> 水</label>
-          <label class="check-row"><input type="checkbox" checked> 木</label>
-          <label class="check-row"><input type="checkbox" checked> 金</label>
-          <label class="check-row"><input type="checkbox" checked> 土</label>
-          <label class="check-row"><input type="checkbox" checked> 日</label>
-        </div>
+
+      <div class="bh-bulk-btns">
+        <button class="bh-bulk-btn" onclick="bulkSetHours('weekday')">平日一括</button>
+        <button class="bh-bulk-btn" onclick="bulkSetHours('weekend')">週末一括</button>
+        <button class="bh-bulk-btn" onclick="bulkSetHours('all')">全曜日一括</button>
       </div>
-      <button class="btn-primary" onclick="saveStoreSettings()">保存する</button>
+
+      <div id="business-hours-list">
+        <div style="font-size:12px;color:var(--muted);text-align:center;padding:12px;">読み込み中...</div>
+      </div>
+
+      <button class="btn-primary" style="margin-top:12px;" onclick="saveBusinessHours()">営業時間を保存する</button>
+
+      <div style="font-size:10px;color:var(--muted);margin-top:8px;line-height:1.6;">
+        ※ 休業日にすると、その曜日はコーチが空き枠を登録できません。<br>
+        ※ 設定変更は即座に反映されます(既存予約には影響しません)。
+      </div>
     </div>
 
     <!-- 手数料設定UI(実機実装版) -->
@@ -824,6 +841,20 @@ var dailyGoal=40000;
 var monthlyGoal=1000000;
 const STRIPE_FEE_PCT=3.6;
 
+/* ===== 営業時間設定 ===== */
+const DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun'];
+const DAY_LABELS={mon:'月',tue:'火',wed:'水',thu:'木',fri:'金',sat:'土',sun:'日'};
+// 営業時間データの初期値(DBから読み込まれるまでのデフォルト)
+var businessHours={
+  mon:{open:'10:00',close:'22:00',closed:false},
+  tue:{open:'10:00',close:'22:00',closed:false},
+  wed:{open:'10:00',close:'22:00',closed:false},
+  thu:{open:'10:00',close:'22:00',closed:false},
+  fri:{open:'10:00',close:'22:00',closed:false},
+  sat:{open:'10:00',close:'22:00',closed:false},
+  sun:{open:'10:00',close:'22:00',closed:false}
+};
+
 const approvalDescs={
   interview:'コーチが申請後、面接を経て承認します。',
   review:'書類・プロフィール確認のみで承認します。',
@@ -845,6 +876,7 @@ sb.auth.getSession().then(async function(res){
   document.getElementById('monthly-goal').value=monthlyGoal;
   updateDateDisplay(user);
   await loadFeeSettings();
+  await loadBusinessHours();
   loadDashboard();
   loadPendingCoaches();
   loadApprovedCoaches();
@@ -860,6 +892,228 @@ function updateDateDisplay(user){
   var days=['日','月','火','水','木','金','土'];
   var dow=days[now.getDay()];
   document.getElementById('date-display').textContent=name+'さん・'+yyyy+'年'+mm+'月'+dd+'日('+dow+')';
+}
+
+/* ===== 営業時間設定:DB読み込み ===== */
+async function loadBusinessHours(){
+  try{
+    var{data,error}=await sb.from('stores').select('id,business_hours').eq('store_key',currentStore).maybeSingle();
+    if(error){
+      console.error('営業時間読込エラー',error);
+      renderBusinessHours();
+      return;
+    }
+    if(!data){
+      console.warn('店舗データが見つかりません');
+      renderBusinessHours();
+      return;
+    }
+    if(!currentStoreId) currentStoreId=data.id;
+    if(data.business_hours){
+      // DBから読み込んだデータで上書き
+      DAY_KEYS.forEach(function(d){
+        if(data.business_hours[d]){
+          businessHours[d]={
+            open:data.business_hours[d].open||'10:00',
+            close:data.business_hours[d].close||'22:00',
+            closed:!!data.business_hours[d].closed
+          };
+        }
+      });
+    }
+    renderBusinessHours();
+  }catch(e){
+    console.error('loadBusinessHours例外',e);
+    renderBusinessHours();
+  }
+}
+
+/* ===== 営業時間設定:UI描画 ===== */
+function renderBusinessHours(){
+  // 30分刻みの時間オプション(0:00〜23:30)
+  var timeOptions='';
+  for(var h=0;h<=23;h++){
+    for(var m=0;m<60;m+=30){
+      var hh=h<10?'0'+h:''+h;
+      var mm=m<10?'0'+m:''+m;
+      var val=hh+':'+mm;
+      timeOptions+='<option value="'+val+'">'+val+'</option>';
+    }
+  }
+  // 24:00も追加(終了時間用)
+  var timeOptionsClose=timeOptions+'<option value="24:00">24:00</option>';
+
+  var html='';
+  DAY_KEYS.forEach(function(d){
+    var data=businessHours[d];
+    var rowClass=data.closed?'bh-row closed':'bh-row';
+    var labelClass='bh-day-label';
+    if(d==='sat') labelClass+=' sat';
+    if(d==='sun') labelClass+=' sun';
+    var disabled=data.closed?'disabled':'';
+    html+='<div class="'+rowClass+'" id="bh-row-'+d+'">'+
+      '<div class="'+labelClass+'">'+DAY_LABELS[d]+'</div>'+
+      '<div class="bh-time-group">'+
+        '<select id="bh-open-'+d+'" '+disabled+'>'+timeOptions+'</select>'+
+        '<span class="bh-tilde">〜</span>'+
+        '<select id="bh-close-'+d+'" '+disabled+'>'+timeOptionsClose+'</select>'+
+      '</div>'+
+      '<div class="bh-closed-check">'+
+        '<input type="checkbox" id="bh-closed-'+d+'" '+(data.closed?'checked':'')+' onchange="toggleClosed(\''+d+'\')">'+
+        '<label for="bh-closed-'+d+'">休</label>'+
+      '</div>'+
+      '</div>';
+  });
+  document.getElementById('business-hours-list').innerHTML=html;
+
+  // selectの値をセット
+  DAY_KEYS.forEach(function(d){
+    var openSel=document.getElementById('bh-open-'+d);
+    var closeSel=document.getElementById('bh-close-'+d);
+    if(openSel) openSel.value=businessHours[d].open;
+    if(closeSel) closeSel.value=businessHours[d].close;
+  });
+}
+
+/* ===== 営業時間設定:休業チェックボックス切替 ===== */
+function toggleClosed(d){
+  var checkbox=document.getElementById('bh-closed-'+d);
+  var isClosed=checkbox.checked;
+  businessHours[d].closed=isClosed;
+  var row=document.getElementById('bh-row-'+d);
+  var openSel=document.getElementById('bh-open-'+d);
+  var closeSel=document.getElementById('bh-close-'+d);
+  if(isClosed){
+    row.classList.add('closed');
+    openSel.disabled=true;
+    closeSel.disabled=true;
+  }else{
+    row.classList.remove('closed');
+    openSel.disabled=false;
+    closeSel.disabled=false;
+  }
+}
+
+/* ===== 営業時間設定:一括設定 ===== */
+function bulkSetHours(target){
+  // ダイアログで開始・終了時間を入力
+  var defaultOpen='10:00';
+  var defaultClose='22:00';
+  // 平日一括は月の値を、週末一括は土の値を、全曜日一括は月の値を初期値に使う
+  if(target==='weekday'&&!businessHours.mon.closed){
+    defaultOpen=businessHours.mon.open;
+    defaultClose=businessHours.mon.close;
+  }else if(target==='weekend'&&!businessHours.sat.closed){
+    defaultOpen=businessHours.sat.open;
+    defaultClose=businessHours.sat.close;
+  }
+
+  var openInput=prompt('開始時間を入力してください(例:10:00)',defaultOpen);
+  if(!openInput) return;
+  if(!/^([01]\d|2[0-3]):(00|30)$/.test(openInput)){
+    alert('開始時間の形式が正しくありません。「10:00」「13:30」のように30分刻みで入力してください。');
+    return;
+  }
+
+  var closeInput=prompt('終了時間を入力してください(例:22:00)',defaultClose);
+  if(!closeInput) return;
+  if(!/^([01]\d|2[0-3]):(00|30)$|^24:00$/.test(closeInput)){
+    alert('終了時間の形式が正しくありません。「22:00」「23:30」「24:00」のように30分刻みで入力してください。');
+    return;
+  }
+
+  // 開始<終了のチェック(24:00 を 24*60 として比較)
+  function toMin(t){
+    var p=t.split(':');
+    return parseInt(p[0])*60+parseInt(p[1]);
+  }
+  if(toMin(closeInput)<=toMin(openInput)){
+    alert('終了時間は開始時間より後にしてください。');
+    return;
+  }
+
+  var targetDays=[];
+  if(target==='weekday') targetDays=['mon','tue','wed','thu','fri'];
+  else if(target==='weekend') targetDays=['sat','sun'];
+  else if(target==='all') targetDays=DAY_KEYS.slice();
+
+  targetDays.forEach(function(d){
+    businessHours[d].open=openInput;
+    businessHours[d].close=closeInput;
+    businessHours[d].closed=false;
+  });
+
+  renderBusinessHours();
+  showMsg('msg-settings','一括設定を反映しました。「営業時間を保存する」を押してDBに保存してください。','success');
+}
+
+/* ===== 営業時間設定:UI値を businessHours に取り込む ===== */
+function collectBusinessHours(){
+  DAY_KEYS.forEach(function(d){
+    var openSel=document.getElementById('bh-open-'+d);
+    var closeSel=document.getElementById('bh-close-'+d);
+    var closedChk=document.getElementById('bh-closed-'+d);
+    if(openSel) businessHours[d].open=openSel.value;
+    if(closeSel) businessHours[d].close=closeSel.value;
+    if(closedChk) businessHours[d].closed=closedChk.checked;
+  });
+}
+
+/* ===== 営業時間設定:DB保存 ===== */
+async function saveBusinessHours(){
+  if(!currentStoreId){
+    showMsg('msg-settings','店舗情報の読み込みに失敗しています。ページを再読み込みしてください。','error');
+    return;
+  }
+
+  // UIの最新値を取り込む
+  collectBusinessHours();
+
+  // 開始<終了 のチェック(休業日以外)
+  function toMin(t){
+    var p=t.split(':');
+    return parseInt(p[0])*60+parseInt(p[1]);
+  }
+  for(var i=0;i<DAY_KEYS.length;i++){
+    var d=DAY_KEYS[i];
+    if(businessHours[d].closed) continue;
+    if(toMin(businessHours[d].close)<=toMin(businessHours[d].open)){
+      showMsg('msg-settings',DAY_LABELS[d]+'曜:終了時間は開始時間より後にしてください。','error');
+      return;
+    }
+  }
+
+  // 確認ダイアログ
+  var summary='【営業時間の確認】\n\n';
+  DAY_KEYS.forEach(function(d){
+    if(businessHours[d].closed){
+      summary+='・'+DAY_LABELS[d]+'曜:休業\n';
+    }else{
+      summary+='・'+DAY_LABELS[d]+'曜:'+businessHours[d].open+' 〜 '+businessHours[d].close+'\n';
+    }
+  });
+  summary+='\n保存しますか?';
+
+  if(!confirm(summary)) return;
+
+  try{
+    var{error}=await sb.from('stores').update({
+      business_hours:businessHours,
+      updated_at:new Date().toISOString()
+    }).eq('id',currentStoreId);
+
+    if(error){
+      console.error('営業時間保存エラー',error);
+      showMsg('msg-settings','営業時間の保存に失敗しました:'+error.message,'error');
+      return;
+    }
+
+    alert('✅ 営業時間を保存しました!\nコーチ画面のスケジュール登録に即座に反映されます。');
+    showMsg('msg-settings','営業時間を保存しました!','success');
+  }catch(e){
+    console.error('saveBusinessHours例外',e);
+    showMsg('msg-settings','保存中にエラーが発生しました:'+e.message,'error');
+  }
 }
 
 /* ===== 手数料設定:DB読み込み(B案版) ===== */
@@ -1559,8 +1813,6 @@ function filterBookings(range,btn){
   document.querySelectorAll('.page#page-bookings .select-btn').forEach(function(b){b.classList.remove('active');});
   btn.classList.add('active');
 }
-
-function saveStoreSettings(){showMsg('msg-settings','営業設定を保存しました!','success');}
 
 function saveGoalSettings(){
   var d=parseInt(document.getElementById('daily-goal').value)||40000;
