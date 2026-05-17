@@ -225,7 +225,8 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .week-slot{height:28px;border-radius:3px;border:1px solid var(--border);background:#f7faf8;cursor:pointer;transition:all .15s;}
 .week-slot.available{background:var(--gl);border-color:var(--g);}
 .week-slot.booked{background:#ddd;border-color:#bbb;cursor:not-allowed;}
-.week-slot:hover:not(.booked){background:rgba(29,158,117,0.2);}
+.week-slot.closed{background:#eeeeee;border-color:#dddddd;cursor:not-allowed;opacity:0.5;}
+.week-slot:hover:not(.booked):not(.closed){background:rgba(29,158,117,0.2);}
 .month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .month-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 14px;cursor:pointer;font-size:16px;color:var(--gd);}
 .month-nav-label{font-size:14px;font-weight:700;color:var(--gd);}
@@ -598,6 +599,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="schedule-legend">
             <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き</div>
             <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb"></div>予約済み</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#eeeeee;border:1px solid #dddddd"></div>営業時間外</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
           </div>
         </div>
@@ -1060,6 +1062,7 @@ async function selectStore(key){
 
   await loadPrices();
   recalcAllPrices();
+  buildWeekGrid();
 }
 function showStoreSelect(){
   buildStoreOptions();
@@ -1434,7 +1437,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
-  if(tab==='schedule'){updateScheduleLockUI();}
+  if(tab==='schedule'){updateScheduleLockUI();buildWeekGrid();}
   window.scrollTo(0,0);
 }
 function switchBoard(type,btn){
@@ -1453,8 +1456,8 @@ function switchScheduleMode(mode){
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
 }
 
-/* ===== 週間スケジュール ===== */
-function buildWeekGrid(){
+/* ===== 週間スケジュール(店舗営業時間連動版) ===== */
+async function buildWeekGrid(){
   const days=['日','月','火','水','木','金','土'];
   const today=new Date();
   const base=new Date(today);base.setDate(today.getDate()-today.getDay()+weekOffset*7);
@@ -1469,23 +1472,89 @@ function buildWeekGrid(){
   }
   const s=dates[0],e=dates[6];
   document.getElementById('week-label').textContent=`${s.getMonth()+1}/${s.getDate()} 〜 ${e.getMonth()+1}/${e.getDate()}`;
+
+  // 店舗の営業時間を取得(business_hours JSONB・複数形式に対応)
+  let businessHours=null;
+  if(currentStoreId){
+    try{
+      const {data:storeRow}=await sb.from('stores').select('business_hours').eq('id',currentStoreId).maybeSingle();
+      if(storeRow?.business_hours)businessHours=storeRow.business_hours;
+    }catch(err){console.error('営業時間取得エラー',err);}
+  }
+
+  // 曜日インデックス(0=日)に対応するキー候補
+  const dayKeyMap=[
+    ['sun','sunday','日','日曜','日曜日','0','7'],
+    ['mon','monday','月','月曜','月曜日','1'],
+    ['tue','tuesday','火','火曜','火曜日','2'],
+    ['wed','wednesday','水','水曜','水曜日','3'],
+    ['thu','thursday','木','木曜','木曜日','4'],
+    ['fri','friday','金','金曜','金曜日','5'],
+    ['sat','saturday','土','土曜','土曜日','6']
+  ];
+
+  function getDayHours(dayIndex){
+    if(!businessHours)return{openH:8,closeH:20,closed:false};
+    let entry=null;
+    if(Array.isArray(businessHours)){
+      entry=businessHours[dayIndex];
+    }else if(typeof businessHours==='object'){
+      const candidates=dayKeyMap[dayIndex];
+      for(const k of candidates){
+        if(businessHours[k]!==undefined){entry=businessHours[k];break;}
+      }
+    }
+    if(!entry)return{openH:8,closeH:20,closed:false};
+    if(entry.closed===true||entry.is_closed===true||entry.holiday===true){
+      return{closed:true};
+    }
+    const openStr=entry.open||entry.start||entry.open_time||entry.from||null;
+    const closeStr=entry.close||entry.end||entry.close_time||entry.to||null;
+    if(!openStr||!closeStr)return{openH:8,closeH:20,closed:false};
+    const openH=parseInt(String(openStr).split(':')[0]);
+    const closeH=parseInt(String(closeStr).split(':')[0]);
+    if(isNaN(openH)||isNaN(closeH))return{openH:8,closeH:20,closed:false};
+    return{openH,closeH,closed:false};
+  }
+
+  const dayHours=[];
+  let globalMinH=23,globalMaxH=0;
+  let hasAnyOpen=false;
+  for(let i=0;i<7;i++){
+    const dh=getDayHours(i);
+    dayHours.push(dh);
+    if(!dh.closed){
+      hasAnyOpen=true;
+      if(dh.openH<globalMinH)globalMinH=dh.openH;
+      if(dh.closeH>globalMaxH)globalMaxH=dh.closeH;
+    }
+  }
+  if(!hasAnyOpen||globalMinH>=globalMaxH){globalMinH=8;globalMaxH=20;}
+
   const grid=document.getElementById('week-grid');grid.innerHTML='';
-  for(let h=8;h<=20;h++){
+  for(let h=globalMinH;h<globalMaxH;h++){
     const tl=document.createElement('div');tl.className='week-time-label';tl.textContent=h+':00';grid.appendChild(tl);
     for(let d=0;d<7;d++){
       const key=`${weekOffset}-${h}-${d}`;
       const slot=document.createElement('div');
-      slot.className='week-slot'+(scheduleData[key]==='available'?' available':scheduleData[key]==='booked'?' booked':'');
-      slot.onclick=function(){
-        if(this.classList.contains('booked'))return;
-        if(this.classList.contains('available')){this.classList.remove('available');delete scheduleData[key];}
-        else{this.classList.add('available');scheduleData[key]='available';}
-      };
+      const dh=dayHours[d];
+      const isClosed=dh.closed||h<dh.openH||h>=dh.closeH;
+      if(isClosed){
+        slot.className='week-slot closed';
+      }else{
+        slot.className='week-slot'+(scheduleData[key]==='available'?' available':scheduleData[key]==='booked'?' booked':'');
+        slot.onclick=function(){
+          if(this.classList.contains('booked'))return;
+          if(this.classList.contains('available')){this.classList.remove('available');delete scheduleData[key];}
+          else{this.classList.add('available');scheduleData[key]='available';}
+        };
+      }
       grid.appendChild(slot);
     }
   }
   const wrap=document.getElementById('week-wrap');
-  if(wrap){
+  if(wrap&&!wrap.dataset.touchBound){
+    wrap.dataset.touchBound='1';
     let startX=0;
     wrap.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
     wrap.addEventListener('touchend',e=>{
