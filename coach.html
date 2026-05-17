@@ -1456,7 +1456,41 @@ function switchScheduleMode(mode){
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
 }
 
-/* ===== 週間スケジュール(店舗営業時間連動版) ===== */
+/* ===== 週間スケジュール(店舗営業時間+祝日連動版) ===== */
+// 日本の祝日リスト(2026〜2030年)
+const JP_HOLIDAYS={
+  '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日','2026-02-23':'天皇誕生日',
+  '2026-03-20':'春分の日','2026-04-29':'昭和の日','2026-05-03':'憲法記念日','2026-05-04':'みどりの日',
+  '2026-05-05':'こどもの日','2026-05-06':'振替休日','2026-07-20':'海の日','2026-08-11':'山の日',
+  '2026-09-21':'敬老の日','2026-09-23':'秋分の日','2026-10-12':'スポーツの日','2026-11-03':'文化の日',
+  '2026-11-23':'勤労感謝の日',
+  '2027-01-01':'元日','2027-01-11':'成人の日','2027-02-11':'建国記念の日','2027-02-23':'天皇誕生日',
+  '2027-03-21':'春分の日','2027-03-22':'振替休日','2027-04-29':'昭和の日','2027-05-03':'憲法記念日',
+  '2027-05-04':'みどりの日','2027-05-05':'こどもの日','2027-07-19':'海の日','2027-08-11':'山の日',
+  '2027-09-20':'敬老の日','2027-09-23':'秋分の日','2027-10-11':'スポーツの日','2027-11-03':'文化の日',
+  '2027-11-23':'勤労感謝の日',
+  '2028-01-01':'元日','2028-01-10':'成人の日','2028-02-11':'建国記念の日','2028-02-23':'天皇誕生日',
+  '2028-03-20':'春分の日','2028-04-29':'昭和の日','2028-05-03':'憲法記念日','2028-05-04':'みどりの日',
+  '2028-05-05':'こどもの日','2028-07-17':'海の日','2028-08-11':'山の日','2028-09-18':'敬老の日',
+  '2028-09-22':'秋分の日','2028-10-09':'スポーツの日','2028-11-03':'文化の日','2028-11-23':'勤労感謝の日',
+  '2029-01-01':'元日','2029-01-08':'成人の日','2029-02-11':'建国記念の日','2029-02-12':'振替休日',
+  '2029-02-23':'天皇誕生日','2029-03-20':'春分の日','2029-04-29':'昭和の日','2029-04-30':'振替休日',
+  '2029-05-03':'憲法記念日','2029-05-04':'みどりの日','2029-05-05':'こどもの日','2029-07-16':'海の日',
+  '2029-08-11':'山の日','2029-09-17':'敬老の日','2029-09-23':'秋分の日','2029-09-24':'振替休日',
+  '2029-10-08':'スポーツの日','2029-11-03':'文化の日','2029-11-23':'勤労感謝の日',
+  '2030-01-01':'元日','2030-01-14':'成人の日','2030-02-11':'建国記念の日','2030-02-23':'天皇誕生日',
+  '2030-02-24':'振替休日','2030-03-20':'春分の日','2030-04-29':'昭和の日','2030-05-03':'憲法記念日',
+  '2030-05-04':'みどりの日','2030-05-05':'こどもの日','2030-05-06':'振替休日','2030-07-15':'海の日',
+  '2030-08-11':'山の日','2030-09-16':'敬老の日','2030-09-23':'秋分の日','2030-10-14':'スポーツの日',
+  '2030-11-03':'文化の日','2030-11-23':'勤労感謝の日'
+};
+function isJapaneseHoliday(date){
+  const y=date.getFullYear();
+  const m=String(date.getMonth()+1).padStart(2,'0');
+  const d=String(date.getDate()).padStart(2,'0');
+  return JP_HOLIDAYS[`${y}-${m}-${d}`]||null;
+}
+
 async function buildWeekGrid(){
   const days=['日','月','火','水','木','金','土'];
   const today=new Date();
@@ -1468,12 +1502,14 @@ async function buildWeekGrid(){
   for(let i=0;i<7;i++){
     const d=new Date(base);d.setDate(base.getDate()+i);dates.push(d);
     const isToday=d.toDateString()===today.toDateString();
-    header.innerHTML+=`<div class="week-day-hdr${isToday?' today':''}">${days[i]}<br><span style="font-size:12px">${d.getDate()}</span></div>`;
+    const holidayName=isJapaneseHoliday(d);
+    const dayLabel=holidayName?`<span style="color:#E24B4A;font-weight:900">祝</span>`:days[i];
+    header.innerHTML+=`<div class="week-day-hdr${isToday?' today':''}">${dayLabel}<br><span style="font-size:12px">${d.getDate()}</span></div>`;
   }
   const s=dates[0],e=dates[6];
   document.getElementById('week-label').textContent=`${s.getMonth()+1}/${s.getDate()} 〜 ${e.getMonth()+1}/${e.getDate()}`;
 
-  // 店舗の営業時間を取得(business_hours JSONB・複数形式に対応)
+  // 店舗の営業時間を取得(business_hours JSONB)
   let businessHours=null;
   if(currentStoreId){
     try{
@@ -1492,16 +1528,28 @@ async function buildWeekGrid(){
     ['fri','friday','金','金曜','金曜日','5'],
     ['sat','saturday','土','土曜','土曜日','6']
   ];
+  const holidayKeys=['hol','holiday','祝','祝日','hol_day'];
 
-  function getDayHours(dayIndex){
+  function getDayHoursForDate(date){
     if(!businessHours)return{openH:8,closeH:20,closed:false};
     let entry=null;
-    if(Array.isArray(businessHours)){
-      entry=businessHours[dayIndex];
-    }else if(typeof businessHours==='object'){
-      const candidates=dayKeyMap[dayIndex];
-      for(const k of candidates){
+    // 祝日判定が優先
+    const isHoliday=isJapaneseHoliday(date);
+    if(isHoliday){
+      for(const k of holidayKeys){
         if(businessHours[k]!==undefined){entry=businessHours[k];break;}
+      }
+    }
+    // 祝日キーが見つからなければ曜日で取得
+    if(!entry){
+      const dayIndex=date.getDay();
+      if(Array.isArray(businessHours)){
+        entry=businessHours[dayIndex];
+      }else if(typeof businessHours==='object'){
+        const candidates=dayKeyMap[dayIndex];
+        for(const k of candidates){
+          if(businessHours[k]!==undefined){entry=businessHours[k];break;}
+        }
       }
     }
     if(!entry)return{openH:8,closeH:20,closed:false};
@@ -1521,7 +1569,7 @@ async function buildWeekGrid(){
   let globalMinH=23,globalMaxH=0;
   let hasAnyOpen=false;
   for(let i=0;i<7;i++){
-    const dh=getDayHours(i);
+    const dh=getDayHoursForDate(dates[i]);
     dayHours.push(dh);
     if(!dh.closed){
       hasAnyOpen=true;
@@ -1538,8 +1586,8 @@ async function buildWeekGrid(){
       const key=`${weekOffset}-${h}-${d}`;
       const slot=document.createElement('div');
       const dh=dayHours[d];
-      // 枠の意味:h時の行 = h時〜(h+1)時の予約枠
-      // 営業時間外の判定:開始時刻が営業開始未満 OR 終了時刻(h+1)が営業終了を超える OR 休業
+      // 枠の意味:h時の行 = h時〜(h+1)時の1時間レッスン枠
+      // 営業時間外の判定:休業 / 開始時刻が営業開始未満 / 枠終了(h+1)が営業終了を超える
       const isClosed=dh.closed||h<dh.openH||(h+1)>dh.closeH;
       if(isClosed){
         slot.className='week-slot closed';
