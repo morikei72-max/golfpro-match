@@ -225,7 +225,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .week-slot{height:28px;border-radius:3px;border:1px solid var(--border);background:#f7faf8;cursor:pointer;transition:all .15s;}
 .week-slot.available{background:var(--gl);border-color:var(--g);}
 .week-slot.booked{background:#ddd;border-color:#bbb;cursor:not-allowed;}
-.week-slot.closed{background:#eeeeee;border-color:#dddddd;cursor:not-allowed;opacity:0.5;}
+.week-slot.closed{background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 4px,#9a9a9a 4px,#9a9a9a 8px);border-color:#888;cursor:not-allowed;}
 .week-slot:hover:not(.booked):not(.closed){background:rgba(29,158,117,0.2);}
 .month-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .month-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 14px;cursor:pointer;font-size:16px;color:var(--gd);}
@@ -599,7 +599,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="schedule-legend">
             <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き</div>
             <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb"></div>予約済み</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#eeeeee;border:1px solid #dddddd"></div>営業時間外</div>
+            <div class="legend-item"><div class="legend-dot" style="background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 2px,#9a9a9a 2px,#9a9a9a 4px);border:1px solid #888"></div>営業時間外</div>
             <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
           </div>
         </div>
