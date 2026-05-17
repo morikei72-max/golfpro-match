@@ -1538,7 +1538,9 @@ async function buildWeekGrid(){
       const key=`${weekOffset}-${h}-${d}`;
       const slot=document.createElement('div');
       const dh=dayHours[d];
-      const isClosed=dh.closed||h<dh.openH||h>=dh.closeH;
+      // 枠の意味:h時の行 = h時〜(h+1)時の予約枠
+      // 営業時間外の判定:開始時刻が営業開始未満 OR 終了時刻(h+1)が営業終了を超える OR 休業
+      const isClosed=dh.closed||h<dh.openH||(h+1)>dh.closeH;
       if(isClosed){
         slot.className='week-slot closed';
       }else{
