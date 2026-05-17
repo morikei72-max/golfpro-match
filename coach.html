@@ -212,6 +212,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .plan-greenfee-detail .form-label{color:var(--gd);font-weight:700;}
 
 .schedule-mode-btns{display:flex;gap:6px;margin-bottom:12px;}
+.lesson-type-btn{flex:1;padding:8px 4px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;min-width:0;text-align:center;}
+.lesson-type-btn.active{background:var(--g);color:#fff;border-color:var(--g);font-weight:700;}
+.lesson-type-btn:hover:not(.active){background:#f7faf8;}
 .mode-btn{flex:1;padding:8px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;}
 .mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
 .week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
@@ -580,7 +583,21 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="card">
         <div class="card-title">スケジュール管理</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
-        <div class="schedule-mode-btns">
+
+        <!-- レッスン種別タブ -->
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700;">📋 レッスン種別を選択</div>
+        <div class="lesson-type-tabs" style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
+          <button class="lesson-type-btn active" data-type="indoor" onclick="switchLessonType('indoor')">🏌 インドア</button>
+          <button class="lesson-type-btn" data-type="round" onclick="switchLessonType('round')">⛳ ラウンド</button>
+          <button class="lesson-type-btn" data-type="accompany" onclick="switchLessonType('accompany')">🚗 同伴</button>
+          <button class="lesson-type-btn" data-type="comp" onclick="switchLessonType('comp')">🏆 コンペ</button>
+          <button class="lesson-type-btn" data-type="custom" onclick="switchLessonType('custom')">💡 独自</button>
+        </div>
+        <div id="lesson-type-note" style="font-size:10px;color:var(--gd);background:var(--gl);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6;">
+          🏌 インドアレッスンは店舗営業時間内のみ受付可能(時間単位設定)
+        </div>
+
+        <div class="schedule-mode-btns" id="indoor-mode-btns">
           <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
           <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
         </div>
@@ -612,7 +629,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <div class="month-grid" id="month-header"></div>
           <div class="month-grid" id="month-grid" style="margin-top:4px;"></div>
           <div class="schedule-legend" style="margin-top:10px;">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き設定済み</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>対応可</div>
             <div class="legend-item"><div class="legend-dot" style="background:#fff3cd;border:1px solid var(--gold)"></div>予約あり</div>
           </div>
         </div>
@@ -774,7 +791,171 @@ let storesData={};
 const STRIPE_FEE_PCT=3.6;
 
 function saveInvoice(){alert('✅ インボイス情報を保存しました!');showMsg('インボイス情報を保存しました!','success');}
-function saveSchedule(){alert('✅ スケジュールを保存しました!');showMsg('スケジュールを保存しました!','success');}
+
+/* ===== スケジュール保存(DB連動) ===== */
+async function saveSchedule(){
+  if(!currentCoachId){alert('❌ ログイン情報が取得できません');return;}
+  if(!currentStore){alert('❌ 店舗を選択してください');return;}
+  if(!currentStoreId){alert('❌ 店舗IDが取得できません');return;}
+
+  try{
+    // 現在のレッスン種別のスケジュールを保存(他種別には影響しない)
+    const type=currentLessonType;
+    const typeData=scheduleByType[type]||{};
+
+    // 既存の同種別データを削除
+    const {error:delErr}=await sb.from('schedules').delete()
+      .eq('coach_id',currentCoachId)
+      .eq('lesson_type',type)
+      .eq('store_key',currentStore);
+    if(delErr){
+      console.error('既存スケジュール削除エラー',delErr);
+      alert('❌ 既存スケジュールの削除に失敗しました\n'+delErr.message);
+      return;
+    }
+
+    // 新しいレコードをINSERT
+    const records=[];
+    if(type==='indoor'){
+      // インドアは時間単位(weekOffset-hour-day形式)
+      // 注意:weekOffset-hour-dayは相対形式なので絶対日付に変換
+      Object.entries(typeData).forEach(([key,val])=>{
+        if(val!=='available')return;
+        const parts=key.split('-');
+        if(parts.length!==3)return;
+        const wOff=parseInt(parts[0]);
+        const hour=parseInt(parts[1]);
+        const dayIdx=parseInt(parts[2]);
+        // weekOffset=0の週の日曜日を基準に絶対日付を計算
+        const today=new Date();
+        const baseDate=new Date(today);
+        baseDate.setDate(today.getDate()-today.getDay()+wOff*7+dayIdx);
+        const y=baseDate.getFullYear();
+        const m=String(baseDate.getMonth()+1).padStart(2,'0');
+        const d=String(baseDate.getDate()).padStart(2,'0');
+        records.push({
+          coach_id:currentCoachId,
+          slot_date:`${y}-${m}-${d}`,
+          slot_hour:hour,
+          status:'available',
+          lesson_type:'indoor',
+          store_id:String(currentStoreId),
+          store_key:currentStore
+        });
+      });
+    }else{
+      // ラウンド/同伴/コンペ/独自は日付単位(YYYY-MM-DD形式)
+      Object.entries(typeData).forEach(([dateKey,val])=>{
+        if(val!=='available')return;
+        records.push({
+          coach_id:currentCoachId,
+          slot_date:dateKey,
+          slot_hour:null,
+          status:'available',
+          lesson_type:type,
+          store_id:String(currentStoreId),
+          store_key:currentStore
+        });
+      });
+    }
+
+    if(records.length>0){
+      const {error:insErr}=await sb.from('schedules').insert(records);
+      if(insErr){
+        console.error('スケジュール保存エラー',insErr);
+        alert('❌ スケジュール保存に失敗しました\n'+insErr.message);
+        return;
+      }
+    }
+
+    const typeNames={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
+    alert('✅ '+typeNames[type]+'のスケジュールを保存しました!\n('+records.length+'枠)');
+    showMsg(typeNames[type]+'のスケジュールを保存しました!('+records.length+'枠)','success');
+  }catch(e){
+    console.error('saveSchedule例外',e);
+    alert('❌ 保存中にエラーが発生しました\n'+e.message);
+  }
+}
+
+/* ===== スケジュール読込(DB) ===== */
+async function loadSchedules(){
+  if(!currentCoachId||!currentStore)return;
+  try{
+    const {data,error}=await sb.from('schedules').select('*')
+      .eq('coach_id',currentCoachId)
+      .eq('store_key',currentStore);
+    if(error){console.error('スケジュール読込エラー',error);return;}
+    // 初期化
+    scheduleByType={indoor:{},round:{},accompany:{},comp:{},custom:{}};
+    if(data&&data.length>0){
+      data.forEach(row=>{
+        const type=row.lesson_type;
+        if(!scheduleByType[type])return;
+        if(type==='indoor'){
+          // インドアは時間単位:絶対日付→相対形式(weekOffset-hour-day)に変換
+          if(!row.slot_date||row.slot_hour==null)return;
+          const slotDate=new Date(row.slot_date+'T00:00:00');
+          const today=new Date();
+          today.setHours(0,0,0,0);
+          const todayDow=today.getDay();
+          const baseSunday=new Date(today);
+          baseSunday.setDate(today.getDate()-todayDow);
+          const diffDays=Math.round((slotDate-baseSunday)/(24*60*60*1000));
+          const wOff=Math.floor(diffDays/7);
+          const dayIdx=diffDays-wOff*7;
+          const key=`${wOff}-${row.slot_hour}-${dayIdx}`;
+          scheduleByType[type][key]=row.status==='booked'?'booked':'available';
+        }else{
+          // ラウンド系は日付単位:slot_dateをそのままキーに
+          if(!row.slot_date)return;
+          scheduleByType[type][row.slot_date]=row.status==='booked'?'booked':'available';
+        }
+      });
+    }
+    // 現在表示中の種別のscheduleDataを更新
+    syncScheduleDataFromType();
+  }catch(e){console.error('loadSchedules例外',e);}
+}
+
+function syncScheduleDataFromType(){
+  scheduleData=scheduleByType[currentLessonType]||{};
+}
+
+/* ===== レッスン種別切替 ===== */
+function switchLessonType(type){
+  // 現在のscheduleDataをscheduleByTypeに退避
+  scheduleByType[currentLessonType]=scheduleData;
+  currentLessonType=type;
+  // 切替先のデータをロード
+  scheduleData=scheduleByType[type]||{};
+  // タブのactiveクラス更新
+  document.querySelectorAll('.lesson-type-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.type===type);
+  });
+  // 説明文更新
+  const noteEl=document.getElementById('lesson-type-note');
+  const indoorModeBtns=document.getElementById('indoor-mode-btns');
+  const viewWeek=document.getElementById('view-week');
+  const viewMonth=document.getElementById('view-month');
+  if(type==='indoor'){
+    if(noteEl)noteEl.innerHTML='🏌 インドアレッスンは店舗営業時間内のみ受付可能(時間単位設定)';
+    if(indoorModeBtns)indoorModeBtns.style.display='flex';
+    // 週間モードに戻す
+    document.getElementById('mode-week').classList.add('active');
+    document.getElementById('mode-month').classList.remove('active');
+    if(viewWeek)viewWeek.style.display='block';
+    if(viewMonth)viewMonth.style.display='none';
+    buildWeekGrid();
+  }else{
+    const labels={round:'⛳ ラウンドレッスン',accompany:'🚗 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 独自プラン'};
+    if(noteEl)noteEl.innerHTML=labels[type]+':対応可能な日付をタップしてください(終日対応)。<br>※ この日に他種別の予約が入った場合は自動的に受付終了になります。';
+    // ラウンド系は月間カレンダーのみ表示
+    if(indoorModeBtns)indoorModeBtns.style.display='none';
+    if(viewWeek)viewWeek.style.display='none';
+    if(viewMonth)viewMonth.style.display='block';
+    buildMonthGrid();
+  }
+}
 let currentCoachId=null;
 let currentAuthId=null;
 let currentCoachEmail=null;
@@ -782,6 +963,11 @@ let currentCoachName=null;
 let currentStore=null;
 let currentStoreId=null;
 let scheduleData={};
+// レッスン種別ごとのスケジュールデータ
+// indoor: {weekOffset-hour-day: 'available'/'booked'} 形式
+// round/accompany/comp/custom: {YYYY-MM-DD: 'available'/'booked'} 形式
+let scheduleByType={indoor:{},round:{},accompany:{},comp:{},custom:{}};
+let currentLessonType='indoor';
 let weekOffset=0;
 let currentMonth=new Date();
 let cancelTargetItem=null;
@@ -1062,7 +1248,9 @@ async function selectStore(key){
 
   await loadPrices();
   recalcAllPrices();
+  await loadSchedules();
   buildWeekGrid();
+  buildMonthGrid();
 }
 function showStoreSelect(){
   buildStoreOptions();
@@ -1615,7 +1803,7 @@ async function buildWeekGrid(){
 }
 function moveWeek(dir){weekOffset+=dir;buildWeekGrid();}
 
-/* ===== 月間スケジュール ===== */
+/* ===== 月間スケジュール(ラウンド系日付単位) ===== */
 function buildMonthGrid(){
   const days=['日','月','火','水','木','金','土'];
   const hdr=document.getElementById('month-header');
@@ -1625,19 +1813,54 @@ function buildMonthGrid(){
   const year=currentMonth.getFullYear(),month=currentMonth.getMonth();
   document.getElementById('month-label').textContent=year+'年'+(month+1)+'月';
   const first=new Date(year,month,1),last=new Date(year,month+1,0),today=new Date();
+  today.setHours(0,0,0,0);
   const grid=document.getElementById('month-grid');grid.innerHTML='';
   for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='month-cell other-month';grid.appendChild(c);}
   for(let d=1;d<=last.getDate();d++){
     const cell=document.createElement('div');
-    const dateKey=year+'-'+(month+1)+'-'+d;
-    const isToday=new Date(year,month,d).toDateString()===today.toDateString();
-    cell.className='month-cell'+(isToday?' today':'');
-    if(scheduleData['m-'+dateKey])cell.classList.add('has-slots');
+    const y=year;
+    const m=String(month+1).padStart(2,'0');
+    const dd=String(d).padStart(2,'0');
+    const dateKey=`${y}-${m}-${dd}`;
+    const cellDate=new Date(year,month,d);
+    const isToday=cellDate.toDateString()===today.toDateString();
+    const isPast=cellDate<today;
+    cell.className='month-cell'+(isToday?' today':'')+(isPast?' other-month':'');
+    // currentLessonType に応じて該当タイプのデータをチェック
+    if(currentLessonType==='indoor'){
+      // インドアの月間表示は読み取り専用(週間で設定)
+      if(scheduleData['m-'+dateKey])cell.classList.add('has-slots');
+    }else{
+      // ラウンド系:日付キーで管理
+      if(scheduleByType[currentLessonType]&&scheduleByType[currentLessonType][dateKey]==='available'){
+        cell.classList.add('has-slots');
+      }
+      if(scheduleByType[currentLessonType]&&scheduleByType[currentLessonType][dateKey]==='booked'){
+        cell.style.background='#fff3cd';
+        cell.style.borderColor='var(--gold)';
+      }
+    }
     cell.innerHTML=`<div class="month-date">${d}</div>`;
-    cell.onclick=function(){
-      if(cell.classList.contains('has-slots')){cell.classList.remove('has-slots');delete scheduleData['m-'+dateKey];}
-      else{cell.classList.add('has-slots');scheduleData['m-'+dateKey]='available';}
-    };
+    if(!isPast&&currentLessonType!=='indoor'){
+      // ラウンド系のみクリック可能(インドアは週間で設定)
+      cell.onclick=function(){
+        if(cell.style.background==='rgb(255, 243, 205)')return;// 予約済みは触れない
+        if(!scheduleByType[currentLessonType])scheduleByType[currentLessonType]={};
+        if(cell.classList.contains('has-slots')){
+          cell.classList.remove('has-slots');
+          delete scheduleByType[currentLessonType][dateKey];
+          scheduleData=scheduleByType[currentLessonType];
+        }else{
+          cell.classList.add('has-slots');
+          scheduleByType[currentLessonType][dateKey]='available';
+          scheduleData=scheduleByType[currentLessonType];
+        }
+      };
+    }else if(currentLessonType==='indoor'&&!isPast){
+      // インドアの月間表示でクリックされた場合は何もしない(週間で設定するため)
+      cell.style.cursor='default';
+      cell.onclick=function(){};
+    }
     grid.appendChild(cell);
   }
 }
