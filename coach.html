@@ -580,6 +580,30 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="card">
         <div class="card-title">スケジュール管理</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
+
+        <!-- 段階1:ステップ式選択UI(追加・既存機能には触れない) -->
+        <div id="step1-section" style="background:#f7faf8;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--border);">
+          <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">📋 ステップ1:何を登録しますか?</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="step1-indoor" onclick="selectStep1('indoor')" style="flex:1;min-width:140px;padding:14px;border:2px solid var(--g);background:var(--gl);color:var(--gd);border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">🏌 インドアレッスン</button>
+            <button id="step1-round" onclick="selectStep1('round-group')" style="flex:1;min-width:140px;padding:14px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:12px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">⛳ ラウンド系</button>
+          </div>
+        </div>
+
+        <!-- 段階2:ラウンド系のサブ選択(初期非表示) -->
+        <div id="step2-section" style="display:none;background:#fff8e1;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--gold);">
+          <div style="font-size:12px;font-weight:700;color:#633806;margin-bottom:8px;">📋 ステップ2:どの種類のラウンド系ですか?</div>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+            <button id="step2-round" onclick="selectStep2('round')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">⛳ ラウンドレッスン</button>
+            <button id="step2-accompany" onclick="selectStep2('accompany')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">🚗 同伴ラウンド</button>
+            <button id="step2-comp" onclick="selectStep2('comp')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">🏆 コンペ参加</button>
+            <button id="step2-custom" onclick="selectStep2('custom')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">💡 独自プラン</button>
+          </div>
+        </div>
+
+        <!-- 選択状況の表示(初期非表示) -->
+        <div id="step-status" style="display:none;font-size:11px;color:var(--gd);background:var(--gl);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-weight:700;"></div>
+
         <div class="schedule-mode-btns">
           <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
           <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
@@ -1454,6 +1478,81 @@ function switchScheduleMode(mode){
   document.getElementById('mode-month').classList.toggle('active',mode==='month');
   document.getElementById('view-week').style.display=mode==='week'?'block':'none';
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
+}
+
+/* ===== 段階1:ステップ式選択UI(視覚的な反応のみ・既存機能には影響なし) ===== */
+function selectStep1(type){
+  const btnIndoor=document.getElementById('step1-indoor');
+  const btnRound=document.getElementById('step1-round');
+  const step2=document.getElementById('step2-section');
+  const status=document.getElementById('step-status');
+
+  if(type==='indoor'){
+    // インドアボタンをアクティブ化
+    btnIndoor.style.background='var(--gl)';
+    btnIndoor.style.borderColor='var(--g)';
+    btnIndoor.style.color='var(--gd)';
+    btnIndoor.style.borderWidth='2px';
+    btnIndoor.style.fontWeight='700';
+    // ラウンド系ボタンを非アクティブ化
+    btnRound.style.background='#fff';
+    btnRound.style.borderColor='var(--border)';
+    btnRound.style.color='var(--muted)';
+    btnRound.style.borderWidth='1px';
+    btnRound.style.fontWeight='500';
+    // ステップ2を非表示
+    step2.style.display='none';
+    // ステータス表示
+    status.style.display='block';
+    status.innerHTML='✓ 選択中:🏌 インドアレッスン';
+    status.style.background='var(--gl)';
+    status.style.color='var(--gd)';
+    // 既存の週間/月間切替はそのまま使用可能
+  }else if(type==='round-group'){
+    // ラウンド系ボタンをアクティブ化
+    btnRound.style.background='#fff8e1';
+    btnRound.style.borderColor='var(--gold)';
+    btnRound.style.color='#633806';
+    btnRound.style.borderWidth='2px';
+    btnRound.style.fontWeight='700';
+    // インドアボタンを非アクティブ化
+    btnIndoor.style.background='#fff';
+    btnIndoor.style.borderColor='var(--border)';
+    btnIndoor.style.color='var(--muted)';
+    btnIndoor.style.borderWidth='1px';
+    btnIndoor.style.fontWeight='500';
+    // ステップ2を表示
+    step2.style.display='block';
+    // ステータス表示
+    status.style.display='block';
+    status.innerHTML='⛳ ラウンド系を選択中 → ステップ2で種類を選んでください';
+    status.style.background='#fff8e1';
+    status.style.color='#633806';
+  }
+}
+
+function selectStep2(type){
+  // ステップ2の全ボタンをリセット
+  ['round','accompany','comp','custom'].forEach(t=>{
+    const btn=document.getElementById('step2-'+t);
+    btn.style.background='#fff';
+    btn.style.borderColor='var(--border)';
+    btn.style.color='var(--muted)';
+    btn.style.fontWeight='500';
+  });
+  // 選択したボタンをアクティブ化
+  const selected=document.getElementById('step2-'+type);
+  selected.style.background='var(--gl)';
+  selected.style.borderColor='var(--g)';
+  selected.style.color='var(--gd)';
+  selected.style.fontWeight='700';
+  // ステータス更新
+  const typeNames={round:'⛳ ラウンドレッスン',accompany:'🚗 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 独自プラン'};
+  const status=document.getElementById('step-status');
+  status.style.display='block';
+  status.innerHTML='✓ 選択中:'+typeNames[type];
+  status.style.background='var(--gl)';
+  status.style.color='var(--gd)';
 }
 
 /* ===== 週間スケジュール(店舗営業時間+祝日連動版) ===== */
