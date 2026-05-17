@@ -1780,11 +1780,20 @@ async function buildWeekGrid(){
       if(isClosed){
         slot.className='week-slot closed';
       }else{
-        slot.className='week-slot'+(scheduleData[key]==='available'?' available':scheduleData[key]==='booked'?' booked':'');
+        // インドアモード時はscheduleByType.indoorから状態を取得
+        const currentState=scheduleByType.indoor[key]||scheduleData[key];
+        slot.className='week-slot'+(currentState==='available'?' available':currentState==='booked'?' booked':'');
         slot.onclick=function(){
           if(this.classList.contains('booked'))return;
-          if(this.classList.contains('available')){this.classList.remove('available');delete scheduleData[key];}
-          else{this.classList.add('available');scheduleData[key]='available';}
+          if(this.classList.contains('available')){
+            this.classList.remove('available');
+            delete scheduleData[key];
+            delete scheduleByType.indoor[key];
+          }else{
+            this.classList.add('available');
+            scheduleData[key]='available';
+            scheduleByType.indoor[key]='available';
+          }
         };
       }
       grid.appendChild(slot);
