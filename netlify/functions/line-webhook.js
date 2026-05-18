@@ -1,11 +1,16 @@
 // netlify/functions/line-webhook.js
 // LINE公式アカウント「MyCoach」からのWebhookを受け取る
 //
-// 主な役割：
-//   1. 署名検証（セキュリティ）
+// 主な役割:
+//   1. 署名検証(セキュリティ)
 //   2. 友だち追加/解除イベントの処理
-//   3. postback（承認／却下ボタン押下）の処理
-//   4. message（却下理由入力・連携コード入力）の処理
+//   3. postback(承認/却下ボタン押下)の処理
+//   4. message(却下理由入力・連携コード入力)の処理
+//
+// 【2026/5/18 更新】Task G STEP 4b
+//   - STORE_KEY_TO_NAME を kyoto → tozuike に修正
+//   - LESSON_TYPE_LABEL に custom 追加
+//   - handleApprove に店舗向け緑承認カード送信処理を追加
 
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
@@ -17,6 +22,8 @@ const {
   buildRejectionCompleteText,
   buildRejectionNoticeText,
   buildApprovalCompleteText,
+  buildStoreApprovedFlex,
+  calcAge,
   formatDateJa,
   REJECTION_REASON_MAP,
 } = require('./line-notify');
@@ -25,7 +32,7 @@ const {
 // 店舗・レッスン種別マッピング
 // ============================================
 const STORE_KEY_TO_NAME = {
-  kyoto: 'Golf Create 戸津池店',
+  tozuike: 'Golf Create 戸津池店',
 };
 
 const LESSON_TYPE_LABEL = {
@@ -33,10 +40,11 @@ const LESSON_TYPE_LABEL = {
   round: 'ラウンドレッスン',
   accompany: '同伴ラウンド',
   comp: 'コンペ参加',
+  custom: 'コーチ独自プラン',
 };
 
 // ============================================
-// ベースURL（お客様への決済リンク生成に使用）
+// ベースURL(お客様への決済リンク生成に使用)
 // ============================================
 const BASE_URL = 'https://soft-speculoos-5ef188.netlify.app';
 
@@ -81,7 +89,7 @@ exports.handler = async (event) => {
     const body = JSON.parse(rawBody);
     const events = body.events || [];
 
-    // Supabase クライアント（Service Role Key使用）
+    // Supabase クライアント(Service Role Key使用)
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -112,12 +120,12 @@ exports.handler = async (event) => {
           .eq('line_user_id', lineUserId);
       }
 
-      // ----- 3. postback（承認／却下ボタン押下） -----
+      // ----- 3. postback(承認/却下ボタン押下) -----
       if (ev.type === 'postback') {
         await handlePostback({ ev, lineUserId, supabase });
       }
 
-      // ----- 4. message（却下理由入力 or 通常メッセージ） -----
+      // ----- 4. message(却下理由入力 or 通常メッセージ) -----
       if (ev.type === 'message' && ev.message?.type === 'text') {
         await handleTextMessage({ ev, lineUserId, supabase });
       }
@@ -137,7 +145,7 @@ exports.handler = async (event) => {
 };
 
 // ============================================
-// postback処理（承認／却下／理由選択）
+// postback処理(承認/却下/理由選択)
 // ============================================
 async function handlePostback({ ev, lineUserId, supabase }) {
   const data = ev.postback?.data || '';
@@ -177,6 +185,7 @@ async function handlePostback({ ev, lineUserId, supabase }) {
 
 // ============================================
 // 承認処理
+// 【2026/5/18 更新】Task G STEP 4b - 店舗向け緑承認カード送信処理を追加
 // ============================================
 async function handleApprove({ bookingId, lineUserId, supabase }) {
   const { error: updateErr } = await supabase
@@ -207,41 +216,70 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     return;
   }
 
+  // コーチ情報取得
   const { data: coach } = await supabase
     .from('coaches')
     .select('id, name, line_user_id')
     .eq('id', booking.coach_id)
     .maybeSingle();
 
+  // 【2026/5/18 拡張】customers から furigana/age/birth_date/is_approved も取得
   const customerKey = booking.customer_id || booking.customer_user_id;
   let customer = null;
   if (customerKey) {
     const { data } = await supabase
       .from('customers')
-      .select('id, name, line_user_id')
+      .select('id, name, furigana, age, birth_date, is_approved, line_user_id')
       .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
       .maybeSingle();
     customer = data;
   }
 
+  // 【2026/5/18 新規】店舗情報を取得
+  let store = null;
+  if (booking.store_key) {
+    const { data, error: storeErr } = await supabase
+      .from('stores')
+      .select('id, name, line_user_id')
+      .eq('store_key', booking.store_key)
+      .maybeSingle();
+    if (storeErr) {
+      console.error('[approve] store fetch error:', storeErr);
+    } else {
+      store = data;
+    }
+  }
+
+  // 共通パラメータ準備
   const coachName = coach?.name || booking.coach_name || 'コーチ';
   const customerName = customer?.name || booking.customer_name || 'お客様';
+  const customerFurigana = customer?.furigana || null;
+  const isApproved = !!customer?.is_approved;
   const dateStr = formatDateJa(booking.booking_date);
   const timeStr = booking.booking_time ? booking.booking_time.substring(0, 5) : '';
   const amount = booking.total_price || 0;
   const paymentUrl = `${BASE_URL}/customer.html?action=pay&booking_id=${bookingId}`;
 
-  // 【2026/4/24 追加】レッスン種別・時間を取得（森下様ご指摘対応）
+  // 【2026/4/24 追加】レッスン種別・時間を取得(森下様ご指摘対応)
   const lessonType = LESSON_TYPE_LABEL[booking.lesson_type] || booking.lesson_type || '—';
   const minutes = booking.minutes || null;
+  const storeName = store?.name || STORE_KEY_TO_NAME[booking.store_key] || booking.store_key || '—';
+
+  // 年齢計算
+  let customerAge = null;
+  if (customer?.birth_date) {
+    customerAge = calcAge(customer.birth_date);
+  } else if (customer?.age) {
+    customerAge = customer.age;
+  }
 
   // お客様に決済案内送信
   if (customer?.line_user_id) {
     const customerMsg = buildApprovalCompleteText({
       customerName,
       coachName,
-      lessonType,   // ★追加
-      minutes,      // ★追加
+      lessonType,
+      minutes,
       dateStr,
       timeStr,
       amount,
@@ -260,6 +298,33 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     `${customerName}様にお支払い案内をLINEでお送りいたしました。\n\n` +
     `— MyCoach`
   );
+
+  // 【2026/5/18 新規】店舗のLINEに緑承認カードを送信
+  if (store?.line_user_id) {
+    const storeFlex = buildStoreApprovedFlex({
+      customerName,
+      customerFurigana,
+      customerAge,
+      isApproved,
+      coachName,
+      lessonType,
+      dateStr,
+      timeStr,
+      storeName,
+      amount,
+    });
+
+    const storeAltText = `✅ コーチが承認しました - ${customerName}様 / ${dateStr}`;
+
+    const storePushResult = await pushFlexMessage(
+      store.line_user_id,
+      storeAltText,
+      storeFlex
+    );
+    console.log('[approve] store flex push:', storePushResult);
+  } else {
+    console.warn('[approve] store has no line_user_id');
+  }
 }
 
 // ============================================
