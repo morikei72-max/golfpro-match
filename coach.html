@@ -1008,7 +1008,7 @@ const STRIPE_FEE_PCT=3.6;
 
 function saveInvoice(){alert('✅ インボイス情報を保存しました!');showMsg('インボイス情報を保存しました!','success');}
 
-/* ===== 段階2:スケジュールDB保存 ===== */
+/* ===== 段階2:スケジュールDB保存(堅牢版) ===== */
 async function saveSchedule(){
   if(!currentCoachId){alert('❌ コーチ情報が取得できません。プロフィールを保存してください。');return;}
   if(!currentStoreId){alert('❌ 店舗が選択されていません。');return;}
@@ -1018,17 +1018,25 @@ async function saveSchedule(){
 
   try{
     // 1. 既存の自分のスケジュールを全削除(クリーンインサート方式)
-    const {error:delErr}=await sb.from('schedules').delete().eq('coach_id',currentCoachId);
+    // status='available'のみ削除(予約済みは触らない)
+    const {error:delErr}=await sb
+      .from('schedules')
+      .delete()
+      .eq('coach_id',currentCoachId)
+      .eq('status','available');
     if(delErr){
       console.error('既存スケジュール削除エラー',delErr);
       throw new Error('既存データの削除に失敗:'+delErr.message);
     }
 
-    // 2. 新しいデータを組み立て
-    const records=[];
+    // 削除完了を確実に待つため500ms待機(Supabaseの整合性確保のため)
+    await new Promise(r=>setTimeout(r,500));
+
+    // 2. 新しいデータを組み立て(重複は自動で除去)
+    const recordMap=new Map();
     Object.keys(scheduleData).forEach(key=>{
       if(scheduleData[key]!=='available')return;
-      // インドア:'i-Y-M-D-H' → INSERT
+      // インドア:'i-Y-M-D-H'
       if(key.startsWith('i-')){
         const parts=key.substring(2).split('-');
         if(parts.length!==4)return;
@@ -1038,7 +1046,9 @@ async function saveSchedule(){
         const h=parseInt(parts[3]);
         if(isNaN(y)||isNaN(m)||isNaN(d)||isNaN(h))return;
         const slotDate=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-        records.push({
+        const dedupKey='i|'+slotDate+'|'+h;
+        if(recordMap.has(dedupKey))return;
+        recordMap.set(dedupKey,{
           coach_id:currentCoachId,
           slot_date:slotDate,
           slot_hour:h,
@@ -1048,7 +1058,7 @@ async function saveSchedule(){
           store_key:currentStore||null
         });
       }
-      // ラウンド系:'r-Y-M-D' → INSERT(slot_hour=null)
+      // ラウンド系:'r-Y-M-D'
       else if(key.startsWith('r-')){
         const parts=key.substring(2).split('-');
         if(parts.length!==3)return;
@@ -1057,7 +1067,9 @@ async function saveSchedule(){
         const d=parseInt(parts[2]);
         if(isNaN(y)||isNaN(m)||isNaN(d))return;
         const slotDate=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
-        records.push({
+        const dedupKey='r|'+slotDate;
+        if(recordMap.has(dedupKey))return;
+        recordMap.set(dedupKey,{
           coach_id:currentCoachId,
           slot_date:slotDate,
           slot_hour:null,
@@ -1069,16 +1081,25 @@ async function saveSchedule(){
       }
     });
 
+    const records=Array.from(recordMap.values());
+
     // 3. INSERT(レコードがなければ削除のみで終わり)
     if(records.length>0){
-      const {error:insErr}=await sb.from('schedules').insert(records);
-      if(insErr){
-        console.error('スケジュール保存エラー',insErr);
-        throw new Error('保存に失敗:'+insErr.message);
+      // Supabaseの整合性のため、バッチサイズを50に分割して挿入
+      const BATCH=50;
+      for(let i=0;i<records.length;i+=BATCH){
+        const batch=records.slice(i,i+BATCH);
+        const {error:insErr}=await sb.from('schedules').insert(batch);
+        if(insErr){
+          console.error('スケジュール保存エラー',insErr);
+          throw new Error('保存に失敗:'+insErr.message);
+        }
       }
     }
 
-    alert('✅ スケジュールを保存しました!\n登録枠数:インドア'+records.filter(r=>r.lesson_type==='indoor').length+'枠 / ラウンド'+records.filter(r=>r.lesson_type==='round').length+'日');
+    const indoorCnt=records.filter(r=>r.lesson_type==='indoor').length;
+    const roundCnt=records.filter(r=>r.lesson_type==='round').length;
+    alert('✅ スケジュールを保存しました!\n登録枠数:インドア'+indoorCnt+'枠 / ラウンド'+roundCnt+'日');
     showMsg('スケジュールを保存しました!','success');
 
   }catch(e){
