@@ -347,6 +347,70 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .step2-btn{padding:12px;border-radius:10px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;}
 .step2-btn.inactive{border:1px solid var(--border);background:#fff;color:var(--muted);font-weight:500;}
 .step2-btn.active{border:2px solid var(--g);background:var(--gl);color:var(--gd);font-weight:700;}
+
+/* ===== 段階1:見た目改善版スケジュール ===== */
+.legend-box{background:#f7faf8;border-radius:8px;padding:8px 10px;margin-bottom:10px;}
+.legend-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.legend-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.legend-chip{display:flex;align-items:center;gap:4px;}
+.legend-swatch{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+.legend-swatch.indoor{background:var(--gl);border:0.5px solid var(--g);}
+.legend-swatch.round{background:#FAEEDA;border:0.5px solid var(--gold);}
+.legend-swatch.both{background:linear-gradient(135deg,var(--gl) 50%,#FAEEDA 50%);border:0.5px solid #888;}
+.legend-swatch.closed{background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 2px,#9a9a9a 2px,#9a9a9a 4px);border:0.5px solid #888;}
+.legend-text{font-size:10px;}
+.legend-text.indoor{color:var(--gd);}
+.legend-text.round{color:#633806;}
+
+/* 週間ラウンド帯 */
+.round-band{background:#FAEEDA;border-radius:6px;padding:4px 6px;margin-bottom:4px;display:grid;grid-template-columns:40px repeat(7,1fr);gap:2px;align-items:center;}
+.round-band-label{font-size:9px;color:#633806;font-weight:700;text-align:center;}
+.round-cell{height:18px;border-radius:3px;background:#fff;border:0.5px solid #ddd;cursor:pointer;}
+.round-cell.round-on{background:#FAEEDA;border-color:var(--gold);}
+.round-cell.round-on:hover{background:#FAC775;}
+.round-cell.round-closed{background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 2px,#9a9a9a 2px,#9a9a9a 4px);border-color:#888;cursor:not-allowed;}
+
+/* 週間サマリー */
+.week-summary{background:#f7faf8;border-radius:8px;padding:10px 12px;margin-top:10px;}
+.week-summary-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.week-summary-grid{display:flex;gap:8px;}
+.week-summary-card{flex:1;border-radius:6px;padding:8px;text-align:center;}
+.week-summary-card.indoor{background:var(--gl);}
+.week-summary-card.round{background:#FAEEDA;}
+.week-summary-lbl{font-size:9px;}
+.week-summary-lbl.indoor{color:var(--gd);}
+.week-summary-lbl.round{color:#633806;}
+.week-summary-num{font-size:16px;font-weight:900;font-family:'Montserrat',sans-serif;}
+.week-summary-num.indoor{color:var(--gd);}
+.week-summary-num.round{color:#633806;}
+
+/* 月間表示の改修 */
+.month-cell-v2{min-height:52px;border-radius:6px;border:0.5px solid var(--border);padding:3px;background:#fff;cursor:pointer;display:flex;flex-direction:column;}
+.month-cell-v2.other-month{background:#f7faf8;opacity:0.4;cursor:default;}
+.month-cell-v2.today{border:2px solid var(--g);}
+.month-cell-v2.indoor-only{background:var(--gl);border-color:var(--g);}
+.month-cell-v2.round-only{background:#FAEEDA;border-color:var(--gold);}
+.month-cell-v2.both{background:linear-gradient(135deg,var(--gl) 50%,#FAEEDA 50%);border-color:#888;}
+.month-cell-v2 .mc-date{font-size:11px;font-weight:700;line-height:1.1;}
+.month-cell-v2 .mc-date.sun{color:var(--red);}
+.month-cell-v2 .mc-date.hol{color:var(--red);}
+.month-cell-v2 .mc-tags{font-size:8px;margin-top:2px;line-height:1.2;}
+.month-cell-v2 .mc-tag-indoor{color:var(--gd);}
+.month-cell-v2 .mc-tag-round{color:#633806;}
+
+/* 月間サマリー */
+.month-summary{background:#f7faf8;border-radius:8px;padding:10px 12px;margin-top:10px;}
+.month-summary-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.month-summary-grid{display:flex;gap:8px;}
+.month-summary-card{flex:1;border-radius:6px;padding:8px;text-align:center;}
+.month-summary-card.indoor{background:var(--gl);}
+.month-summary-card.round{background:#FAEEDA;}
+.month-summary-lbl{font-size:9px;}
+.month-summary-lbl.indoor{color:var(--gd);}
+.month-summary-lbl.round{color:#633806;}
+.month-summary-num{font-size:16px;font-weight:900;font-family:'Montserrat',sans-serif;}
+.month-summary-num.indoor{color:var(--gd);}
+.month-summary-num.round{color:#633806;}
 </style>
 </head>
 <body>
@@ -620,6 +684,16 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           <button class="mode-btn locked" id="mode-month" onclick="switchScheduleMode('month')">月間 <span class="mode-btn-lock">🔒</span></button>
         </div>
         <div id="view-week">
+          <!-- 凡例 -->
+          <div class="legend-box">
+            <div class="legend-title">📊 凡例</div>
+            <div class="legend-row">
+              <div class="legend-chip"><div class="legend-swatch indoor"></div><span class="legend-text indoor">🏌 インドア空き</span></div>
+              <div class="legend-chip"><div class="legend-swatch round"></div><span class="legend-text round">⛳ ラウンド対応日</span></div>
+              <div class="legend-chip"><div class="legend-swatch closed"></div><span class="legend-text">営業時間外</span></div>
+            </div>
+          </div>
+
           <div class="week-nav">
             <button class="week-nav-btn" onclick="moveWeek(-1)">‹</button>
             <div class="week-nav-label" id="week-label"></div>
@@ -627,18 +701,40 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           </div>
           <div id="week-wrap" style="touch-action:pan-y;">
             <div class="week-header-row" id="week-header"></div>
+            <!-- ラウンド帯(週の上部) -->
+            <div class="round-band" id="week-round-band"></div>
             <div style="max-height:380px;overflow-y:auto;">
               <div class="week-grid" id="week-grid"></div>
             </div>
           </div>
-          <div class="schedule-legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb"></div>予約済み</div>
-            <div class="legend-item"><div class="legend-dot" style="background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 2px,#9a9a9a 2px,#9a9a9a 4px);border:1px solid #888"></div>営業時間外</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#f7faf8;border:1px solid var(--border)"></div>未設定</div>
+
+          <!-- 週間サマリー -->
+          <div class="week-summary">
+            <div class="week-summary-title">📊 今週の登録状況</div>
+            <div class="week-summary-grid">
+              <div class="week-summary-card indoor">
+                <div class="week-summary-lbl indoor">🏌 インドア</div>
+                <div class="week-summary-num indoor" id="week-sum-indoor">0枠</div>
+              </div>
+              <div class="week-summary-card round">
+                <div class="week-summary-lbl round">⛳ ラウンド</div>
+                <div class="week-summary-num round" id="week-sum-round">0日</div>
+              </div>
+            </div>
           </div>
         </div>
+
         <div id="view-month" style="display:none">
+          <!-- 凡例 -->
+          <div class="legend-box">
+            <div class="legend-title">📊 凡例</div>
+            <div class="legend-row">
+              <div class="legend-chip"><div class="legend-swatch indoor"></div><span class="legend-text indoor">🏌 インドアのみ</span></div>
+              <div class="legend-chip"><div class="legend-swatch round"></div><span class="legend-text round">⛳ ラウンドのみ</span></div>
+              <div class="legend-chip"><div class="legend-swatch both"></div><span class="legend-text">両方登録</span></div>
+            </div>
+          </div>
+
           <div class="month-nav">
             <button class="month-nav-btn" onclick="moveMonth(-1)">‹</button>
             <div class="month-nav-label" id="month-label"></div>
@@ -646,9 +742,20 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           </div>
           <div class="month-grid" id="month-header"></div>
           <div class="month-grid" id="month-grid" style="margin-top:4px;"></div>
-          <div class="schedule-legend" style="margin-top:10px;">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--gl);border:1px solid var(--g)"></div>空き設定済み</div>
-            <div class="legend-item"><div class="legend-dot" style="background:#fff3cd;border:1px solid var(--gold)"></div>予約あり</div>
+
+          <!-- 月間サマリー -->
+          <div class="month-summary">
+            <div class="month-summary-title">📊 今月の登録状況</div>
+            <div class="month-summary-grid">
+              <div class="month-summary-card indoor">
+                <div class="month-summary-lbl indoor">🏌 インドア</div>
+                <div class="month-summary-num indoor" id="month-sum-indoor">0日 / 0枠</div>
+              </div>
+              <div class="month-summary-card round">
+                <div class="month-summary-lbl round">⛳ ラウンド</div>
+                <div class="month-summary-num round" id="month-sum-round">0日</div>
+              </div>
+            </div>
           </div>
         </div>
         <button class="save-btn" style="margin-top:12px" onclick="saveSchedule()">スケジュールを保存</button>
@@ -1722,27 +1829,68 @@ async function buildWeekGrid(){
   }
   if(!hasAnyOpen||globalMinH>=globalMaxH){globalMinH=8;globalMaxH=20;}
 
+  // ===== ラウンド帯(週の上部)を描画 =====
+  const roundBand=document.getElementById('week-round-band');
+  if(roundBand){
+    let bandHtml='<div class="round-band-label">⛳</div>';
+    for(let d=0;d<7;d++){
+      const date=dates[d];
+      const dateStr=date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+      const roundKey='r-'+dateStr;
+      const dh=dayHours[d];
+      let cellCls='round-cell';
+      if(dh.closed)cellCls+=' round-closed';
+      else if(scheduleData[roundKey])cellCls+=' round-on';
+      bandHtml+=`<div class="${cellCls}" data-round-date="${dateStr}" data-closed="${dh.closed?'1':'0'}"></div>`;
+    }
+    roundBand.innerHTML=bandHtml;
+    // クリックイベント
+    roundBand.querySelectorAll('.round-cell').forEach(cell=>{
+      cell.onclick=function(){
+        if(this.dataset.closed==='1')return;
+        const ds=this.dataset.roundDate;
+        const k='r-'+ds;
+        if(scheduleData[k]){delete scheduleData[k];this.classList.remove('round-on');}
+        else{scheduleData[k]='available';this.classList.add('round-on');}
+        updateWeekSummary(dates);
+        // 月間表示も同期更新
+        buildMonthGrid();
+      };
+    });
+  }
+
+  // ===== インドア時間別グリッドを描画 =====
   const grid=document.getElementById('week-grid');grid.innerHTML='';
   for(let h=globalMinH;h<globalMaxH;h++){
     const tl=document.createElement('div');tl.className='week-time-label';tl.textContent=h+':00';grid.appendChild(tl);
     for(let d=0;d<7;d++){
-      const key=`${weekOffset}-${h}-${d}`;
+      const date=dates[d];
+      const dateStr=date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+      const indoorKey='i-'+dateStr+'-'+h;
       const slot=document.createElement('div');
       const dh=dayHours[d];
       const isClosed=dh.closed||h<dh.openH||(h+1)>dh.closeH;
       if(isClosed){
         slot.className='week-slot closed';
       }else{
-        slot.className='week-slot'+(scheduleData[key]==='available'?' available':scheduleData[key]==='booked'?' booked':'');
+        slot.className='week-slot'+(scheduleData[indoorKey]==='available'?' available':scheduleData[indoorKey]==='booked'?' booked':'');
+        slot.dataset.indoorKey=indoorKey;
         slot.onclick=function(){
           if(this.classList.contains('booked'))return;
-          if(this.classList.contains('available')){this.classList.remove('available');delete scheduleData[key];}
-          else{this.classList.add('available');scheduleData[key]='available';}
+          if(this.classList.contains('available')){this.classList.remove('available');delete scheduleData[indoorKey];}
+          else{this.classList.add('available');scheduleData[indoorKey]='available';}
+          updateWeekSummary(dates);
+          // 月間表示も同期更新
+          buildMonthGrid();
         };
       }
       grid.appendChild(slot);
     }
   }
+
+  // 週間サマリー更新
+  updateWeekSummary(dates);
+
   const wrap=document.getElementById('week-wrap');
   if(wrap&&!wrap.dataset.touchBound){
     wrap.dataset.touchBound='1';
@@ -1754,9 +1902,28 @@ async function buildWeekGrid(){
     });
   }
 }
+
+// 週間サマリーを計算・表示
+function updateWeekSummary(dates){
+  let indoorCount=0;
+  let roundCount=0;
+  dates.forEach(date=>{
+    const dateStr=date.getFullYear()+'-'+(date.getMonth()+1)+'-'+date.getDate();
+    if(scheduleData['r-'+dateStr])roundCount++;
+    // インドア枠を数える(全時間帯走査)
+    Object.keys(scheduleData).forEach(k=>{
+      if(k.startsWith('i-'+dateStr+'-')&&scheduleData[k]==='available')indoorCount++;
+    });
+  });
+  const elI=document.getElementById('week-sum-indoor');
+  const elR=document.getElementById('week-sum-round');
+  if(elI)elI.textContent=indoorCount+'枠';
+  if(elR)elR.textContent=roundCount+'日';
+}
+
 function moveWeek(dir){weekOffset+=dir;buildWeekGrid();}
 
-/* ===== 月間スケジュール ===== */
+/* ===== 月間スケジュール(段階1版) ===== */
 function buildMonthGrid(){
   const days=['日','月','火','水','木','金','土'];
   const hdr=document.getElementById('month-header');
@@ -1767,20 +1934,88 @@ function buildMonthGrid(){
   document.getElementById('month-label').textContent=year+'年'+(month+1)+'月';
   const first=new Date(year,month,1),last=new Date(year,month+1,0),today=new Date();
   const grid=document.getElementById('month-grid');grid.innerHTML='';
-  for(let i=0;i<first.getDay();i++){const c=document.createElement('div');c.className='month-cell other-month';grid.appendChild(c);}
+
+  // 先月の空白セル
+  for(let i=0;i<first.getDay();i++){
+    const c=document.createElement('div');
+    c.className='month-cell-v2 other-month';
+    grid.appendChild(c);
+  }
+
+  // 月の各日
+  let monthIndoorDays=0;
+  let monthIndoorSlots=0;
+  let monthRoundDays=0;
+
   for(let d=1;d<=last.getDate();d++){
-    const cell=document.createElement('div');
+    const date=new Date(year,month,d);
     const dateKey=year+'-'+(month+1)+'-'+d;
-    const isToday=new Date(year,month,d).toDateString()===today.toDateString();
-    cell.className='month-cell'+(isToday?' today':'');
-    if(scheduleData['m-'+dateKey])cell.classList.add('has-slots');
-    cell.innerHTML=`<div class="month-date">${d}</div>`;
+    const isToday=date.toDateString()===today.toDateString();
+    const dow=date.getDay();
+    const holidayName=isJapaneseHoliday(date);
+
+    // この日のインドア枠数を計算
+    let indoorSlots=0;
+    Object.keys(scheduleData).forEach(k=>{
+      if(k.startsWith('i-'+dateKey+'-')&&scheduleData[k]==='available')indoorSlots++;
+    });
+    const hasIndoor=indoorSlots>0;
+    const hasRound=!!scheduleData['r-'+dateKey];
+
+    if(hasIndoor){monthIndoorDays++;monthIndoorSlots+=indoorSlots;}
+    if(hasRound)monthRoundDays++;
+
+    // クラス決定
+    let cls='month-cell-v2';
+    if(isToday)cls+=' today';
+    if(hasIndoor&&hasRound)cls+=' both';
+    else if(hasIndoor)cls+=' indoor-only';
+    else if(hasRound)cls+=' round-only';
+
+    const cell=document.createElement('div');
+    cell.className=cls;
+
+    let dateCls='mc-date';
+    if(holidayName||dow===0)dateCls+=' sun';
+    if(holidayName)dateCls+=' hol';
+
+    let tagsHtml='<div class="mc-tags">';
+    if(hasIndoor)tagsHtml+='<div class="mc-tag-indoor">🏌 '+indoorSlots+'枠</div>';
+    if(hasRound)tagsHtml+='<div class="mc-tag-round">⛳</div>';
+    tagsHtml+='</div>';
+
+    cell.innerHTML='<div class="'+dateCls+'">'+d+'</div>'+tagsHtml;
+
     cell.onclick=function(){
-      if(cell.classList.contains('has-slots')){cell.classList.remove('has-slots');delete scheduleData['m-'+dateKey];}
-      else{cell.classList.add('has-slots');scheduleData['m-'+dateKey]='available';}
+      // 月間ではクリックで「ラウンド系のみ」をトグル(現在のレッスン種別に従う)
+      if(currentLessonType==='indoor'){
+        // インドア種別の場合は月間ではメッセージのみ
+        showMsg('🏌 インドアレッスンは週間表示で時間別に登録してください','error');
+        return;
+      }
+      const k='r-'+dateKey;
+      if(scheduleData[k])delete scheduleData[k];
+      else scheduleData[k]='available';
+      buildMonthGrid();
     };
+
     grid.appendChild(cell);
   }
+
+  // 次月の空白セル(7の倍数に揃える)
+  const total=first.getDay()+last.getDate();
+  const remain=(7-total%7)%7;
+  for(let i=0;i<remain;i++){
+    const c=document.createElement('div');
+    c.className='month-cell-v2 other-month';
+    grid.appendChild(c);
+  }
+
+  // 月間サマリー更新
+  const elI=document.getElementById('month-sum-indoor');
+  const elR=document.getElementById('month-sum-round');
+  if(elI)elI.textContent=monthIndoorDays+'日 / '+monthIndoorSlots+'枠';
+  if(elR)elR.textContent=monthRoundDays+'日';
 }
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
