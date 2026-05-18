@@ -362,13 +362,16 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .legend-text.indoor{color:var(--gd);}
 .legend-text.round{color:#633806;}
 
-/* 週間ラウンド帯 */
-.round-band{background:#FAEEDA;border-radius:6px;padding:4px 6px;margin-bottom:4px;display:grid;grid-template-columns:40px repeat(7,1fr);gap:2px;align-items:center;}
-.round-band-label{font-size:9px;color:#633806;font-weight:700;text-align:center;}
-.round-cell{height:18px;border-radius:3px;background:#fff;border:0.5px solid #ddd;cursor:pointer;}
-.round-cell.round-on{background:#FAEEDA;border-color:var(--gold);}
-.round-cell.round-on:hover{background:#FAC775;}
-.round-cell.round-closed{background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 2px,#9a9a9a 2px,#9a9a9a 4px);border-color:#888;cursor:not-allowed;}
+/* 週間ラウンド帯(見やすく改善版) */
+.round-band-wrap{background:#FAEEDA;border:1px solid var(--gold);border-radius:8px;padding:6px;margin-bottom:6px;}
+.round-band-title{font-size:10px;font-weight:700;color:#633806;margin-bottom:4px;padding-left:2px;}
+.round-band{display:grid;grid-template-columns:40px repeat(7,1fr);gap:3px;align-items:center;}
+.round-band-label{font-size:14px;color:#633806;font-weight:700;text-align:center;}
+.round-cell{height:36px;border-radius:6px;background:#fff;border:1px solid #e6d5a8;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#ddd;transition:all .15s;}
+.round-cell:hover{background:#FAC775;border-color:var(--gold);}
+.round-cell.round-on{background:var(--gold);border-color:#633806;color:#fff;font-weight:700;box-shadow:0 1px 3px rgba(186,117,23,0.4);}
+.round-cell.round-on:hover{background:#a05f0e;}
+.round-cell.round-closed{background:repeating-linear-gradient(45deg,#b0b0b0,#b0b0b0 3px,#9a9a9a 3px,#9a9a9a 6px);border-color:#888;cursor:not-allowed;color:transparent;}
 
 /* 週間サマリー */
 .week-summary{background:#f7faf8;border-radius:8px;padding:10px 12px;margin-top:10px;}
@@ -701,8 +704,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
           </div>
           <div id="week-wrap" style="touch-action:pan-y;">
             <div class="week-header-row" id="week-header"></div>
-            <!-- ラウンド帯(週の上部) -->
-            <div class="round-band" id="week-round-band"></div>
+            <!-- ラウンド帯(週の上部・拡大版) -->
+            <div class="round-band-wrap">
+              <div class="round-band-title">⛳ ラウンド対応日(タップして切替)</div>
+              <div class="round-band" id="week-round-band"></div>
+            </div>
             <div style="max-height:380px;overflow-y:auto;">
               <div class="week-grid" id="week-grid"></div>
             </div>
@@ -1839,9 +1845,10 @@ async function buildWeekGrid(){
       const roundKey='r-'+dateStr;
       const dh=dayHours[d];
       let cellCls='round-cell';
-      if(dh.closed)cellCls+=' round-closed';
-      else if(scheduleData[roundKey])cellCls+=' round-on';
-      bandHtml+=`<div class="${cellCls}" data-round-date="${dateStr}" data-closed="${dh.closed?'1':'0'}"></div>`;
+      let cellContent='⛳';
+      if(dh.closed){cellCls+=' round-closed';cellContent='';}
+      else if(scheduleData[roundKey]){cellCls+=' round-on';cellContent='⛳';}
+      bandHtml+=`<div class="${cellCls}" data-round-date="${dateStr}" data-closed="${dh.closed?'1':'0'}">${cellContent}</div>`;
     }
     roundBand.innerHTML=bandHtml;
     // クリックイベント
