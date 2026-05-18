@@ -544,7 +544,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <input type="hidden" id="req-type" value="indoor">
       <input type="hidden" id="req-date" value="">
       <input type="hidden" id="req-time" value="">
-      <input type="hidden" id="req-store" value="kyoto">
+      <input type="hidden" id="req-store" value="tozuike">
       <input type="hidden" id="req-plan-id" value="">
       <input type="hidden" id="req-plan-kind" value="">
       <input type="hidden" id="req-plan-amount" value="">
@@ -650,7 +650,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           <label>ご利用店舗</label>
           <select id="mp-store-key">
             <option value="">選択してください</option>
-            <option value="kyoto">Golf Create 戸津池店</option>
+            <option value="tozuike">Golf Create 戸津池店</option>
           </select>
         </div>
         <div class="form-group">
@@ -871,7 +871,7 @@ sb.auth.getSession().then(async function(res){
     window._customerRowId=data.id;
     if(data.is_approved){
       var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-      var storeLabels={kyoto:'Golf Create 戸津池店'};
+      var storeLabels={tozuike:'Golf Create 戸津池店'};
       document.getElementById('auth-form').style.display='none';
       document.getElementById('approved-badge').style.display='block';
       document.getElementById('approved-detail').textContent=(storeLabels[data.store_key]||data.store_key)+' / '+(typeLabels[data.member_type]||data.member_type);
@@ -947,7 +947,7 @@ async function showPaymentConfirmModal(bookingId){
     var lessonLabel=lessonTypeMap[booking.lesson_type]||booking.lesson_type;
     var dateStr=formatDateJP(booking.booking_date);
     var timeStr=formatBookingTime(booking.booking_time);
-    var storeMap={kyoto:'Golf Create 戸津池店'};
+    var storeMap={tozuike:'Golf Create 戸津池店'};
     var storeName=storeMap[booking.store_key]||booking.store_key;
     var minutesStr=booking.minutes?booking.minutes+'分':'';
     var amount=parseInt(booking.total_price)||0;
@@ -1701,7 +1701,7 @@ function goToRequest(){
   document.getElementById('req-type').value=currentType;
   document.getElementById('req-date').value=selectedDate;
   document.getElementById('req-time').value=selectedTime||(selectedPlan.start_time||'10:00');
-  document.getElementById('req-store').value=document.getElementById('req-store').value||'kyoto';
+  document.getElementById('req-store').value=document.getElementById('req-store').value||'tozuike';
   document.getElementById('req-plan-id').value=selectedPlan.id||'';
   document.getElementById('req-plan-kind').value=selectedPlan.kind||'';
   document.getElementById('req-plan-amount').value=selectedPlan.price||0;
@@ -1711,7 +1711,7 @@ function goToRequest(){
   document.getElementById('req-plan-starttime').value=selectedPlan.start_time||'';
   document.getElementById('req-plan-coach-pays').value=selectedPlan.coach_pays_greenfee?'true':'false';
   var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 コーチ独自プラン'};
-  var storeLabelMap={kyoto:'Golf Create 戸津池店'};
+  var storeLabelMap={tozuike:'Golf Create 戸津池店'};
   var weekdayNames=['日','月','火','水','木','金','土'];
   document.getElementById('display-type').textContent=typeLabelMap[currentType]||currentType;
   if(selectedPlan.kind==='custom_plan'){
@@ -1866,7 +1866,7 @@ async function verifyMember(){
     return;
   }
   var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-  var storeLabels={kyoto:'Golf Create 戸津池店'};
+  var storeLabels={tozuike:'Golf Create 戸津池店'};
   var res=await sb.auth.getSession();
   var uid=res.data.session.user.id;
   await sb.from('customers').upsert({
