@@ -1,10 +1,8 @@
 // netlify/functions/line-notify.js
 // LINE通知を送信する共通ユーティリティ
 // 【2026/4/25 更新】決済後通知を青カード型Flex Messageに変更
-//   - お客様情報(お名前・ふりがな・年齢)をコーチ向けカードに表示
-//   - お客様向けカードにキャンセルボタン追加
-//   - 生年月日から年齢を自動計算
 // 【2026/5/18 更新】STORE_KEY_TO_NAME を kyoto → tozuike に修正
+// 【2026/5/18 更新】店舗向けFlex Message 3種類追加(申込・承認・確定)
 
 const { createClient } = require('@supabase/supabase-js');
 
@@ -637,6 +635,421 @@ function buildBookingConfirmedFlex({
   };
 }
 
+/**
+ * 【2026/5/18 新規】
+ * 店舗向け 共通お客様情報行ビルダー
+ * is_approved=true → ✅ 会員
+ * is_approved=false/null → ⚠️ 未認証
+ */
+function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }) {
+  const rows = [
+    _flexRow('お名前', `${customerName || '—'} 様`),
+  ];
+  if (customerFurigana) {
+    rows.push(_flexRow('ふりがな', customerFurigana));
+  }
+  if (customerAge !== null && customerAge !== undefined) {
+    rows.push(_flexRow('年齢', `${customerAge}歳`));
+  }
+  rows.push(_flexRow('会員状態', isApproved ? '✅ 会員' : '⚠️ 未認証'));
+  return rows;
+}
+
+/**
+ * 【2026/5/18 新規】
+ * 店舗向け オレンジカード Flex Message(予約申込が入った時)
+ */
+function buildStorePendingRequestFlex({
+  customerName,
+  customerFurigana,
+  customerAge,
+  isApproved,
+  coachName,
+  lessonType,
+  dateStr,
+  timeStr,
+  storeName,
+  amount,
+}) {
+  return {
+    type: 'bubble',
+    size: 'mega',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#F57C00',
+      paddingAll: '16px',
+      contents: [
+        {
+          type: 'text',
+          text: '📩 予約申込が入りました',
+          color: '#FFFFFF',
+          weight: 'bold',
+          size: 'lg',
+        },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: '【店舗管理者様】',
+          color: '#F57C00',
+          weight: 'bold',
+          size: 'sm',
+        },
+        {
+          type: 'text',
+          text: 'コーチへ承認依頼が届いています',
+          size: 'sm',
+          color: '#555555',
+          margin: 'sm',
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【お客様情報】',
+          color: '#F57C00',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }),
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【コーチ】',
+          color: '#F57C00',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('コーチ', coachName || '—'),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【予約内容】',
+          color: '#F57C00',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('種別', lessonType || '—'),
+            _flexRow('日時', `${dateStr || '—'} ${timeStr || ''}`.trim()),
+            _flexRow('場所', storeName || '—'),
+            _flexRow('金額', `¥${Number(amount || 0).toLocaleString()}`),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'lg',
+        },
+        {
+          type: 'text',
+          text: '⏰ 承認が遅い場合はコーチへ連絡推奨',
+          size: 'sm',
+          color: '#F57C00',
+          weight: 'bold',
+          margin: 'md',
+          align: 'center',
+          wrap: true,
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * 【2026/5/18 新規】
+ * 店舗向け 緑カード Flex Message(コーチが承認した時)
+ */
+function buildStoreApprovedFlex({
+  customerName,
+  customerFurigana,
+  customerAge,
+  isApproved,
+  coachName,
+  lessonType,
+  dateStr,
+  timeStr,
+  storeName,
+  amount,
+}) {
+  return {
+    type: 'bubble',
+    size: 'mega',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#2E7D32',
+      paddingAll: '16px',
+      contents: [
+        {
+          type: 'text',
+          text: '✅ コーチが承認しました',
+          color: '#FFFFFF',
+          weight: 'bold',
+          size: 'lg',
+        },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: '【店舗管理者様】',
+          color: '#2E7D32',
+          weight: 'bold',
+          size: 'sm',
+        },
+        {
+          type: 'text',
+          text: 'お客様へ決済リンクを送信しました',
+          size: 'sm',
+          color: '#555555',
+          margin: 'sm',
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【お客様情報】',
+          color: '#2E7D32',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }),
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【コーチ】',
+          color: '#2E7D32',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('コーチ', coachName || '—'),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【予約内容】',
+          color: '#2E7D32',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('種別', lessonType || '—'),
+            _flexRow('日時', `${dateStr || '—'} ${timeStr || ''}`.trim()),
+            _flexRow('場所', storeName || '—'),
+            _flexRow('金額', `¥${Number(amount || 0).toLocaleString()}`),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'lg',
+        },
+        {
+          type: 'text',
+          text: '💳 お客様の決済をお待ちしています',
+          size: 'sm',
+          color: '#555555',
+          margin: 'md',
+          align: 'center',
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * 【2026/5/18 新規】
+ * 店舗向け 青カード Flex Message(決済完了・予約確定時)
+ */
+function buildStoreBookingConfirmedFlex({
+  customerName,
+  customerFurigana,
+  customerAge,
+  isApproved,
+  coachName,
+  lessonType,
+  dateStr,
+  timeStr,
+  storeName,
+  amount,
+}) {
+  return {
+    type: 'bubble',
+    size: 'mega',
+    header: {
+      type: 'box',
+      layout: 'vertical',
+      backgroundColor: '#1565C0',
+      paddingAll: '16px',
+      contents: [
+        {
+          type: 'text',
+          text: '📋 新規予約確定(店舗用)',
+          color: '#FFFFFF',
+          weight: 'bold',
+          size: 'lg',
+        },
+      ],
+    },
+    body: {
+      type: 'box',
+      layout: 'vertical',
+      spacing: 'md',
+      contents: [
+        {
+          type: 'text',
+          text: '【店舗管理者様】',
+          color: '#1565C0',
+          weight: 'bold',
+          size: 'sm',
+        },
+        {
+          type: 'text',
+          text: '決済が完了し予約が確定しました',
+          size: 'sm',
+          color: '#555555',
+          margin: 'sm',
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【お客様情報】',
+          color: '#1565C0',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }),
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【コーチ】',
+          color: '#1565C0',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('コーチ', coachName || '—'),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'md',
+        },
+        {
+          type: 'text',
+          text: '【予約内容】',
+          color: '#1565C0',
+          weight: 'bold',
+          size: 'sm',
+          margin: 'md',
+        },
+        {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            _flexRow('種別', lessonType || '—'),
+            _flexRow('日時', `${dateStr || '—'} ${timeStr || ''}`.trim()),
+            _flexRow('場所', storeName || '—'),
+            _flexRow('金額', `¥${Number(amount || 0).toLocaleString()}`),
+          ],
+        },
+        {
+          type: 'separator',
+          margin: 'lg',
+        },
+        {
+          type: 'text',
+          text: '✅ レッスン当日対応をお願いいたします',
+          size: 'sm',
+          color: '#555555',
+          margin: 'md',
+          align: 'center',
+        },
+      ],
+    },
+  };
+}
+
 function _flexRow(label, value) {
   return {
     type: 'box',
@@ -899,6 +1312,9 @@ module.exports = {
   buildApprovalCompleteText,
   buildCoachNewBookingFlex,
   buildBookingConfirmedFlex,
+  buildStorePendingRequestFlex,
+  buildStoreApprovedFlex,
+  buildStoreBookingConfirmedFlex,
   calcAge,
   notify,
   formatDateJa,
