@@ -1,20 +1,25 @@
 // netlify/functions/coach-approve-booking.js
 // コーチ画面(Web)からの予約承認処理
 // 【2026/4/25 新規作成】
+// 【2026/5/18 更新】Task G STEP 4 - 店舗向け承認通知を追加
 //
 // 処理の流れ:
 // 1. booking_id を受け取る
 // 2. bookings.status を 'approved_pending_payment' に更新
 // 3. お客様のLINEに決済リンクを送信
-// 4. コーチ画面に成功レスポンスを返す
+// 4. 店舗のLINEに緑承認カードを送信【新規】
+// 5. コーチ画面に成功レスポンスを返す
 //
 // ※ line-webhook.js の handleApprove と同等のロジック
 
 const { createClient } = require('@supabase/supabase-js');
 const {
   pushMessage,
+  pushFlexMessage,
   buildApprovalCompleteText,
+  buildStoreApprovedFlex,
   formatDateJa,
+  calcAge,
 } = require('./line-notify');
 
 const supabase = createClient(
@@ -128,6 +133,7 @@ exports.handler = async (event) => {
 
     // ============================================
     // 3. コーチ情報・お客様情報を取得
+    //    【2026/5/18 拡張】customers から furigana, age, birth_date, is_approved も取得
     // ============================================
     const { data: coach } = await supabase
       .from('coaches')
@@ -140,14 +146,36 @@ exports.handler = async (event) => {
     if (customerKey) {
       const { data } = await supabase
         .from('customers')
-        .select('id, name, line_user_id')
+        .select('id, name, furigana, age, birth_date, is_approved, line_user_id')
         .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
         .maybeSingle();
       customer = data;
     }
 
+    // ============================================
+    // 4. 店舗情報を取得【Task G STEP 4 新規】
+    // ============================================
+    let store = null;
+    if (booking.store_key) {
+      const { data, error: storeErr } = await supabase
+        .from('stores')
+        .select('id, name, line_user_id')
+        .eq('store_key', booking.store_key)
+        .maybeSingle();
+      if (storeErr) {
+        console.error('[coach-approve-booking] store fetch error:', storeErr);
+      } else {
+        store = data;
+      }
+    }
+
+    // ============================================
+    // 5. 共通パラメータ準備
+    // ============================================
     const coachName = coach?.name || booking.coach_name || 'コーチ';
     const customerName = customer?.name || booking.customer_name || 'お客様';
+    const customerFurigana = customer?.furigana || null;
+    const isApproved = !!customer?.is_approved;
     const dateStr = formatDateJa(booking.booking_date);
     const timeStr = booking.booking_time ? booking.booking_time.substring(0, 5) : '';
     const amount = booking.total_price || 0;
@@ -155,9 +183,18 @@ exports.handler = async (event) => {
 
     const lessonType = LESSON_TYPE_LABEL[booking.lesson_type] || booking.lesson_type || '—';
     const minutes = booking.minutes || null;
+    const storeName = store?.name || booking.store_key || '—';
+
+    // 年齢計算:birth_date 優先、なければ age カラム
+    let customerAge = null;
+    if (customer?.birth_date) {
+      customerAge = calcAge(customer.birth_date);
+    } else if (customer?.age) {
+      customerAge = customer.age;
+    }
 
     // ============================================
-    // 4. お客様のLINEに決済案内を送信
+    // 6. お客様のLINEに決済案内を送信(既存)
     // ============================================
     let customerNotified = false;
     if (customer?.line_user_id) {
@@ -179,7 +216,38 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 5. 成功レスポンス
+    // 7. 店舗のLINEに緑承認カードを送信【Task G STEP 4 新規】
+    // ============================================
+    let storeNotified = false;
+    if (store?.line_user_id) {
+      const storeFlex = buildStoreApprovedFlex({
+        customerName,
+        customerFurigana,
+        customerAge,
+        isApproved,
+        coachName,
+        lessonType,
+        dateStr,
+        timeStr,
+        storeName,
+        amount,
+      });
+
+      const storeAltText = `✅ コーチが承認しました - ${customerName}様 / ${dateStr}`;
+
+      const storePushResult = await pushFlexMessage(
+        store.line_user_id,
+        storeAltText,
+        storeFlex
+      );
+      storeNotified = storePushResult.ok;
+      console.log('[coach-approve-booking] store flex push:', storePushResult);
+    } else {
+      console.warn('[coach-approve-booking] store has no line_user_id');
+    }
+
+    // ============================================
+    // 8. 成功レスポンス
     // ============================================
     return {
       statusCode: 200,
@@ -189,6 +257,7 @@ exports.handler = async (event) => {
         booking_id: bookingId,
         status: 'approved_pending_payment',
         customer_notified: customerNotified,
+        store_notified: storeNotified,
         message: '予約を承認しました。お客様のLINEに決済リンクを送信しました。',
       }),
     };
