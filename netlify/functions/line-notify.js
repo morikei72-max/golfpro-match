@@ -4,13 +4,14 @@
 //   - お客様情報(お名前・ふりがな・年齢)をコーチ向けカードに表示
 //   - お客様向けカードにキャンセルボタン追加
 //   - 生年月日から年齢を自動計算
+// 【2026/5/18 更新】STORE_KEY_TO_NAME を kyoto → tozuike に修正
 
 const { createClient } = require('@supabase/supabase-js');
 
 const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push';
 
 const STORE_KEY_TO_NAME = {
-  kyoto: 'Golf Create 戸津池店',
+  tozuike: 'Golf Create 戸津池店',
 };
 
 const REJECTION_REASON_MAP = {
