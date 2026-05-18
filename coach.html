@@ -212,8 +212,10 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .plan-greenfee-detail .form-label{color:var(--gd);font-weight:700;}
 
 .schedule-mode-btns{display:flex;gap:6px;margin-bottom:12px;}
-.mode-btn{flex:1;padding:8px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;}
+.mode-btn{flex:1;padding:8px;border:1px solid var(--border);background:#fff;border-radius:10px;font-family:inherit;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;}
 .mode-btn.active{background:var(--g);color:#fff;border-color:var(--g);}
+.mode-btn.locked{background:#f0f0f0;color:#b0b0b0;border-color:#d8d8d8;cursor:not-allowed;}
+.mode-btn-lock{font-size:11px;}
 .week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
 .week-nav-btn{background:none;border:1px solid var(--border);border-radius:8px;padding:4px 14px;cursor:pointer;font-size:16px;color:var(--gd);}
 .week-nav-label{font-size:13px;font-weight:700;color:var(--gd);}
@@ -336,6 +338,15 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .invoice-radio{display:flex;gap:16px;margin-bottom:8px;}
 .invoice-radio label{display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer;}
 .invoice-warning{font-size:11px;color:var(--gold);background:#fff8e1;border:1px solid var(--gold);border-radius:8px;padding:8px 10px;margin-top:8px;line-height:1.6;}
+
+/* ===== ステップ式UI(タスク1) ===== */
+.step1-btn{flex:1;min-width:140px;padding:14px;border-radius:12px;font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s;}
+.step1-btn.inactive{border:1px solid var(--border);background:#fff;color:var(--muted);font-weight:500;}
+.step1-btn.active-indoor{border:2px solid var(--g);background:var(--gl);color:var(--gd);font-weight:700;}
+.step1-btn.active-round{border:2px solid var(--gold);background:#fff8e1;color:#633806;font-weight:700;}
+.step2-btn{padding:12px;border-radius:10px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .15s;}
+.step2-btn.inactive{border:1px solid var(--border);background:#fff;color:var(--muted);font-weight:500;}
+.step2-btn.active{border:2px solid var(--g);background:var(--gl);color:var(--gd);font-weight:700;}
 </style>
 </head>
 <body>
@@ -581,32 +592,32 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="card-title">スケジュール管理</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;" id="schedule-store-label">店舗を選択してください</div>
 
-        <!-- 段階1:ステップ式選択UI(追加・既存機能には触れない) -->
+        <!-- ステップ1:何を登録? -->
         <div id="step1-section" style="background:#f7faf8;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--border);">
           <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">📋 ステップ1:何を登録しますか?</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button id="step1-indoor" onclick="selectStep1('indoor')" style="flex:1;min-width:140px;padding:14px;border:2px solid var(--g);background:var(--gl);color:var(--gd);border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">🏌 インドアレッスン</button>
-            <button id="step1-round" onclick="selectStep1('round-group')" style="flex:1;min-width:140px;padding:14px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:12px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;">⛳ ラウンド系</button>
+            <button id="step1-indoor" class="step1-btn active-indoor" onclick="selectStep1('indoor')">🏌 インドアレッスン</button>
+            <button id="step1-round" class="step1-btn inactive" onclick="selectStep1('round-group')">⛳ ラウンド系</button>
           </div>
         </div>
 
-        <!-- 段階2:ラウンド系のサブ選択(初期非表示) -->
+        <!-- ステップ2:ラウンド系のサブ選択(初期非表示) -->
         <div id="step2-section" style="display:none;background:#fff8e1;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--gold);">
           <div style="font-size:12px;font-weight:700;color:#633806;margin-bottom:8px;">📋 ステップ2:どの種類のラウンド系ですか?</div>
           <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
-            <button id="step2-round" onclick="selectStep2('round')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">⛳ ラウンドレッスン</button>
-            <button id="step2-accompany" onclick="selectStep2('accompany')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">🚗 同伴ラウンド</button>
-            <button id="step2-comp" onclick="selectStep2('comp')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">🏆 コンペ参加</button>
-            <button id="step2-custom" onclick="selectStep2('custom')" style="padding:12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:10px;font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;">💡 独自プラン</button>
+            <button id="step2-round" class="step2-btn active" onclick="selectStep2('round')">⛳ ラウンドレッスン</button>
+            <button id="step2-accompany" class="step2-btn inactive" onclick="selectStep2('accompany')">🚗 同伴ラウンド</button>
+            <button id="step2-comp" class="step2-btn inactive" onclick="selectStep2('comp')">🏆 コンペ参加</button>
+            <button id="step2-custom" class="step2-btn inactive" onclick="selectStep2('custom')">💡 独自プラン</button>
           </div>
         </div>
 
-        <!-- 選択状況の表示(初期非表示) -->
-        <div id="step-status" style="display:none;font-size:11px;color:var(--gd);background:var(--gl);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-weight:700;"></div>
+        <!-- 選択状況の表示 -->
+        <div id="step-status" style="font-size:11px;color:var(--gd);background:var(--gl);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-weight:700;">✓ 選択中:🏌 インドアレッスン</div>
 
         <div class="schedule-mode-btns">
           <button class="mode-btn active" id="mode-week" onclick="switchScheduleMode('week')">週間</button>
-          <button class="mode-btn" id="mode-month" onclick="switchScheduleMode('month')">月間</button>
+          <button class="mode-btn locked" id="mode-month" onclick="switchScheduleMode('month')">月間 <span class="mode-btn-lock">🔒</span></button>
         </div>
         <div id="view-week">
           <div class="week-nav">
@@ -793,7 +804,6 @@ const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 const BASE='https://soft-speculoos-5ef188.netlify.app/';
 
-// 【B案】DBから動的取得・本部概念なし
 let storesData={};
 const STRIPE_FEE_PCT=3.6;
 
@@ -815,6 +825,10 @@ let stripeChargesEnabled=false;
 let stripeAccountId=null;
 let idCardStatus='none';
 let idCardUrl=null;
+
+/* ===== タスク1:ステップ式UI 状態管理 ===== */
+let currentLessonType='indoor';
+let currentScheduleMode='week';
 
 /* ===== 店舗データ読み込み(DB) ===== */
 async function loadStoresFromDB(){
@@ -1093,7 +1107,7 @@ function showStoreSelect(){
   document.getElementById('store-overlay').classList.remove('hidden');
 }
 
-/* ===== 料金計算ユーティリティ(本部削除版) ===== */
+/* ===== 料金計算ユーティリティ ===== */
 function calcTakeAmount(billAmount,lessonType){
   if(!currentStore||!billAmount||billAmount<=0)return null;
   const s=storesData[currentStore];
@@ -1473,14 +1487,52 @@ function toggleInvoice(el){
   document.getElementById('invoice-num-wrap').style.display=el.value==='yes'?'block':'none';
   document.getElementById('invoice-warning').style.display=el.value==='no'?'block':'none';
 }
+
+/* ===== タスク1:スケジュールモード切替(ロック判定付き) ===== */
 function switchScheduleMode(mode){
-  document.getElementById('mode-week').classList.toggle('active',mode==='week');
-  document.getElementById('mode-month').classList.toggle('active',mode==='month');
+  // インドア選択中は月間に切替不可
+  if(currentLessonType==='indoor'&&mode==='month'){
+    showMsg('🏌 インドアレッスンは週間で登録します(時間単位)','error');
+    return;
+  }
+  // ラウンド系選択中は週間に切替不可
+  if(currentLessonType!=='indoor'&&mode==='week'){
+    showMsg('⛳ ラウンド系は月間で登録します(日付単位)','error');
+    return;
+  }
+  applyScheduleMode(mode);
+}
+
+// モード適用(内部ロジック)
+function applyScheduleMode(mode){
+  currentScheduleMode=mode;
+  const btnWeek=document.getElementById('mode-week');
+  const btnMonth=document.getElementById('mode-month');
+  // 一旦リセット
+  btnWeek.classList.remove('active','locked');
+  btnMonth.classList.remove('active','locked');
+  btnWeek.innerHTML='週間';
+  btnMonth.innerHTML='月間';
+  // アクティブ側に active 付与
+  if(mode==='week'){
+    btnWeek.classList.add('active');
+  }else{
+    btnMonth.classList.add('active');
+  }
+  // 反対側にロック付与(レッスン種別に応じて)
+  if(currentLessonType==='indoor'){
+    btnMonth.classList.add('locked');
+    btnMonth.innerHTML='月間 <span class="mode-btn-lock">🔒</span>';
+  }else{
+    btnWeek.classList.add('locked');
+    btnWeek.innerHTML='週間 <span class="mode-btn-lock">🔒</span>';
+  }
+  // 表示切替
   document.getElementById('view-week').style.display=mode==='week'?'block':'none';
   document.getElementById('view-month').style.display=mode==='month'?'block':'none';
 }
 
-/* ===== 段階1:ステップ式選択UI(視覚的な反応のみ・既存機能には影響なし) ===== */
+/* ===== タスク1:ステップ式選択UI ===== */
 function selectStep1(type){
   const btnIndoor=document.getElementById('step1-indoor');
   const btnRound=document.getElementById('step1-round');
@@ -1488,46 +1540,38 @@ function selectStep1(type){
   const status=document.getElementById('step-status');
 
   if(type==='indoor'){
-    // インドアボタンをアクティブ化
-    btnIndoor.style.background='var(--gl)';
-    btnIndoor.style.borderColor='var(--g)';
-    btnIndoor.style.color='var(--gd)';
-    btnIndoor.style.borderWidth='2px';
-    btnIndoor.style.fontWeight='700';
-    // ラウンド系ボタンを非アクティブ化
-    btnRound.style.background='#fff';
-    btnRound.style.borderColor='var(--border)';
-    btnRound.style.color='var(--muted)';
-    btnRound.style.borderWidth='1px';
-    btnRound.style.fontWeight='500';
+    // ボタン状態切替
+    btnIndoor.className='step1-btn active-indoor';
+    btnRound.className='step1-btn inactive';
     // ステップ2を非表示
     step2.style.display='none';
-    // ステータス表示
-    status.style.display='block';
+    // ステータス更新
     status.innerHTML='✓ 選択中:🏌 インドアレッスン';
     status.style.background='var(--gl)';
     status.style.color='var(--gd)';
-    // 既存の週間/月間切替はそのまま使用可能
+    // 状態変数更新
+    currentLessonType='indoor';
+    // 表示モードを週間に強制切替・月間ロック
+    applyScheduleMode('week');
   }else if(type==='round-group'){
-    // ラウンド系ボタンをアクティブ化
-    btnRound.style.background='#fff8e1';
-    btnRound.style.borderColor='var(--gold)';
-    btnRound.style.color='#633806';
-    btnRound.style.borderWidth='2px';
-    btnRound.style.fontWeight='700';
-    // インドアボタンを非アクティブ化
-    btnIndoor.style.background='#fff';
-    btnIndoor.style.borderColor='var(--border)';
-    btnIndoor.style.color='var(--muted)';
-    btnIndoor.style.borderWidth='1px';
-    btnIndoor.style.fontWeight='500';
+    // ボタン状態切替
+    btnRound.className='step1-btn active-round';
+    btnIndoor.className='step1-btn inactive';
     // ステップ2を表示
     step2.style.display='block';
-    // ステータス表示
-    status.style.display='block';
-    status.innerHTML='⛳ ラウンド系を選択中 → ステップ2で種類を選んでください';
-    status.style.background='#fff8e1';
-    status.style.color='#633806';
+    // 既に選択済みのステップ2があればそれを使用、なければラウンドをデフォルト選択
+    const alreadySelected=document.querySelector('#step2-section .step2-btn.active');
+    if(alreadySelected){
+      // 既存の選択を維持
+      const type2=alreadySelected.id.replace('step2-','');
+      currentLessonType=type2;
+      updateStepStatusForType(type2);
+    }else{
+      // デフォルトでラウンドレッスンを選択
+      selectStep2('round');
+    }
+    // 表示モードを月間に強制切替・週間ロック
+    applyScheduleMode('month');
   }
 }
 
@@ -1535,28 +1579,32 @@ function selectStep2(type){
   // ステップ2の全ボタンをリセット
   ['round','accompany','comp','custom'].forEach(t=>{
     const btn=document.getElementById('step2-'+t);
-    btn.style.background='#fff';
-    btn.style.borderColor='var(--border)';
-    btn.style.color='var(--muted)';
-    btn.style.fontWeight='500';
+    btn.className='step2-btn inactive';
   });
   // 選択したボタンをアクティブ化
   const selected=document.getElementById('step2-'+type);
-  selected.style.background='var(--gl)';
-  selected.style.borderColor='var(--g)';
-  selected.style.color='var(--gd)';
-  selected.style.fontWeight='700';
+  selected.className='step2-btn active';
+  // 状態変数更新
+  currentLessonType=type;
   // ステータス更新
-  const typeNames={round:'⛳ ラウンドレッスン',accompany:'🚗 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 独自プラン'};
+  updateStepStatusForType(type);
+}
+
+function updateStepStatusForType(type){
+  const typeNames={
+    indoor:'🏌 インドアレッスン',
+    round:'⛳ ラウンドレッスン',
+    accompany:'🚗 同伴ラウンド',
+    comp:'🏆 コンペ参加',
+    custom:'💡 独自プラン'
+  };
   const status=document.getElementById('step-status');
-  status.style.display='block';
   status.innerHTML='✓ 選択中:'+typeNames[type];
   status.style.background='var(--gl)';
   status.style.color='var(--gd)';
 }
 
 /* ===== 週間スケジュール(店舗営業時間+祝日連動版) ===== */
-// 日本の祝日リスト(2026〜2030年)
 const JP_HOLIDAYS={
   '2026-01-01':'元日','2026-01-12':'成人の日','2026-02-11':'建国記念の日','2026-02-23':'天皇誕生日',
   '2026-03-20':'春分の日','2026-04-29':'昭和の日','2026-05-03':'憲法記念日','2026-05-04':'みどりの日',
@@ -1608,7 +1656,6 @@ async function buildWeekGrid(){
   const s=dates[0],e=dates[6];
   document.getElementById('week-label').textContent=`${s.getMonth()+1}/${s.getDate()} 〜 ${e.getMonth()+1}/${e.getDate()}`;
 
-  // 店舗の営業時間を取得(business_hours JSONB)
   let businessHours=null;
   if(currentStoreId){
     try{
@@ -1617,7 +1664,6 @@ async function buildWeekGrid(){
     }catch(err){console.error('営業時間取得エラー',err);}
   }
 
-  // 曜日インデックス(0=日)に対応するキー候補
   const dayKeyMap=[
     ['sun','sunday','日','日曜','日曜日','0','7'],
     ['mon','monday','月','月曜','月曜日','1'],
@@ -1632,14 +1678,12 @@ async function buildWeekGrid(){
   function getDayHoursForDate(date){
     if(!businessHours)return{openH:8,closeH:20,closed:false};
     let entry=null;
-    // 祝日判定が優先
     const isHoliday=isJapaneseHoliday(date);
     if(isHoliday){
       for(const k of holidayKeys){
         if(businessHours[k]!==undefined){entry=businessHours[k];break;}
       }
     }
-    // 祝日キーが見つからなければ曜日で取得
     if(!entry){
       const dayIndex=date.getDay();
       if(Array.isArray(businessHours)){
@@ -1685,8 +1729,6 @@ async function buildWeekGrid(){
       const key=`${weekOffset}-${h}-${d}`;
       const slot=document.createElement('div');
       const dh=dayHours[d];
-      // 枠の意味:h時の行 = h時〜(h+1)時の1時間レッスン枠
-      // 営業時間外の判定:休業 / 開始時刻が営業開始未満 / 枠終了(h+1)が営業終了を超える
       const isClosed=dh.closed||h<dh.openH||(h+1)>dh.closeH;
       if(isClosed){
         slot.className='week-slot closed';
@@ -1911,7 +1953,7 @@ async function uploadId(input){
 
 function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg('領収書をアップロードしました!','success');}
 
-/* ===== PDF出力(本部削除版) ===== */
+/* ===== PDF出力 ===== */
 function downloadPDF(){
   const storeName=currentStore?storesData[currentStore].name:'店舗未選択';
   const coachName=document.getElementById('coach-name').textContent;
