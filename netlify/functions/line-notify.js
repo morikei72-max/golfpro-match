@@ -3,6 +3,7 @@
 // 【2026/4/25 更新】決済後通知を青カード型Flex Messageに変更
 // 【2026/5/18 更新】STORE_KEY_TO_NAME を kyoto → tozuike に修正
 // 【2026/5/18 更新】店舗向けFlex Message 3種類追加(申込・承認・確定)
+// 【2026/5/18 更新】Task G STEP 5 - notifyBookingConfirmed に店舗向け青カード送信を追加
 
 const { createClient } = require('@supabase/supabase-js');
 
@@ -1152,6 +1153,7 @@ async function notify(kind, payload) {
 /**
  * 【2026/4/25 更新】
  * 予約確定時の通知(コーチとお客様両方にFlex Message青カードを送信)
+ * 【2026/5/18 更新】Task G STEP 5 - 店舗向け青カード送信を追加
  */
 async function notifyBookingConfirmed({ bookingId, session }) {
   if (!bookingId) {
@@ -1185,29 +1187,43 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     coach = data;
   }
 
-  /* 【2026/4/25 更新】
-     customers から furigana, birth_date, age も取得 */
+  /* 【2026/4/25 更新】customers から furigana, birth_date, age も取得
+     【2026/5/18 拡張】is_approved も取得 */
   let customer = null;
   const customerKey = booking.customer_id || booking.customer_user_id;
   if (customerKey) {
     const { data } = await supabase
       .from('customers')
-      .select('id, name, furigana, age, birth_date, line_user_id')
+      .select('id, name, furigana, age, birth_date, is_approved, line_user_id')
       .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
       .maybeSingle();
     customer = data;
   }
 
   let storeName = '—';
+  let store = null;
   if (booking.store_id) {
     const { data } = await supabase
       .from('stores')
-      .select('name')
+      .select('id, name, line_user_id')
       .eq('id', booking.store_id)
       .maybeSingle();
-    if (data) storeName = data.name;
+    if (data) {
+      storeName = data.name;
+      store = data;
+    }
   } else if (booking.store_key) {
     storeName = STORE_KEY_TO_NAME[booking.store_key] || booking.store_key;
+    /* 【2026/5/18 新規】店舗の line_user_id 取得のため store_key 経由でも取得 */
+    const { data } = await supabase
+      .from('stores')
+      .select('id, name, line_user_id')
+      .eq('store_key', booking.store_key)
+      .maybeSingle();
+    if (data) {
+      store = data;
+      if (data.name) storeName = data.name;
+    }
   }
 
   const dateStr = booking.booking_date ? formatDateJa(booking.booking_date) : '—';
@@ -1226,6 +1242,7 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   const coachName = coach?.name || booking.coach_name || 'コーチ';
   const customerName = customer?.name || booking.customer_name || 'お客様';
   const customerFurigana = customer?.furigana || null;
+  const isApproved = !!customer?.is_approved;
 
   /* 年齢計算:birth_date 優先、なければ age カラムを使用 */
   let customerAge = null;
@@ -1278,6 +1295,31 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     console.log('[line-notify] customer flex push:', result);
   } else {
     console.log('[line-notify] customer has no line_user_id');
+  }
+
+  /* 【2026/5/18 新規】Task G STEP 5
+     店舗向け通知(青カード・Flex Message) */
+  if (store?.line_user_id) {
+    const storeFlex = buildStoreBookingConfirmedFlex({
+      customerName,
+      customerFurigana,
+      customerAge,
+      isApproved,
+      coachName,
+      lessonType,
+      dateStr,
+      timeStr,
+      storeName,
+      amount,
+    });
+    const result = await pushFlexMessage(
+      store.line_user_id,
+      `📋 新規予約確定 - ${customerName}様 / ${dateStr}`,
+      storeFlex
+    );
+    console.log('[line-notify] store flex push:', result);
+  } else {
+    console.log('[line-notify] store has no line_user_id');
   }
 }
 
