@@ -365,7 +365,7 @@ async function calculateFeeSplit({ coachId, storeKey, lessonType, amount }) {
   const { data: coach, error: coachErr } = await supabase
     .from('coaches')
     .select('stripe_account_id, stripe_charges_enabled')
-    .eq('user_id', coachId)
+    .eq('id', coachId)
     .maybeSingle();
 
   if (coachErr) {
