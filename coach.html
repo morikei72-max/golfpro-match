@@ -1007,7 +1007,117 @@ let storesData={};
 const STRIPE_FEE_PCT=3.6;
 
 function saveInvoice(){alert('✅ インボイス情報を保存しました!');showMsg('インボイス情報を保存しました!','success');}
-function saveSchedule(){alert('✅ スケジュールを保存しました!');showMsg('スケジュールを保存しました!','success');}
+
+/* ===== 段階2:スケジュールDB保存 ===== */
+async function saveSchedule(){
+  if(!currentCoachId){alert('❌ コーチ情報が取得できません。プロフィールを保存してください。');return;}
+  if(!currentStoreId){alert('❌ 店舗が選択されていません。');return;}
+
+  const saveBtn=event&&event.target?event.target:null;
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='保存中...';}
+
+  try{
+    // 1. 既存の自分のスケジュールを全削除(クリーンインサート方式)
+    const {error:delErr}=await sb.from('schedules').delete().eq('coach_id',currentCoachId);
+    if(delErr){
+      console.error('既存スケジュール削除エラー',delErr);
+      throw new Error('既存データの削除に失敗:'+delErr.message);
+    }
+
+    // 2. 新しいデータを組み立て
+    const records=[];
+    Object.keys(scheduleData).forEach(key=>{
+      if(scheduleData[key]!=='available')return;
+      // インドア:'i-Y-M-D-H' → INSERT
+      if(key.startsWith('i-')){
+        const parts=key.substring(2).split('-');
+        if(parts.length!==4)return;
+        const y=parseInt(parts[0]);
+        const m=parseInt(parts[1]);
+        const d=parseInt(parts[2]);
+        const h=parseInt(parts[3]);
+        if(isNaN(y)||isNaN(m)||isNaN(d)||isNaN(h))return;
+        const slotDate=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        records.push({
+          coach_id:currentCoachId,
+          slot_date:slotDate,
+          slot_hour:h,
+          status:'available',
+          lesson_type:'indoor',
+          store_id:currentStoreId?String(currentStoreId):null,
+          store_key:currentStore||null
+        });
+      }
+      // ラウンド系:'r-Y-M-D' → INSERT(slot_hour=null)
+      else if(key.startsWith('r-')){
+        const parts=key.substring(2).split('-');
+        if(parts.length!==3)return;
+        const y=parseInt(parts[0]);
+        const m=parseInt(parts[1]);
+        const d=parseInt(parts[2]);
+        if(isNaN(y)||isNaN(m)||isNaN(d))return;
+        const slotDate=y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+        records.push({
+          coach_id:currentCoachId,
+          slot_date:slotDate,
+          slot_hour:null,
+          status:'available',
+          lesson_type:'round',
+          store_id:currentStoreId?String(currentStoreId):null,
+          store_key:currentStore||null
+        });
+      }
+    });
+
+    // 3. INSERT(レコードがなければ削除のみで終わり)
+    if(records.length>0){
+      const {error:insErr}=await sb.from('schedules').insert(records);
+      if(insErr){
+        console.error('スケジュール保存エラー',insErr);
+        throw new Error('保存に失敗:'+insErr.message);
+      }
+    }
+
+    alert('✅ スケジュールを保存しました!\n登録枠数:インドア'+records.filter(r=>r.lesson_type==='indoor').length+'枠 / ラウンド'+records.filter(r=>r.lesson_type==='round').length+'日');
+    showMsg('スケジュールを保存しました!','success');
+
+  }catch(e){
+    console.error('saveSchedule例外',e);
+    alert('❌ 保存に失敗しました\n'+e.message);
+    showMsg('保存に失敗:'+e.message,'error');
+  }finally{
+    if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='スケジュールを保存';}
+  }
+}
+
+// 段階2:スケジュールをDBから読み込む
+async function loadSchedule(){
+  if(!currentCoachId)return;
+  try{
+    const {data,error}=await sb.from('schedules').select('slot_date,slot_hour,lesson_type,status').eq('coach_id',currentCoachId).eq('status','available');
+    if(error){console.error('スケジュール読込エラー',error);return;}
+    if(!data||data.length===0)return;
+    scheduleData={};
+    data.forEach(row=>{
+      // slot_date は 'YYYY-MM-DD' 形式
+      const parts=String(row.slot_date).split('-');
+      if(parts.length!==3)return;
+      const y=parseInt(parts[0]);
+      const m=parseInt(parts[1]);
+      const d=parseInt(parts[2]);
+      if(isNaN(y)||isNaN(m)||isNaN(d))return;
+      if(row.lesson_type==='indoor'&&row.slot_hour!==null){
+        scheduleData['i-'+y+'-'+m+'-'+d+'-'+row.slot_hour]='available';
+      }else if(row.lesson_type==='round'||row.lesson_type==='accompany'||row.lesson_type==='comp'||row.lesson_type==='custom'){
+        scheduleData['r-'+y+'-'+m+'-'+d]='available';
+      }
+    });
+    // 画面に反映
+    buildWeekGrid();
+    buildMonthGrid();
+  }catch(e){console.error('loadSchedule例外',e);}
+}
+
 let currentCoachId=null;
 let currentAuthId=null;
 let currentCoachEmail=null;
@@ -1089,6 +1199,7 @@ async function loadStoresFromDB(){
   buildWeekGrid();
   buildMonthGrid();
   await loadProfile(user.id);
+  await loadSchedule();
 
   await handleStripeReturn();
 })();
@@ -1320,6 +1431,7 @@ async function selectStore(key){
   await loadPrices();
   recalcAllPrices();
   buildWeekGrid();
+  await loadSchedule();
 }
 function showStoreSelect(){
   buildStoreOptions();
