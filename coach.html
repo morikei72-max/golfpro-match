@@ -414,6 +414,38 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .month-summary-num{font-size:16px;font-weight:900;font-family:'Montserrat',sans-serif;}
 .month-summary-num.indoor{color:var(--gd);}
 .month-summary-num.round{color:#633806;}
+
+/* ===== ホーム画面リニューアル ===== */
+.home-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px;}
+.home-stat-item{background:rgba(255,255,255,0.18);border-radius:8px;padding:8px 4px;text-align:center;}
+.home-stat-num{font-size:18px;font-weight:900;font-family:'Montserrat',sans-serif;color:#fff;line-height:1.1;}
+.home-stat-num-yen{font-size:13px;}
+.home-stat-num-rate{font-size:16px;}
+.home-stat-lbl{font-size:9px;color:rgba(255,255,255,0.85);margin-top:3px;}
+
+.home-pending-alert{background:linear-gradient(135deg,#FAEEDA,#FAC775);border-radius:12px;padding:12px;margin-bottom:12px;border:1px solid var(--gold);}
+.home-pending-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.home-pending-title{font-size:12px;font-weight:700;color:#633806;}
+.home-pending-badge{background:var(--gold);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;}
+.home-pending-body{background:#fff;border-radius:8px;padding:8px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.home-pending-line1{font-size:12px;font-weight:700;color:#633806;}
+.home-pending-line2{font-size:10px;color:var(--muted);margin-top:2px;}
+.home-pending-action{background:var(--gold);color:#fff;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;}
+
+.achievement-row{display:flex;gap:8px;margin-bottom:8px;}
+.achievement-card{flex:1;border-radius:8px;padding:10px;}
+.achievement-card.gold{background:linear-gradient(135deg,#FAEEDA,#FAC775);color:#633806;}
+.achievement-card.green{background:linear-gradient(135deg,#E1F5EE,#5dd4a8);color:var(--gd);}
+.achievement-card.blue{background:linear-gradient(135deg,#f0f3ff,#d4dafa);color:#2C2C8A;}
+.achievement-card.achievement-full{padding:10px 12px;}
+.achievement-lbl{font-size:9px;opacity:0.8;font-weight:500;}
+.achievement-num{font-size:18px;font-weight:900;font-family:'Montserrat',sans-serif;margin-top:2px;line-height:1.1;}
+.achievement-sub{font-size:9px;margin-top:1px;opacity:0.85;}
+.achievement-sub-right{font-size:10px;text-align:right;opacity:0.85;line-height:1.4;}
+
+.daily-message{background:linear-gradient(135deg,#F0F7F4,#E1F5EE);border-radius:12px;padding:12px;border:1px solid var(--g);margin-bottom:12px;}
+.daily-message-title{font-size:11px;font-weight:700;color:var(--gd);margin-bottom:4px;}
+.daily-message-text{font-size:11px;color:var(--gd);line-height:1.6;}
 </style>
 </head>
 <body>
@@ -464,18 +496,72 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <div id="msg-global" class="msg"></div>
 
   <div class="page active" id="page-home">
+    <!-- 挨拶 + サマリー(緑グラデーション) -->
     <div class="welcome-card">
       <div class="welcome-name" id="welcome-name">こんにちは!</div>
       <div class="welcome-store" id="welcome-store">店舗を選択してください</div>
-      <div class="stats-grid">
-        <div class="stat-item"><div class="stat-num" id="stat-today">0</div><div class="stat-label">今日の予約</div></div>
-        <div class="stat-item"><div class="stat-num" id="stat-month">0</div><div class="stat-label">今月レッスン</div></div>
-        <div class="stat-item"><div class="stat-num" id="stat-income">¥0</div><div class="stat-label">今月の収入</div></div>
+      <div class="home-stats-grid">
+        <div class="home-stat-item"><div class="home-stat-num" id="stat-today">0</div><div class="home-stat-lbl">予約数</div></div>
+        <div class="home-stat-item"><div class="home-stat-num home-stat-num-yen" id="stat-income">¥0</div><div class="home-stat-lbl">今月売上</div></div>
+        <div class="home-stat-item"><div class="home-stat-num" id="stat-empty">0</div><div class="home-stat-lbl">空き枠</div></div>
+        <div class="home-stat-item"><div class="home-stat-num home-stat-num-rate" id="stat-rating">★4.8</div><div class="home-stat-lbl">お客様評価</div></div>
       </div>
     </div>
+
+    <!-- 承認待ちアラート(承認待ちがある時のみ表示) -->
+    <div class="home-pending-alert" id="home-pending-alert" style="display:none;">
+      <div class="home-pending-head">
+        <div class="home-pending-title" id="home-pending-title">⏳ 承認待ちが1件あります</div>
+        <div class="home-pending-badge">対応必要</div>
+      </div>
+      <div class="home-pending-body" id="home-pending-body">
+        <div>
+          <div class="home-pending-line1" id="home-pending-line1">承認待ちの予約があります</div>
+          <div class="home-pending-line2" id="home-pending-line2">詳細は予約タブをご確認ください</div>
+        </div>
+        <div class="home-pending-action" onclick="document.querySelectorAll('.tab-btn')[4].click();">対応する →</div>
+      </div>
+    </div>
+
+    <!-- 今日の予定 -->
     <div class="card">
-      <div class="card-title">今日の予定</div>
+      <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
+        <span>📋 今日の予定</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:400;" id="today-date-label"></span>
+      </div>
       <div id="today-list"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">本日の予定はありません</div></div>
+    </div>
+
+    <!-- 🏆 あなたの実績 -->
+    <div class="card">
+      <div class="card-title">🏆 あなたの実績</div>
+      <div class="achievement-row">
+        <div class="achievement-card gold">
+          <div class="achievement-lbl">📚 累計レッスン</div>
+          <div class="achievement-num" id="achievement-total">127名</div>
+          <div class="achievement-sub">のお客様に指導!</div>
+        </div>
+        <div class="achievement-card green">
+          <div class="achievement-lbl">💚 リピート率</div>
+          <div class="achievement-num" id="achievement-repeat">85%</div>
+          <div class="achievement-sub">お客様に愛されてます</div>
+        </div>
+      </div>
+      <div class="achievement-card blue achievement-full">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="achievement-lbl">🎉 今月の新規お客様</div>
+            <div class="achievement-num" id="achievement-new">3名</div>
+          </div>
+          <div class="achievement-sub-right">新規ご予約<br>ありがとうございます</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 今日のひとこと -->
+    <div class="daily-message">
+      <div class="daily-message-title">💬 今日のひとこと</div>
+      <div class="daily-message-text" id="daily-message-text">今日も最高のレッスンを!お客様の上達が、コーチの最大の喜びです。</div>
     </div>
   </div>
 
@@ -1194,13 +1280,33 @@ async function selectStore(key){
   document.getElementById('fee-store-name').textContent=s.name+' の手数料';
   document.getElementById('fee-store').textContent=s.fees.indoor.toFixed(1)+'%';
   document.getElementById('fee-coach').textContent=coachPct.toFixed(1)+'%';
+  // ホーム画面サマリー(4項目)
   document.getElementById('stat-today').textContent='2';
-  document.getElementById('stat-month').textContent='18';
   document.getElementById('stat-income').textContent='¥58,000';
+  const statEmpty=document.getElementById('stat-empty');if(statEmpty)statEmpty.textContent='18';
+  const statRating=document.getElementById('stat-rating');if(statRating)statRating.textContent='★4.8';
+  // 今日の日付ラベル
+  const todayLbl=document.getElementById('today-date-label');
+  if(todayLbl){
+    const now=new Date();
+    const wd=['日','月','火','水','木','金','土'][now.getDay()];
+    todayLbl.textContent=(now.getMonth()+1)+'/'+now.getDate()+'('+wd+')';
+  }
   document.getElementById('today-list').innerHTML=`
     <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
     <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
   `;
+  // 承認待ちアラート(サンプル表示)
+  const pendingAlert=document.getElementById('home-pending-alert');
+  if(pendingAlert){
+    pendingAlert.style.display='block';
+    const titleEl=document.getElementById('home-pending-title');
+    if(titleEl)titleEl.textContent='⏳ 承認待ちが1件あります';
+    const line1=document.getElementById('home-pending-line1');
+    if(line1)line1.textContent='5/20(水) 14:00 山田太郎様';
+    const line2=document.getElementById('home-pending-line2');
+    if(line2)line2.textContent='インドアレッスン 60分';
+  }
   if(s.id)currentStoreId=s.id;
 
   if(currentAuthId){
