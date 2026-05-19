@@ -140,7 +140,16 @@ async function doRegister(){
   btn.disabled=true;
   btn.textContent='登録中...';
 
-  const {error}=await sb.auth.signUp({email,password:pass});
+  /* 【コミット7 2026-05-19】確認メール後の遷移先を step2 に明示指定
+     既存の Supabase Site URL(customer.html)は触らず、新規登録のみ step2 へ
+     他の認証フロー(パスワードリセット等)には影響なし */
+  const {error}=await sb.auth.signUp({
+    email,
+    password:pass,
+    options:{
+      emailRedirectTo:'https://soft-speculoos-5ef188.netlify.app/onboarding_step2.html'
+    }
+  });
 
   if(error){
     err.textContent=error.message;
