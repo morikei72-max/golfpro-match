@@ -16,6 +16,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .logout-btn{font-size:12px;color:var(--g);background:none;border:1px solid var(--g);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;}
 .content{padding:16px;max-width:480px;margin:0 auto;}
 
+/* 【コミット4 新規】非会員警告バナー(画面上部常時表示) */
+.nonmember-banner{background:linear-gradient(135deg,#FFF9F0,#FAEEDA);border:1.5px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
+.nonmember-banner-title{font-size:13px;font-weight:700;color:#7a5c00;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.nonmember-banner-text{font-size:11px;color:#7a5c00;line-height:1.6;margin-bottom:10px;}
+.nonmember-banner-actions{display:flex;flex-direction:column;gap:6px;}
+.nonmember-banner-btn-line{display:flex;align-items:center;justify-content:center;gap:6px;background:#06C755;color:#fff;border-radius:8px;padding:10px;font-size:12px;font-weight:700;text-decoration:none;-webkit-tap-highlight-color:transparent;}
+.nonmember-banner-btn-line:active{opacity:0.85;}
+.nonmember-banner-btn-verify{background:#fff;color:var(--gd);border:1.5px solid var(--gd);border-radius:8px;padding:9px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.nonmember-banner-btn-verify:active{background:var(--gl);}
+
 .entry-banner{background:var(--gl);border:1px solid var(--g);border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
 .entry-banner-text{font-size:12px;color:var(--gd);font-weight:500;}
 .entry-back-btn{font-size:11px;color:var(--g);background:#fff;border:1px solid var(--g);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;text-decoration:none;}
@@ -280,6 +290,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 </div>
 
 <div class="content">
+  <!-- 【コミット4 新規】非会員警告バナー(画面上部・常時表示)
+       会員認証完了するまで常に表示。非会員は予約申込ができない。 -->
+  <div class="nonmember-banner" id="nonmember-banner" style="display:none;">
+    <div class="nonmember-banner-title">🌟 MyCoachはGolf Create戸津池店会員様専用です</div>
+    <div class="nonmember-banner-text">
+      MyCoachのご利用には、Golf Create 戸津池店への入会と会員認証が必要です。<br>
+      入会済みの方は、マイページから会員認証をお済ませください。
+    </div>
+    <div class="nonmember-banner-actions">
+      <a href="https://lin.ee/7CWhHnL" target="_blank" class="nonmember-banner-btn-line">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
+        👉 Golf Create 戸津池店に入会する
+      </a>
+      <button class="nonmember-banner-btn-verify" onclick="goToMemberVerify()">✅ 入会済みの方:会員認証へ</button>
+    </div>
+  </div>
+
   <div class="entry-banner" id="entry-banner" style="display:none;">
     <div class="entry-banner-text">👤 コーチから探しています</div>
     <a href="search_hub.html" class="entry-back-btn">← 探し方を変える</a>
@@ -662,7 +689,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       </div>
       <div id="line-register-area" style="margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);">
         <div style="font-size:11px;color:#888;margin-bottom:8px;">Golf Create 戸津池店 の会員登録がまだの方はこちら</div>
-        <a href="https://lin.ee/RB8lb45" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;color:#fff;border-radius:8px;padding:11px;font-size:13px;font-weight:700;text-decoration:none;">
+        <a href="https://lin.ee/7CWhHnL" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;color:#fff;border-radius:8px;padding:11px;font-size:13px;font-weight:700;text-decoration:none;">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
           Golf Create LINEで会員登録する
         </a>
@@ -726,6 +753,8 @@ var entryMode='lesson';
 var entrySelectedCoachId=null;
 var entrySelectedCoachData=null;
 var currentUserId=null;
+/* 【コミット4 新規】会員認証ステータス */
+var isMemberApproved=false;
 
 function detectEntryMode(){
   var urlParams=new URLSearchParams(window.location.search);
@@ -869,6 +898,8 @@ sb.auth.getSession().then(async function(res){
   var{data}=await sb.from('customers').select('id,store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date,line_user_id').eq('user_id',currentUserId).single();
   if(data){
     window._customerRowId=data.id;
+    /* 【コミット4】会員認証ステータス保持 */
+    isMemberApproved=!!data.is_approved;
     if(data.is_approved){
       var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
       var storeLabels={tozuike:'Golf Create 戸津池店'};
@@ -888,10 +919,37 @@ sb.auth.getSession().then(async function(res){
     if(data.birth_date) document.getElementById('mp-birth-date').value=data.birth_date;
     /* LINE連携状態の反映 */
     updateLineLinkStatus(data.line_user_id);
+  }else{
+    /* customersレコード未作成=未認証扱い */
+    isMemberApproved=false;
   }
+  /* 【コミット4】会員認証ステータスに応じてバナー表示切替 */
+  updateNonMemberBanner();
   handlePaymentReturn();
   loadBookings();
 });
+
+/* ============================================
+   【コミット4 新規】会員認証ステータス管理
+============================================ */
+
+/* 非会員警告バナーの表示制御 */
+function updateNonMemberBanner(){
+  var banner=document.getElementById('nonmember-banner');
+  if(!banner) return;
+  banner.style.display=isMemberApproved?'none':'block';
+}
+
+/* バナーから「会員認証へ」ボタン押下時:マイページタブへ遷移 */
+function goToMemberVerify(){
+  var btn=document.getElementById('snb-mypage');
+  if(btn) btn.click();
+  /* マイページ内の会員認証ブロックへスクロール */
+  setTimeout(function(){
+    var block=document.getElementById('member-auth-block');
+    if(block) block.scrollIntoView({behavior:'smooth',block:'start'});
+  },150);
+}
 
 function tab(btn,id){
   document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});
@@ -1879,6 +1937,12 @@ async function verifyMember(){
   msg.style.display='none';
   document.getElementById('verify-btn').textContent='会員認証する';
   document.getElementById('verify-btn').disabled=false;
+  /* 【コミット4】認証成功 → 状態更新+バナー非表示 */
+  isMemberApproved=true;
+  updateNonMemberBanner();
+  /* line-register-area も非表示 */
+  var lineReg=document.getElementById('line-register-area');
+  if(lineReg) lineReg.style.display='none';
 }
 
 async function saveMyProfile(){
@@ -1906,6 +1970,16 @@ async function submitBooking(){
   var btn=document.getElementById('req-btn');
   var chk=document.getElementById('agreeChk');
   if(!chk.checked){alert('利用規約に同意してください');return;}
+
+  /* 【コミット4 新規】会員認証ガード
+     非会員(is_approved=false)は予約申込を送信できない */
+  if(!isMemberApproved){
+    alert('⚠️ Golf Create 戸津池店の会員認証が完了していません。\n\nMyCoachのご利用には会員認証が必須です。\nマイページから会員認証をお済ませください。\n\n会員未登録の方は、上部バナーから入会のご案内へお進みください。');
+    /* マイページの会員認証セクションへ誘導 */
+    goToMemberVerify();
+    return;
+  }
+
   var sres=await sb.auth.getSession();
   var session=sres.data.session;
   if(!session){alert('ログインが必要です');window.location.href='customer_login.html?from=top';return;}
