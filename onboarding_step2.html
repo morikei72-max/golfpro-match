@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — 会員確認</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:#051E18;
+  color:#fff;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(101,206,165,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 85%, rgba(201,169,97,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(6,77,59,0.6) 0%, transparent 70%);
+  z-index:0;
+  pointer-events:none;
+}
+
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity:0.06;
+  z-index:0;
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+
+.glow-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(60px);
+  z-index:1;
+  pointer-events:none;
+  animation:float 8s ease-in-out infinite;
+}
+.glow-orb-1{
+  width:280px;height:280px;
+  background:radial-gradient(circle,rgba(101,206,165,0.4),transparent 70%);
+  top:-80px;right:-80px;
+}
+.glow-orb-2{
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(201,169,97,0.3),transparent 70%);
+  bottom:-60px;left:-60px;
+  animation-delay:2s;
+}
+@keyframes float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(15px,-20px) scale(1.05);}
+}
+
+.container{
+  position:relative;
+  z-index:2;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:32px 24px;
+  max-width:480px;
+  margin:0 auto;
+}
+
+.step-indicator{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:36px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.1s forwards;
+}
+.step-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  transition:all 0.3s;
+}
+.step-dot.done{background:#65CEA5;box-shadow:0 0 8px rgba(101,206,165,0.6);}
+.step-dot.current{
+  background:#C9A961;
+  width:24px;
+  border-radius:6px;
+  box-shadow:0 0 12px rgba(201,169,97,0.7);
+}
+.step-text{
+  font-size:11px;
+  color:rgba(255,255,255,0.55);
+  margin-left:8px;
+  letter-spacing:0.05em;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.logo-area{
+  text-align:center;
+  margin-bottom:28px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.2s forwards;
+}
+.logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:600;
+  letter-spacing:0.02em;
+  background:linear-gradient(135deg,#fff 0%,#C9A961 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+  margin-bottom:6px;
+}
+.logo-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-size:11px;
+  letter-spacing:0.3em;
+  color:rgba(255,255,255,0.6);
+  text-transform:uppercase;
+}
+
+.card{
+  width:100%;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:32px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  opacity:0;
+  animation:fadeIn 0.7s ease 0.3s forwards;
+}
+
+.card-title{
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:10px;
+  letter-spacing:0.02em;
+  line-height:1.5;
+}
+.card-title .accent{color:#65CEA5;}
+.card-sub{
+  font-size:13px;
+  color:rgba(255,255,255,0.7);
+  text-align:center;
+  line-height:1.7;
+  margin-bottom:28px;
+}
+
+.choice-area{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.choice-btn{
+  width:100%;
+  padding:20px 24px;
+  border-radius:14px;
+  border:1.5px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  text-align:left;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  transition:all 0.25s ease;
+  position:relative;
+  overflow:hidden;
+}
+
+.choice-btn:active{transform:scale(0.98);}
+
+.choice-btn.yes{
+  background:linear-gradient(135deg,rgba(101,206,165,0.18),rgba(6,77,59,0.3));
+  border-color:rgba(101,206,165,0.5);
+}
+.choice-btn.yes:hover{
+  background:linear-gradient(135deg,rgba(101,206,165,0.3),rgba(6,77,59,0.5));
+  border-color:#65CEA5;
+  box-shadow:0 8px 24px rgba(101,206,165,0.25);
+  transform:translateY(-2px);
+}
+
+.choice-btn.no{
+  background:rgba(255,255,255,0.04);
+  border-color:rgba(255,255,255,0.2);
+}
+.choice-btn.no:hover{
+  background:rgba(255,255,255,0.08);
+  border-color:rgba(255,255,255,0.35);
+  transform:translateY(-2px);
+}
+
+.choice-icon{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  font-size:22px;
+}
+.choice-btn.yes .choice-icon{
+  background:rgba(101,206,165,0.2);
+  color:#65CEA5;
+}
+.choice-btn.no .choice-icon{
+  background:rgba(255,255,255,0.08);
+  color:rgba(255,255,255,0.7);
+}
+
+.choice-body{flex:1;min-width:0;}
+.choice-title{
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:4px;
+  letter-spacing:0.02em;
+}
+.choice-desc{
+  font-size:11px;
+  color:rgba(255,255,255,0.6);
+  font-weight:400;
+  line-height:1.5;
+}
+
+.choice-arrow{
+  flex-shrink:0;
+  opacity:0.5;
+  font-size:18px;
+}
+
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(5,30,24,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  z-index:1000;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  animation:overlayIn 0.3s ease;
+}
+.modal-overlay.open{display:flex;}
+@keyframes overlayIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+.modal-card{
+  width:100%;
+  max-width:380px;
+  background:linear-gradient(160deg,rgba(6,77,59,0.95),rgba(5,30,24,0.95));
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(201,169,97,0.4);
+  border-radius:20px;
+  padding:28px 22px;
+  text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,0.6);
+  animation:modalIn 0.4s ease;
+}
+@keyframes modalIn{
+  from{opacity:0;transform:translateY(20px) scale(0.96);}
+  to{opacity:1;transform:translateY(0) scale(1);}
+}
+
+.modal-icon{
+  width:60px;
+  height:60px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#C9A961,#a88742);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:0 auto 16px;
+  font-size:30px;
+  box-shadow:0 8px 24px rgba(201,169,97,0.4);
+}
+.modal-title{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:10px;
+  letter-spacing:0.02em;
+}
+.modal-text{
+  font-size:13px;
+  color:rgba(255,255,255,0.8);
+  line-height:1.8;
+  margin-bottom:22px;
+}
+.modal-text strong{color:#C9A961;}
+
+.line-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  padding:14px;
+  background:#06C755;
+  color:#fff;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:700;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  font-family:inherit;
+  margin-bottom:10px;
+  box-shadow:0 6px 20px rgba(6,199,85,0.4);
+  transition:all 0.2s;
+}
+.line-btn:active{transform:scale(0.98);}
+.line-btn:hover{
+  background:#05b54c;
+  box-shadow:0 8px 28px rgba(6,199,85,0.5);
+}
+
+.modal-cancel{
+  background:none;
+  border:none;
+  color:rgba(255,255,255,0.5);
+  font-family:inherit;
+  font-size:12px;
+  cursor:pointer;
+  padding:8px;
+  text-decoration:underline;
+}
+.modal-cancel:hover{color:rgba(255,255,255,0.8);}
+
+.footer-text{
+  margin-top:24px;
+  text-align:center;
+  font-size:10px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:0.05em;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.5s forwards;
+}
+</style>
+</head>
+<body>
+
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+
+<div class="container">
+
+  <div class="step-indicator">
+    <div class="step-dot done"></div>
+    <div class="step-dot current"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <span class="step-text">STEP 2 / 6</span>
+  </div>
+
+  <div class="logo-area">
+    <div class="logo">MyCoach</div>
+    <div class="logo-sub">Golf Coaching Platform</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="accent">Golf Create 戸津池店</span><br>
+      の会員ですか?
+    </div>
+    <div class="card-sub">
+      MyCoach は Golf Create 戸津池店の<br>
+      会員様向けサービスです
+    </div>
+
+    <div class="choice-area">
+      <button class="choice-btn yes" onclick="onYes()">
+        <div class="choice-icon">✓</div>
+        <div class="choice-body">
+          <div class="choice-title">はい、会員です</div>
+          <div class="choice-desc">会員認証へ進む</div>
+        </div>
+        <div class="choice-arrow">→</div>
+      </button>
+
+      <button class="choice-btn no" onclick="onNo()">
+        <div class="choice-icon">?</div>
+        <div class="choice-body">
+          <div class="choice-title">いいえ、会員ではありません</div>
+          <div class="choice-desc">入会案内をご確認ください</div>
+        </div>
+        <div class="choice-arrow">→</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="footer-text">© KSK.KK — Powered by Golf Create</div>
+
+</div>
+
+<div class="modal-overlay" id="non-member-modal">
+  <div class="modal-card">
+    <div class="modal-icon">🏌</div>
+    <div class="modal-title">入会のご案内</div>
+    <div class="modal-text">
+      MyCoach は <strong>Golf Create 戸津池店</strong> の<br>
+      会員様向けサービスです。<br><br>
+      まずは公式LINEから<br>
+      <strong>新規会員登録</strong>をお願いいたします。
+    </div>
+    <a href="https://lin.ee/7CWhHnL" target="_blank" class="line-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+        <path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/>
+      </svg>
+      Golf Create LINE で新規会員登録
+    </a>
+    <button class="modal-cancel" onclick="closeModal()">前の画面に戻る</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+});
+
+sb.auth.getSession().then(function(res){
+  if(!res.data.session){
+    window.location.href='customer_login.html';
+  }
+});
+
+function onYes(){
+  window.location.href='onboarding_step3.html';
+}
+
+function onNo(){
+  document.getElementById('non-member-modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('non-member-modal').classList.remove('open');
+}
+</script>
+</body>
+</html>
