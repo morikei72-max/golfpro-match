@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — LINE連携</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:#051E18;
+  color:#fff;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(101,206,165,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 85%, rgba(201,169,97,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(6,77,59,0.6) 0%, transparent 70%);
+  z-index:0;
+  pointer-events:none;
+}
+
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity:0.06;
+  z-index:0;
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+
+.glow-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(60px);
+  z-index:1;
+  pointer-events:none;
+  animation:float 8s ease-in-out infinite;
+}
+.glow-orb-1{
+  width:280px;height:280px;
+  background:radial-gradient(circle,rgba(101,206,165,0.4),transparent 70%);
+  top:-80px;right:-80px;
+}
+.glow-orb-2{
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(6,199,85,0.25),transparent 70%);
+  bottom:-60px;left:-60px;
+  animation-delay:2s;
+}
+@keyframes float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(15px,-20px) scale(1.05);}
+}
+
+.container{
+  position:relative;
+  z-index:2;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:32px 24px;
+  max-width:480px;
+  margin:0 auto;
+}
+
+.step-indicator{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:36px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.1s forwards;
+}
+.step-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  transition:all 0.3s;
+}
+.step-dot.done{background:#65CEA5;box-shadow:0 0 8px rgba(101,206,165,0.6);}
+.step-dot.current{
+  background:#C9A961;
+  width:24px;
+  border-radius:6px;
+  box-shadow:0 0 12px rgba(201,169,97,0.7);
+}
+.step-text{
+  font-size:11px;
+  color:rgba(255,255,255,0.55);
+  margin-left:8px;
+  letter-spacing:0.05em;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.logo-area{
+  text-align:center;
+  margin-bottom:24px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.2s forwards;
+}
+.logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:600;
+  letter-spacing:0.02em;
+  background:linear-gradient(135deg,#fff 0%,#C9A961 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+  margin-bottom:6px;
+}
+.logo-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-size:11px;
+  letter-spacing:0.3em;
+  color:rgba(255,255,255,0.6);
+  text-transform:uppercase;
+}
+
+.card{
+  width:100%;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:28px 22px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  opacity:0;
+  animation:fadeIn 0.7s ease 0.3s forwards;
+}
+
+.card-title{
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:8px;
+  letter-spacing:0.02em;
+  line-height:1.5;
+}
+.card-title .accent{color:#65CEA5;}
+.card-sub{
+  font-size:12px;
+  color:rgba(255,255,255,0.7);
+  text-align:center;
+  line-height:1.7;
+  margin-bottom:20px;
+}
+
+/* メリットボックス */
+.benefits-box{
+  background:rgba(101,206,165,0.06);
+  border:1px solid rgba(101,206,165,0.2);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:18px;
+}
+.benefits-title{
+  font-size:11px;
+  font-weight:700;
+  color:#65CEA5;
+  margin-bottom:8px;
+  letter-spacing:0.05em;
+}
+.benefits-list{
+  list-style:none;
+}
+.benefits-list li{
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  line-height:1.7;
+  padding-left:18px;
+  position:relative;
+}
+.benefits-list li::before{
+  content:'✓';
+  position:absolute;
+  left:0;
+  color:#65CEA5;
+  font-weight:700;
+}
+
+/* コード表示 */
+.code-display{
+  background:linear-gradient(135deg,#065F47,#0F8B68);
+  border:1px solid rgba(101,206,165,0.4);
+  border-radius:14px;
+  padding:18px 16px;
+  text-align:center;
+  margin-bottom:14px;
+  position:relative;
+  overflow:hidden;
+}
+.code-display::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(101,206,165,0.3),transparent 70%);
+  pointer-events:none;
+}
+.code-label{
+  font-size:11px;
+  color:rgba(255,255,255,0.75);
+  margin-bottom:6px;
+  position:relative;
+  letter-spacing:0.05em;
+}
+.code-value{
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:8px;
+  color:#fff;
+  font-family:'Noto Sans JP',monospace;
+  text-shadow:0 2px 8px rgba(0,0,0,0.3);
+  position:relative;
+  margin:4px 0;
+}
+.code-countdown{
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  position:relative;
+  margin-top:4px;
+}
+.code-countdown.expired{color:#ffb0b0;}
+
+.code-loading{
+  text-align:center;
+  padding:30px 16px;
+  color:rgba(255,255,255,0.6);
+  font-size:12px;
+}
+
+/* 手順 */
+.instruction-box{
+  background:rgba(201,169,97,0.06);
+  border:1px solid rgba(201,169,97,0.25);
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:14px;
+}
+.instruction-title{
+  font-size:11px;
+  font-weight:700;
+  color:#C9A961;
+  margin-bottom:8px;
+  letter-spacing:0.05em;
+}
+.instruction-list{
+  list-style:none;
+  counter-reset:step;
+}
+.instruction-list li{
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  line-height:1.7;
+  padding-left:24px;
+  position:relative;
+  counter-increment:step;
+  margin-bottom:4px;
+}
+.instruction-list li::before{
+  content:counter(step);
+  position:absolute;
+  left:0;
+  top:1px;
+  width:18px;
+  height:18px;
+  background:#C9A961;
+  color:#051E18;
+  border-radius:50%;
+  font-size:10px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.instruction-list strong{
+  background:rgba(201,169,97,0.3);
+  padding:1px 6px;
+  border-radius:4px;
+  color:#fff;
+  font-weight:700;
+}
+
+/* LINE ボタン */
+.line-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  padding:15px;
+  background:#06C755;
+  color:#fff;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:700;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  font-family:inherit;
+  margin-bottom:10px;
+  box-shadow:0 8px 20px rgba(6,199,85,0.4);
+  transition:all 0.2s;
+}
+.line-btn:active{transform:scale(0.98);}
+.line-btn:hover{
+  background:#05b54c;
+  box-shadow:0 12px 28px rgba(6,199,85,0.5);
+  transform:translateY(-1px);
+}
+
+.btn-reissue{
+  width:100%;
+  padding:11px;
+  background:transparent;
+  color:rgba(255,255,255,0.7);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:10px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  margin-bottom:14px;
+  transition:all 0.2s;
+}
+.btn-reissue:hover{
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+}
+
+/* スキップ */
+.skip-area{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  text-align:center;
+}
+.skip-text{
+  font-size:10px;
+  color:rgba(255,255,255,0.5);
+  margin-bottom:8px;
+  line-height:1.5;
+}
+.skip-btn{
+  background:none;
+  border:none;
+  color:rgba(255,255,255,0.55);
+  font-family:inherit;
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:underline;
+  padding:4px 8px;
+}
+.skip-btn:hover{color:rgba(255,255,255,0.85);}
+
+/* 連携完了表示 */
+.success-box{
+  background:linear-gradient(135deg,rgba(101,206,165,0.2),rgba(6,199,85,0.2));
+  border:1px solid #65CEA5;
+  border-radius:14px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:16px;
+}
+.success-icon{
+  font-size:48px;
+  margin-bottom:8px;
+}
+.success-title{
+  font-size:18px;
+  font-weight:700;
+  color:#65CEA5;
+  margin-bottom:6px;
+}
+.success-sub{
+  font-size:12px;
+  color:rgba(255,255,255,0.85);
+}
+
+.error-box{
+  background:rgba(226,75,74,0.15);
+  border:1px solid rgba(226,75,74,0.4);
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:11px;
+  color:#ffb0b0;
+  margin-bottom:14px;
+  line-height:1.5;
+  display:none;
+}
+.error-box.show{display:block;}
+
+.spinner{
+  display:inline-block;
+  width:14px;
+  height:14px;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  margin-right:6px;
+  vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ポーリング状態表示 */
+.polling-status{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-size:11px;
+  color:rgba(101,206,165,0.85);
+  padding:8px;
+  margin-bottom:10px;
+}
+.polling-dot{
+  width:8px;
+  height:8px;
+  background:#65CEA5;
+  border-radius:50%;
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.4;transform:scale(0.8);}
+}
+
+.footer-text{
+  margin-top:24px;
+  text-align:center;
+  font-size:10px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:0.05em;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.5s forwards;
+}
+</style>
+</head>
+<body>
+
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+
+<div class="container">
+
+  <div class="step-indicator">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot current"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <span class="step-text">STEP 4 / 6</span>
+  </div>
+
+  <div class="logo-area">
+    <div class="logo">MyCoach</div>
+    <div class="logo-sub">Golf Coaching Platform</div>
+  </div>
+
+  <div class="card">
+    <!-- 連携前画面 -->
+    <div id="before-linked">
+      <div class="card-title">
+        <span class="accent">LINE連携</span>
+      </div>
+      <div class="card-sub">
+        公式LINEと連携すると<br>
+        予約や決済のお知らせを LINE で受け取れます
+      </div>
+
+      <div class="benefits-box">
+        <div class="benefits-title">📱 LINE連携でできること</div>
+        <ul class="benefits-list">
+          <li>予約承認通知が届く</li>
+          <li>決済リンクをLINEで受け取れる</li>
+          <li>レッスン前日のリマインド</li>
+          <li>キャンセル通知</li>
+        </ul>
+      </div>
+
+      <div id="code-area">
+        <div class="code-loading">
+          <span class="spinner"></span>
+          連携コードを発行中...
+        </div>
+      </div>
+
+      <div class="error-box" id="error-box"></div>
+
+      <div class="instruction-box" id="instruction-box" style="display:none;">
+        <div class="instruction-title">📌 連携手順</div>
+        <ul class="instruction-list">
+          <li>下のボタンから MyCoach公式LINE を開く</li>
+          <li>友だち追加(初回のみ)</li>
+          <li>トーク画面で上記の<strong id="code-inline-ref">6桁コード</strong>を送信</li>
+        </ul>
+      </div>
+
+      <a href="https://lin.ee/VkQyw4n" target="_blank" class="line-btn" id="line-btn" style="display:none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/>
+        </svg>
+        MyCoach公式LINEを開く
+      </a>
+
+      <button class="btn-reissue" id="reissue-btn" style="display:none;" onclick="issueLinkCode()">
+        🔄 コードを再発行する
+      </button>
+
+      <div class="polling-status" id="polling-status" style="display:none;">
+        <span class="polling-dot"></span>
+        連携を待っています...
+      </div>
+
+      <div class="skip-area">
+        <div class="skip-text">
+          後でマイページから連携することもできます
+        </div>
+        <button class="skip-btn" onclick="skipLinkage()">
+          スキップして次へ進む →
+        </button>
+      </div>
+    </div>
+
+    <!-- 連携完了画面 -->
+    <div id="after-linked" style="display:none;">
+      <div class="success-box">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">LINE連携が完了しました!</div>
+        <div class="success-sub">
+          予約・決済通知を LINE で受け取れます
+        </div>
+      </div>
+      <div style="text-align:center;color:rgba(255,255,255,0.7);font-size:12px;padding:10px;">
+        <span class="spinner"></span>
+        次の画面へ進みます...
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-text">© KSK.KK — Powered by Golf Create</div>
+
+</div>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+});
+
+var currentUserId=null;
+var customerRowId=null;
+var currentCode=null;
+var countdownTimer=null;
+var pollingTimer=null;
+
+/* ページ読み込み時:セッション確認 → コード自動発行 */
+window.addEventListener('DOMContentLoaded',async function(){
+  var res=await sb.auth.getSession();
+  if(!res.data.session){
+    window.location.href='customer_login.html';
+    return;
+  }
+  currentUserId=res.data.session.user.id;
+
+  /* customers レコード取得(認証済みのはず) */
+  var{data,error}=await sb.from('customers').select('id,line_user_id,is_approved').eq('user_id',currentUserId).maybeSingle();
+  if(error||!data){
+    showError('お客様情報が取得できません。会員認証からやり直してください。');
+    setTimeout(function(){window.location.href='onboarding_step3.html';},2000);
+    return;
+  }
+
+  customerRowId=data.id;
+
+  /* 既にLINE連携済みの場合 → 完了画面へ */
+  if(data.line_user_id){
+    showLinkedSuccess();
+    return;
+  }
+
+  /* コード発行 */
+  await issueLinkCode();
+});
+
+function showError(msg){
+  var el=document.getElementById('error-box');
+  el.textContent='⚠️ '+msg;
+  el.classList.add('show');
+}
+
+function hideError(){
+  var el=document.getElementById('error-box');
+  el.classList.remove('show');
+}
+
+async function issueLinkCode(){
+  hideError();
+  stopAllTimers();
+
+  var codeArea=document.getElementById('code-area');
+  codeArea.innerHTML='<div class="code-loading"><span class="spinner"></span>連携コードを発行中...</div>';
+
+  document.getElementById('line-btn').style.display='none';
+  document.getElementById('reissue-btn').style.display='none';
+  document.getElementById('instruction-box').style.display='none';
+  document.getElementById('polling-status').style.display='none';
+
+  if(!customerRowId){
+    showError('お客様情報が取得できません');
+    return;
+  }
+
+  try{
+    var resp=await fetch('/.netlify/functions/generate-link-code',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({user_type:'customer',user_id:customerRowId})
+    });
+    var json=await resp.json();
+
+    if(!resp.ok||!json.success){
+      if(json.already_linked){
+        showLinkedSuccess();
+        return;
+      }
+      showError(json.error||'コードの発行に失敗しました');
+      codeArea.innerHTML='<button class="btn-reissue" onclick="issueLinkCode()" style="display:block;">🔄 再試行する</button>';
+      return;
+    }
+
+    currentCode=json.code;
+    var expiresAt=new Date(json.expires_at).getTime();
+    displayCode(json.code,expiresAt);
+    startPolling();
+  }catch(e){
+    console.error('issueLinkCode error',e);
+    showError('通信エラーが発生しました');
+    codeArea.innerHTML='<button class="btn-reissue" onclick="issueLinkCode()" style="display:block;">🔄 再試行する</button>';
+  }
+}
+
+function displayCode(code,expiresAt){
+  var codeArea=document.getElementById('code-area');
+  codeArea.innerHTML=
+    '<div class="code-display">'+
+      '<div class="code-label">📱 あなたの連携コード</div>'+
+      '<div class="code-value">'+code+'</div>'+
+      '<div class="code-countdown" id="code-countdown">⏰ 残り時間を計算中...</div>'+
+    '</div>';
+
+  document.getElementById('code-inline-ref').textContent=code;
+  document.getElementById('instruction-box').style.display='block';
+  document.getElementById('line-btn').style.display='flex';
+  document.getElementById('reissue-btn').style.display='block';
+  document.getElementById('polling-status').style.display='flex';
+
+  startCountdown(expiresAt);
+}
+
+function startCountdown(expiresAt){
+  if(countdownTimer) clearInterval(countdownTimer);
+  var update=function(){
+    var now=Date.now();
+    var diff=expiresAt-now;
+    var el=document.getElementById('code-countdown');
+    if(!el) return;
+    if(diff<=0){
+      el.textContent='⏰ コードの有効期限が切れました';
+      el.classList.add('expired');
+      clearInterval(countdownTimer);
+      countdownTimer=null;
+      stopPolling();
+      return;
+    }
+    var totalSec=Math.floor(diff/1000);
+    var min=Math.floor(totalSec/60);
+    var sec=totalSec%60;
+    el.textContent='⏰ 残り '+min+':'+(sec<10?'0'+sec:sec);
+  };
+  update();
+  countdownTimer=setInterval(update,1000);
+}
+
+function startPolling(){
+  stopPolling();
+  pollingTimer=setInterval(async function(){
+    if(!currentUserId){stopPolling();return;}
+    try{
+      var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
+      if(data&&data.line_user_id){
+        showLinkedSuccess();
+      }
+    }catch(e){console.warn('polling error',e);}
+  },5000);
+}
+
+function stopPolling(){
+  if(pollingTimer){
+    clearInterval(pollingTimer);
+    pollingTimer=null;
+  }
+}
+
+function stopAllTimers(){
+  if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
+  stopPolling();
+}
+
+function showLinkedSuccess(){
+  stopAllTimers();
+  document.getElementById('before-linked').style.display='none';
+  document.getElementById('after-linked').style.display='block';
+  setTimeout(function(){
+    window.location.href='onboarding_step5.html';
+  },1500);
+}
+
+function skipLinkage(){
+  stopAllTimers();
+  window.location.href='onboarding_step5.html';
+}
+
+/* ページ離脱時にタイマーをクリーンアップ */
+window.addEventListener('beforeunload',stopAllTimers);
+</script>
+</body>
+</html>
