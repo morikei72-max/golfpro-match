@@ -16,7 +16,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .logout-btn{font-size:12px;color:var(--g);background:none;border:1px solid var(--g);border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;}
 .content{padding:16px;max-width:480px;margin:0 auto;}
 
-/* 【コミット4 新規】非会員警告バナー(画面上部常時表示) */
+/* 【コミット4 既存】非会員警告バナーCSS(機能保持・将来再利用のため残置)
+   ※ HTML表示は削除済み・新規登録フローで事前認証が完了するため不要
+   ※ CSS定義・JavaScript関数(updateNonMemberBanner, goToMemberVerify)は保持 */
 .nonmember-banner{background:linear-gradient(135deg,#FFF9F0,#FAEEDA);border:1.5px solid var(--gold);border-radius:10px;padding:12px 14px;margin-bottom:14px;}
 .nonmember-banner-title{font-size:13px;font-weight:700;color:#7a5c00;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
 .nonmember-banner-text{font-size:11px;color:#7a5c00;line-height:1.6;margin-bottom:10px;}
@@ -290,22 +292,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 </div>
 
 <div class="content">
-  <!-- 【コミット4 新規】非会員警告バナー(画面上部・常時表示)
-       会員認証完了するまで常に表示。非会員は予約申込ができない。 -->
-  <div class="nonmember-banner" id="nonmember-banner" style="display:none;">
-    <div class="nonmember-banner-title">🌟 MyCoachはGolf Create戸津池店会員様専用です</div>
-    <div class="nonmember-banner-text">
-      MyCoachのご利用には、Golf Create 戸津池店への入会と会員認証が必要です。<br>
-      入会済みの方は、マイページから会員認証をお済ませください。
-    </div>
-    <div class="nonmember-banner-actions">
-      <a href="https://lin.ee/7CWhHnL" target="_blank" class="nonmember-banner-btn-line">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>
-        👉 Golf Create 戸津池店に入会する
-      </a>
-      <button class="nonmember-banner-btn-verify" onclick="goToMemberVerify()">✅ 入会済みの方:会員認証へ</button>
-    </div>
-  </div>
+  <!-- 【コミット1 2026-05-19】非会員警告バナーHTML表示を削除
+       新規登録フロー(onboarding_step2〜6)で事前認証完了するため、customer.html到達時点では不要
+       ※ CSS定義・JavaScript関数(updateNonMemberBanner, goToMemberVerify)は保持 -->
 
   <div class="entry-banner" id="entry-banner" style="display:none;">
     <div class="entry-banner-text">👤 コーチから探しています</div>
@@ -753,7 +742,7 @@ var entryMode='lesson';
 var entrySelectedCoachId=null;
 var entrySelectedCoachData=null;
 var currentUserId=null;
-/* 【コミット4 新規】会員認証ステータス */
+/* 【コミット4 既存】会員認証ステータス(機能保持) */
 var isMemberApproved=false;
 
 function detectEntryMode(){
@@ -898,7 +887,7 @@ sb.auth.getSession().then(async function(res){
   var{data}=await sb.from('customers').select('id,store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date,line_user_id').eq('user_id',currentUserId).single();
   if(data){
     window._customerRowId=data.id;
-    /* 【コミット4】会員認証ステータス保持 */
+    /* 【コミット4 既存】会員認証ステータス保持(機能保持) */
     isMemberApproved=!!data.is_approved;
     if(data.is_approved){
       var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
@@ -923,24 +912,25 @@ sb.auth.getSession().then(async function(res){
     /* customersレコード未作成=未認証扱い */
     isMemberApproved=false;
   }
-  /* 【コミット4】会員認証ステータスに応じてバナー表示切替 */
+  /* 【コミット4 既存】会員認証ステータスに応じてバナー表示切替(機能保持) */
   updateNonMemberBanner();
   handlePaymentReturn();
   loadBookings();
 });
 
 /* ============================================
-   【コミット4 新規】会員認証ステータス管理
+   【コミット4 既存】会員認証ステータス管理(機能保持)
+   ※ コミット1でHTMLバナー表示は削除したが、関数は将来再利用のため保持
 ============================================ */
 
-/* 非会員警告バナーの表示制御 */
+/* 非会員警告バナーの表示制御(HTMLバナー削除済みのため実質no-op) */
 function updateNonMemberBanner(){
   var banner=document.getElementById('nonmember-banner');
   if(!banner) return;
   banner.style.display=isMemberApproved?'none':'block';
 }
 
-/* バナーから「会員認証へ」ボタン押下時:マイページタブへ遷移 */
+/* マイページタブへ遷移する関数(submitBooking認証ガードから呼ばれる) */
 function goToMemberVerify(){
   var btn=document.getElementById('snb-mypage');
   if(btn) btn.click();
@@ -1937,7 +1927,7 @@ async function verifyMember(){
   msg.style.display='none';
   document.getElementById('verify-btn').textContent='会員認証する';
   document.getElementById('verify-btn').disabled=false;
-  /* 【コミット4】認証成功 → 状態更新+バナー非表示 */
+  /* 【コミット4 既存】認証成功 → 状態更新+バナー非表示(機能保持) */
   isMemberApproved=true;
   updateNonMemberBanner();
   /* line-register-area も非表示 */
@@ -1971,7 +1961,7 @@ async function submitBooking(){
   var chk=document.getElementById('agreeChk');
   if(!chk.checked){alert('利用規約に同意してください');return;}
 
-  /* 【コミット5】会員認証ガード(文言を柔らかく変更)
+  /* 【コミット5 既存】会員認証ガード(機能保持)
      非会員(is_approved=false)は予約申込を送信できない */
   if(!isMemberApproved){
     alert('ご予約には会員認証が必要です\n\nMyCoach は Golf Create 戸津池店の\n会員様向けサービスとなっております。\n\n▶ 会員の方:マイページから認証へお進みください\n▶ 未入会の方:画面上部から入会のご案内をご覧ください');
