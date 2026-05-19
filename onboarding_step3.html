@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — 会員認証</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:#051E18;
+  color:#fff;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(101,206,165,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 85%, rgba(201,169,97,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(6,77,59,0.6) 0%, transparent 70%);
+  z-index:0;
+  pointer-events:none;
+}
+
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity:0.06;
+  z-index:0;
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+
+.glow-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(60px);
+  z-index:1;
+  pointer-events:none;
+  animation:float 8s ease-in-out infinite;
+}
+.glow-orb-1{
+  width:280px;height:280px;
+  background:radial-gradient(circle,rgba(101,206,165,0.4),transparent 70%);
+  top:-80px;right:-80px;
+}
+.glow-orb-2{
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(201,169,97,0.3),transparent 70%);
+  bottom:-60px;left:-60px;
+  animation-delay:2s;
+}
+@keyframes float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(15px,-20px) scale(1.05);}
+}
+
+.container{
+  position:relative;
+  z-index:2;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:32px 24px;
+  max-width:480px;
+  margin:0 auto;
+}
+
+.step-indicator{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:36px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.1s forwards;
+}
+.step-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  transition:all 0.3s;
+}
+.step-dot.done{background:#65CEA5;box-shadow:0 0 8px rgba(101,206,165,0.6);}
+.step-dot.current{
+  background:#C9A961;
+  width:24px;
+  border-radius:6px;
+  box-shadow:0 0 12px rgba(201,169,97,0.7);
+}
+.step-text{
+  font-size:11px;
+  color:rgba(255,255,255,0.55);
+  margin-left:8px;
+  letter-spacing:0.05em;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.logo-area{
+  text-align:center;
+  margin-bottom:28px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.2s forwards;
+}
+.logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:600;
+  letter-spacing:0.02em;
+  background:linear-gradient(135deg,#fff 0%,#C9A961 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+  margin-bottom:6px;
+}
+.logo-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-size:11px;
+  letter-spacing:0.3em;
+  color:rgba(255,255,255,0.6);
+  text-transform:uppercase;
+}
+
+.card{
+  width:100%;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:32px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  opacity:0;
+  animation:fadeIn 0.7s ease 0.3s forwards;
+}
+
+.card-title{
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:10px;
+  letter-spacing:0.02em;
+  line-height:1.5;
+}
+.card-title .accent{color:#65CEA5;}
+.card-sub{
+  font-size:13px;
+  color:rgba(255,255,255,0.7);
+  text-align:center;
+  line-height:1.7;
+  margin-bottom:24px;
+}
+
+.info-box{
+  background:rgba(201,169,97,0.08);
+  border:1px solid rgba(201,169,97,0.3);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:24px;
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  line-height:1.7;
+}
+.info-box strong{color:#C9A961;}
+
+.form-group{margin-bottom:20px;}
+.form-label{
+  display:block;
+  font-size:12px;
+  font-weight:500;
+  color:rgba(255,255,255,0.85);
+  margin-bottom:8px;
+  letter-spacing:0.02em;
+}
+.form-input{
+  width:100%;
+  padding:14px 16px;
+  background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.15);
+  border-radius:12px;
+  color:#fff;
+  font-family:inherit;
+  font-size:14px;
+  outline:none;
+  transition:all 0.2s;
+}
+.form-input::placeholder{color:rgba(255,255,255,0.35);}
+.form-input:focus{
+  border-color:#65CEA5;
+  background:rgba(255,255,255,0.09);
+  box-shadow:0 0 0 3px rgba(101,206,165,0.15);
+}
+
+.msg-area{
+  font-size:12px;
+  margin-bottom:14px;
+  display:none;
+  line-height:1.5;
+  padding:10px 12px;
+  border-radius:8px;
+}
+.msg-area.error{
+  display:block;
+  background:rgba(226,75,74,0.15);
+  border:1px solid rgba(226,75,74,0.4);
+  color:#ffb0b0;
+}
+.msg-area.success{
+  display:block;
+  background:rgba(101,206,165,0.15);
+  border:1px solid rgba(101,206,165,0.4);
+  color:#65CEA5;
+}
+
+.btn-primary{
+  width:100%;
+  padding:16px;
+  background:linear-gradient(135deg,#65CEA5,#3da37c);
+  color:#fff;
+  border:none;
+  border-radius:12px;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  letter-spacing:0.02em;
+  box-shadow:0 8px 24px rgba(101,206,165,0.3);
+  transition:all 0.2s;
+  margin-bottom:12px;
+}
+.btn-primary:active{transform:scale(0.98);}
+.btn-primary:hover:not(:disabled){
+  box-shadow:0 12px 32px rgba(101,206,165,0.4);
+  transform:translateY(-1px);
+}
+.btn-primary:disabled{
+  opacity:0.5;
+  cursor:not-allowed;
+  background:#666;
+  box-shadow:none;
+}
+
+.btn-secondary{
+  width:100%;
+  padding:12px;
+  background:transparent;
+  color:rgba(255,255,255,0.6);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:12px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.btn-secondary:hover{
+  background:rgba(255,255,255,0.05);
+  color:rgba(255,255,255,0.85);
+}
+
+.help-area{
+  margin-top:18px;
+  padding-top:18px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  text-align:center;
+}
+.help-text{
+  font-size:11px;
+  color:rgba(255,255,255,0.55);
+  margin-bottom:10px;
+  line-height:1.6;
+}
+.line-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  width:100%;
+  padding:12px;
+  background:#06C755;
+  color:#fff;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:700;
+  text-decoration:none;
+  box-shadow:0 4px 12px rgba(6,199,85,0.3);
+  transition:all 0.2s;
+}
+.line-btn:active{transform:scale(0.98);}
+.line-btn:hover{box-shadow:0 6px 18px rgba(6,199,85,0.4);}
+
+.footer-text{
+  margin-top:24px;
+  text-align:center;
+  font-size:10px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:0.05em;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.5s forwards;
+}
+
+.spinner{
+  display:inline-block;
+  width:14px;
+  height:14px;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  margin-right:6px;
+  vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+
+<div class="container">
+
+  <div class="step-indicator">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot current"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <span class="step-text">STEP 3 / 6</span>
+  </div>
+
+  <div class="logo-area">
+    <div class="logo">MyCoach</div>
+    <div class="logo-sub">Golf Coaching Platform</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <span class="accent">会員認証</span>
+    </div>
+    <div class="card-sub">
+      Golf Create 戸津池店でご登録の<br>
+      メールアドレスを入力してください
+    </div>
+
+    <div class="info-box">
+      <strong>📌 ご案内</strong><br>
+      入会時にお伝えいただいたメールアドレスと照合いたします。心当たりがない場合は、店舗にお問い合わせください。
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Golf Create 登録メールアドレス</label>
+      <input type="email" class="form-input" id="member-email" placeholder="example@mail.com" autocomplete="email">
+    </div>
+
+    <div class="msg-area" id="msg-area"></div>
+
+    <button class="btn-primary" id="verify-btn" onclick="verifyMember()">
+      会員認証する
+    </button>
+
+    <button class="btn-secondary" onclick="goBack()">
+      ← 前の画面に戻る
+    </button>
+
+    <div class="help-area">
+      <div class="help-text">
+        会員情報が見つからない場合は<br>
+        店舗までお問い合わせください
+      </div>
+      <a href="https://lin.ee/7CWhHnL" target="_blank" class="line-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/>
+        </svg>
+        Golf Create LINEで問い合わせ
+      </a>
+    </div>
+  </div>
+
+  <div class="footer-text">© KSK.KK — Powered by Golf Create</div>
+
+</div>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
+});
+
+var currentUserId=null;
+
+/* セッションチェック */
+sb.auth.getSession().then(function(res){
+  if(!res.data.session){
+    window.location.href='customer_login.html';
+    return;
+  }
+  currentUserId=res.data.session.user.id;
+});
+
+function showMsg(type,text){
+  var el=document.getElementById('msg-area');
+  el.className='msg-area '+type;
+  el.textContent=text;
+}
+
+function hideMsg(){
+  var el=document.getElementById('msg-area');
+  el.className='msg-area';
+  el.textContent='';
+}
+
+function goBack(){
+  window.location.href='onboarding_step2.html';
+}
+
+async function verifyMember(){
+  hideMsg();
+  var emailInput=document.getElementById('member-email');
+  var memberEmail=emailInput.value.trim().toLowerCase();
+  var btn=document.getElementById('verify-btn');
+
+  if(!memberEmail){
+    showMsg('error','⚠️ メールアドレスを入力してください');
+    emailInput.focus();
+    return;
+  }
+
+  var emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!emailRegex.test(memberEmail)){
+    showMsg('error','⚠️ 正しいメールアドレスの形式で入力してください');
+    emailInput.focus();
+    return;
+  }
+
+  if(!currentUserId){
+    var res=await sb.auth.getSession();
+    if(!res.data.session){
+      window.location.href='customer_login.html';
+      return;
+    }
+    currentUserId=res.data.session.user.id;
+  }
+
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>照合中...';
+
+  try{
+    /* members テーブルから戸津池店の会員を照合 */
+    var{data,error}=await sb.from('members')
+      .select('*')
+      .eq('store_key','tozuike')
+      .eq('email',memberEmail)
+      .eq('is_active',true)
+      .maybeSingle();
+
+    if(error){
+      console.error('members照合エラー',error);
+      showMsg('error','⚠️ 通信エラーが発生しました。しばらくしてから再度お試しください。');
+      btn.disabled=false;
+      btn.textContent='会員認証する';
+      return;
+    }
+
+    if(!data){
+      showMsg('error','⚠️ 会員情報が見つかりませんでした。\nGolf Create にご登録のメールアドレスをご確認ください。');
+      btn.disabled=false;
+      btn.textContent='会員認証する';
+      return;
+    }
+
+    /* customers テーブルに会員情報を書き込み(認証完了) */
+    var upsertResult=await sb.from('customers').upsert({
+      user_id:currentUserId,
+      store_key:'tozuike',
+      member_number:data.member_number,
+      member_type:data.member_type,
+      is_approved:true,
+      updated_at:new Date().toISOString()
+    },{onConflict:'user_id'});
+
+    if(upsertResult.error){
+      console.error('customers upsert エラー',upsertResult.error);
+      showMsg('error','⚠️ 会員情報の登録に失敗しました。再度お試しください。');
+      btn.disabled=false;
+      btn.textContent='会員認証する';
+      return;
+    }
+
+    /* 成功メッセージ表示 → step4 へ遷移 */
+    showMsg('success','✅ 会員認証が完了しました!次の画面へ進みます...');
+    btn.innerHTML='<span class="spinner"></span>次へ進みます...';
+
+    setTimeout(function(){
+      window.location.href='onboarding_step4.html';
+    },1200);
+
+  }catch(e){
+    console.error('verifyMember例外',e);
+    showMsg('error','⚠️ 通信エラー:'+e.message);
+    btn.disabled=false;
+    btn.textContent='会員認証する';
+  }
+}
+
+/* Enterキー対応 */
+document.getElementById('member-email').addEventListener('keypress',function(e){
+  if(e.key==='Enter'){
+    e.preventDefault();
+    verifyMember();
+  }
+});
+</script>
+</body>
+</html>
