@@ -1,15 +1,18 @@
 // netlify/functions/create-checkout-session.js
 // MyCoach 決済セッション作成
-// 【2026/5/9 v3】Stripe Connect 自動振り分け実装
+// 【2026/5/19 v4】Stripe手数料3.6%をコーチ送金額から差し引く修正
 //
 // 振り分けロジック:
-//   application_fee_amount = 本部手数料 + 店舗手数料
+//   application_fee_amount = 本部手数料 + 店舗手数料(本部が受け取る)
 //   transfer_data.destination = コーチのStripe Connectアカウント
-//   → 残額が自動的にコーチへ送金される
+//   コーチ送金額 = 総額 - 本部手数料 - 店舗手数料 - Stripe手数料
+//   → Stripe手数料は決済時にStripeが先取りするため、
+//     application_feeとtransferの合計が「総額-Stripe手数料」になるよう調整
 //
 // 手数料率の取得:
 // ・本部手数料率: コード内固定値 HQ_FEE_RATE = 0.164
-//   ・店舗手数料率: stores.[lesson_type]_fee_rate (DB最新値・動的取得)
+// ・Stripe手数料率: コード内固定値 STRIPE_FEE_RATE = 0.036
+// ・店舗手数料率: stores.[lesson_type]_fee_rate (DB最新値・動的取得)
 //
 // レッスンタイプ別の店舗手数料カラム:
 //   indoor    → stores.indoor_fee_rate
@@ -31,9 +34,10 @@ const supabase = createClient(
 );
 
 // ============================================
-// 本部手数料率(コード内固定値・将来DB化可能)
+// 手数料率(コード内固定値・将来DB化可能)
 // ============================================
 const HQ_FEE_RATE = 0.164;
+const STRIPE_FEE_RATE = 0.036;
 
 exports.handler = async (event) => {
   // CORS
@@ -58,7 +62,7 @@ exports.handler = async (event) => {
     const approvedBookingId = body.approved_booking_id || body.approvedBookingId || null;
     const customerId   = body.customer_id || body.customer_user_id || body.customerId;
     const coachId      = body.coach_id    || body.coachId;
-    const storeKey     = body.store_key   || body.storeKey || 'kyoto';
+    const storeKey     = body.store_key   || body.storeKey || 'tozuike';
     const lessonType   = body.lesson_type || body.lessonType || 'indoor';
     const minutes      = parseInt(body.minutes || body.duration_min || body.duration || 0, 10) || null;
     const totalPrice   = parseInt(body.total_price || body.amount_yen || body.amount || 0, 10);
@@ -145,6 +149,7 @@ exports.handler = async (event) => {
         lesson_type: existingBooking.lesson_type || '',
         hq_fee:      String(splitResult.hqFee),
         store_fee:   String(splitResult.storeFee),
+        stripe_fee:  String(splitResult.stripeFee),
         application_fee: String(splitResult.applicationFee),
         coach_amount:    String(splitResult.coachAmount),
       };
@@ -170,6 +175,7 @@ exports.handler = async (event) => {
           application_fee_amount: splitResult.applicationFee,
           transfer_data: {
             destination: splitResult.coachStripeAccountId,
+            amount: splitResult.coachAmount,
           },
           metadata: metadata,
         },
@@ -180,6 +186,7 @@ exports.handler = async (event) => {
         amount,
         hqFee: splitResult.hqFee,
         storeFee: splitResult.storeFee,
+        stripeFee: splitResult.stripeFee,
         applicationFee: splitResult.applicationFee,
         coachAmount: splitResult.coachAmount,
         coachStripeAccountId: splitResult.coachStripeAccountId,
@@ -196,6 +203,7 @@ exports.handler = async (event) => {
             total: amount,
             hq_fee: splitResult.hqFee,
             store_fee: splitResult.storeFee,
+            stripe_fee: splitResult.stripeFee,
             application_fee: splitResult.applicationFee,
             coach_amount: splitResult.coachAmount,
           },
@@ -289,6 +297,7 @@ exports.handler = async (event) => {
       lesson_type: lessonType,
       hq_fee:      String(splitResultB.hqFee),
       store_fee:   String(splitResultB.storeFee),
+      stripe_fee:  String(splitResultB.stripeFee),
       application_fee: String(splitResultB.applicationFee),
       coach_amount:    String(splitResultB.coachAmount),
     };
@@ -313,6 +322,7 @@ exports.handler = async (event) => {
         application_fee_amount: splitResultB.applicationFee,
         transfer_data: {
           destination: splitResultB.coachStripeAccountId,
+          amount: splitResultB.coachAmount,
         },
         metadata: metadataB,
       },
@@ -323,6 +333,7 @@ exports.handler = async (event) => {
       amount: totalPrice,
       hqFee: splitResultB.hqFee,
       storeFee: splitResultB.storeFee,
+      stripeFee: splitResultB.stripeFee,
       applicationFee: splitResultB.applicationFee,
       coachAmount: splitResultB.coachAmount,
       coachStripeAccountId: splitResultB.coachStripeAccountId,
@@ -339,6 +350,7 @@ exports.handler = async (event) => {
           total: totalPrice,
           hq_fee: splitResultB.hqFee,
           store_fee: splitResultB.storeFee,
+          stripe_fee: splitResultB.stripeFee,
           application_fee: splitResultB.applicationFee,
           coach_amount: splitResultB.coachAmount,
         },
@@ -409,10 +421,13 @@ async function calculateFeeSplit({ coachId, storeKey, lessonType, amount }) {
   }
 
   // 4. 振り分け計算(円単位・整数化)
-  const hqFee    = Math.floor(amount * HQ_FEE_RATE);
-  const storeFee = Math.floor(amount * storeFeeRate);
+  //    Stripe手数料はStripeが決済時に先取りするため、
+  //    transfer_data.amount で明示的にコーチ送金額を指定する必要がある
+  const hqFee     = Math.floor(amount * HQ_FEE_RATE);
+  const storeFee  = Math.floor(amount * storeFeeRate);
+  const stripeFee = Math.floor(amount * STRIPE_FEE_RATE);
   const applicationFee = hqFee + storeFee;
-  const coachAmount = amount - applicationFee;
+  const coachAmount = amount - applicationFee - stripeFee;
 
   // 5. バリデーション
   if (applicationFee < 0 || applicationFee >= amount) {
@@ -426,10 +441,12 @@ async function calculateFeeSplit({ coachId, storeKey, lessonType, amount }) {
     coachStripeAccountId: coach.stripe_account_id,
     hqFee,
     storeFee,
+    stripeFee,
     applicationFee,
     coachAmount,
     hqFeeRate: HQ_FEE_RATE,
     storeFeeRate,
+    stripeFeeRate: STRIPE_FEE_RATE,
   };
 }
 
