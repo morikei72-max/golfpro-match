@@ -4,6 +4,7 @@
 // 【2026/5/18 更新】STORE_KEY_TO_NAME を kyoto → tozuike に修正
 // 【2026/5/18 更新】店舗向けFlex Message 3種類追加(申込・承認・確定)
 // 【2026/5/18 更新】Task G STEP 5 - notifyBookingConfirmed に店舗向け青カード送信を追加
+// 【2026/5/19 更新】コミット3 - 店舗向けFlex Message にプラン名(plan_name)表示を追加
 
 const { createClient } = require('@supabase/supabase-js');
 
@@ -638,11 +639,13 @@ function buildBookingConfirmedFlex({
 
 /**
  * 【2026/5/18 新規】
+ * 【2026/5/19 更新】コミット3 - planName パラメータ追加
  * 店舗向け 共通お客様情報行ビルダー
  * is_approved=true → ✅ 会員
  * is_approved=false/null → ⚠️ 未認証
+ * planName:hacomonoプラン名(あれば表示・なければ「⚠️ 非会員」)
  */
-function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }) {
+function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved, planName }) {
   const rows = [
     _flexRow('お名前', `${customerName || '—'} 様`),
   ];
@@ -652,12 +655,21 @@ function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, 
   if (customerAge !== null && customerAge !== undefined) {
     rows.push(_flexRow('年齢', `${customerAge}歳`));
   }
+  /* 【2026/5/19 新規】コミット3 - プラン名表示
+     planName が文字列で値があればそのまま表示
+     null/undefined/空文字 の場合は「⚠️ 非会員」と表示 */
+  if (planName && String(planName).trim() !== '') {
+    rows.push(_flexRow('プラン', String(planName)));
+  } else {
+    rows.push(_flexRow('プラン', '⚠️ 非会員'));
+  }
   rows.push(_flexRow('会員状態', isApproved ? '✅ 会員' : '⚠️ 未認証'));
   return rows;
 }
 
 /**
  * 【2026/5/18 新規】
+ * 【2026/5/19 更新】コミット3 - planName パラメータ追加
  * 店舗向け オレンジカード Flex Message(予約申込が入った時)
  */
 function buildStorePendingRequestFlex({
@@ -665,6 +677,7 @@ function buildStorePendingRequestFlex({
   customerFurigana,
   customerAge,
   isApproved,
+  planName,
   coachName,
   lessonType,
   dateStr,
@@ -725,7 +738,7 @@ function buildStorePendingRequestFlex({
           type: 'box',
           layout: 'vertical',
           spacing: 'sm',
-          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }),
+          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved, planName }),
         },
         {
           type: 'separator',
@@ -791,6 +804,7 @@ function buildStorePendingRequestFlex({
 
 /**
  * 【2026/5/18 新規】
+ * 【2026/5/19 更新】コミット3 - planName パラメータ追加
  * 店舗向け 緑カード Flex Message(コーチが承認した時)
  */
 function buildStoreApprovedFlex({
@@ -798,6 +812,7 @@ function buildStoreApprovedFlex({
   customerFurigana,
   customerAge,
   isApproved,
+  planName,
   coachName,
   lessonType,
   dateStr,
@@ -858,7 +873,7 @@ function buildStoreApprovedFlex({
           type: 'box',
           layout: 'vertical',
           spacing: 'sm',
-          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }),
+          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved, planName }),
         },
         {
           type: 'separator',
@@ -922,6 +937,7 @@ function buildStoreApprovedFlex({
 
 /**
  * 【2026/5/18 新規】
+ * 【2026/5/19 更新】コミット3 - planName パラメータ追加
  * 店舗向け 青カード Flex Message(決済完了・予約確定時)
  */
 function buildStoreBookingConfirmedFlex({
@@ -929,6 +945,7 @@ function buildStoreBookingConfirmedFlex({
   customerFurigana,
   customerAge,
   isApproved,
+  planName,
   coachName,
   lessonType,
   dateStr,
@@ -989,7 +1006,7 @@ function buildStoreBookingConfirmedFlex({
           type: 'box',
           layout: 'vertical',
           spacing: 'sm',
-          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved }),
+          contents: _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved, planName }),
         },
         {
           type: 'separator',
@@ -1154,6 +1171,7 @@ async function notify(kind, payload) {
  * 【2026/4/25 更新】
  * 予約確定時の通知(コーチとお客様両方にFlex Message青カードを送信)
  * 【2026/5/18 更新】Task G STEP 5 - 店舗向け青カード送信を追加
+ * 【2026/5/19 更新】コミット3 - members テーブルから plan_name 取得・店舗向けFlexに渡す
  */
 async function notifyBookingConfirmed({ bookingId, session }) {
   if (!bookingId) {
@@ -1194,7 +1212,7 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   if (customerKey) {
     const { data } = await supabase
       .from('customers')
-      .select('id, name, furigana, age, birth_date, is_approved, line_user_id')
+      .select('id, name, email, furigana, age, birth_date, is_approved, line_user_id')
       .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
       .maybeSingle();
     customer = data;
@@ -1205,7 +1223,7 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   if (booking.store_id) {
     const { data } = await supabase
       .from('stores')
-      .select('id, name, line_user_id')
+      .select('id, name, store_key, line_user_id')
       .eq('id', booking.store_id)
       .maybeSingle();
     if (data) {
@@ -1217,13 +1235,42 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     /* 【2026/5/18 新規】店舗の line_user_id 取得のため store_key 経由でも取得 */
     const { data } = await supabase
       .from('stores')
-      .select('id, name, line_user_id')
+      .select('id, name, store_key, line_user_id')
       .eq('store_key', booking.store_key)
       .maybeSingle();
     if (data) {
       store = data;
       if (data.name) storeName = data.name;
     }
+  }
+
+  /* 【2026/5/19 新規】コミット3 - members テーブルから plan_name を取得
+     ・お客様のメールアドレス(小文字化)で members を引き当て
+     ・store_key は予約データ・店舗データの両方を考慮して決定
+     ・is_active=true のレコードのみ対象 */
+  let planName = null;
+  try {
+    const customerEmail = customer?.email ? String(customer.email).toLowerCase().trim() : null;
+    const storeKey = booking.store_key || store?.store_key || null;
+    if (customerEmail && storeKey) {
+      const { data: memberRow, error: memberErr } = await supabase
+        .from('members')
+        .select('plan_name')
+        .eq('store_key', storeKey)
+        .eq('email', customerEmail)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (memberErr) {
+        console.error('[line-notify] members fetch error:', memberErr);
+      } else if (memberRow && memberRow.plan_name) {
+        planName = memberRow.plan_name;
+      }
+      console.log('[line-notify] plan_name lookup:', { customerEmail, storeKey, planName });
+    } else {
+      console.log('[line-notify] plan_name lookup skipped (no email or store_key)');
+    }
+  } catch (e) {
+    console.error('[line-notify] plan_name lookup exception:', e);
   }
 
   const dateStr = booking.booking_date ? formatDateJa(booking.booking_date) : '—';
@@ -1298,6 +1345,7 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   }
 
   /* 【2026/5/18 新規】Task G STEP 5
+     【2026/5/19 更新】コミット3 - planName を渡す
      店舗向け通知(青カード・Flex Message) */
   if (store?.line_user_id) {
     const storeFlex = buildStoreBookingConfirmedFlex({
@@ -1305,6 +1353,7 @@ async function notifyBookingConfirmed({ bookingId, session }) {
       customerFurigana,
       customerAge,
       isApproved,
+      planName,
       coachName,
       lessonType,
       dateStr,
