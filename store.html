@@ -238,6 +238,22 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .hr-radio-title{font-size:12px;font-weight:700;color:var(--gd);}
 .hr-radio-desc{font-size:10px;color:var(--muted);margin-top:2px;line-height:1.5;}
 
+/* hacomono会員CSV取り込みUI(コミット2新規) */
+.csv-info-box{background:#f0f7f4;border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--gd);line-height:1.7;}
+.csv-info-box strong{display:block;margin-bottom:4px;font-size:12px;color:var(--gd);}
+.csv-count-display{background:#fff;border:1.5px solid var(--g);border-radius:10px;padding:12px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+.csv-count-label{font-size:12px;color:var(--gd);font-weight:700;}
+.csv-count-value{font-size:20px;color:var(--gd);font-weight:900;font-family:'Montserrat',sans-serif;}
+.csv-count-value span{font-size:12px;font-weight:500;margin-left:4px;}
+.csv-file-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.csv-file-row input[type="file"]{flex:1;font-size:12px;color:var(--text);padding:8px;border:1.5px solid var(--border);border-radius:8px;background:#fafdf9;}
+.csv-file-row input[type="file"]::-webkit-file-upload-button{background:var(--g);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;margin-right:8px;}
+.csv-result-box{background:#fafdf9;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:var(--gd);line-height:1.7;display:none;}
+.csv-result-box.show{display:block;}
+.csv-result-box.success{background:var(--gl);border-color:var(--g);}
+.csv-result-box.error{background:#fff0f0;border-color:var(--red);color:var(--red);}
+.csv-result-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+
 .date-display{font-size:11px;color:var(--muted);margin-bottom:10px;}
 .hero-card{background:linear-gradient(135deg,var(--gd),#0F6E56);border-radius:14px;padding:14px;color:#fff;margin-bottom:12px;position:relative;overflow:hidden;}
 .hero-label{font-size:10px;opacity:0.85;}
@@ -839,6 +855,45 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="btn-primary" onclick="saveGoalSettings()">保存する</button>
     </div>
+
+    <!-- hacomono会員CSV取り込みUI(コミット2新規) -->
+    <div class="card">
+      <div class="card-title">👥 hacomono会員CSV取り込み</div>
+
+      <div class="csv-info-box">
+        <strong>📋 会員CSV取り込みの役割</strong>
+        hacomonoから書き出した会員CSVを取り込むと、MyCoachの利用資格者(=Golf Create戸津池店会員)が更新されます。<br>
+        取り込み方式は<strong>全削除+再投入(パターンB)</strong>です。退会者は自動的にMyCoach利用不可になります。
+      </div>
+
+      <div class="csv-count-display">
+        <div>
+          <div class="csv-count-label">💁 現在の登録会員数</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">店舗:戸津池店</div>
+        </div>
+        <div class="csv-count-value" id="csv-members-count">--<span>名</span></div>
+      </div>
+
+      <div style="font-size:11px;color:var(--gd);font-weight:700;margin-bottom:6px;">CSVファイルを選択</div>
+
+      <div class="csv-file-row">
+        <input type="file" id="csv-file-input" accept=".csv" onchange="onCsvFileSelected(event)">
+      </div>
+
+      <button class="btn-primary" id="csv-import-btn" onclick="importCsvFile()" disabled style="background:#ccc;">CSVを取り込む</button>
+
+      <div class="csv-result-box" id="csv-result-box">
+        <div class="csv-result-title" id="csv-result-title"></div>
+        <div id="csv-result-detail"></div>
+      </div>
+
+      <div style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6;">
+        ※ hacomonoの「会員エクスポート」で書き出したCSVをそのまま選択してください。<br>
+        ※ 取り込み前に全会員データを削除し、CSVの内容で再投入します。<br>
+        ※ 退会済み会員は MyCoach 側でも自動的に利用不可となります。
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-title">📢 掲示板に投稿</div>
       <div class="form-group">
@@ -1027,6 +1082,7 @@ sb.auth.getSession().then(async function(res){
   loadPendingCoaches();
   loadApprovedCoaches();
   loadSeats();
+  refreshMembersCount();
 });
 
 function updateDateDisplay(user){
@@ -1737,6 +1793,181 @@ async function saveFeeSettings(){
   }catch(e){
     console.error('saveFeeSettings例外',e);
     showMsg('msg-settings','保存中にエラーが発生しました:'+e.message,'error');
+  }
+}
+
+/* ============================================================
+   コミット2:hacomono会員CSV取り込み
+   ============================================================ */
+
+var selectedCsvFile=null;
+
+/* ===== 現在の会員数を取得・表示 ===== */
+async function refreshMembersCount(){
+  try{
+    var{count,error}=await sb.from('members')
+      .select('*',{count:'exact',head:true})
+      .eq('store_key',currentStore)
+      .eq('is_active',true);
+    var el=document.getElementById('csv-members-count');
+    if(!el) return;
+    if(error){
+      console.error('会員数取得エラー',error);
+      el.innerHTML='--<span>名</span>';
+      return;
+    }
+    var c=count||0;
+    el.innerHTML=c.toLocaleString()+'<span>名</span>';
+  }catch(e){
+    console.error('refreshMembersCount例外',e);
+    var el=document.getElementById('csv-members-count');
+    if(el) el.innerHTML='--<span>名</span>';
+  }
+}
+
+/* ===== CSVファイル選択時の処理 ===== */
+function onCsvFileSelected(event){
+  var file=event.target.files&&event.target.files[0];
+  var btn=document.getElementById('csv-import-btn');
+  var resultBox=document.getElementById('csv-result-box');
+
+  // 結果ボックスを非表示にリセット
+  if(resultBox){
+    resultBox.classList.remove('show','success','error');
+  }
+
+  if(!file){
+    selectedCsvFile=null;
+    btn.disabled=true;
+    btn.style.background='#ccc';
+    return;
+  }
+
+  // 拡張子チェック
+  var fileName=file.name||'';
+  if(!/\.csv$/i.test(fileName)){
+    alert('CSVファイル(.csv)を選択してください');
+    event.target.value='';
+    selectedCsvFile=null;
+    btn.disabled=true;
+    btn.style.background='#ccc';
+    return;
+  }
+
+  // ファイルサイズチェック(10MB上限)
+  if(file.size>10*1024*1024){
+    alert('ファイルサイズが大きすぎます(上限10MB)');
+    event.target.value='';
+    selectedCsvFile=null;
+    btn.disabled=true;
+    btn.style.background='#ccc';
+    return;
+  }
+
+  selectedCsvFile=file;
+  btn.disabled=false;
+  btn.style.background='';
+}
+
+/* ===== CSVファイル取り込み実行 ===== */
+async function importCsvFile(){
+  if(!selectedCsvFile){
+    alert('CSVファイルが選択されていません');
+    return;
+  }
+
+  // 確認ダイアログ
+  var confirmMsg='【会員CSV取り込みの確認】\n\n';
+  confirmMsg+='ファイル名:'+selectedCsvFile.name+'\n';
+  confirmMsg+='サイズ:'+Math.round(selectedCsvFile.size/1024)+' KB\n\n';
+  confirmMsg+='⚠️ 取り込み方式:全削除+再投入(パターンB)\n';
+  confirmMsg+='・既存の戸津池店会員データを全て削除します\n';
+  confirmMsg+='・CSVの内容で会員を再投入します\n';
+  confirmMsg+='・退会者はMyCoach利用不可になります\n\n';
+  confirmMsg+='実行しますか?';
+
+  if(!confirm(confirmMsg)) return;
+
+  var btn=document.getElementById('csv-import-btn');
+  var resultBox=document.getElementById('csv-result-box');
+  var resultTitle=document.getElementById('csv-result-title');
+  var resultDetail=document.getElementById('csv-result-detail');
+
+  // ボタン無効化
+  btn.disabled=true;
+  btn.textContent='取り込み中...';
+  btn.style.background='#999';
+  resultBox.classList.remove('show','success','error');
+
+  try{
+    // CSVファイルを読み込む
+    var csvText=await new Promise(function(resolve,reject){
+      var reader=new FileReader();
+      reader.onload=function(e){resolve(e.target.result);};
+      reader.onerror=function(){reject(new Error('CSVファイルの読み込みに失敗しました'));};
+      // hacomonoのCSVはShift_JISの可能性があるため、まずUTF-8で試みる
+      reader.readAsText(selectedCsvFile,'UTF-8');
+    });
+
+    // セッショントークン取得(認証用)
+    var{data:sess}=await sb.auth.getSession();
+    var token=sess&&sess.session?sess.session.access_token:null;
+
+    // Netlify Function呼び出し
+    var resp=await fetch('/.netlify/functions/import-hacomono-csv',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':token?'Bearer '+token:''
+      },
+      body:JSON.stringify({
+        store_key:currentStore,
+        csv_text:csvText
+      })
+    });
+
+    var result=await resp.json();
+
+    if(!resp.ok||!result.success){
+      throw new Error(result.error||result.message||'取り込みに失敗しました(HTTP '+resp.status+')');
+    }
+
+    // 成功表示
+    resultBox.classList.add('show','success');
+    resultTitle.textContent='✅ 取り込み完了';
+    var detailHtml='';
+    detailHtml+='・削除件数:<strong>'+(result.deleted_count||0).toLocaleString()+'</strong>件<br>';
+    detailHtml+='・投入件数:<strong>'+(result.inserted_count||0).toLocaleString()+'</strong>件<br>';
+    if(typeof result.deactivated_customers!=='undefined'){
+      detailHtml+='・退会者連動更新:<strong>'+(result.deactivated_customers||0).toLocaleString()+'</strong>件<br>';
+    }
+    if(result.skipped_rows){
+      detailHtml+='・スキップ行:'+(result.skipped_rows||0).toLocaleString()+'件<br>';
+    }
+    resultDetail.innerHTML=detailHtml;
+
+    // 会員数を更新
+    await refreshMembersCount();
+
+    // ファイル選択をクリア
+    document.getElementById('csv-file-input').value='';
+    selectedCsvFile=null;
+
+    showMsg('msg-settings','会員CSVの取り込みが完了しました!','success');
+  }catch(e){
+    console.error('importCsvFile例外',e);
+    resultBox.classList.add('show','error');
+    resultTitle.textContent='❌ 取り込み失敗';
+    resultDetail.textContent=e.message||'不明なエラーが発生しました';
+    showMsg('msg-settings','CSV取り込みに失敗しました:'+(e.message||'不明なエラー'),'error');
+  }finally{
+    btn.disabled=false;
+    btn.textContent='CSVを取り込む';
+    btn.style.background='';
+    if(!selectedCsvFile){
+      btn.disabled=true;
+      btn.style.background='#ccc';
+    }
   }
 }
 
