@@ -140,14 +140,22 @@ async function doRegister(){
   btn.disabled=true;
   btn.textContent='登録中...';
 
-  /* 【コミット7 2026-05-19】確認メール後の遷移先を step2 に明示指定
-     既存の Supabase Site URL(customer.html)は触らず、新規登録のみ step2 へ
-     他の認証フロー(パスワードリセット等)には影響なし */
-  const {error}=await sb.auth.signUp({
+  const redirectUrl='https://soft-speculoos-5ef188.netlify.app/onboarding_step2.html';
+
+  /* 【コミット8 2026-05-20】確実にメール送信されることを保証する処理
+     Supabase の仕様: 既に確認済のメールアドレスで signUp() を呼ぶと
+     error は返らず、偽のユーザーオブジェクト(identities:[] )が返り、
+     確認メールは送信されない(セキュリティ上の仕様)。
+     対策:
+       1) signUp の data.user.identities を確認
+       2) 空配列なら「既登録ユーザー」と判断 → resend で確認メール再送 を試行
+       3) resend が成功(または rate limit以外のエラーなし)→ メール送信
+       4) resend で「既に確認済み」と判断できる場合 → ログイン誘導 */
+  const {data,error}=await sb.auth.signUp({
     email,
     password:pass,
     options:{
-      emailRedirectTo:'https://soft-speculoos-5ef188.netlify.app/onboarding_step2.html'
+      emailRedirectTo:redirectUrl
     }
   });
 
@@ -159,6 +167,51 @@ async function doRegister(){
     return;
   }
 
+  /* data.user.identities が空配列 = 既登録ユーザー(Supabaseの仕様) */
+  const isExistingUser = data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
+
+  if(isExistingUser){
+    /* 既に登録済 → 確認メール再送を試行 */
+    const resendResult = await sb.auth.resend({
+      type:'signup',
+      email,
+      options:{
+        emailRedirectTo:redirectUrl
+      }
+    });
+
+    if(resendResult.error){
+      const msg = (resendResult.error.message||'').toLowerCase();
+      if(msg.includes('already') || msg.includes('confirmed')){
+        /* 既に確認完了済 → ログイン誘導 */
+        err.innerHTML='このメールアドレスは既に登録・認証済みです。<br><a href="customer_login.html" style="color:#5DBB63;text-decoration:underline;">ログイン画面へ進む</a>';
+        err.style.display='block';
+        btn.disabled=false;
+        btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+        return;
+      }
+      if(msg.includes('rate') || msg.includes('limit')){
+        err.textContent='送信回数の上限に達しています。約1時間後に再度お試しください。';
+        err.style.display='block';
+        btn.disabled=false;
+        btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+        return;
+      }
+      err.textContent='確認メールの再送に失敗しました: '+resendResult.error.message;
+      err.style.display='block';
+      btn.disabled=false;
+      btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      return;
+    }
+
+    /* resend 成功 = 確認メール再送完了 */
+    success.innerHTML='✅ 確認メールを再送信しました<br>メール内のリンクをクリックして<br>登録を完了してください';
+    success.style.display='block';
+    btn.style.display='none';
+    return;
+  }
+
+  /* 通常の新規登録 = メール送信済 */
   success.innerHTML='✅ 確認メールを送信しました<br>メール内のリンクをクリックして<br>登録を完了してください';
   success.style.display='block';
   btn.style.display='none';
