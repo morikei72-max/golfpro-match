@@ -487,6 +487,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 });
 
 var currentUserId=null;
+var currentUserEmail=null;
 var selectedHandedness=null;
 
 /* ページ読み込み:セッション確認 + 既存データ読み込み */
@@ -497,6 +498,7 @@ window.addEventListener('DOMContentLoaded',async function(){
     return;
   }
   currentUserId=res.data.session.user.id;
+  currentUserEmail=res.data.session.user.email;
 
   /* 既存customersデータがあれば読み込む(既に入力済みの可能性) */
   try{
@@ -579,6 +581,7 @@ async function saveProfile(){
       return;
     }
     currentUserId=res.data.session.user.id;
+    currentUserEmail=res.data.session.user.email;
   }
 
   var btn=document.getElementById('save-btn');
@@ -586,6 +589,9 @@ async function saveProfile(){
   btn.innerHTML='<span class="spinner"></span>保存中...';
 
   try{
+    /* 【コミット12 2026-05-20】NOT NULL制約対応:email, store_key を必須として追加
+       - email: MyCoachログイン用メール(認証済auth.usersメール)
+       - store_key: 戸津池店固定(将来的に動的化可能) */
     var payload={
       user_id:currentUserId,
       name:name,
@@ -593,6 +599,8 @@ async function saveProfile(){
       phone:phone,
       handedness:selectedHandedness,
       golf_history:golfHistory,
+      email:currentUserEmail,
+      store_key:'tozuike',
       updated_at:new Date().toISOString()
     };
     if(birthDate) payload.birth_date=birthDate;
