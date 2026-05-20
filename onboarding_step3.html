@@ -407,6 +407,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 });
 
 var currentUserId=null;
+var currentUserEmail=null;
 
 /* セッションチェック */
 sb.auth.getSession().then(function(res){
@@ -415,6 +416,7 @@ sb.auth.getSession().then(function(res){
     return;
   }
   currentUserId=res.data.session.user.id;
+  currentUserEmail=res.data.session.user.email;
 });
 
 function showMsg(type,text){
@@ -459,6 +461,7 @@ async function verifyMember(){
       return;
     }
     currentUserId=res.data.session.user.id;
+    currentUserEmail=res.data.session.user.email;
   }
 
   btn.disabled=true;
@@ -488,12 +491,17 @@ async function verifyMember(){
       return;
     }
 
-    /* customers テーブルに会員情報を書き込み(認証完了) */
+    /* customers テーブルに会員情報を書き込み(認証完了)
+       【コミット11 2026-05-20】NOT NULL制約対応:email, name を必須として追加
+       - email: MyCoach ログイン用メール(認証済の auth.users メール)
+       - name: 空文字で初期化(step5 でユーザー本人が更新) */
     var upsertResult=await sb.from('customers').upsert({
       user_id:currentUserId,
       store_key:'tozuike',
       member_number:data.member_number,
       member_type:data.member_type,
+      email:currentUserEmail,
+      name:'',
       is_approved:true,
       updated_at:new Date().toISOString()
     },{onConflict:'user_id'});
