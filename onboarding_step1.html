@@ -142,15 +142,11 @@ async function doRegister(){
 
   const redirectUrl='https://soft-speculoos-5ef188.netlify.app/onboarding_step2.html';
 
-  /* 【コミット8 2026-05-20】確実にメール送信されることを保証する処理
-     Supabase の仕様: 既に確認済のメールアドレスで signUp() を呼ぶと
-     error は返らず、偽のユーザーオブジェクト(identities:[] )が返り、
-     確認メールは送信されない(セキュリティ上の仕様)。
-     対策:
-       1) signUp の data.user.identities を確認
-       2) 空配列なら「既登録ユーザー」と判断 → resend で確認メール再送 を試行
-       3) resend が成功(または rate limit以外のエラーなし)→ メール送信
-       4) resend で「既に確認済み」と判断できる場合 → ログイン誘導 */
+  /* 【コミット9 2026-05-20】Supabase最新仕様対応
+     既登録ユーザーの場合、現在のSupabaseは下記いずれかのパターンを返す:
+       A) data.user = null (新仕様)
+       B) data.user.identities = [] (旧仕様)
+     どちらのパターンでも「既登録」と判定する必要がある */
   const {data,error}=await sb.auth.signUp({
     email,
     password:pass,
@@ -167,8 +163,8 @@ async function doRegister(){
     return;
   }
 
-  /* data.user.identities が空配列 = 既登録ユーザー(Supabaseの仕様) */
-  const isExistingUser = data && data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
+  /* 既登録判定: error が null かつ、user が null または identities が空配列 */
+  const isExistingUser = !error && (!data?.user || (Array.isArray(data?.user?.identities) && data.user.identities.length === 0));
 
   if(isExistingUser){
     /* 既に登録済 → 確認メール再送を試行 */
