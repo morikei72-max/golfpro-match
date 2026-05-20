@@ -43,6 +43,7 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 .btn-primary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;}
 .btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
 .err{color:#ff8a8a;font-size:12px;margin-bottom:12px;display:none;text-align:center;padding:10px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;}
+.err a{color:var(--green-bright);text-decoration:underline;font-weight:600;}
 .hint-card{background:rgba(201,169,97,0.08);border:1px solid rgba(201,169,97,0.2);border-radius:12px;padding:12px;margin-top:14px;font-size:10px;color:var(--text-sub);line-height:1.7;}
 .hint-card strong{color:var(--gold);font-weight:600;}
 .success-msg{color:var(--green-bright);font-size:13px;margin-bottom:14px;display:none;text-align:center;padding:14px;background:rgba(101,206,165,0.1);border:1px solid rgba(101,206,165,0.3);border-radius:12px;line-height:1.7;}
@@ -142,11 +143,10 @@ async function doRegister(){
 
   const redirectUrl='https://soft-speculoos-5ef188.netlify.app/onboarding_step2.html';
 
-  /* 【コミット9 2026-05-20】Supabase最新仕様対応
-     既登録ユーザーの場合、現在のSupabaseは下記いずれかのパターンを返す:
-       A) data.user = null (新仕様)
-       B) data.user.identities = [] (旧仕様)
-     どちらのパターンでも「既登録」と判定する必要がある */
+  /* 【コミット10 2026-05-20】既登録ユーザーは即座にログイン誘導
+     Supabase最新仕様:既登録ユーザーが signUp() を呼ぶと、
+     error は返らず、data.user = null または identities=[] を返す。
+     その場合は確認メール再送などせず、即座にログイン画面へ誘導する。 */
   const {data,error}=await sb.auth.signUp({
     email,
     password:pass,
@@ -167,43 +167,11 @@ async function doRegister(){
   const isExistingUser = !error && (!data?.user || (Array.isArray(data?.user?.identities) && data.user.identities.length === 0));
 
   if(isExistingUser){
-    /* 既に登録済 → 確認メール再送を試行 */
-    const resendResult = await sb.auth.resend({
-      type:'signup',
-      email,
-      options:{
-        emailRedirectTo:redirectUrl
-      }
-    });
-
-    if(resendResult.error){
-      const msg = (resendResult.error.message||'').toLowerCase();
-      if(msg.includes('already') || msg.includes('confirmed')){
-        /* 既に確認完了済 → ログイン誘導 */
-        err.innerHTML='このメールアドレスは既に登録・認証済みです。<br><a href="customer_login.html" style="color:#5DBB63;text-decoration:underline;">ログイン画面へ進む</a>';
-        err.style.display='block';
-        btn.disabled=false;
-        btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-        return;
-      }
-      if(msg.includes('rate') || msg.includes('limit')){
-        err.textContent='送信回数の上限に達しています。約1時間後に再度お試しください。';
-        err.style.display='block';
-        btn.disabled=false;
-        btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-        return;
-      }
-      err.textContent='確認メールの再送に失敗しました: '+resendResult.error.message;
-      err.style.display='block';
-      btn.disabled=false;
-      btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
-      return;
-    }
-
-    /* resend 成功 = 確認メール再送完了 */
-    success.innerHTML='✅ 確認メールを再送信しました<br>メール内のリンクをクリックして<br>登録を完了してください';
-    success.style.display='block';
-    btn.style.display='none';
+    /* 既に登録済 → 即座にログイン誘導(メール再送なし) */
+    err.innerHTML='このメールアドレスは既に登録されています。<br><a href="customer_login.html">ログイン画面へ進む</a>';
+    err.style.display='block';
+    btn.disabled=false;
+    btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
     return;
   }
 
