@@ -5,10 +5,13 @@
 // 【2026/5/18 更新】店舗向けFlex Message 3種類追加(申込・承認・確定)
 // 【2026/5/18 更新】Task G STEP 5 - notifyBookingConfirmed に店舗向け青カード送信を追加
 // 【2026/5/19 更新】コミット3 - 店舗向けFlex Message にプラン名(plan_name)表示を追加
+// 【2026/5/21 更新】予約確定カードのキャンセルボタンを URI アクションに変更(customer.html へ直接遷移)
 
 const { createClient } = require('@supabase/supabase-js');
 
 const LINE_PUSH_URL = 'https://api.line.me/v2/bot/message/push';
+
+const BASE_URL = 'https://soft-speculoos-5ef188.netlify.app';
 
 const STORE_KEY_TO_NAME = {
   tozuike: 'Golf Create 戸津池店',
@@ -131,9 +134,6 @@ async function pushFlexMessage(toUserId, altText, flexContent) {
   }
 }
 
-/* ============================================
-   【2026/4/25 追加】年齢計算関数
-============================================ */
 function calcAge(birthDate) {
   if (!birthDate) return null;
   try {
@@ -151,8 +151,6 @@ function calcAge(birthDate) {
     return null;
   }
 }
-
-/* ===== 定型文テンプレート(テキスト版・互換性維持) ===== */
 
 function buildBookingConfirmedText({ customerName, coachName, lessonType, dateStr, timeStr, storeName, amount }) {
   return (
@@ -226,9 +224,6 @@ function buildApprovalRequestText({ coachName, customerName, lessonType, dateStr
   );
 }
 
-/**
- * コーチへの承認依頼 Flex Message(緑色・承認/却下ボタン付き)
- */
 function buildApprovalRequestFlex({ bookingId, customerName, lessonType, dateStr, timeStr, storeName, amount }) {
   return {
     type: 'bubble',
@@ -310,9 +305,6 @@ function buildApprovalRequestFlex({ bookingId, customerName, lessonType, dateStr
   };
 }
 
-/**
- * 却下理由選択ボタン Flex Message(赤色・4ボタン)
- */
 function buildRejectionButtonsFlex({ bookingId }) {
   return {
     type: 'bubble',
@@ -397,11 +389,6 @@ function buildRejectionButtonsFlex({ bookingId }) {
   };
 }
 
-/**
- * 【2026/4/25 新規】
- * コーチ向け 青カード Flex Message(決済完了後の新しいご依頼通知)
- * お客様情報(名前・ふりがな・年齢)を表示
- */
 function buildCoachNewBookingFlex({
   coachName,
   customerName,
@@ -502,8 +489,10 @@ function buildCoachNewBookingFlex({
 }
 
 /**
- * 【2026/4/25 新規】
- * お客様向け 青カード Flex Message(予約確定のお知らせ+キャンセルボタン)
+ * 【2026/4/25 新規】お客様向け 青カード Flex Message(予約確定のお知らせ+キャンセルボタン)
+ * 【2026/5/21 更新】キャンセルボタンを URI アクションに変更
+ *   - customer.html?action=cancel&booking_id=XXX へ直接遷移
+ *   - 「※キャンセル機能は準備中です」注記を削除
  */
 function buildBookingConfirmedFlex({
   bookingId,
@@ -515,6 +504,8 @@ function buildBookingConfirmedFlex({
   storeName,
   amount,
 }) {
+  const cancelUrl = `${BASE_URL}/customer.html?action=cancel&booking_id=${bookingId}`;
+
   return {
     type: 'bubble',
     size: 'mega',
@@ -618,33 +609,16 @@ function buildBookingConfirmedFlex({
           type: 'button',
           style: 'secondary',
           action: {
-            type: 'postback',
+            type: 'uri',
             label: '❌ 予約をキャンセルする',
-            data: `action=cancel_booking&booking_id=${bookingId}`,
-            displayText: '予約をキャンセルします',
+            uri: cancelUrl,
           },
-        },
-        {
-          type: 'text',
-          text: '※キャンセル機能は準備中です',
-          size: 'xxs',
-          color: '#999999',
-          align: 'center',
-          margin: 'sm',
         },
       ],
     },
   };
 }
 
-/**
- * 【2026/5/18 新規】
- * 【2026/5/19 更新】コミット3 - planName パラメータ追加
- * 店舗向け 共通お客様情報行ビルダー
- * is_approved=true → ✅ 会員
- * is_approved=false/null → ⚠️ 未認証
- * planName:hacomonoプラン名(あれば表示・なければ「⚠️ 非会員」)
- */
 function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, isApproved, planName }) {
   const rows = [
     _flexRow('お名前', `${customerName || '—'} 様`),
@@ -655,9 +629,6 @@ function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, 
   if (customerAge !== null && customerAge !== undefined) {
     rows.push(_flexRow('年齢', `${customerAge}歳`));
   }
-  /* 【2026/5/19 新規】コミット3 - プラン名表示
-     planName が文字列で値があればそのまま表示
-     null/undefined/空文字 の場合は「⚠️ 非会員」と表示 */
   if (planName && String(planName).trim() !== '') {
     rows.push(_flexRow('プラン', String(planName)));
   } else {
@@ -667,11 +638,6 @@ function _buildStoreCustomerRows({ customerName, customerFurigana, customerAge, 
   return rows;
 }
 
-/**
- * 【2026/5/18 新規】
- * 【2026/5/19 更新】コミット3 - planName パラメータ追加
- * 店舗向け オレンジカード Flex Message(予約申込が入った時)
- */
 function buildStorePendingRequestFlex({
   customerName,
   customerFurigana,
@@ -802,11 +768,6 @@ function buildStorePendingRequestFlex({
   };
 }
 
-/**
- * 【2026/5/18 新規】
- * 【2026/5/19 更新】コミット3 - planName パラメータ追加
- * 店舗向け 緑カード Flex Message(コーチが承認した時)
- */
 function buildStoreApprovedFlex({
   customerName,
   customerFurigana,
@@ -935,11 +896,6 @@ function buildStoreApprovedFlex({
   };
 }
 
-/**
- * 【2026/5/18 新規】
- * 【2026/5/19 更新】コミット3 - planName パラメータ追加
- * 店舗向け 青カード Flex Message(決済完了・予約確定時)
- */
 function buildStoreBookingConfirmedFlex({
   customerName,
   customerFurigana,
@@ -1151,10 +1107,6 @@ function buildApprovalCompleteText({ customerName, coachName, lessonType, minute
   );
 }
 
-/* ============================================
-   notify() 統合関数 - stripe-webhook.js から呼ばれる
-============================================ */
-
 async function notify(kind, payload) {
   try {
     if (kind === 'booking_confirmed') {
@@ -1167,12 +1119,6 @@ async function notify(kind, payload) {
   }
 }
 
-/**
- * 【2026/4/25 更新】
- * 予約確定時の通知(コーチとお客様両方にFlex Message青カードを送信)
- * 【2026/5/18 更新】Task G STEP 5 - 店舗向け青カード送信を追加
- * 【2026/5/19 更新】コミット3 - members テーブルから plan_name 取得・店舗向けFlexに渡す
- */
 async function notifyBookingConfirmed({ bookingId, session }) {
   if (!bookingId) {
     console.log('[line-notify] no bookingId');
@@ -1205,8 +1151,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     coach = data;
   }
 
-  /* 【2026/4/25 更新】customers から furigana, birth_date, age も取得
-     【2026/5/18 拡張】is_approved も取得 */
   let customer = null;
   const customerKey = booking.customer_id || booking.customer_user_id;
   if (customerKey) {
@@ -1232,7 +1176,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     }
   } else if (booking.store_key) {
     storeName = STORE_KEY_TO_NAME[booking.store_key] || booking.store_key;
-    /* 【2026/5/18 新規】店舗の line_user_id 取得のため store_key 経由でも取得 */
     const { data } = await supabase
       .from('stores')
       .select('id, name, store_key, line_user_id')
@@ -1244,10 +1187,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     }
   }
 
-  /* 【2026/5/19 新規】コミット3 - members テーブルから plan_name を取得
-     ・お客様のメールアドレス(小文字化)で members を引き当て
-     ・store_key は予約データ・店舗データの両方を考慮して決定
-     ・is_active=true のレコードのみ対象 */
   let planName = null;
   try {
     const customerEmail = customer?.email ? String(customer.email).toLowerCase().trim() : null;
@@ -1291,7 +1230,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
   const customerFurigana = customer?.furigana || null;
   const isApproved = !!customer?.is_approved;
 
-  /* 年齢計算:birth_date 優先、なければ age カラムを使用 */
   let customerAge = null;
   if (customer?.birth_date) {
     customerAge = calcAge(customer.birth_date);
@@ -1299,7 +1237,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     customerAge = customer.age;
   }
 
-  /* コーチ向け通知(青カード・Flex Message) */
   if (coach?.line_user_id) {
     const coachFlex = buildCoachNewBookingFlex({
       coachName,
@@ -1322,7 +1259,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     console.log('[line-notify] coach has no line_user_id');
   }
 
-  /* お客様向け通知(青カード・Flex Message+キャンセルボタン) */
   if (customer?.line_user_id) {
     const customerFlex = buildBookingConfirmedFlex({
       bookingId,
@@ -1344,9 +1280,6 @@ async function notifyBookingConfirmed({ bookingId, session }) {
     console.log('[line-notify] customer has no line_user_id');
   }
 
-  /* 【2026/5/18 新規】Task G STEP 5
-     【2026/5/19 更新】コミット3 - planName を渡す
-     店舗向け通知(青カード・Flex Message) */
   if (store?.line_user_id) {
     const storeFlex = buildStoreBookingConfirmedFlex({
       customerName,
