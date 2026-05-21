@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>領収書 - MyCoach</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Noto+Serif+JP:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#1a1a1a;color:#000;min-height:100vh;padding:20px 10px 60px;}
+
+/* ツールバー */
+.toolbar{position:sticky;top:10px;z-index:100;max-width:780px;margin:0 auto 14px;display:flex;gap:8px;justify-content:space-between;align-items:center;background:rgba(20,20,20,0.95);backdrop-filter:blur(10px);border:1px solid rgba(101,206,165,0.3);border-radius:14px;padding:10px 14px;}
+.toolbar .left{display:flex;gap:8px;align-items:center;}
+.toolbar h2{color:#fff;font-size:14px;font-weight:700;}
+.toolbar .meta{color:#7a9a8a;font-size:11px;}
+.toolbar .actions{display:flex;gap:8px;}
+.btn{font-family:inherit;font-size:12px;font-weight:700;padding:9px 16px;border-radius:9px;cursor:pointer;border:none;letter-spacing:0.05em;}
+.btn-primary{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;border:1px solid #65CEA5;box-shadow:0 0 16px rgba(101,206,165,0.2);}
+.btn-primary:active{transform:scale(0.97);}
+.btn-ghost{background:transparent;border:1px solid rgba(101,206,165,0.3);color:#65CEA5;}
+.btn-ghost:active{background:rgba(101,206,165,0.1);}
+
+/* 編集ボックス */
+.edit-box{max-width:780px;margin:0 auto 14px;background:rgba(255,255,255,0.05);border:1px dashed rgba(101,206,165,0.3);border-radius:12px;padding:12px 14px;color:#fff;display:flex;align-items:center;gap:10px;}
+.edit-box label{font-size:12px;color:#a8f0d0;font-weight:600;flex-shrink:0;}
+.edit-box input{flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(101,206,165,0.3);color:#fff;font-family:inherit;font-size:13px;padding:8px 12px;border-radius:8px;outline:none;}
+.edit-box input:focus{border-color:#65CEA5;}
+
+/* 領収書本体(A4縦) */
+#receipt-paper{
+  max-width:780px;
+  width:100%;
+  margin:0 auto;
+  background:#fff;
+  padding:50px 56px 40px;
+  box-shadow:0 12px 60px rgba(0,0,0,0.6);
+  position:relative;
+  font-family:'Noto Serif JP','Noto Sans JP',serif;
+}
+#receipt-paper::before{
+  content:'';
+  position:absolute;
+  inset:6px;
+  border:2px solid #064D3B;
+  pointer-events:none;
+}
+#receipt-paper::after{
+  content:'';
+  position:absolute;
+  inset:11px;
+  border:1px solid rgba(6,77,59,0.3);
+  pointer-events:none;
+}
+
+/* ロゴ・タイトル */
+.r-head{text-align:center;padding:14px 0 20px;border-bottom:2px solid #064D3B;position:relative;}
+.r-logo{font-family:'Noto Sans JP',sans-serif;font-size:18px;font-weight:800;color:#064D3B;letter-spacing:0.05em;}
+.r-logo .my{color:#064D3B;}
+.r-logo .coach{color:#65CEA5;}
+.r-title{font-size:32px;font-weight:900;color:#064D3B;letter-spacing:0.4em;margin-top:14px;text-indent:0.4em;}
+.r-no{font-size:11px;color:#555;margin-top:8px;letter-spacing:0.1em;}
+
+/* 宛名・日付 */
+.r-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:36px;}
+.r-recipient{font-size:24px;font-weight:600;border-bottom:1px solid #333;padding:0 50px 6px 4px;}
+.r-recipient .sama{font-size:18px;margin-left:8px;font-weight:400;}
+.r-date{font-size:12px;color:#333;letter-spacing:0.1em;}
+
+/* 金額 */
+.r-amount-box{margin:34px 0 14px;padding:20px;background:#f7faf8;border:2px solid #064D3B;border-radius:6px;text-align:center;position:relative;}
+.r-amount-box::before{
+  content:'金額';
+  position:absolute;
+  top:-12px;
+  left:20px;
+  background:#fff;
+  padding:0 10px;
+  font-size:12px;
+  color:#064D3B;
+  font-weight:700;
+  letter-spacing:0.2em;
+}
+.r-amount-yen{font-family:'Noto Sans JP',sans-serif;font-size:42px;font-weight:900;color:#064D3B;letter-spacing:0.02em;}
+.r-amount-yen .y{font-size:30px;margin-right:2px;}
+.r-amount-tax{font-size:11px;color:#666;margin-top:6px;}
+
+/* 但し書き */
+.r-desc{margin-top:24px;padding:14px 16px;background:#fafafa;border-left:4px solid #064D3B;}
+.r-desc .lab{font-size:11px;color:#666;letter-spacing:0.15em;margin-bottom:4px;}
+.r-desc .val{font-size:13px;color:#222;font-weight:500;line-height:1.5;}
+
+/* 内訳 */
+.r-detail{margin-top:24px;}
+.r-detail-row{display:flex;border-bottom:1px solid #eee;padding:9px 0;font-size:12px;}
+.r-detail-row:last-child{border-bottom:none;}
+.r-detail-row .l{color:#666;width:100px;flex-shrink:0;}
+.r-detail-row .v{color:#222;font-weight:500;flex:1;}
+
+/* 発行者 */
+.r-issuer{margin-top:42px;padding-top:24px;border-top:1px solid #ddd;display:flex;justify-content:space-between;align-items:flex-end;gap:30px;}
+.r-issuer-info{}
+.r-issuer .lab{font-size:10px;color:#666;letter-spacing:0.15em;}
+.r-issuer .company{font-family:'Noto Sans JP',sans-serif;font-size:16px;font-weight:800;color:#064D3B;margin-top:4px;}
+.r-issuer .invoice{font-size:10px;color:#444;margin-top:4px;letter-spacing:0.05em;}
+.r-issuer .address{font-size:10px;color:#666;margin-top:3px;}
+
+/* 印 */
+.r-stamp{
+  width:80px;height:80px;
+  border:3px solid #c44;
+  border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:#c44;
+  font-family:'Noto Serif JP',serif;font-weight:700;font-size:11px;
+  letter-spacing:0;
+  transform:rotate(-8deg);
+  flex-shrink:0;
+}
+.r-stamp .top{font-size:9px;}
+.r-stamp .main{font-size:13px;font-weight:900;margin:2px 0;}
+.r-stamp .bottom{font-size:9px;}
+
+/* フッター */
+.r-foot{margin-top:30px;padding-top:14px;border-top:1px solid #eee;text-align:center;font-size:9px;color:#999;letter-spacing:0.1em;}
+
+/* 印刷時 */
+@media print{
+  body{background:#fff;padding:0;}
+  .toolbar,.edit-box{display:none;}
+  #receipt-paper{box-shadow:none;max-width:none;width:100%;padding:30px 40px;}
+}
+
+/* ローディング */
+.loading{text-align:center;padding:60px 20px;color:#fff;}
+.loading-spinner{display:inline-block;width:40px;height:40px;border:3px solid rgba(101,206,165,0.3);border-top-color:#65CEA5;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:14px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.error{max-width:540px;margin:60px auto;background:#fff;border-radius:14px;padding:30px;text-align:center;}
+.error h3{color:#c44;margin-bottom:12px;}
+.error p{color:#555;font-size:13px;line-height:1.6;}
+.error a{display:inline-block;margin-top:14px;color:#064D3B;text-decoration:none;font-weight:700;}
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading">
+  <div class="loading-spinner"></div>
+  <div>領収書情報を準備中...</div>
+</div>
+
+<div id="error-box" class="error" style="display:none;">
+  <h3 id="error-title">エラー</h3>
+  <p id="error-msg"></p>
+  <a href="javascript:history.back()">← 戻る</a>
+</div>
+
+<div id="main-content" style="display:none;">
+  <!-- ツールバー -->
+  <div class="toolbar">
+    <div class="left">
+      <h2>領収書プレビュー</h2>
+      <span class="meta" id="status-meta">準備中</span>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="window.print()">印刷</button>
+      <button class="btn btn-primary" onclick="downloadPdf()">PDF保存・発行</button>
+    </div>
+  </div>
+
+  <!-- 宛名編集ボックス -->
+  <div class="edit-box" id="edit-box">
+    <label>宛名:</label>
+    <input type="text" id="recipient-input" oninput="updateRecipient()" placeholder="お客様名">
+  </div>
+
+  <!-- 領収書本体 -->
+  <div id="receipt-paper">
+    <div class="r-head">
+      <div class="r-logo"><span class="my">My</span><span class="coach">Coach</span></div>
+      <div class="r-title">領 収 書</div>
+      <div class="r-no" id="r-no">No. ----</div>
+    </div>
+
+    <div class="r-meta">
+      <div class="r-recipient">
+        <span id="r-recipient">--</span><span class="sama">様</span>
+      </div>
+      <div class="r-date" id="r-date">--</div>
+    </div>
+
+    <div class="r-amount-box">
+      <div class="r-amount-yen"><span class="y">¥</span><span id="r-amount">0</span><span style="font-size:24px;margin-left:4px;">-</span></div>
+      <div class="r-amount-tax" id="r-amount-tax">税込</div>
+    </div>
+
+    <div class="r-desc">
+      <div class="lab">但 し</div>
+      <div class="val" id="r-desc">ゴルフレッスン代として</div>
+    </div>
+
+    <div class="r-detail">
+      <div class="r-detail-row"><div class="l">レッスン日</div><div class="v" id="r-lesson-date">--</div></div>
+      <div class="r-detail-row"><div class="l">時間</div><div class="v" id="r-lesson-time">--</div></div>
+      <div class="r-detail-row"><div class="l">担当コーチ</div><div class="v" id="r-coach">--</div></div>
+      <div class="r-detail-row"><div class="l">レッスン種別</div><div class="v" id="r-lesson-type">--</div></div>
+      <div class="r-detail-row"><div class="l">取引番号</div><div class="v" id="r-booking-id">--</div></div>
+      <div class="r-detail-row"><div class="l">店舗</div><div class="v">Golf Create 戸津池店</div></div>
+    </div>
+
+    <div class="r-issuer">
+      <div class="r-issuer-info">
+        <div class="lab">発 行 者</div>
+        <div class="company">株式会社ケイエスケー</div>
+        <div class="invoice">登録番号 T1130001070904</div>
+        <div class="address">京都府八幡市</div>
+      </div>
+      <div class="r-stamp">
+        <div class="top">株式会社</div>
+        <div class="main">ケイエスケー</div>
+        <div class="bottom" id="r-stamp-date">--</div>
+      </div>
+    </div>
+
+    <div class="r-foot">
+      MyCoach by 株式会社ケイエスケー · この領収書は電子発行されました
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const bookingId=new URLSearchParams(location.search).get('booking_id');
+let bookingData=null;
+let existingReceipt=null;
+let recipientName='';
+
+(async()=>{
+  if(!bookingId){
+    showError('予約IDが指定されていません','URLに ?booking_id=XXX が含まれていません');
+    return;
+  }
+  
+  /* 予約データ取得 */
+  const{data,error}=await sb.from('bookings')
+    .select('id,customer_name,customer_id,coach_name,store_key,lesson_type,minutes,booking_date,booking_time,total_price,status,created_at')
+    .eq('id',bookingId)
+    .maybeSingle();
+  
+  if(error||!data){
+    showError('予約が見つかりません','URLが間違っているか、予約が削除された可能性があります');
+    return;
+  }
+  bookingData=data;
+  
+  /* 完了済予約か確認 */
+  if(!['confirmed','approved','completed'].includes(data.status)){
+    showError('領収書を発行できません','確定済み・完了済みの予約のみ領収書を発行できます。\n現在のステータス: '+data.status);
+    return;
+  }
+  
+  /* 既存の領収書を取得 */
+  const{data:rec}=await sb.from('receipts').select('*').eq('booking_id',bookingId).maybeSingle();
+  if(rec){
+    existingReceipt=rec;
+    recipientName=rec.recipient_name;
+  }else{
+    recipientName=data.customer_name||'お客様';
+  }
+  
+  /* 描画 */
+  renderReceipt();
+  
+  document.getElementById('loading').style.display='none';
+  document.getElementById('main-content').style.display='block';
+  
+  if(existingReceipt){
+    document.getElementById('status-meta').textContent='発行済 (No.'+existingReceipt.receipt_no+')';
+    document.getElementById('status-meta').style.color='#65CEA5';
+  }else{
+    document.getElementById('status-meta').textContent='未発行';
+    document.getElementById('status-meta').style.color='#FFD27A';
+  }
+})();
+
+function showError(title,msg){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('error-title').textContent=title;
+  document.getElementById('error-msg').textContent=msg;
+  document.getElementById('error-box').style.display='block';
+}
+
+function renderReceipt(){
+  const b=bookingData;
+  const amount=parseInt(b.total_price)||0;
+  const taxAmt=Math.round(amount*10/110);
+  const exclTax=amount-taxAmt;
+  
+  /* 領収書No */
+  const no=existingReceipt?existingReceipt.receipt_no:generateReceiptNo();
+  
+  /* 日付 */
+  const issueDate=existingReceipt?new Date(existingReceipt.issued_at):new Date();
+  const issueDateStr=formatDateJa(issueDate);
+  const lessonDateStr=formatDateJa(new Date(b.booking_date+'T00:00:00'));
+  const lessonTimeStr=b.booking_time?b.booking_time.slice(0,5):'--:--';
+  
+  /* 入力ボックス */
+  document.getElementById('recipient-input').value=recipientName;
+  if(existingReceipt){
+    document.getElementById('recipient-input').disabled=true;
+    document.getElementById('edit-box').style.opacity='0.5';
+  }
+  
+  /* 描画 */
+  document.getElementById('r-no').textContent='No. '+no;
+  document.getElementById('r-recipient').textContent=recipientName;
+  document.getElementById('r-date').textContent=issueDateStr;
+  document.getElementById('r-amount').textContent=amount.toLocaleString();
+  document.getElementById('r-amount-tax').textContent='(消費税10% ¥'+taxAmt.toLocaleString()+'を含む 内税)';
+  document.getElementById('r-desc').textContent='ゴルフレッスン代として('+formatLessonType(b.lesson_type)+')';
+  document.getElementById('r-lesson-date').textContent=lessonDateStr;
+  document.getElementById('r-lesson-time').textContent=lessonTimeStr+' から '+(b.minutes||60)+'分';
+  document.getElementById('r-coach').textContent=b.coach_name||'--';
+  document.getElementById('r-lesson-type').textContent=formatLessonType(b.lesson_type);
+  document.getElementById('r-booking-id').textContent=b.id.slice(0,8).toUpperCase();
+  document.getElementById('r-stamp-date').textContent=(issueDate.getMonth()+1)+'.'+issueDate.getDate();
+}
+
+function updateRecipient(){
+  if(existingReceipt)return;
+  recipientName=document.getElementById('recipient-input').value||'お客様';
+  document.getElementById('r-recipient').textContent=recipientName;
+}
+
+function generateReceiptNo(){
+  const d=new Date();
+  const ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
+  const rand=Math.floor(Math.random()*9000)+1000;
+  return ymd+'-'+rand;
+}
+
+function formatDateJa(d){
+  return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
+}
+
+function formatLessonType(t){
+  const m={indoor:'インドアレッスン',round:'ラウンドレッスン',accompany:'同伴レッスン',comp:'コンペレッスン',custom:'独自プランレッスン'};
+  return m[t]||(t||'レッスン');
+}
+
+async function downloadPdf(){
+  if(!confirm(existingReceipt?'発行済みの領収書をPDFダウンロードします。よろしいですか?':'領収書を発行してPDFをダウンロードします。\n\n※発行は1回のみです。発行後は宛名変更ができません。\n\n宛名: 「'+recipientName+'様」\n\nこの内容で発行しますか?')){
+    return;
+  }
+  
+  /* 既存でなければ Supabase に保存 */
+  if(!existingReceipt){
+    const receiptNo=document.getElementById('r-no').textContent.replace('No. ','');
+    const b=bookingData;
+    const amount=parseInt(b.total_price)||0;
+    const taxAmt=Math.round(amount*10/110);
+    const exclTax=amount-taxAmt;
+    
+    const{data,error}=await sb.from('receipts').insert({
+      booking_id:b.id,
+      customer_id:b.customer_id,
+      store_key:b.store_key,
+      receipt_no:receiptNo,
+      recipient_name:recipientName,
+      amount:amount,
+      tax_amount:taxAmt,
+      excl_tax_amount:exclTax,
+      description:'ゴルフレッスン代として('+formatLessonType(b.lesson_type)+')',
+      booking_date:b.booking_date,
+      booking_time:b.booking_time,
+      coach_name:b.coach_name,
+      lesson_type:b.lesson_type,
+      issued_by:'customer'
+    }).select().maybeSingle();
+    
+    if(error){
+      alert('領収書の保存に失敗しました: '+error.message);
+      return;
+    }
+    existingReceipt=data;
+    document.getElementById('status-meta').textContent='発行済 (No.'+data.receipt_no+')';
+    document.getElementById('status-meta').style.color='#65CEA5';
+    document.getElementById('recipient-input').disabled=true;
+    document.getElementById('edit-box').style.opacity='0.5';
+  }
+  
+  /* PDF生成 */
+  try{
+    const paper=document.getElementById('receipt-paper');
+    const{jsPDF}=window.jspdf;
+    const canvas=await html2canvas(paper,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const pdf=new jsPDF('p','mm','a4');
+    const pageW=pdf.internal.pageSize.getWidth();
+    const pageH=pdf.internal.pageSize.getHeight();
+    const imgRatio=canvas.height/canvas.width;
+    const imgW=pageW-20;
+    const imgH=imgW*imgRatio;
+    const yOffset=imgH<pageH-20?(pageH-imgH)/2:10;
+    pdf.addImage(imgData,'JPEG',10,yOffset,imgW,Math.min(imgH,pageH-20));
+    
+    const filename='領収書_'+document.getElementById('r-no').textContent.replace('No. ','')+'_'+recipientName+'.pdf';
+    pdf.save(filename);
+  }catch(e){
+    console.error(e);
+    alert('PDF生成に失敗しました: '+e.message);
+  }
+}
+</script>
+</body>
+</html>
