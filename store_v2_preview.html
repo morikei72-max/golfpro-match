@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>MyCoach 本部画面 v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --main:#65CEA5;
+  --main-dark:#3aa57c;
+  --main-light:#A8F0D0;
+  --bg:#000;
+  --bg-2:#0a0a0a;
+  --bg-3:#1a1a1a;
+  --border-dim:#222;
+  --green:#7fffaa;
+  --cyan:#5dd4ff;
+  --white:#fff;
+  --red:#ff6b6b;
+  --yellow:#FFD27A;
+  --muted:#888;
+  --muted-2:#5a5a5a;
+}
+body{font-family:'JetBrains Mono','Noto Sans JP',monospace;background:var(--bg);color:var(--main);font-size:12px;line-height:1.4;min-height:100vh;}
+
+/* ===== ヘッダー(緑バー) ===== */
+.header{padding:10px 16px;background:var(--main);color:#000;display:flex;justify-content:space-between;align-items:center;font-weight:700;}
+.header .left{display:flex;align-items:center;gap:14px;font-size:13px;letter-spacing:0.05em;}
+.header .ent{background:#000;color:var(--main);padding:4px 12px;letter-spacing:0.15em;font-weight:800;}
+.header .right{display:flex;gap:20px;font-size:11px;}
+.header .right .item strong{font-weight:900;}
+
+/* ===== ティッカー(流れる数値バー) ===== */
+.tick-bar{background:#000;color:var(--green);padding:10px 16px;font-size:11px;letter-spacing:0.05em;border-bottom:1px solid var(--main);display:flex;gap:24px;overflow-x:auto;white-space:nowrap;}
+.tick-bar::-webkit-scrollbar{display:none;}
+.tick-item{display:flex;align-items:center;gap:6px;}
+.tick-item .nm{color:#fff;font-weight:700;}
+.tick-item .up{color:var(--green);}
+.tick-item .dn{color:var(--red);}
+
+/* ===== パンくず・ファンクションキー ===== */
+.sub-bar{padding:6px 16px;background:var(--bg-3);border-bottom:1px solid var(--border-dim);display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+.sub-bar .crumb{color:var(--main);}
+.sub-bar .keys{color:var(--muted-2);font-size:10px;letter-spacing:0.05em;}
+.sub-bar .keys b{color:var(--main);font-weight:700;}
+
+/* ===== コンテナ ===== */
+.container{padding:14px;}
+
+/* ===== パネル(箱) ===== */
+.panel-b{background:var(--bg-2);border:1px solid var(--main);padding:14px;position:relative;}
+.panel-b.green{border-color:var(--green);}
+.panel-b.cyan{border-color:var(--cyan);}
+.panel-b.white{border-color:#fff;}
+.panel-b .label{font-size:10px;color:var(--muted);letter-spacing:0.15em;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;}
+.panel-b .num{font-size:34px;font-weight:700;color:var(--main);line-height:1;letter-spacing:-0.02em;font-family:'JetBrains Mono';}
+.panel-b.green .num{color:var(--green);}
+.panel-b.cyan .num{color:var(--cyan);}
+.panel-b.white .num{color:#fff;}
+.panel-b .unit{font-size:15px;color:var(--muted);margin-left:4px;}
+.panel-b .delta{font-size:11px;margin-top:8px;color:var(--green);font-weight:700;letter-spacing:0.05em;}
+.panel-b .delta.dn{color:var(--red);}
+.panel-b .delta.warn{color:var(--yellow);}
+
+/* ===== KPIグリッド ===== */
+.grid-blm{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+
+/* ===== 3列レイアウト ===== */
+.row-blm{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.row-blm-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+/* ===== パネルタイトル ===== */
+.pt-blm{font-size:11px;color:var(--main);letter-spacing:0.1em;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-dim);padding-bottom:6px;}
+.pt-blm .meta{color:var(--muted);font-size:10px;letter-spacing:0.05em;}
+.pt-blm::before{content:'■ ';color:var(--main);}
+
+/* ===== グラフ(棒) ===== */
+.chart-blm{height:130px;display:flex;align-items:flex-end;gap:6px;padding:8px 0;background:
+  repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(101,206,165,0.08) 19px,rgba(101,206,165,0.08) 20px);
+}
+.bar-blm{flex:1;background:var(--main);}
+.bar-blm.peak{background:var(--green);box-shadow:0 0 12px var(--green);}
+.chart-labels{display:flex;gap:6px;margin-top:6px;font-size:9px;color:var(--muted);letter-spacing:0.05em;}
+.chart-labels span{flex:1;text-align:center;}
+.chart-labels .now{color:var(--green);font-weight:800;}
+
+/* ===== テーブル ===== */
+.tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.tbl th{text-align:left;padding:6px 8px;background:var(--bg-3);color:var(--muted);font-weight:700;border-bottom:1px solid var(--main);letter-spacing:0.05em;font-size:9px;}
+.tbl td{padding:7px 8px;border-bottom:1px solid var(--border-dim);color:var(--main);}
+.tbl tr:hover td{background:rgba(101,206,165,0.06);}
+.tbl td.time{color:var(--cyan);font-weight:700;}
+.tbl td.green{color:var(--green);font-weight:700;}
+.tbl td.amt{text-align:right;color:#fff;font-weight:700;}
+.tbl td .tag-c{color:var(--green);font-size:9px;background:rgba(127,255,170,0.1);padding:2px 7px;border:1px solid var(--green);letter-spacing:0.05em;}
+.tbl td .tag-p{color:var(--yellow);font-size:9px;background:rgba(255,210,122,0.1);padding:2px 7px;border:1px solid var(--yellow);letter-spacing:0.05em;}
+.tbl td .tag-x{color:var(--red);font-size:9px;background:rgba(255,107,107,0.1);padding:2px 7px;border:1px solid var(--red);letter-spacing:0.05em;}
+
+/* ===== 打席 ===== */
+.seat-blm{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.seat-b{aspect-ratio:1.2;border:1px solid var(--main);display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-2);}
+.seat-b.busy{background:var(--main);color:#000;}
+.seat-b.busy .l{color:#000;font-weight:800;}
+.seat-b .n{font-size:24px;font-weight:700;}
+.seat-b .l{font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-top:3px;font-weight:700;}
+
+/* ===== イベント ===== */
+.evt-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dotted var(--border-dim);font-size:11px;}
+.evt-row .tm{color:var(--muted);min-width:48px;}
+.evt-row .ev{color:var(--main);flex:1;margin-left:12px;}
+.evt-row .ev.urg{color:var(--yellow);}
+.evt-row .ev.new{color:var(--green);}
+.evt-row .ev.pay{color:var(--cyan);}
+.evt-row .ev.cxl{color:var(--red);}
+
+/* ===== ステータスバー ===== */
+.status-bar{padding:8px 16px;background:var(--main);color:#000;font-size:10px;font-weight:700;letter-spacing:0.15em;display:flex;justify-content:space-between;border-top:1px solid #000;}
+
+/* ===== モバイル ===== */
+@media(max-width:900px){
+  .header{padding:8px 12px;flex-wrap:wrap;gap:8px;}
+  .header .left{font-size:11px;gap:8px;}
+  .header .ent{padding:3px 8px;}
+  .header .right{font-size:10px;gap:10px;flex-wrap:wrap;}
+  .tick-bar{font-size:10px;gap:14px;padding:8px 12px;}
+  .sub-bar{font-size:10px;padding:5px 12px;flex-direction:column;gap:4px;}
+  .container{padding:10px;}
+  .grid-blm{grid-template-columns:repeat(2,1fr);gap:6px;}
+  .panel-b{padding:10px;}
+  .panel-b .num{font-size:24px;}
+  .row-blm{grid-template-columns:1fr;gap:6px;}
+  .row-blm-2{grid-template-columns:1fr;gap:6px;}
+  .tbl{font-size:10px;}
+  .tbl th,.tbl td{padding:5px 6px;}
+  .seat-b .n{font-size:18px;}
+  .seat-b .l{font-size:8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== ヘッダー(緑バー) ===== -->
+<div class="header">
+  <div class="left">
+    <span class="ent">MyCoach</span>
+    <span>本部画面 · 戸津池店</span>
+  </div>
+  <div class="right">
+    <div class="item">担当: <strong>森下啓介</strong></div>
+    <div class="item">状態: <strong>稼働中</strong></div>
+    <div class="item">2026.05.21 · 17:42</div>
+  </div>
+</div>
+
+<!-- ===== ティッカー(流れる数値) ===== -->
+<div class="tick-bar">
+  <div class="tick-item"><span class="nm">売上</span> <span class="up">¥48,200</span> <span class="up">+12.0%</span></div>
+  <div class="tick-item"><span class="nm">本部</span> <span class="up">¥7,905</span> <span class="up">+12.0%</span></div>
+  <div class="tick-item"><span class="nm">予約</span> 14件 <span class="up">+3</span></div>
+  <div class="tick-item"><span class="nm">コーチ</span> 8名 <span class="up">±0</span></div>
+  <div class="tick-item"><span class="nm">会員</span> 169名 <span class="up">+3</span></div>
+  <div class="tick-item"><span class="nm">打席稼働</span> <span class="up">75.0%</span></div>
+  <div class="tick-item"><span class="nm">客単価</span> ¥3,443 <span class="up">+7.8%</span></div>
+  <div class="tick-item"><span class="nm">月目標</span> <span class="up">82.4%</span></div>
+</div>
+
+<!-- ===== パンくず ===== -->
+<div class="sub-bar">
+  <span><span class="crumb">ホーム</span> &gt; ダッシュボード &gt; 全体図</span>
+  <span class="keys"><b>F1</b>ヘルプ <b>F2</b>売上 <b>F3</b>予約 <b>F4</b>コーチ <b>F5</b>会員 <b>F6</b>運営</span>
+</div>
+
+<div class="container">
+
+  <!-- ===== 上段KPI ===== -->
+  <div class="grid-blm">
+    <div class="panel-b">
+      <div class="label"><span>本日売上</span><span>円</span></div>
+      <div class="num">48,200</div>
+      <div class="delta">▲ +5,162 (前日比 +12.0%)</div>
+    </div>
+    <div class="panel-b green">
+      <div class="label"><span>本部取り分</span><span>16.4%</span></div>
+      <div class="num">7,905</div>
+      <div class="delta">▲ 入金見込</div>
+    </div>
+    <div class="panel-b cyan">
+      <div class="label"><span>本日予約</span><span>件</span></div>
+      <div class="num">14</div>
+      <div class="delta">▲ +3 承認待ち ▼ 0 キャンセル</div>
+    </div>
+    <div class="panel-b white">
+      <div class="label"><span>打席稼働率</span><span>4打席中</span></div>
+      <div class="num">75<span class="unit">%</span></div>
+      <div class="delta">3/4 稼働 · 3番空き</div>
+    </div>
+  </div>
+
+  <!-- ===== 中段KPI ===== -->
+  <div class="grid-blm">
+    <div class="panel-b">
+      <div class="label"><span>月間売上累計</span><span>円</span></div>
+      <div class="num">412,000</div>
+      <div class="delta">▲ 目標達成 82.4%</div>
+    </div>
+    <div class="panel-b green">
+      <div class="label"><span>平均客単価</span><span>円</span></div>
+      <div class="num">3,443</div>
+      <div class="delta">▲ +250 (+7.8%)</div>
+    </div>
+    <div class="panel-b cyan">
+      <div class="label"><span>稼働コーチ</span><span>名</span></div>
+      <div class="num">8</div>
+      <div class="delta dn">▼ 承認待ち 2名</div>
+    </div>
+    <div class="panel-b white">
+      <div class="label"><span>会員総数</span><span>名</span></div>
+      <div class="num">169</div>
+      <div class="delta">▲ +3 今月 · LINE連携 42%</div>
+    </div>
+  </div>
+
+  <!-- ===== 3列: 売上推移 / コーチランキング / 打席 ===== -->
+  <div class="row-blm">
+    <div class="panel-b">
+      <div class="pt-blm"><span>月別売上推移</span><span class="meta">前年比 +34.2%</span></div>
+      <div class="chart-blm">
+        <div class="bar-blm" style="height:30%"></div>
+        <div class="bar-blm" style="height:45%"></div>
+        <div class="bar-blm" style="height:55%"></div>
+        <div class="bar-blm" style="height:48%"></div>
+        <div class="bar-blm" style="height:62%"></div>
+        <div class="bar-blm" style="height:75%"></div>
+        <div class="bar-blm peak" style="height:88%"></div>
+      </div>
+      <div class="chart-labels">
+        <span>11月</span><span>12月</span><span>1月</span><span>2月</span><span>3月</span><span>4月</span><span class="now">5月 ▲</span>
+      </div>
+    </div>
+
+    <div class="panel-b">
+      <div class="pt-blm"><span>コーチ売上ランキング</span><span class="meta">月累計</span></div>
+      <table class="tbl">
+        <tr><th>順位</th><th>コーチ</th><th>★</th><th style="text-align:right;">売上</th></tr>
+        <tr><td class="green">1位</td><td>森下啓介</td><td>4.9</td><td class="amt">¥184k</td></tr>
+        <tr><td class="green">2位</td><td>テスト太郎</td><td>4.6</td><td class="amt">¥72k</td></tr>
+        <tr><td class="green">3位</td><td>佐藤コーチ</td><td>4.7</td><td class="amt">¥48k</td></tr>
+      </table>
+    </div>
+
+    <div class="panel-b">
+      <div class="pt-blm"><span>打席状況</span><span class="meta">稼働中</span></div>
+      <div class="seat-blm" style="margin-top:4px;">
+        <div class="seat-b busy"><div class="n">1</div><div class="l">右打席</div></div>
+        <div class="seat-b busy"><div class="n">2</div><div class="l">右打席</div></div>
+        <div class="seat-b"><div class="n">3</div><div class="l">右打席</div></div>
+        <div class="seat-b busy"><div class="n">4</div><div class="l">左右兼用</div></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:10px;letter-spacing:0.1em;">3/4 稼働 · 3番打席 空き</div>
+    </div>
+  </div>
+
+  <!-- ===== 下段2列: 予約一覧 / システムイベント ===== -->
+  <div class="row-blm-2">
+    <div class="panel-b">
+      <div class="pt-blm"><span>本日の予約</span><span class="meta">14件</span></div>
+      <table class="tbl">
+        <tr><th>時刻</th><th>お客様</th><th>コーチ/種別</th><th>打席</th><th>金額</th><th>状態</th></tr>
+        <tr><td class="time">10:00</td><td>山田太郎</td><td>森下/インドア60</td><td>1</td><td class="amt">3,000</td><td><span class="tag-c">確定</span></td></tr>
+        <tr><td class="time">14:00</td><td>鈴木花子</td><td>森下/インドア90</td><td>2</td><td class="amt">4,500</td><td><span class="tag-c">確定</span></td></tr>
+        <tr><td class="time">17:00</td><td>田中次郎</td><td>森下/インドア60</td><td>4</td><td class="amt">3,000</td><td><span class="tag-p">承認待</span></td></tr>
+        <tr><td class="time">19:00</td><td>佐藤美咲</td><td>太郎/インドア60</td><td>3</td><td class="amt">3,000</td><td><span class="tag-p">決済待</span></td></tr>
+      </table>
+    </div>
+
+    <div class="panel-b">
+      <div class="pt-blm"><span>システムイベント</span><span class="meta">リアルタイム</span></div>
+      <div class="evt-row"><span class="tm">17:40</span><span class="ev new">[新規] 会員登録: 森下啓介様</span></div>
+      <div class="evt-row"><span class="tm">17:12</span><span class="ev urg">[警告] 明日5枠空きあり - 告知推奨</span></div>
+      <div class="evt-row"><span class="tm">16:42</span><span class="ev pay">[決済] 完了 ¥1,000 · 予約#43239</span></div>
+      <div class="evt-row"><span class="tm">15:38</span><span class="ev cxl">[キャンセル] 予約解除 · 返金¥964</span></div>
+      <div class="evt-row"><span class="tm">14:21</span><span class="ev new">[レビュー] ★5 投稿あり</span></div>
+      <div class="evt-row"><span class="tm">13:55</span><span class="ev">[承認] コーチ予約承認 #43240</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== ステータスバー(下部) ===== -->
+<div class="status-bar">
+  <span>● 稼働中 · 接続OK · 日本時間</span>
+  <span>MyCoach 本部画面 v2.0 · ビルド 2026.05.21</span>
+</div>
+
+</body>
+</html>
