@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - 売上</title>
+<link rel="apple-touch-icon" href="mycoach_icon_180.png">
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),
+    radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);
+}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+/* ===== ヘッダー ===== */
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid rgba(101,206,165,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#65CEA5;font-size:18px;text-decoration:none;font-weight:600;}
+.back-btn:active{background:rgba(101,206,165,0.15);}
+.page-title{flex:1;}
+.page-title h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:#7a9a8a;margin-top:3px;}
+
+/* ===== 期間タブ ===== */
+.period-tabs{display:flex;gap:6px;margin-bottom:18px;background:rgba(255,255,255,0.025);border:1px solid rgba(101,206,165,0.15);border-radius:12px;padding:4px;}
+.period-tab{flex:1;background:none;border:none;color:#7a9a8a;font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;transition:all .2s;}
+.period-tab.on{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;box-shadow:0 0 12px rgba(101,206,165,0.25);}
+
+/* ===== KPI ===== */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid rgba(101,206,165,0.15);border-radius:16px;padding:16px;}
+.kpi .lab{font-size:10px;color:#7a9a8a;font-weight:600;margin-bottom:6px;letter-spacing:0.05em;}
+.kpi .num{font-size:24px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.02em;}
+.kpi .num .y{color:#65CEA5;font-weight:400;font-size:16px;}
+.kpi .num .u{font-size:12px;color:#7a9a8a;margin-left:2px;}
+.kpi .d{font-size:10px;color:#65CEA5;margin-top:6px;font-weight:600;}
+.kpi .d.dn{color:#ff8a8a;}
+
+/* ===== パネル ===== */
+.panel{background:rgba(255,255,255,0.025);border:1px solid rgba(101,206,165,0.15);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:10px;color:#65CEA5;font-weight:600;letter-spacing:0.05em;}
+
+/* ===== グラフ ===== */
+.chart{height:160px;display:flex;align-items:flex-end;gap:5px;padding-bottom:8px;border-bottom:1px solid rgba(101,206,165,0.1);}
+.bar{flex:1;background:linear-gradient(180deg,#65CEA5,rgba(101,206,165,0.1));border-radius:4px 4px 0 0;opacity:0.6;position:relative;}
+.bar.peak{opacity:1;background:linear-gradient(180deg,#a8f0d0,#65CEA5);box-shadow:0 0 16px rgba(101,206,165,0.4);}
+.bar::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#a8f0d0;}
+.chart-labels{display:flex;gap:5px;margin-top:8px;}
+.chart-labels span{flex:1;font-size:9px;color:#7a9a8a;text-align:center;letter-spacing:0.05em;}
+.chart-labels .now{color:#65CEA5;font-weight:700;}
+
+/* ===== 円グラフ ===== */
+.donut-wrap{display:flex;align-items:center;gap:18px;}
+.donut{width:110px;height:110px;flex-shrink:0;}
+.donut-legend{flex:1;font-size:12px;}
+.donut-legend .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(101,206,165,0.08);}
+.donut-legend .row:last-child{border-bottom:none;}
+.donut-legend .row .l{color:#a8f0d0;font-size:11px;}
+.donut-legend .row .l .dot{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:middle;}
+.donut-legend .row strong{color:#fff;font-weight:700;}
+
+/* ===== 取り分内訳 ===== */
+.share-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(101,206,165,0.08);}
+.share-row:last-child{border-bottom:none;}
+.share-row .label{font-size:12px;color:#a8f0d0;}
+.share-row .label .ic{font-size:14px;margin-right:6px;}
+.share-row .label .sub{display:block;font-size:9px;color:#7a9a8a;margin-top:2px;}
+.share-row .amt{font-size:15px;font-weight:800;color:#fff;}
+.share-row.highlight{background:rgba(101,206,165,0.08);border-radius:10px;padding:11px 14px;margin-top:6px;border:1px solid rgba(101,206,165,0.25);}
+.share-row.highlight .label{color:#65CEA5;font-weight:700;}
+.share-row.highlight .amt{color:#65CEA5;font-size:17px;}
+
+/* ===== 振込予定 ===== */
+.payout-row{display:flex;align-items:center;padding:13px 0;border-bottom:1px solid rgba(101,206,165,0.08);}
+.payout-row:last-child{border-bottom:none;}
+.payout-date{font-size:13px;font-weight:700;color:#65CEA5;width:54px;}
+.payout-info{flex:1;margin-left:6px;}
+.payout-name{font-size:13px;font-weight:600;color:#fff;}
+.payout-meta{font-size:10px;color:#7a9a8a;margin-top:2px;}
+.payout-amt{font-size:13px;font-weight:800;color:#fff;}
+
+/* ===== ランキング ===== */
+.rank-row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid rgba(101,206,165,0.08);}
+.rank-row:last-child{border-bottom:none;}
+.rank-n{font-size:18px;font-weight:800;color:#65CEA5;width:32px;text-shadow:0 0 10px rgba(101,206,165,0.3);}
+.rank-n.gold{color:#FFD27A;text-shadow:0 0 10px rgba(255,210,122,0.4);}
+.rank-info{flex:1;}
+.rank-info .nm{font-size:13px;font-weight:600;color:#fff;}
+.rank-info .mt{font-size:10px;color:#7a9a8a;margin-top:2px;}
+.rank-amt{font-size:14px;font-weight:800;color:#fff;}
+
+/* ===== ローディング ===== */
+.skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+.empty{text-align:center;padding:24px 14px;color:#7a9a8a;font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_home.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>売上</h1>
+      <div class="sub">Golf Create 戸津池店</div>
+    </div>
+  </div>
+
+  <div class="period-tabs">
+    <button class="period-tab" onclick="setPeriod('today',this)">本日</button>
+    <button class="period-tab" onclick="setPeriod('week',this)">今週</button>
+    <button class="period-tab on" onclick="setPeriod('month',this)">今月</button>
+    <button class="period-tab" onclick="setPeriod('year',this)">今年</button>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="lab">月間売上累計</div>
+      <div class="num"><span class="y">¥</span><span id="kpi-month"><span class="skeleton">000,000</span></span></div>
+      <div class="d" id="kpi-month-d">読込中...</div>
+    </div>
+    <div class="kpi">
+      <div class="lab">本部取り分(16.4%)</div>
+      <div class="num"><span class="y">¥</span><span id="kpi-hq"><span class="skeleton">00,000</span></span></div>
+      <div class="d" id="kpi-hq-d">月累計</div>
+    </div>
+    <div class="kpi">
+      <div class="lab">平均客単価</div>
+      <div class="num"><span class="y">¥</span><span id="kpi-avg"><span class="skeleton">0,000</span></span></div>
+      <div class="d" id="kpi-avg-d">今月</div>
+    </div>
+    <div class="kpi">
+      <div class="lab">前年同月比</div>
+      <div class="num" id="kpi-yoy"><span class="skeleton">+0</span><span class="u">%</span></div>
+      <div class="d" id="kpi-yoy-d">読込中...</div>
+    </div>
+  </div>
+
+  <!-- 月別売上推移 -->
+  <div class="panel">
+    <div class="panel-title"><span>📊 月別売上推移</span><span class="meta">直近7ヶ月</span></div>
+    <div class="chart" id="chart-bars"></div>
+    <div class="chart-labels" id="chart-labels"></div>
+  </div>
+
+  <!-- レッスン種別売上 -->
+  <div class="panel">
+    <div class="panel-title"><span>🎯 レッスン種別売上</span><span class="meta">今月</span></div>
+    <div class="donut-wrap">
+      <svg class="donut" viewBox="0 0 36 36">
+        <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(101,206,165,0.1)" stroke-width="4"/>
+        <circle id="d-indoor" cx="18" cy="18" r="15.9" fill="none" stroke="#65CEA5" stroke-width="4" stroke-dasharray="0 100" transform="rotate(-90 18 18)"/>
+        <circle id="d-round" cx="18" cy="18" r="15.9" fill="none" stroke="#A8F0D0" stroke-width="4" stroke-dasharray="0 100" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        <circle id="d-accompany" cx="18" cy="18" r="15.9" fill="none" stroke="#3aa57c" stroke-width="4" stroke-dasharray="0 100" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        <circle id="d-comp" cx="18" cy="18" r="15.9" fill="none" stroke="#FFD27A" stroke-width="4" stroke-dasharray="0 100" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+        <circle id="d-custom" cx="18" cy="18" r="15.9" fill="none" stroke="#5dd4ff" stroke-width="4" stroke-dasharray="0 100" stroke-dashoffset="0" transform="rotate(-90 18 18)"/>
+      </svg>
+      <div class="donut-legend" id="donut-legend">
+        <div class="row"><span class="l"><span class="dot" style="background:#65CEA5"></span>インドア</span><strong id="pct-indoor">--</strong></div>
+        <div class="row"><span class="l"><span class="dot" style="background:#A8F0D0"></span>ラウンド</span><strong id="pct-round">--</strong></div>
+        <div class="row"><span class="l"><span class="dot" style="background:#3aa57c"></span>同伴</span><strong id="pct-accompany">--</strong></div>
+        <div class="row"><span class="l"><span class="dot" style="background:#FFD27A"></span>コンペ</span><strong id="pct-comp">--</strong></div>
+        <div class="row"><span class="l"><span class="dot" style="background:#5dd4ff"></span>独自プラン</span><strong id="pct-custom">--</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取り分内訳 -->
+  <div class="panel">
+    <div class="panel-title"><span>💰 取り分内訳</span><span class="meta">今月</span></div>
+    <div class="share-row">
+      <div class="label"><span class="ic">📦</span>本部+Stripe(20%)<span class="sub">うちStripe 3.6%</span></div>
+      <div class="amt" id="share-hq20">¥0</div>
+    </div>
+    <div class="share-row">
+      <div class="label"><span class="ic">👨‍🏫</span>コーチ取り分(80%)<span class="sub">全コーチ合計</span></div>
+      <div class="amt" id="share-coach">¥0</div>
+    </div>
+    <div class="share-row highlight">
+      <div class="label">✅ 本部実質取り分(16.4%)</div>
+      <div class="amt" id="share-hq-net">¥0</div>
+    </div>
+  </div>
+
+  <!-- 振込予定 -->
+  <div class="panel">
+    <div class="panel-title"><span>💴 振込予定</span><span class="meta">直近</span></div>
+    <div id="payout-list">
+      <div class="empty">振込予定を読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- 売上ランキング -->
+  <div class="panel">
+    <div class="panel-title"><span>🏆 コーチ別売上ランキング</span><span class="meta" id="rank-period">今月</span></div>
+    <div id="rank-list">
+      <div class="empty">ランキングを読み込み中...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================
+   Supabase 初期化
+============================ */
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+let currentPeriod='month';
+let coachMap={};
+
+/* 認証チェック */
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  await loadCoachMap();
+  loadAllData();
+})();
+
+async function loadCoachMap(){
+  const {data}=await sb.from('coaches').select('id,name').eq('store_key',STORE_KEY);
+  (data||[]).forEach(c=>{coachMap[c.id]=c.name;});
+}
+
+/* ============================
+   期間切替
+============================ */
+function setPeriod(p,btn){
+  currentPeriod=p;
+  document.querySelectorAll('.period-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const labels={today:'本日',week:'今週',month:'今月',year:'今年'};
+  document.getElementById('rank-period').textContent=labels[p];
+  loadAllData();
+}
+
+/* ============================
+   期間範囲取得
+============================ */
+function getPeriodRange(p){
+  const now=new Date();
+  let start,end;
+  if(p==='today'){
+    start=getDateStr(now);
+    end=getDateStr(now);
+  }else if(p==='week'){
+    const d=now.getDay();
+    const monday=new Date(now);monday.setDate(now.getDate()-((d+6)%7));
+    start=getDateStr(monday);
+    end=getDateStr(now);
+  }else if(p==='month'){
+    start=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    end=getDateStr(now);
+  }else if(p==='year'){
+    start=`${now.getFullYear()}-01-01`;
+    end=getDateStr(now);
+  }
+  return{start,end};
+}
+
+function getDateStr(d){
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+/* ============================
+   データロード
+============================ */
+async function loadAllData(){
+  const{start,end}=getPeriodRange(currentPeriod);
+
+  /* 期間内予約取得 */
+  const{data:bkgs}=await sb.from('bookings')
+    .select('total_price,status,coach_id,lesson_type,booking_date')
+    .eq('store_key',STORE_KEY)
+    .gte('booking_date',start)
+    .lte('booking_date',end)
+    .in('status',['confirmed','approved']);
+
+  const valid=bkgs||[];
+  const total=valid.reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+  const count=valid.length;
+  const avg=count>0?Math.round(total/count):0;
+  const hqShare=Math.round(total*0.164);
+  const hq20=Math.round(total*0.20);
+  const coachShare=total-hq20;
+
+  /* KPI更新 */
+  document.getElementById('kpi-month').textContent=total.toLocaleString();
+  document.getElementById('kpi-hq').textContent=hqShare.toLocaleString();
+  document.getElementById('kpi-avg').textContent=avg.toLocaleString();
+
+  const labelMap={today:'本日合計',week:'今週合計',month:'今月合計',year:'今年合計'};
+  document.getElementById('kpi-month-d').textContent=labelMap[currentPeriod]+' '+count+'件';
+  document.getElementById('kpi-hq-d').textContent=labelMap[currentPeriod];
+  document.getElementById('kpi-avg-d').textContent=labelMap[currentPeriod];
+
+  /* 前年同月比 */
+  await loadYoY();
+
+  /* 月別棒グラフ */
+  await loadMonthlyChart();
+
+  /* レッスン種別円グラフ */
+  loadLessonDonut(valid);
+
+  /* 取り分内訳 */
+  document.getElementById('share-hq20').textContent='¥'+hq20.toLocaleString();
+  document.getElementById('share-coach').textContent='¥'+coachShare.toLocaleString();
+  document.getElementById('share-hq-net').textContent='¥'+hqShare.toLocaleString();
+
+  /* 振込予定 */
+  loadPayouts(valid);
+
+  /* ランキング */
+  loadRanking(valid);
+}
+
+/* ============================
+   前年同月比
+============================ */
+async function loadYoY(){
+  const now=new Date();
+  const lastYear=new Date(now);lastYear.setFullYear(now.getFullYear()-1);
+  const lyStart=`${lastYear.getFullYear()}-${String(lastYear.getMonth()+1).padStart(2,'0')}-01`;
+  const lyEnd=`${lastYear.getFullYear()}-${String(lastYear.getMonth()+1).padStart(2,'0')}-31`;
+  const{data}=await sb.from('bookings')
+    .select('total_price,status')
+    .eq('store_key',STORE_KEY)
+    .gte('booking_date',lyStart)
+    .lte('booking_date',lyEnd)
+    .in('status',['confirmed','approved']);
+  const lyTotal=(data||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+
+  const thisMonthStart=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const thisMonthEnd=getDateStr(now);
+  const{data:tm}=await sb.from('bookings')
+    .select('total_price,status')
+    .eq('store_key',STORE_KEY)
+    .gte('booking_date',thisMonthStart)
+    .lte('booking_date',thisMonthEnd)
+    .in('status',['confirmed','approved']);
+  const tmTotal=(tm||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+
+  if(lyTotal===0){
+    document.getElementById('kpi-yoy').innerHTML=tmTotal>0?'NEW':'±0<span class="u">%</span>';
+    document.getElementById('kpi-yoy-d').textContent='前年データなし';
+    return;
+  }
+  const pct=((tmTotal-lyTotal)/lyTotal*100).toFixed(1);
+  const sign=pct>=0?'+':'';
+  document.getElementById('kpi-yoy').innerHTML=`${sign}${pct}<span class="u">%</span>`;
+  document.getElementById('kpi-yoy-d').textContent=`前年同月 ¥${lyTotal.toLocaleString()}`;
+  if(pct<0)document.getElementById('kpi-yoy-d').classList.add('dn');
+}
+
+/* ============================
+   月別棒グラフ(直近7ヶ月)
+============================ */
+async function loadMonthlyChart(){
+  const months=[];
+  const now=new Date();
+  for(let i=6;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({y:d.getFullYear(),m:d.getMonth()+1});
+  }
+
+  const monthData=[];
+  for(const mo of months){
+    const start=`${mo.y}-${String(mo.m).padStart(2,'0')}-01`;
+    const lastDay=new Date(mo.y,mo.m,0).getDate();
+    const end=`${mo.y}-${String(mo.m).padStart(2,'0')}-${String(lastDay).padStart(2,'0')}`;
+    const{data}=await sb.from('bookings')
+      .select('total_price,status')
+      .eq('store_key',STORE_KEY)
+      .gte('booking_date',start)
+      .lte('booking_date',end)
+      .in('status',['confirmed','approved']);
+    const total=(data||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+    monthData.push({label:mo.m+'月',value:total});
+  }
+
+  const max=Math.max(...monthData.map(d=>d.value),1);
+  const barsHTML=monthData.map((d,i)=>{
+    const h=d.value>0?Math.max(d.value/max*100,3):2;
+    const peak=i===monthData.length-1?' peak':'';
+    return`<div class="bar${peak}" style="height:${h}%"></div>`;
+  }).join('');
+  document.getElementById('chart-bars').innerHTML=barsHTML;
+
+  const labelsHTML=monthData.map((d,i)=>{
+    const cls=i===monthData.length-1?'now':'';
+    return`<span class="${cls}">${d.label}</span>`;
+  }).join('');
+  document.getElementById('chart-labels').innerHTML=labelsHTML;
+}
+
+/* ============================
+   レッスン種別円グラフ
+============================ */
+function loadLessonDonut(bkgs){
+  const types=['indoor','round','accompany','comp','custom'];
+  const totals={indoor:0,round:0,accompany:0,comp:0,custom:0};
+  bkgs.forEach(b=>{
+    const t=b.lesson_type||'indoor';
+    if(totals.hasOwnProperty(t))totals[t]+=parseInt(b.total_price)||0;
+  });
+  const grand=Object.values(totals).reduce((a,b)=>a+b,0);
+  if(grand===0){
+    types.forEach(t=>document.getElementById('pct-'+t).textContent='0%');
+    return;
+  }
+
+  let offset=0;
+  types.forEach(t=>{
+    const pct=Math.round(totals[t]/grand*100);
+    const el=document.getElementById('d-'+t);
+    el.setAttribute('stroke-dasharray',`${pct} 100`);
+    el.setAttribute('stroke-dashoffset',-offset);
+    offset+=pct;
+    document.getElementById('pct-'+t).textContent=pct+'%';
+  });
+}
+
+/* ============================
+   振込予定
+============================ */
+function loadPayouts(bkgs){
+  /* コーチ別に集計 */
+  const byCoach={};
+  bkgs.forEach(b=>{
+    if(!b.coach_id)return;
+    const coachAmt=Math.round((parseInt(b.total_price)||0)*0.80);
+    byCoach[b.coach_id]=(byCoach[b.coach_id]||0)+coachAmt;
+  });
+  const entries=Object.entries(byCoach).map(([id,amt])=>({id,amt,name:coachMap[id]||'(不明)'}));
+  entries.sort((a,b)=>b.amt-a.amt);
+
+  if(entries.length===0){
+    document.getElementById('payout-list').innerHTML='<div class="empty">振込予定はありません</div>';
+    return;
+  }
+
+  const today=new Date();
+  const payoutDate=new Date(today);payoutDate.setDate(today.getDate()+2);
+  const payStr=`${payoutDate.getMonth()+1}/${payoutDate.getDate()}`;
+
+  const html=entries.slice(0,5).map(e=>`
+    <div class="payout-row">
+      <div class="payout-date">${payStr}</div>
+      <div class="payout-info">
+        <div class="payout-name">${escapeHtml(e.name)}</div>
+        <div class="payout-meta">Stripe Connect · コーチ取り分80%</div>
+      </div>
+      <div class="payout-amt">¥${e.amt.toLocaleString()}</div>
+    </div>
+  `).join('');
+  document.getElementById('payout-list').innerHTML=html;
+}
+
+/* ============================
+   ランキング
+============================ */
+function loadRanking(bkgs){
+  const byCoach={};
+  bkgs.forEach(b=>{
+    if(!b.coach_id)return;
+    if(!byCoach[b.coach_id])byCoach[b.coach_id]={total:0,count:0};
+    byCoach[b.coach_id].total+=parseInt(b.total_price)||0;
+    byCoach[b.coach_id].count++;
+  });
+  const arr=Object.entries(byCoach).map(([id,d])=>({id,...d,name:coachMap[id]||'(不明)'}));
+  arr.sort((a,b)=>b.total-a.total);
+
+  if(arr.length===0){
+    document.getElementById('rank-list').innerHTML='<div class="empty">予約データがありません</div>';
+    return;
+  }
+
+  const html=arr.slice(0,5).map((e,i)=>{
+    const goldCls=i===0?' gold':'';
+    return`
+      <div class="rank-row">
+        <div class="rank-n${goldCls}">${i+1}</div>
+        <div class="rank-info">
+          <div class="nm">${escapeHtml(e.name)}</div>
+          <div class="mt">${e.count}件</div>
+        </div>
+        <div class="rank-amt">¥${e.total.toLocaleString()}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('rank-list').innerHTML=html;
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+
+</body>
+</html>
