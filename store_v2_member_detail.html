@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - 会員詳細</title>
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --main:#65CEA5;
+  --main-dark:#3aa57c;
+  --main-light:#A8F0D0;
+  --bg:#000;
+  --line:rgba(101,206,165,0.15);
+  --line-strong:rgba(101,206,165,0.3);
+  --muted:#7a9a8a;
+  --red:#ff8a8a;
+  --yellow:#FFD27A;
+}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
+.page-title{flex:1;}
+.page-title h1{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* プロフィール */
+.profile{background:linear-gradient(135deg,#064D3B,#0a3a2a);border:1px solid var(--line-strong);border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;}
+.profile::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(101,206,165,0.2),transparent 70%);}
+.profile-top{display:flex;align-items:center;gap:14px;position:relative;}
+.profile-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0a6c52,#1a8868);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;flex-shrink:0;border:2px solid var(--main);box-shadow:0 0 24px rgba(101,206,165,0.3);}
+.profile-info{flex:1;min-width:0;}
+.profile-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.profile-kana{font-size:11px;color:var(--main-light);margin-top:2px;}
+.profile-meta{font-size:11px;color:var(--main-light);margin-top:6px;}
+.profile-pills{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.pill{font-size:10px;padding:3px 8px;border-radius:100px;font-weight:700;}
+.pill-active{background:rgba(101,206,165,0.2);color:var(--main-light);border:1px solid var(--main);}
+.pill-warn{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
+.pill-red{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px;}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:14px;padding:14px;}
+.kpi .lab{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.kpi .num{font-size:22px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.02em;}
+.kpi .num .u{font-size:12px;color:var(--muted);margin-left:2px;}
+.kpi .num .y{color:var(--main);font-weight:400;font-size:14px;}
+.kpi .d{font-size:10px;color:var(--main);margin-top:6px;font-weight:600;}
+
+/* パネル */
+.panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
+
+/* 詳細行 */
+.detail-row{display:flex;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-row .l{color:var(--muted);width:96px;flex-shrink:0;}
+.detail-row .v{color:#fff;font-weight:500;flex:1;word-break:break-word;}
+
+/* 予約行 */
+.row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);}
+.row:last-child{border-bottom:none;}
+.row .l-date{font-size:12px;font-weight:700;color:var(--main);width:62px;}
+.row .l-info{flex:1;margin-left:6px;min-width:0;}
+.row .l-name{font-size:13px;font-weight:600;color:#fff;}
+.row .l-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.row .l-amt{font-size:13px;font-weight:800;color:#fff;}
+
+.bk-pill{font-size:9px;padding:3px 7px;border-radius:100px;font-weight:700;}
+.bk-cfm{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
+.bk-pnd{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
+.bk-cxl{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+
+.empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
+.skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_members.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>会員詳細</h1>
+      <div class="sub" id="page-sub">読込中...</div>
+    </div>
+  </div>
+
+  <div class="profile">
+    <div class="profile-top">
+      <div class="profile-icon" id="p-icon">?</div>
+      <div class="profile-info">
+        <div class="profile-name" id="p-name"><span class="skeleton">読込中</span></div>
+        <div class="profile-kana" id="p-kana">--</div>
+        <div class="profile-meta" id="p-meta">--</div>
+        <div class="profile-pills" id="p-pills"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi"><div class="lab">累計予約数</div><div class="num" id="kpi-total-bkg"><span class="skeleton">0</span><span class="u">件</span></div><div class="d" id="kpi-total-bkg-d">完了済</div></div>
+    <div class="kpi"><div class="lab">累計売上</div><div class="num"><span class="y">¥</span><span id="kpi-sales"><span class="skeleton">0</span></span></div><div class="d">本人支払額</div></div>
+    <div class="kpi"><div class="lab">平均客単価</div><div class="num"><span class="y">¥</span><span id="kpi-avg"><span class="skeleton">0</span></span></div><div class="d">1予約あたり</div></div>
+    <div class="kpi"><div class="lab">キャンセル率</div><div class="num" id="kpi-cxl"><span class="skeleton">0</span><span class="u">%</span></div><div class="d" id="kpi-cxl-d">累計</div></div>
+  </div>
+
+  <!-- 基本情報 -->
+  <div class="panel">
+    <div class="panel-title"><span>基本情報</span><span class="meta" id="member-no">--</span></div>
+    <div id="basic-info">
+      <div class="detail-row"><div class="l">プラン</div><div class="v"><span class="skeleton">読込中</span></div></div>
+    </div>
+  </div>
+
+  <!-- 連絡先 -->
+  <div class="panel">
+    <div class="panel-title"><span>連絡先</span></div>
+    <div id="contact-info">
+      <div class="detail-row"><div class="l">メール</div><div class="v"><span class="skeleton">読込中</span></div></div>
+    </div>
+  </div>
+
+  <!-- 予約履歴 -->
+  <div class="panel">
+    <div class="panel-title"><span>予約履歴</span><span class="meta" id="bkg-count">--</span></div>
+    <div id="bkg-list">
+      <div class="empty">読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- 投稿レビュー -->
+  <div class="panel">
+    <div class="panel-title"><span>投稿レビュー</span><span class="meta" id="review-count">--</span></div>
+    <div id="review-list">
+      <div class="empty">読み込み中...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+const memberId=new URLSearchParams(location.search).get('id');
+let memberData=null;
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  if(!memberId){alert('会員IDが指定されていません');location.replace('store_v2_members.html');return;}
+  await loadMember();
+  await loadBookingsAndReviews();
+})();
+
+async function loadMember(){
+  const{data,error}=await sb.from('members')
+    .select('*')
+    .eq('id',memberId)
+    .maybeSingle();
+  if(error||!data){
+    alert('会員情報が取得できません');
+    location.replace('store_v2_members.html');return;
+  }
+  memberData=data;
+  renderProfile();
+  renderBasicInfo();
+  renderContactInfo();
+}
+
+function renderProfile(){
+  document.getElementById('page-sub').textContent='Golf Create 戸津池店';
+  document.getElementById('p-name').textContent=memberData.name||'(名前未設定)';
+  document.getElementById('p-kana').textContent=memberData.name_kana||'';
+  
+  let meta=[];
+  if(memberData.age)meta.push(memberData.age+'歳');
+  if(memberData.gender)meta.push(memberData.gender);
+  if(memberData.birth_date)meta.push(formatDate(memberData.birth_date));
+  document.getElementById('p-meta').textContent=meta.join(' · ');
+  
+  document.getElementById('p-icon').textContent=(memberData.name||'?').charAt(0);
+  document.getElementById('member-no').textContent='ID '+(memberData.member_number||'--');
+  
+  /* ピル */
+  const pills=[];
+  if(memberData.is_active===false||memberData.withdrawal_date){
+    pills.push('<span class="pill pill-red">退会</span>');
+  }else{
+    pills.push('<span class="pill pill-active">在籍</span>');
+  }
+  if(memberData.plan_name){
+    pills.push('<span class="pill pill-active">'+escapeHtml(memberData.plan_name)+'</span>');
+  }
+  document.getElementById('p-pills').innerHTML=pills.join('');
+}
+
+function renderBasicInfo(){
+  const m=memberData;
+  const rows=[];
+  if(m.plan_name) rows.push(['プラン',escapeHtml(m.plan_name)+(m.plan_code?' ('+escapeHtml(m.plan_code)+')':'')]);
+  if(m.plan_start_date) rows.push(['契約開始',formatDate(m.plan_start_date)]);
+  if(m.plan_end_date) rows.push(['契約終了',formatDate(m.plan_end_date)]);
+  if(m.join_date) rows.push(['入会日',formatDate(m.join_date)]);
+  if(m.trial_date) rows.push(['初回受講',formatDate(m.trial_date)]);
+  if(m.last_visit_date) rows.push(['最終受講',formatDate(m.last_visit_date)]);
+  if(m.payment_method) rows.push(['支払方法',escapeHtml(m.payment_method)]);
+  if(m.join_staff_name) rows.push(['入会担当',escapeHtml(m.join_staff_name)]);
+  if(m.withdrawal_date) rows.push(['退会日','<span style="color:var(--red);">'+formatDate(m.withdrawal_date)+'</span>']);
+  
+  if(rows.length===0){
+    document.getElementById('basic-info').innerHTML='<div class="empty">基本情報が登録されていません</div>';
+  }else{
+    document.getElementById('basic-info').innerHTML=rows.map(r=>
+      '<div class="detail-row"><div class="l">'+r[0]+'</div><div class="v">'+r[1]+'</div></div>'
+    ).join('');
+  }
+}
+
+function renderContactInfo(){
+  const m=memberData;
+  const rows=[];
+  if(m.email) rows.push(['メール','<a href="mailto:'+escapeHtml(m.email)+'" style="color:var(--main);">'+escapeHtml(m.email)+'</a>']);
+  if(m.phone) rows.push(['電話','<a href="tel:'+escapeHtml(m.phone)+'" style="color:var(--main);">'+escapeHtml(m.phone)+'</a>']);
+  if(m.postal_code) rows.push(['郵便番号',escapeHtml(m.postal_code)]);
+  if(m.address){
+    let addr=(m.prefecture||'')+escapeHtml(m.address);
+    rows.push(['住所',addr]);
+  }else if(m.prefecture){
+    rows.push(['都道府県',escapeHtml(m.prefecture)]);
+  }
+  
+  if(rows.length===0){
+    document.getElementById('contact-info').innerHTML='<div class="empty">連絡先が登録されていません</div>';
+  }else{
+    document.getElementById('contact-info').innerHTML=rows.map(r=>
+      '<div class="detail-row"><div class="l">'+r[0]+'</div><div class="v">'+r[1]+'</div></div>'
+    ).join('');
+  }
+}
+
+async function loadBookingsAndReviews(){
+  /* email で customers と紐付けて bookings を取得 */
+  let customerId=null;
+  if(memberData.email){
+    const{data:cust}=await sb.from('customers')
+      .select('id')
+      .eq('email',memberData.email)
+      .maybeSingle();
+    if(cust)customerId=cust.id;
+  }
+  
+  /* 予約取得 */
+  let bookings=[];
+  if(customerId){
+    const{data}=await sb.from('bookings')
+      .select('id,total_price,status,coach_id,coach_name,lesson_type,minutes,booking_date,booking_time')
+      .eq('customer_id',customerId)
+      .order('booking_date',{ascending:false})
+      .order('booking_time',{ascending:false});
+    bookings=data||[];
+  }
+  
+  /* KPI */
+  const validBkgs=bookings.filter(b=>['confirmed','approved','completed'].includes(b.status));
+  const cxlBkgs=bookings.filter(b=>['cancelled','refunded'].includes(b.status));
+  const totalSales=validBkgs.reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+  const avg=validBkgs.length>0?Math.round(totalSales/validBkgs.length):0;
+  const cxlRate=bookings.length>0?Math.round(cxlBkgs.length/bookings.length*1000)/10:0;
+  
+  document.getElementById('kpi-total-bkg').innerHTML=validBkgs.length+'<span class="u">件</span>';
+  document.getElementById('kpi-total-bkg-d').textContent='完了 '+validBkgs.length+' / 全'+bookings.length+'件';
+  document.getElementById('kpi-sales').textContent=totalSales.toLocaleString();
+  document.getElementById('kpi-avg').textContent=avg.toLocaleString();
+  document.getElementById('kpi-cxl').innerHTML=cxlRate+'<span class="u">%</span>';
+  
+  /* 予約一覧 */
+  document.getElementById('bkg-count').textContent=bookings.length+'件';
+  if(bookings.length===0){
+    document.getElementById('bkg-list').innerHTML='<div class="empty">予約履歴がありません</div>';
+  }else{
+    const lessonMap={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自'};
+    const html=bookings.slice(0,15).map(b=>{
+      const dStr=formatDateShort(b.booking_date);
+      const tStr=b.booking_time?b.booking_time.slice(0,5):'';
+      const lesson=lessonMap[b.lesson_type]||b.lesson_type;
+      let pill='';
+      if(b.status==='confirmed') pill='<span class="bk-pill bk-cfm">確定</span>';
+      else if(b.status==='approved') pill='<span class="bk-pill bk-cfm">承認済</span>';
+      else if(b.status==='completed') pill='<span class="bk-pill bk-cfm">完了</span>';
+      else if(b.status==='pending_approval'||b.status==='pending') pill='<span class="bk-pill bk-pnd">承認待</span>';
+      else if(b.status==='cancelled'||b.status==='refunded') pill='<span class="bk-pill bk-cxl">キャンセル</span>';
+      else pill='<span class="bk-pill bk-pnd">'+b.status+'</span>';
+      return`
+        <div class="row">
+          <div class="l-date">${dStr}<br><span style="color:var(--muted);font-size:10px;">${tStr}</span></div>
+          <div class="l-info">
+            <div class="l-name">${escapeHtml(b.coach_name||'(コーチ未設定)')}</div>
+            <div class="l-meta">${lesson} ${b.minutes?b.minutes+'分':''} · ¥${(b.total_price||0).toLocaleString()}</div>
+          </div>
+          ${pill}
+        </div>
+      `;
+    }).join('');
+    document.getElementById('bkg-list').innerHTML=html;
+  }
+  
+  /* レビュー一覧 */
+  if(customerId){
+    const{data:reviews}=await sb.from('reviews')
+      .select('id,rating,comment,coach_name,lesson_type,lesson_date,created_at')
+      .eq('customer_id',customerId)
+      .eq('status','submitted')
+      .order('created_at',{ascending:false});
+    const rvs=reviews||[];
+    document.getElementById('review-count').textContent=rvs.length+'件';
+    if(rvs.length===0){
+      document.getElementById('review-list').innerHTML='<div class="empty">投稿レビューはありません</div>';
+    }else{
+      const lessonMap={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自'};
+      const html=rvs.map(r=>{
+        const stars='★'.repeat(r.rating)+'<span style="color:#3a3a3a;">'+'★'.repeat(5-r.rating)+'</span>';
+        return`
+          <div class="row" style="flex-direction:column;align-items:stretch;gap:6px;padding:13px 0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:12px;font-weight:700;color:#fff;">${escapeHtml(r.coach_name||'(コーチ)')}</div>
+              <div style="color:#FFD27A;font-size:14px;font-weight:700;">${stars}</div>
+            </div>
+            <div style="font-size:10px;color:var(--muted);">${r.lesson_date?formatDateShort(r.lesson_date):''} · ${lessonMap[r.lesson_type]||''}</div>
+            <div style="font-size:12px;color:#e8efe9;line-height:1.5;background:rgba(101,206,165,0.04);border-left:2px solid var(--main);padding:8px 10px;border-radius:0 6px 6px 0;">${escapeHtml(r.comment||'')}</div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('review-list').innerHTML=html;
+    }
+  }else{
+    document.getElementById('review-count').textContent='0件';
+    document.getElementById('review-list').innerHTML='<div class="empty">投稿レビューはありません</div>';
+  }
+}
+
+function formatDate(ds){
+  if(!ds)return'';
+  const d=new Date(ds);
+  if(isNaN(d.getTime()))return ds;
+  return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();
+}
+function formatDateShort(ds){
+  if(!ds)return'';
+  const p=String(ds).split('T')[0].split('-');
+  if(p.length<3)return ds;
+  const wd=['日','月','火','水','木','金','土'][new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])).getDay()];
+  return`${parseInt(p[1])}/${parseInt(p[2])}(${wd})`;
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>
