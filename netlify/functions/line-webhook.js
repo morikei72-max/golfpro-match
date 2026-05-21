@@ -11,6 +11,11 @@
 //   - STORE_KEY_TO_NAME を kyoto → tozuike に修正
 //   - LESSON_TYPE_LABEL に custom 追加
 //   - handleApprove に店舗向け緑承認カード送信処理を追加
+//
+// 【2026/5/21 更新】
+//   - handleApprove で members テーブルから plan_name を取得
+//   - buildStoreApprovedFlex に planName を渡す
+//   - customers select に email カラムを追加
 
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
@@ -186,6 +191,7 @@ async function handlePostback({ ev, lineUserId, supabase }) {
 // ============================================
 // 承認処理
 // 【2026/5/18 更新】Task G STEP 4b - 店舗向け緑承認カード送信処理を追加
+// 【2026/5/21 更新】members テーブルから plan_name を取得し、店舗向けFlex Messageに渡す
 // ============================================
 async function handleApprove({ bookingId, lineUserId, supabase }) {
   const { error: updateErr } = await supabase
@@ -224,12 +230,13 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     .maybeSingle();
 
   // 【2026/5/18 拡張】customers から furigana/age/birth_date/is_approved も取得
+  // 【2026/5/21 拡張】email も取得して、後段の members 引き当てに使用
   const customerKey = booking.customer_id || booking.customer_user_id;
   let customer = null;
   if (customerKey) {
     const { data } = await supabase
       .from('customers')
-      .select('id, name, furigana, age, birth_date, is_approved, line_user_id')
+      .select('id, name, email, furigana, age, birth_date, is_approved, line_user_id')
       .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
       .maybeSingle();
     customer = data;
@@ -248,6 +255,35 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     } else {
       store = data;
     }
+  }
+
+  // ============================================
+  // 【2026/5/21 新規】members テーブルから plan_name を取得
+  //  店舗向け緑カードの「プラン」欄に表示する
+  // ============================================
+  let planName = null;
+  try {
+    const customerEmail = customer?.email ? String(customer.email).toLowerCase().trim() : null;
+    const storeKey = booking.store_key;
+    if (customerEmail && storeKey) {
+      const { data: memberRow, error: memberErr } = await supabase
+        .from('members')
+        .select('plan_name')
+        .eq('store_key', storeKey)
+        .eq('email', customerEmail)
+        .eq('is_active', true)
+        .maybeSingle();
+      if (memberErr) {
+        console.error('[approve] members fetch error:', memberErr);
+      } else if (memberRow && memberRow.plan_name) {
+        planName = memberRow.plan_name;
+      }
+      console.log('[approve] plan_name lookup:', { customerEmail, storeKey, planName });
+    } else {
+      console.log('[approve] plan_name lookup skipped (no email or store_key)');
+    }
+  } catch (e) {
+    console.error('[approve] plan_name lookup exception:', e);
   }
 
   // 共通パラメータ準備
@@ -299,13 +335,17 @@ async function handleApprove({ bookingId, lineUserId, supabase }) {
     `— MyCoach`
   );
 
+  // ============================================
   // 【2026/5/18 新規】店舗のLINEに緑承認カードを送信
+  // 【2026/5/21 更新】planName を渡す
+  // ============================================
   if (store?.line_user_id) {
     const storeFlex = buildStoreApprovedFlex({
       customerName,
       customerFurigana,
       customerAge,
       isApproved,
+      planName,
       coachName,
       lessonType,
       dateStr,
