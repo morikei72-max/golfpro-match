@@ -64,6 +64,8 @@ body::before{
 .coach-photo img{width:100%;height:100%;object-fit:cover;}
 .coach-info{flex:1;min-width:0;}
 .coach-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+.coach-star{font-size:11px;color:#FFD27A;font-weight:700;background:rgba(255,210,122,0.1);padding:2px 8px;border-radius:100px;border:1px solid rgba(255,210,122,0.3);}
+.coach-star-zero{color:var(--muted);background:rgba(101,206,165,0.04);border-color:var(--line);}
 .coach-meta{font-size:11px;color:var(--muted);margin-top:3px;}
 .coach-stats{display:flex;gap:14px;margin-top:6px;font-size:10px;}
 .coach-stats span{color:var(--muted);}
@@ -161,6 +163,21 @@ async function loadCoaches(){
   document.getElementById('kpi-stripe').textContent=stripeOK.length+'/'+active.length;
   document.getElementById('kpi-stripe-d').textContent=stripeOK.length===active.length?'全員設定完了':(active.length-stripeOK.length)+'名未完了';
 
+  /* 全コーチのレビュー一括取得 */
+  const coachIds=allCoaches.map(c=>c.id);
+  let reviewMap={};
+  if(coachIds.length>0){
+    const{data:reviews}=await sb.from('reviews')
+      .select('coach_id,rating')
+      .in('coach_id',coachIds)
+      .eq('status','submitted');
+    (reviews||[]).forEach(r=>{
+      if(!reviewMap[r.coach_id])reviewMap[r.coach_id]={total:0,count:0};
+      reviewMap[r.coach_id].total+=r.rating;
+      reviewMap[r.coach_id].count++;
+    });
+  }
+
   /* 各コーチの予約数・売上を取得(月累計)*/
   const monthStart=getMonthStartString();
   const today=getTodayString();
@@ -183,6 +200,23 @@ async function loadCoaches(){
     const total=(allBkgs||[]).length;
     const cxl=(allBkgs||[]).filter(b=>['cancelled','refunded'].includes(b.status)).length;
     c._cxlRate=total>0?Math.round(cxl/total*1000)/10:0;
+
+    /* レビュー平均 */
+    const r=reviewMap[c.id];
+    c._reviewAvg=r&&r.count>0?(r.total/r.count):0;
+    c._reviewCount=r?r.count:0;
+  }
+
+  /* 全体の平均レビュー(KPI) */
+  let totalRating=0,totalReviewCount=0;
+  Object.values(reviewMap).forEach(r=>{totalRating+=r.total;totalReviewCount+=r.count;});
+  if(totalReviewCount>0){
+    const avg=(totalRating/totalReviewCount).toFixed(1);
+    document.getElementById('kpi-review').innerHTML=avg+'<span class="u">★</span>';
+    document.querySelector('.kpi-grid .kpi:nth-child(3) .d').textContent=totalReviewCount+'件のレビュー';
+  }else{
+    document.getElementById('kpi-review').innerHTML='0.0<span class="u">★</span>';
+    document.querySelector('.kpi-grid .kpi:nth-child(3) .d').textContent='レビュー未投稿';
   }
 
   renderList();
@@ -212,12 +246,21 @@ function renderList(){
     }else{
       pill='<span class="pill pill-active">稼働中</span>';
     }
+    /* ★表示 */
+    const reviewAvg=c._reviewAvg||0;
+    const reviewCount=c._reviewCount||0;
+    let starDisplay='';
+    if(reviewCount>0){
+      starDisplay='<span class="coach-star">★ '+reviewAvg.toFixed(1)+'</span>';
+    }else{
+      starDisplay='<span class="coach-star coach-star-zero">★ 0.0</span>';
+    }
     return`
       <a class="coach-card" href="store_v2_coach_detail.html?id=${c.id}">
         <div class="coach-photo">${photo}</div>
         <div class="coach-info">
-          <div class="coach-name">${escapeHtml(c.name||'(名前未設定)')}${pill}</div>
-          <div class="coach-meta">${escapeHtml(c.license||'')}</div>
+          <div class="coach-name">${escapeHtml(c.name||'(名前未設定)')} ${starDisplay} ${pill}</div>
+          <div class="coach-meta">${escapeHtml(c.license||'')} ${reviewCount>0?'· '+reviewCount+'件のレビュー':'· レビュー未投稿'}</div>
           <div class="coach-stats">
             <span>予約 <strong>${c._monthCount||0}件</strong></span>
             <span>売上 <strong>¥${formatK(c._monthSales||0)}</strong></span>
