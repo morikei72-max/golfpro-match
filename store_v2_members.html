@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - 会員</title>
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --main:#65CEA5;
+  --main-dark:#3aa57c;
+  --main-light:#A8F0D0;
+  --bg:#000;
+  --line:rgba(101,206,165,0.15);
+  --line-strong:rgba(101,206,165,0.3);
+  --muted:#7a9a8a;
+  --red:#ff8a8a;
+  --yellow:#FFD27A;
+}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),
+    radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);
+}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+/* ヘッダー */
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
+.back-btn:active{background:rgba(101,206,165,0.15);}
+.page-title{flex:1;}
+.page-title h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;}
+.kpi .lab{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.kpi .num{font-size:24px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.02em;}
+.kpi .num .u{font-size:12px;color:var(--muted);margin-left:2px;}
+.kpi .d{font-size:10px;color:var(--main);margin-top:6px;font-weight:600;}
+.kpi .d.warn{color:var(--yellow);}
+.kpi .d.dn{color:var(--red);}
+
+/* CSV取込パネル */
+.csv-panel{background:linear-gradient(135deg,rgba(101,206,165,0.1),rgba(101,206,165,0.03));border:1px dashed var(--line-strong);border-radius:14px;padding:20px 18px;text-align:center;margin-bottom:14px;}
+.csv-panel .csv-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px;}
+.csv-panel .csv-sub{font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+.csv-panel input[type=file]{display:none;}
+.csv-btn{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;border:1px solid var(--main);font-family:inherit;font-size:13px;font-weight:700;padding:11px 20px;border-radius:10px;cursor:pointer;letter-spacing:0.05em;box-shadow:0 0 16px rgba(101,206,165,0.2);display:inline-block;}
+.csv-btn:active{transform:scale(0.96);}
+.csv-status{margin-top:10px;font-size:11px;color:var(--main);}
+.csv-progress{display:none;margin-top:14px;background:rgba(101,206,165,0.05);border-radius:10px;padding:10px 14px;text-align:left;}
+.csv-progress .pg-bar{height:6px;background:rgba(101,206,165,0.1);border-radius:3px;overflow:hidden;margin:8px 0 6px;}
+.csv-progress .pg-fill{height:100%;background:linear-gradient(90deg,var(--main),var(--main-light));transition:width .3s;}
+.csv-progress .pg-text{font-size:11px;color:var(--main-light);}
+.csv-progress .pg-detail{font-size:10px;color:var(--muted);margin-top:3px;}
+
+/* 検索 */
+.search-bar{background:rgba(255,255,255,0.04);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.search-bar input{flex:1;background:none;border:none;color:#fff;font-family:inherit;font-size:13px;outline:none;}
+.search-bar input::placeholder{color:var(--muted);}
+.search-icon{color:var(--main);font-size:14px;}
+
+/* タブ */
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:12px;padding:4px;overflow-x:auto;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{flex:1;min-width:max-content;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:8px 12px;border-radius:9px;cursor:pointer;white-space:nowrap;}
+.tab.on{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;}
+
+/* パネル */
+.panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
+
+/* 会員カード */
+.member-card{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer;text-decoration:none;color:#fff;}
+.member-card:last-child{border-bottom:none;}
+.member-card:active{background:rgba(101,206,165,0.04);}
+.member-icon{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;border:1px solid var(--line-strong);}
+.member-icon.inactive{background:linear-gradient(135deg,#3a3a3a,#222);}
+.member-info{flex:1;min-width:0;}
+.member-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;}
+.member-meta{font-size:10px;color:var(--muted);margin-top:3px;}
+.member-stats{display:flex;gap:12px;margin-top:4px;font-size:10px;}
+.member-stats span{color:var(--muted);}
+.member-stats span strong{color:var(--main);font-weight:700;}
+.member-arrow{color:var(--muted);font-size:16px;}
+
+.pill{font-size:9px;padding:2px 7px;border-radius:100px;font-weight:700;white-space:nowrap;}
+.pill-active{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
+.pill-withdrawn{background:rgba(255,138,138,0.12);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+.pill-new{background:rgba(255,210,122,0.12);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
+
+.empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
+.skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+.pager{text-align:center;padding:14px;}
+.pager button{background:rgba(101,206,165,0.06);border:1px solid var(--line);color:var(--main);font-family:inherit;font-size:12px;padding:9px 18px;border-radius:10px;cursor:pointer;}
+.pager button:active{background:rgba(101,206,165,0.15);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_home.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>会員</h1>
+      <div class="sub">会員管理・hacomono連携</div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi"><div class="lab">総会員数</div><div class="num" id="kpi-total"><span class="skeleton">0</span><span class="u">名</span></div><div class="d" id="kpi-total-d">読込中</div></div>
+    <div class="kpi"><div class="lab">今月の新規</div><div class="num" id="kpi-new"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">今月入会</div></div>
+    <div class="kpi"><div class="lab">休眠会員</div><div class="num" id="kpi-dormant"><span class="skeleton">0</span><span class="u">名</span></div><div class="d warn">90日無受講</div></div>
+    <div class="kpi"><div class="lab">退会者</div><div class="num" id="kpi-withdrawn"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">累計</div></div>
+  </div>
+
+  <!-- CSV取込パネル -->
+  <div class="csv-panel">
+    <div class="csv-title">hacomono CSV取込</div>
+    <div class="csv-sub">hacomono からエクスポートした会員CSV(57列形式)を選択してください。<br>既存会員は最新情報で更新、退会者は自動で休止状態になります。</div>
+    <label for="csv-input" class="csv-btn">CSVファイルを選択</label>
+    <input type="file" id="csv-input" accept=".csv,text/csv" onchange="handleCsvSelect(this)">
+    <div class="csv-status" id="csv-status"></div>
+    <div class="csv-progress" id="csv-progress">
+      <div class="pg-text" id="pg-text">準備中...</div>
+      <div class="pg-bar"><div class="pg-fill" id="pg-fill" style="width:0%;"></div></div>
+      <div class="pg-detail" id="pg-detail">0/0</div>
+    </div>
+  </div>
+
+  <!-- 検索バー -->
+  <div class="search-bar">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search-input" placeholder="名前・カナ・電話・メールで検索" oninput="filterAndRender()">
+  </div>
+
+  <!-- フィルタタブ -->
+  <div class="tabs">
+    <button class="tab on" onclick="setFilter('all',this)">すべて</button>
+    <button class="tab" onclick="setFilter('active',this)">アクティブ</button>
+    <button class="tab" onclick="setFilter('new',this)">新規</button>
+    <button class="tab" onclick="setFilter('dormant',this)">休眠</button>
+    <button class="tab" onclick="setFilter('withdrawn',this)">退会</button>
+  </div>
+
+  <!-- 会員一覧 -->
+  <div class="panel">
+    <div class="panel-title"><span>会員一覧</span><span class="meta" id="list-count">読込中</span></div>
+    <div id="member-list">
+      <div class="empty">会員情報を読み込み中...</div>
+    </div>
+    <div class="pager" id="pager" style="display:none;">
+      <button onclick="loadMore()">さらに表示</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+let allMembers=[];
+let displayLimit=50;
+let currentFilter='all';
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  await loadMembers();
+})();
+
+async function loadMembers(){
+  const{data,error}=await sb.from('members')
+    .select('id,name,name_kana,member_number,email,phone,plan_name,is_active,birth_date,join_date,last_visit_date,withdrawal_date,gender,age,address,plan_code,plan_start_date,plan_end_date,payment_method')
+    .eq('store_key',STORE_KEY)
+    .order('join_date',{ascending:false,nullsFirst:false})
+    .order('created_at',{ascending:false});
+
+  if(error){
+    document.getElementById('member-list').innerHTML='<div class="empty">読込エラー: '+error.message+'</div>';
+    return;
+  }
+  allMembers=data||[];
+  renderKPI();
+  filterAndRender();
+}
+
+function renderKPI(){
+  const today=new Date();
+  const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
+  const ninetyDaysAgo=new Date(today.getTime()-90*24*60*60*1000);
+  
+  const total=allMembers.filter(m=>m.is_active!==false).length;
+  const newCount=allMembers.filter(m=>m.join_date&&new Date(m.join_date)>=monthStart).length;
+  const dormant=allMembers.filter(m=>{
+    if(m.is_active===false)return false;
+    if(!m.last_visit_date)return false;
+    return new Date(m.last_visit_date)<ninetyDaysAgo;
+  }).length;
+  const withdrawn=allMembers.filter(m=>m.is_active===false||m.withdrawal_date).length;
+
+  document.getElementById('kpi-total').innerHTML=total+'<span class="u">名</span>';
+  document.getElementById('kpi-total-d').textContent='アクティブ会員';
+  document.getElementById('kpi-new').innerHTML=newCount+'<span class="u">名</span>';
+  document.getElementById('kpi-dormant').innerHTML=dormant+'<span class="u">名</span>';
+  document.getElementById('kpi-withdrawn').innerHTML=withdrawn+'<span class="u">名</span>';
+}
+
+function setFilter(f,btn){
+  currentFilter=f;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  displayLimit=50;
+  filterAndRender();
+}
+
+function filterAndRender(){
+  const q=document.getElementById('search-input').value.trim().toLowerCase();
+  const today=new Date();
+  const monthStart=new Date(today.getFullYear(),today.getMonth(),1);
+  const ninetyDaysAgo=new Date(today.getTime()-90*24*60*60*1000);
+  
+  let filtered=allMembers.filter(m=>{
+    /* テキスト検索 */
+    if(q){
+      const text=((m.name||'')+' '+(m.name_kana||'')+' '+(m.phone||'')+' '+(m.email||'')+' '+(m.member_number||'')).toLowerCase();
+      if(text.indexOf(q)<0)return false;
+    }
+    /* フィルタ */
+    if(currentFilter==='active'){
+      if(m.is_active===false)return false;
+    }else if(currentFilter==='new'){
+      if(!m.join_date)return false;
+      if(new Date(m.join_date)<monthStart)return false;
+    }else if(currentFilter==='dormant'){
+      if(m.is_active===false)return false;
+      if(!m.last_visit_date)return false;
+      if(new Date(m.last_visit_date)>=ninetyDaysAgo)return false;
+    }else if(currentFilter==='withdrawn'){
+      if(m.is_active!==false&&!m.withdrawal_date)return false;
+    }
+    return true;
+  });
+  
+  document.getElementById('list-count').textContent=filtered.length+'名';
+  
+  if(filtered.length===0){
+    document.getElementById('member-list').innerHTML='<div class="empty">該当する会員がいません</div>';
+    document.getElementById('pager').style.display='none';
+    return;
+  }
+  
+  const displayed=filtered.slice(0,displayLimit);
+  const html=displayed.map(m=>renderMemberCard(m,today,monthStart,ninetyDaysAgo)).join('');
+  document.getElementById('member-list').innerHTML=html;
+  
+  if(filtered.length>displayLimit){
+    document.getElementById('pager').style.display='block';
+  }else{
+    document.getElementById('pager').style.display='none';
+  }
+}
+
+function renderMemberCard(m,today,monthStart,ninetyDaysAgo){
+  const name=m.name||'(名前未設定)';
+  const initial=name.charAt(0);
+  const inactive=m.is_active===false||m.withdrawal_date;
+  
+  /* ピル */
+  let pill='';
+  if(inactive){
+    pill='<span class="pill pill-withdrawn">退会</span>';
+  }else if(m.join_date&&new Date(m.join_date)>=monthStart){
+    pill='<span class="pill pill-new">新規</span>';
+  }else{
+    pill='<span class="pill pill-active">在籍</span>';
+  }
+  
+  /* 受講状態 */
+  let visitInfo='';
+  if(m.last_visit_date){
+    const lastVisit=new Date(m.last_visit_date);
+    const daysAgo=Math.floor((today-lastVisit)/(24*60*60*1000));
+    if(daysAgo<=7) visitInfo='直近来店 '+daysAgo+'日前';
+    else if(daysAgo<=30) visitInfo='直近 '+daysAgo+'日前';
+    else if(daysAgo<=90) visitInfo='しばらく未受講('+daysAgo+'日)';
+    else visitInfo='休眠('+daysAgo+'日)';
+  }else{
+    visitInfo='未受講';
+  }
+  
+  return`
+    <a class="member-card" href="store_v2_member_detail.html?id=${m.id}">
+      <div class="member-icon${inactive?' inactive':''}">${escapeHtml(initial)}</div>
+      <div class="member-info">
+        <div class="member-name">${escapeHtml(name)} ${pill}</div>
+        <div class="member-meta">${escapeHtml(m.plan_name||'(プラン未設定)')}${m.age?' · '+m.age+'歳':''}${m.gender?' · '+escapeHtml(m.gender):''}</div>
+        <div class="member-stats">
+          <span>${visitInfo}</span>
+          ${m.phone?'<span>'+escapeHtml(m.phone)+'</span>':''}
+        </div>
+      </div>
+      <div class="member-arrow">→</div>
+    </a>
+  `;
+}
+
+function loadMore(){
+  displayLimit+=50;
+  filterAndRender();
+}
+
+/* ============================================
+   CSV取込処理
+============================================ */
+async function handleCsvSelect(input){
+  if(!input.files||input.files.length===0)return;
+  const file=input.files[0];
+  
+  if(!confirm('CSVファイル「'+file.name+'」を取り込みますか?\n既存会員は最新情報で更新されます。')){
+    input.value='';return;
+  }
+  
+  document.getElementById('csv-status').textContent='ファイル読込中...';
+  document.getElementById('csv-progress').style.display='block';
+  document.getElementById('pg-text').textContent='ファイル解析中...';
+  
+  try{
+    const text=await file.text();
+    const rows=parseCsv(text);
+    if(rows.length<2){
+      alert('CSVが空です');
+      resetCsvUI();
+      return;
+    }
+    
+    const header=rows[0];
+    const dataRows=rows.slice(1);
+    
+    /* ヘッダーマッピング作成 */
+    const colMap={};
+    header.forEach((h,i)=>{colMap[h]=i;});
+    
+    const total=dataRows.length;
+    let successCount=0;
+    let errorCount=0;
+    let skipCount=0;
+    
+    document.getElementById('pg-text').textContent='Supabaseへ取込中...';
+    document.getElementById('pg-detail').textContent='0/'+total;
+    
+    for(let i=0;i<dataRows.length;i++){
+      const row=dataRows[i];
+      const record=buildMemberRecord(row,colMap);
+      
+      if(!record.member_number){skipCount++;continue;}
+      
+      try{
+        const{error}=await sb.from('members').upsert(record,{onConflict:'store_key,member_number'});
+        if(error){console.error('upsert error',record.member_number,error);errorCount++;}
+        else successCount++;
+      }catch(e){console.error('exception',e);errorCount++;}
+      
+      const pct=Math.round((i+1)/total*100);
+      document.getElementById('pg-fill').style.width=pct+'%';
+      document.getElementById('pg-detail').textContent=(i+1)+'/'+total+'  ('+successCount+'成功 / '+errorCount+'エラー / '+skipCount+'スキップ)';
+    }
+    
+    document.getElementById('pg-text').textContent='取込完了';
+    document.getElementById('csv-status').textContent='✓ '+successCount+'件取込・'+errorCount+'件エラー・'+skipCount+'件スキップ';
+    
+    /* 再ロード */
+    setTimeout(async()=>{
+      await loadMembers();
+      input.value='';
+    },1500);
+    
+  }catch(e){
+    console.error(e);
+    alert('取込エラー: '+e.message);
+    resetCsvUI();
+  }
+}
+
+function resetCsvUI(){
+  document.getElementById('csv-input').value='';
+  document.getElementById('csv-progress').style.display='none';
+  document.getElementById('csv-status').textContent='';
+}
+
+function parseCsv(text){
+  /* BOM除去 */
+  text=text.replace(/^\uFEFF/,'');
+  const rows=[];
+  let i=0,row=[],field='',inQuotes=false;
+  while(i<text.length){
+    const c=text[i];
+    if(inQuotes){
+      if(c==='"'){
+        if(text[i+1]==='"'){field+='"';i+=2;continue;}
+        inQuotes=false;i++;continue;
+      }
+      field+=c;i++;
+    }else{
+      if(c==='"'){inQuotes=true;i++;continue;}
+      if(c===','){row.push(field);field='';i++;continue;}
+      if(c==='\r'){i++;continue;}
+      if(c==='\n'){row.push(field);rows.push(row);row=[];field='';i++;continue;}
+      field+=c;i++;
+    }
+  }
+  if(field.length>0||row.length>0){row.push(field);rows.push(row);}
+  return rows.filter(r=>r.length>1);
+}
+
+function buildMemberRecord(row,colMap){
+  const get=(name)=>{
+    const idx=colMap[name];
+    return idx>=0?(row[idx]||'').trim():'';
+  };
+  const parseInt2=(s)=>{const v=parseInt(s);return isNaN(v)?null:v;};
+  const parseDate=(s)=>{
+    if(!s)return null;
+    const m=s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+    if(!m)return null;
+    return`${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  };
+  const parseDateTime=(s)=>{
+    if(!s)return null;
+    const dateStr=parseDate(s);
+    if(!dateStr)return null;
+    /* 時刻も含むか */
+    const t=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    if(t){
+      return`${dateStr}T${t[1].padStart(2,'0')}:${t[2]}:${(t[3]||'00').padStart(2,'0')}+09:00`;
+    }
+    return`${dateStr}T00:00:00+09:00`;
+  };
+  
+  const withdrawal=parseDate(get('退会手続き日'));
+  const isActive=!withdrawal;
+  
+  return{
+    store_key:STORE_KEY,
+    member_number:get('メンバーID'),
+    name:get('氏名')||(get('姓')+' '+get('名')).trim(),
+    last_name:get('姓'),
+    first_name:get('名'),
+    name_kana:get('氏名カナ'),
+    last_name_kana:get('姓カナ'),
+    first_name_kana:get('名カナ'),
+    email:get('メールアドレス'),
+    phone:get('電話番号'),
+    gender:get('性別'),
+    birth_date:parseDate(get('生年月日')),
+    age:parseInt2(get('年齢')),
+    postal_code:get('郵便番号'),
+    prefecture:get('都道府県'),
+    address:get('住所'),
+    trial_date:parseDateTime(get('トライアル 初回受講日時')||get('無料体験会 受講日時')),
+    join_date:parseDateTime(get('入会日時')),
+    last_visit_date:parseDateTime(get('最終受講日時')),
+    join_staff_name:get('入会担当者名'),
+    plan_code:get('契約プランコード'),
+    plan_name:get('契約プラン名'),
+    plan_start_date:parseDate(get('プラン契約適用開始日')),
+    plan_end_date:parseDate(get('プラン契約適用終了日')),
+    payment_method:get('支払方法'),
+    withdrawal_date:withdrawal,
+    is_active:isActive,
+    member_type:get('契約プラン名')||'通常',
+    last_import_at:new Date().toISOString()
+  };
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>
