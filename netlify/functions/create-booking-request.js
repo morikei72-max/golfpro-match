@@ -4,16 +4,17 @@
 //
 // 処理の流れ:
 // 1. バリデーション
-// 2. bookings INSERT (status='pending_approval')
-// 3. コーチの line_user_id を取得
-// 4. コーチのLINEへ Flex Message(承認/却下ボタン付き)を送信
-// 5. お客様画面に bookingId を返却
+// 2. customerId を customers.id に解決(auth user ID が来ても対応)
+// 3. bookings INSERT (status='pending_approval')
+// 4. コーチの line_user_id を取得
+// 5. コーチのLINEへ Flex Message(承認/却下ボタン付き)を送信
+// 6. 店舗のLINEへ Flex Message(オレンジカード)を送信
+// 7. お客様画面に bookingId を返却
 //
-// 【2026/5/18 更新】
-//   - STORE_KEY_TO_NAME を kyoto → tozuike に修正
-//   - デフォルト storeKey を tozuike に修正
-//   - LESSON_TYPE_LABEL に custom 追加
-//   - 店舗向けオレンジカード送信処理を追加(Task G STEP 3)
+// 【2026/5/21 更新】
+//   - customer_id 解決ロジックを INSERT 前に移動
+//   - auth user ID が来ても customers.id に変換して INSERT
+//   - bookings_customer_id_fkey 制約違反(23503)を防止
 
 const { createClient } = require('@supabase/supabase-js');
 const {
@@ -66,9 +67,9 @@ exports.handler = async (event) => {
     const body = JSON.parse(event.body || '{}');
 
     // ============================================
-    // 1. パラメータ受取(create-checkout-session.jsと同じ構造)
+    // 1. パラメータ受取
     // ============================================
-    const customerId   = body.customer_id || body.customer_user_id || body.customerId;
+    const rawCustomerId = body.customer_id || body.customer_user_id || body.customerId;
     const coachId      = body.coach_id    || body.coachId;
     const storeKey     = body.store_key   || body.storeKey || 'tozuike';
     const lessonType   = body.lesson_type || body.lessonType || 'indoor';
@@ -78,7 +79,7 @@ exports.handler = async (event) => {
     let   bookingTime  = body.booking_time || body.lesson_time || body.start_time;
     const comment      = body.comment || body.golf_history || '';
     const agreedTerms  = !!body.agreed_terms;
-    const customerName = body.customer_name || '';
+    const customerNameInput = body.customer_name || '';
     const coachName    = body.coach_name || body.lesson_label || '';
 
     // booking_time を 'HH:MM:SS' に正規化
@@ -87,19 +88,57 @@ exports.handler = async (event) => {
     // ============================================
     // 2. バリデーション
     // ============================================
-    if (!customerId || !coachId || !totalPrice || !bookingDate || !bookingTime) {
+    if (!rawCustomerId || !coachId || !totalPrice || !bookingDate || !bookingTime) {
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({
           error: '必須項目が不足しています',
-          received: { customerId, coachId, totalPrice, bookingDate, bookingTime },
+          received: { rawCustomerId, coachId, totalPrice, bookingDate, bookingTime },
         }),
       };
     }
 
     // ============================================
-    // 3. bookings へ pending_approval で INSERT
+    // 3. customerId を customers.id に解決
+    //    クライアントから渡される ID は auth user ID または customers.id のどちらか
+    //    bookings.customer_id への FK 制約は customers.id を要求するため
+    //    ここで必ず customers.id に変換する
+    // ============================================
+    let customer = null;
+    const { data: cust, error: custErr } = await supabase
+      .from('customers')
+      .select('id, name, furigana, age, birth_date, is_approved, user_id')
+      .or(`id.eq.${rawCustomerId},user_id.eq.${rawCustomerId}`)
+      .maybeSingle();
+
+    if (custErr) {
+      console.error('[create-booking-request] customer lookup error:', custErr);
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ error: 'customer lookup failed', detail: custErr.message }),
+      };
+    }
+
+    if (!cust) {
+      console.error('[create-booking-request] customer not found for id/user_id:', rawCustomerId);
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({
+          error: 'お客様情報が見つかりません。会員認証を完了してから再度お試しください。',
+          received: { rawCustomerId },
+        }),
+      };
+    }
+
+    customer = cust;
+    const customerId = cust.id; // ← bookings.customer_id へ入れる正しい値
+    console.log('[create-booking-request] resolved customerId:', customerId, '(from input:', rawCustomerId, ')');
+
+    // ============================================
+    // 4. bookings へ pending_approval で INSERT
     // ============================================
     const { data: booking, error: insertErr } = await supabase
       .from('bookings')
@@ -115,7 +154,7 @@ exports.handler = async (event) => {
         comment:       comment,
         status:        'pending_approval',
         agreed_terms:  agreedTerms,
-        customer_name: customerName,
+        customer_name: customerNameInput,
         coach_name:    coachName,
       })
       .select('id')
@@ -134,7 +173,7 @@ exports.handler = async (event) => {
     console.log('[create-booking-request] booking created:', bookingId);
 
     // ============================================
-    // 4. コーチ情報を取得(line_user_id 取得のため)
+    // 5. コーチ情報を取得(line_user_id 取得のため)
     // ============================================
     const { data: coach, error: coachErr } = await supabase
       .from('coaches')
@@ -148,7 +187,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 5. 店舗情報を取得(line_user_id 取得のため)【Task G STEP 3 新規】
+    // 6. 店舗情報を取得(line_user_id 取得のため)
     // ============================================
     const { data: store, error: storeErr } = await supabase
       .from('stores')
@@ -161,30 +200,13 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 6. お客様情報を取得(会員状態・ふりがな・年齢)【Task G STEP 3 新規】
-    // ============================================
-    let customer = null;
-    if (customerId) {
-      const { data: cust, error: custErr } = await supabase
-        .from('customers')
-        .select('id, name, furigana, age, birth_date, is_approved')
-        .or(`id.eq.${customerId},user_id.eq.${customerId}`)
-        .maybeSingle();
-      if (custErr) {
-        console.error('[create-booking-request] customer fetch error:', custErr);
-      } else {
-        customer = cust;
-      }
-    }
-
-    // ============================================
     // 7. 共通パラメータ準備
     // ============================================
     const storeName = STORE_KEY_TO_NAME[storeKey] || store?.name || storeKey;
     const dateStr = formatDateJa(bookingDate);
     const timeStr = bookingTime ? bookingTime.substring(0, 5) : '';
     const lessonLabel = LESSON_TYPE_LABEL[lessonType] || lessonType;
-    const displayCustomerName = customer?.name || customerName || 'お客様';
+    const displayCustomerName = customer?.name || customerNameInput || 'お客様';
     const displayCoachName = coach?.name || coachName || 'コーチ';
     const customerFurigana = customer?.furigana || null;
     const isApproved = !!customer?.is_approved;
@@ -198,7 +220,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 8. コーチのLINEへFlex Message送信(既存・緑カード)
+    // 8. コーチのLINEへFlex Message送信(緑カード)
     // ============================================
     if (coach?.line_user_id) {
       const flexContent = buildApprovalRequestFlex({
@@ -237,7 +259,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 9. 店舗のLINEへFlex Message送信(新規・オレンジカード)【Task G STEP 3】
+    // 9. 店舗のLINEへFlex Message送信(オレンジカード)
     // ============================================
     if (store?.line_user_id) {
       const storeFlex = buildStorePendingRequestFlex({
