@@ -2,12 +2,16 @@
 // コーチ画面(Web)からの予約承認処理
 // 【2026/4/25 新規作成】
 // 【2026/5/18 更新】Task G STEP 4 - 店舗向け承認通知を追加
+// 【2026/5/21 更新】
+//   - members テーブルから plan_name を取得
+//   - buildStoreApprovedFlex に planName を渡す
+//   - customers select に email カラムを追加
 //
 // 処理の流れ:
 // 1. booking_id を受け取る
 // 2. bookings.status を 'approved_pending_payment' に更新
 // 3. お客様のLINEに決済リンクを送信
-// 4. 店舗のLINEに緑承認カードを送信【新規】
+// 4. 店舗のLINEに緑承認カードを送信(plan_name付き)
 // 5. コーチ画面に成功レスポンスを返す
 //
 // ※ line-webhook.js の handleApprove と同等のロジック
@@ -134,6 +138,7 @@ exports.handler = async (event) => {
     // ============================================
     // 3. コーチ情報・お客様情報を取得
     //    【2026/5/18 拡張】customers から furigana, age, birth_date, is_approved も取得
+    //    【2026/5/21 拡張】email も取得して、後段の members 引き当てに使用
     // ============================================
     const { data: coach } = await supabase
       .from('coaches')
@@ -146,7 +151,7 @@ exports.handler = async (event) => {
     if (customerKey) {
       const { data } = await supabase
         .from('customers')
-        .select('id, name, furigana, age, birth_date, is_approved, line_user_id')
+        .select('id, name, email, furigana, age, birth_date, is_approved, line_user_id')
         .or(`id.eq.${customerKey},user_id.eq.${customerKey}`)
         .maybeSingle();
       customer = data;
@@ -170,7 +175,36 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 5. 共通パラメータ準備
+    // 5. 【2026/5/21 新規】members テーブルから plan_name を取得
+    //    店舗向け緑カードの「プラン」欄に表示する
+    // ============================================
+    let planName = null;
+    try {
+      const customerEmail = customer?.email ? String(customer.email).toLowerCase().trim() : null;
+      const storeKey = booking.store_key;
+      if (customerEmail && storeKey) {
+        const { data: memberRow, error: memberErr } = await supabase
+          .from('members')
+          .select('plan_name')
+          .eq('store_key', storeKey)
+          .eq('email', customerEmail)
+          .eq('is_active', true)
+          .maybeSingle();
+        if (memberErr) {
+          console.error('[coach-approve-booking] members fetch error:', memberErr);
+        } else if (memberRow && memberRow.plan_name) {
+          planName = memberRow.plan_name;
+        }
+        console.log('[coach-approve-booking] plan_name lookup:', { customerEmail, storeKey, planName });
+      } else {
+        console.log('[coach-approve-booking] plan_name lookup skipped (no email or store_key)');
+      }
+    } catch (e) {
+      console.error('[coach-approve-booking] plan_name lookup exception:', e);
+    }
+
+    // ============================================
+    // 6. 共通パラメータ準備
     // ============================================
     const coachName = coach?.name || booking.coach_name || 'コーチ';
     const customerName = customer?.name || booking.customer_name || 'お客様';
@@ -194,7 +228,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 6. お客様のLINEに決済案内を送信(既存)
+    // 7. お客様のLINEに決済案内を送信(既存)
     // ============================================
     let customerNotified = false;
     if (customer?.line_user_id) {
@@ -216,7 +250,8 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 7. 店舗のLINEに緑承認カードを送信【Task G STEP 4 新規】
+    // 8. 店舗のLINEに緑承認カードを送信
+    //    【2026/5/21 更新】planName を渡す
     // ============================================
     let storeNotified = false;
     if (store?.line_user_id) {
@@ -225,6 +260,7 @@ exports.handler = async (event) => {
         customerFurigana,
         customerAge,
         isApproved,
+        planName,
         coachName,
         lessonType,
         dateStr,
@@ -247,7 +283,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 8. 成功レスポンス
+    // 9. 成功レスポンス
     // ============================================
     return {
       statusCode: 200,
