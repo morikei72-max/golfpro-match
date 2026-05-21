@@ -117,6 +117,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       <div class="profile-info">
         <div class="profile-name" id="p-name"><span class="skeleton">読込中</span></div>
         <div class="profile-meta" id="p-meta">--</div>
+        <div class="profile-rating" id="p-rating" style="margin-top:8px;font-size:14px;font-weight:700;color:#FFD27A;">★ 0.0 <span style="font-size:11px;color:#a8f0d0;font-weight:500;">(0件)</span></div>
         <div class="profile-pills" id="p-pills"></div>
       </div>
     </div>
@@ -155,6 +156,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
     <div class="panel-title"><span id="bkg-list-title">直近の予約</span><span class="meta" id="bkg-list-count">--</span></div>
     <div id="bkg-list">
       <div class="empty">予約データを読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- レビュー一覧 -->
+  <div class="panel">
+    <div class="panel-title"><span>お客様レビュー</span><span class="meta" id="review-count">--</span></div>
+    <div id="review-list">
+      <div class="empty">レビューを読み込み中...</div>
     </div>
   </div>
 
@@ -218,8 +227,52 @@ async function loadAll(){
   /* 予約一覧 */
   renderBookings();
 
+  /* レビュー */
+  await loadReviews();
+
   /* 空き枠 */
   await loadSlots();
+}
+
+async function loadReviews(){
+  const{data,error}=await sb.from('reviews')
+    .select('id,rating,comment,customer_name,lesson_type,lesson_date,created_at')
+    .eq('coach_id',coachId)
+    .eq('status','submitted')
+    .order('created_at',{ascending:false});
+  const reviews=data||[];
+
+  /* 平均★計算 */
+  const count=reviews.length;
+  if(count===0){
+    document.getElementById('p-rating').innerHTML='★ 0.0 <span style="font-size:11px;color:#a8f0d0;font-weight:500;">(レビュー未投稿)</span>';
+    document.getElementById('review-count').textContent='0件';
+    document.getElementById('review-list').innerHTML='<div class="empty">まだレビューが投稿されていません</div>';
+    return;
+  }
+  const total=reviews.reduce((s,r)=>s+r.rating,0);
+  const avg=(total/count).toFixed(1);
+  document.getElementById('p-rating').innerHTML='★ '+avg+' <span style="font-size:11px;color:#a8f0d0;font-weight:500;">('+count+'件)</span>';
+  document.getElementById('review-count').textContent=count+'件';
+
+  /* リスト表示(直近10件)*/
+  const lessonMap={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自'};
+  const html=reviews.slice(0,10).map(r=>{
+    const lesson=lessonMap[r.lesson_type]||r.lesson_type||'';
+    const dStr=r.lesson_date?formatDateShort(r.lesson_date):'';
+    const stars='★'.repeat(r.rating)+'<span style="color:#3a3a3a;">'+'★'.repeat(5-r.rating)+'</span>';
+    return`
+      <div class="row" style="flex-direction:column;align-items:stretch;gap:6px;padding:14px 0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:12px;font-weight:700;color:#fff;">${escapeHtml(r.customer_name||'(お客様)')}</div>
+          <div style="color:#FFD27A;font-size:14px;font-weight:700;">${stars}</div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);">${dStr} · ${lesson}</div>
+        <div style="font-size:12px;color:#e8efe9;line-height:1.5;background:rgba(101,206,165,0.04);border-left:2px solid var(--main);padding:8px 10px;border-radius:0 6px 6px 0;">${escapeHtml(r.comment||'')}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('review-list').innerHTML=html;
 }
 
 function renderProfile(){
