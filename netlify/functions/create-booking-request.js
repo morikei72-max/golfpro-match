@@ -15,6 +15,7 @@
 //   - customer_id 解決ロジックを INSERT 前に移動
 //   - auth user ID が来ても customers.id に変換して INSERT
 //   - bookings_customer_id_fkey 制約違反(23503)を防止
+//   - 店舗向けオレンジカードに plan_name(hacomonoメンバー情報)を表示する処理を追加
 
 const { createClient } = require('@supabase/supabase-js');
 const {
@@ -104,11 +105,12 @@ exports.handler = async (event) => {
     //    クライアントから渡される ID は auth user ID または customers.id のどちらか
     //    bookings.customer_id への FK 制約は customers.id を要求するため
     //    ここで必ず customers.id に変換する
+    //    【2026/5/21 拡張】email も取得して、後段の members 引き当てに使用
     // ============================================
     let customer = null;
     const { data: cust, error: custErr } = await supabase
       .from('customers')
-      .select('id, name, furigana, age, birth_date, is_approved, user_id')
+      .select('id, name, email, furigana, age, birth_date, is_approved, user_id')
       .or(`id.eq.${rawCustomerId},user_id.eq.${rawCustomerId}`)
       .maybeSingle();
 
@@ -200,7 +202,36 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 7. 共通パラメータ準備
+    // 7. 【2026/5/21 新規】members テーブルから plan_name を取得
+    //    お客様のメール + store_key + is_active=true で引き当て
+    //    店舗向けオレンジカードの「プラン」欄に表示する
+    // ============================================
+    let planName = null;
+    try {
+      const customerEmail = customer?.email ? String(customer.email).toLowerCase().trim() : null;
+      if (customerEmail && storeKey) {
+        const { data: memberRow, error: memberErr } = await supabase
+          .from('members')
+          .select('plan_name')
+          .eq('store_key', storeKey)
+          .eq('email', customerEmail)
+          .eq('is_active', true)
+          .maybeSingle();
+        if (memberErr) {
+          console.error('[create-booking-request] members fetch error:', memberErr);
+        } else if (memberRow && memberRow.plan_name) {
+          planName = memberRow.plan_name;
+        }
+        console.log('[create-booking-request] plan_name lookup:', { customerEmail, storeKey, planName });
+      } else {
+        console.log('[create-booking-request] plan_name lookup skipped (no email or store_key)');
+      }
+    } catch (e) {
+      console.error('[create-booking-request] plan_name lookup exception:', e);
+    }
+
+    // ============================================
+    // 8. 共通パラメータ準備
     // ============================================
     const storeName = STORE_KEY_TO_NAME[storeKey] || store?.name || storeKey;
     const dateStr = formatDateJa(bookingDate);
@@ -220,7 +251,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 8. コーチのLINEへFlex Message送信(緑カード)
+    // 9. コーチのLINEへFlex Message送信(緑カード)
     // ============================================
     if (coach?.line_user_id) {
       const flexContent = buildApprovalRequestFlex({
@@ -259,7 +290,8 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 9. 店舗のLINEへFlex Message送信(オレンジカード)
+    // 10. 店舗のLINEへFlex Message送信(オレンジカード)
+    //     【2026/5/21 更新】planName を渡す
     // ============================================
     if (store?.line_user_id) {
       const storeFlex = buildStorePendingRequestFlex({
@@ -267,6 +299,7 @@ exports.handler = async (event) => {
         customerFurigana,
         customerAge,
         isApproved,
+        planName,
         coachName: displayCoachName,
         lessonType: lessonLabel,
         dateStr,
@@ -293,7 +326,7 @@ exports.handler = async (event) => {
     }
 
     // ============================================
-    // 10. お客様画面に結果返却
+    // 11. お客様画面に結果返却
     // ============================================
     return {
       statusCode: 200,
