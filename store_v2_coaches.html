@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - コーチ</title>
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --main:#65CEA5;
+  --main-dark:#3aa57c;
+  --main-light:#A8F0D0;
+  --bg:#000;
+  --line:rgba(101,206,165,0.15);
+  --line-strong:rgba(101,206,165,0.3);
+  --muted:#7a9a8a;
+  --muted-2:#5a7a6a;
+  --red:#ff8a8a;
+  --yellow:#FFD27A;
+}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),
+    radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);
+}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+/* ヘッダー */
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
+.back-btn:active{background:rgba(101,206,165,0.15);}
+.page-title{flex:1;}
+.page-title h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;}
+.kpi .lab{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.kpi .num{font-size:24px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.02em;}
+.kpi .num .u{font-size:12px;color:var(--muted);margin-left:2px;}
+.kpi .d{font-size:10px;color:var(--main);margin-top:6px;font-weight:600;}
+.kpi .d.warn{color:var(--yellow);}
+.kpi-badge{position:absolute;top:12px;right:12px;background:#ff5252;color:#fff;font-size:10px;font-weight:800;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 6px;}
+
+/* パネル */
+.panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
+
+/* コーチカード */
+.coach-card{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;transition:all .2s;}
+.coach-card:last-child{border-bottom:none;}
+.coach-card:active{background:rgba(101,206,165,0.04);}
+.coach-card:hover{background:rgba(101,206,165,0.03);}
+.coach-photo{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;border:1px solid var(--line-strong);overflow:hidden;}
+.coach-photo img{width:100%;height:100%;object-fit:cover;}
+.coach-info{flex:1;min-width:0;}
+.coach-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+.coach-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+.coach-stats{display:flex;gap:14px;margin-top:6px;font-size:10px;}
+.coach-stats span{color:var(--muted);}
+.coach-stats span strong{color:var(--main);font-weight:700;}
+.coach-arrow{color:var(--muted);font-size:18px;}
+
+.pill{font-size:10px;padding:3px 8px;border-radius:100px;font-weight:700;}
+.pill-active{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
+.pill-pending{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
+.pill-stopped{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+
+/* タブ */
+.tabs{display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:12px;padding:4px;}
+.tab{flex:1;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;transition:all .2s;}
+.tab.on{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;}
+
+.empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
+.skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_home.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>コーチ</h1>
+      <div class="sub">所属コーチの管理</div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi"><div class="lab">稼働コーチ</div><div class="num" id="kpi-active"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">承認済</div></div>
+    <div class="kpi"><div class="lab">承認待ち</div><div class="num" id="kpi-pending"><span class="skeleton">0</span><span class="u">名</span></div><div class="d warn" id="kpi-pending-d">確認中...</div></div>
+    <div class="kpi"><div class="lab">平均レビュー</div><div class="num" id="kpi-review">--<span class="u">★</span></div><div class="d">機能実装後</div></div>
+    <div class="kpi"><div class="lab">Stripe入金可</div><div class="num" id="kpi-stripe"><span class="skeleton">0/0</span></div><div class="d" id="kpi-stripe-d">確認中...</div></div>
+  </div>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab on" onclick="setTab('all',this)">すべて</button>
+    <button class="tab" onclick="setTab('active',this)">稼働中</button>
+    <button class="tab" onclick="setTab('pending',this)">承認待ち</button>
+  </div>
+
+  <!-- コーチ一覧 -->
+  <div class="panel">
+    <div class="panel-title"><span>所属コーチ一覧</span><span class="meta" id="list-count">読込中</span></div>
+    <div id="coach-list">
+      <div class="empty">コーチ情報を読み込み中...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+let allCoaches=[];
+let currentTab='all';
+
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  await loadCoaches();
+})();
+
+async function loadCoaches(){
+  /* コーチ取得 */
+  const{data,error}=await sb.from('coaches')
+    .select('id,name,photo_url,is_approved,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,created_at')
+    .eq('store_key',STORE_KEY)
+    .order('is_approved',{ascending:false})
+    .order('created_at',{ascending:false});
+
+  if(error){
+    document.getElementById('coach-list').innerHTML='<div class="empty">読込エラー: '+error.message+'</div>';
+    return;
+  }
+  allCoaches=data||[];
+
+  /* KPI集計 */
+  const active=allCoaches.filter(c=>c.is_approved);
+  const pending=allCoaches.filter(c=>!c.is_approved);
+  const stripeOK=active.filter(c=>c.stripe_charges_enabled&&c.stripe_payouts_enabled);
+
+  document.getElementById('kpi-active').innerHTML=active.length+'<span class="u">名</span>';
+  document.getElementById('kpi-pending').innerHTML=pending.length+'<span class="u">名</span>';
+  document.getElementById('kpi-pending-d').textContent=pending.length>0?'要対応':'すべて承認済';
+  document.getElementById('kpi-stripe').textContent=stripeOK.length+'/'+active.length;
+  document.getElementById('kpi-stripe-d').textContent=stripeOK.length===active.length?'全員設定完了':(active.length-stripeOK.length)+'名未完了';
+
+  /* 各コーチの予約数・売上を取得(月累計)*/
+  const monthStart=getMonthStartString();
+  const today=getTodayString();
+  for(const c of allCoaches){
+    const{data:bkgs}=await sb.from('bookings')
+      .select('total_price,status')
+      .eq('coach_id',c.id)
+      .gte('booking_date',monthStart)
+      .lte('booking_date',today)
+      .in('status',['confirmed','approved']);
+    c._monthCount=(bkgs||[]).length;
+    c._monthSales=(bkgs||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+
+    /* キャンセル率 */
+    const{data:allBkgs}=await sb.from('bookings')
+      .select('status')
+      .eq('coach_id',c.id)
+      .gte('booking_date',monthStart)
+      .lte('booking_date',today);
+    const total=(allBkgs||[]).length;
+    const cxl=(allBkgs||[]).filter(b=>['cancelled','refunded'].includes(b.status)).length;
+    c._cxlRate=total>0?Math.round(cxl/total*1000)/10:0;
+  }
+
+  renderList();
+}
+
+function renderList(){
+  let filtered=allCoaches;
+  if(currentTab==='active') filtered=allCoaches.filter(c=>c.is_approved);
+  if(currentTab==='pending') filtered=allCoaches.filter(c=>!c.is_approved);
+
+  if(filtered.length===0){
+    document.getElementById('coach-list').innerHTML='<div class="empty">該当するコーチがいません</div>';
+    document.getElementById('list-count').textContent='0名';
+    return;
+  }
+
+  document.getElementById('list-count').textContent=filtered.length+'名';
+
+  const html=filtered.map(c=>{
+    const initial=(c.name||'?').charAt(0);
+    const photo=c.photo_url?`<img src="${c.photo_url}" alt="">`:initial;
+    let pill='';
+    if(!c.is_approved){
+      pill='<span class="pill pill-pending">未承認</span>';
+    }else if(!c.stripe_charges_enabled||!c.stripe_payouts_enabled){
+      pill='<span class="pill pill-pending">Stripe未完了</span>';
+    }else{
+      pill='<span class="pill pill-active">稼働中</span>';
+    }
+    return`
+      <a class="coach-card" href="store_v2_coach_detail.html?id=${c.id}">
+        <div class="coach-photo">${photo}</div>
+        <div class="coach-info">
+          <div class="coach-name">${escapeHtml(c.name||'(名前未設定)')}${pill}</div>
+          <div class="coach-meta">${escapeHtml(c.license||'')}</div>
+          <div class="coach-stats">
+            <span>予約 <strong>${c._monthCount||0}件</strong></span>
+            <span>売上 <strong>¥${formatK(c._monthSales||0)}</strong></span>
+            <span>キャンセル <strong>${c._cxlRate||0}%</strong></span>
+          </div>
+        </div>
+        <div class="coach-arrow">→</div>
+      </a>
+    `;
+  }).join('');
+  document.getElementById('coach-list').innerHTML=html;
+}
+
+function setTab(t,btn){
+  currentTab=t;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderList();
+}
+
+function getMonthStartString(){
+  const d=new Date();
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+}
+function getTodayString(){
+  const d=new Date();
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function formatK(n){return n>=10000?Math.round(n/1000)+'k':n.toLocaleString();}
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>
