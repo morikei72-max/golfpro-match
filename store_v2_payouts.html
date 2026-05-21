@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - 入金</title>
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--main:#65CEA5;--main-dark:#3aa57c;--main-light:#A8F0D0;--bg:#000;--line:rgba(101,206,165,0.15);--line-strong:rgba(101,206,165,0.3);--muted:#7a9a8a;--red:#ff8a8a;--yellow:#FFD27A;--stripe-purple:#635BFF;}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
+.page-title{flex:1;}
+.page-title h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* Stripeカード */
+.stripe-card{background:linear-gradient(135deg,#635BFF 0%,#4945C4 100%);border-radius:18px;padding:22px;margin-bottom:14px;position:relative;overflow:hidden;cursor:pointer;transition:all .2s;text-decoration:none;color:#fff;display:block;}
+.stripe-card:active{transform:scale(0.98);}
+.stripe-card::after{content:'';position:absolute;right:-30px;top:-30px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,255,255,0.15),transparent 70%);}
+.stripe-card .stripe-lab{font-size:11px;color:rgba(255,255,255,0.8);letter-spacing:0.15em;font-weight:700;margin-bottom:8px;position:relative;}
+.stripe-card .stripe-num{font-size:36px;font-weight:900;color:#fff;letter-spacing:-0.02em;position:relative;}
+.stripe-card .stripe-num .y{font-size:22px;font-weight:400;}
+.stripe-card .stripe-sub{font-size:11px;color:rgba(255,255,255,0.85);margin-top:8px;font-weight:600;position:relative;}
+.stripe-card .open-btn{margin-top:14px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-family:inherit;font-size:12px;font-weight:700;padding:9px 14px;border-radius:10px;backdrop-filter:blur(10px);display:inline-flex;align-items:center;gap:6px;position:relative;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px;}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:16px;padding:16px;}
+.kpi .lab{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.kpi .num{font-size:22px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.02em;}
+.kpi .num .y{color:var(--main);font-weight:400;font-size:14px;}
+.kpi .num .u{font-size:12px;color:var(--muted);margin-left:2px;}
+.kpi .d{font-size:10px;color:var(--main);margin-top:6px;font-weight:600;}
+
+.panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
+
+.row{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);}
+.row:last-child{border-bottom:none;}
+.payout-date{font-size:13px;font-weight:800;color:var(--main);width:56px;}
+.payout-info{flex:1;margin-left:6px;min-width:0;}
+.payout-name{font-size:13px;font-weight:700;color:#fff;}
+.payout-meta{font-size:10px;color:var(--muted);margin-top:2px;}
+.payout-amt{font-size:14px;font-weight:800;color:#fff;}
+
+.empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
+.skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+.btn{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;border:1px solid var(--main);font-family:inherit;font-size:13px;font-weight:700;padding:12px 18px;border-radius:12px;cursor:pointer;width:100%;letter-spacing:0.05em;box-shadow:0 0 16px rgba(101,206,165,0.2);text-decoration:none;display:block;text-align:center;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_home.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>入金</h1>
+      <div class="sub">Stripe入金履歴・振込予定</div>
+    </div>
+  </div>
+
+  <!-- Stripeブランドカード -->
+  <a href="https://dashboard.stripe.com/payouts" target="_blank" rel="noopener" class="stripe-card">
+    <div class="stripe-lab">STRIPE 本部入金見込</div>
+    <div class="stripe-num"><span class="y">¥</span><span id="hq-share"><span class="skeleton">0</span></span></div>
+    <div class="stripe-sub" id="hq-share-sub">今月累計 · 本部実質取り分 16.4%</div>
+    <div class="open-btn">Stripe ダッシュボードを開く →</div>
+  </a>
+
+  <!-- KPI -->
+  <div class="kpi-grid">
+    <div class="kpi"><div class="lab">月間振込予定(コーチ)</div><div class="num"><span class="y">¥</span><span id="coach-total"><span class="skeleton">0</span></span></div><div class="d">取り分 80%</div></div>
+    <div class="kpi"><div class="lab">次回入金日</div><div class="num" id="next-payout">--/--</div><div class="d">T+2営業日</div></div>
+  </div>
+
+  <!-- 振込予定 -->
+  <div class="panel">
+    <div class="panel-title"><span>コーチ別振込予定</span><span class="meta" id="payout-count">今月</span></div>
+    <div id="payout-list">
+      <div class="empty">読み込み中...</div>
+    </div>
+  </div>
+
+  <!-- 本部入金履歴(目安) -->
+  <div class="panel">
+    <div class="panel-title"><span>本部売上(日別)</span><span class="meta">直近10日</span></div>
+    <div id="daily-list">
+      <div class="empty">読み込み中...</div>
+    </div>
+  </div>
+
+  <a href="https://dashboard.stripe.com/payouts" target="_blank" rel="noopener" class="btn">Stripe で実際の入金履歴を確認 →</a>
+
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  await loadAll();
+})();
+
+function getMonthStartString(){
+  const d=new Date();
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+}
+function getTodayString(){
+  const d=new Date();
+  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+async function loadAll(){
+  const monthStart=getMonthStartString();
+  const today=getTodayString();
+
+  /* 当月の確定予約 */
+  const{data:bkgs}=await sb.from('bookings')
+    .select('total_price,status,coach_id,coach_name,booking_date')
+    .eq('store_key',STORE_KEY)
+    .gte('booking_date',monthStart)
+    .lte('booking_date',today)
+    .in('status',['confirmed','approved','completed']);
+  
+  const valid=bkgs||[];
+  const total=valid.reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
+  const hqShare=Math.round(total*0.164);
+  const coachTotal=Math.round(total*0.80);
+
+  document.getElementById('hq-share').textContent=hqShare.toLocaleString();
+  document.getElementById('hq-share-sub').textContent='今月累計 ¥'+total.toLocaleString()+' × 16.4%';
+  document.getElementById('coach-total').textContent=coachTotal.toLocaleString();
+
+  /* 次回入金日(2営業日後) */
+  const next=new Date();
+  let added=0;
+  while(added<2){
+    next.setDate(next.getDate()+1);
+    const wd=next.getDay();
+    if(wd!==0&&wd!==6)added++;
+  }
+  document.getElementById('next-payout').textContent=(next.getMonth()+1)+'/'+next.getDate();
+
+  /* コーチ別振込予定 */
+  const byCoach={};
+  valid.forEach(b=>{
+    if(!b.coach_id)return;
+    const cAmt=Math.round((parseInt(b.total_price)||0)*0.80);
+    if(!byCoach[b.coach_id]){
+      byCoach[b.coach_id]={name:b.coach_name||'(コーチ)',total:0,count:0};
+    }
+    byCoach[b.coach_id].total+=cAmt;
+    byCoach[b.coach_id].count++;
+  });
+  const arr=Object.entries(byCoach).map(([id,d])=>({id,...d}));
+  arr.sort((a,b)=>b.total-a.total);
+
+  if(arr.length===0){
+    document.getElementById('payout-list').innerHTML='<div class="empty">今月の予約データがありません</div>';
+  }else{
+    document.getElementById('payout-count').textContent=arr.length+'名';
+    const html=arr.map(c=>`
+      <div class="row">
+        <div class="payout-date">${(next.getMonth()+1)}/${next.getDate()}</div>
+        <div class="payout-info">
+          <div class="payout-name">${escapeHtml(c.name)}</div>
+          <div class="payout-meta">Stripe Connect · 80% · ${c.count}件</div>
+        </div>
+        <div class="payout-amt">¥${c.total.toLocaleString()}</div>
+      </div>
+    `).join('');
+    document.getElementById('payout-list').innerHTML=html;
+  }
+
+  /* 日別売上(直近10日)*/
+  const byDate={};
+  valid.forEach(b=>{
+    if(!byDate[b.booking_date])byDate[b.booking_date]={total:0,count:0};
+    byDate[b.booking_date].total+=parseInt(b.total_price)||0;
+    byDate[b.booking_date].count++;
+  });
+  const dailyArr=Object.entries(byDate).map(([d,v])=>({date:d,...v}));
+  dailyArr.sort((a,b)=>b.date.localeCompare(a.date));
+  const last10=dailyArr.slice(0,10);
+
+  if(last10.length===0){
+    document.getElementById('daily-list').innerHTML='<div class="empty">売上データがありません</div>';
+  }else{
+    const html=last10.map(d=>{
+      const p=d.date.split('-');
+      const wd=['日','月','火','水','木','金','土'][new Date(+p[0],+p[1]-1,+p[2]).getDay()];
+      return`
+        <div class="row">
+          <div class="payout-date">${+p[1]}/${+p[2]}</div>
+          <div class="payout-info">
+            <div class="payout-name">(${wd})${d.count}件</div>
+            <div class="payout-meta">本部16.4% ¥${Math.round(d.total*0.164).toLocaleString()}</div>
+          </div>
+          <div class="payout-amt">¥${d.total.toLocaleString()}</div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('daily-list').innerHTML=html;
+  }
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>
