@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - 設定</title>
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--main:#65CEA5;--main-dark:#3aa57c;--main-light:#A8F0D0;--bg:#000;--line:rgba(101,206,165,0.15);--line-strong:rgba(101,206,165,0.3);--muted:#7a9a8a;--red:#ff8a8a;--yellow:#FFD27A;}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
+.page-title{flex:1;}
+.page-title h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;}
+
+.panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
+
+.setting-row{display:flex;align-items:center;padding:13px 0;border-bottom:1px solid var(--line);cursor:pointer;text-decoration:none;color:#fff;}
+.setting-row:last-child{border-bottom:none;}
+.setting-row:active{background:rgba(101,206,165,0.04);}
+.setting-info{flex:1;min-width:0;}
+.setting-name{font-size:13px;font-weight:600;color:#fff;}
+.setting-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.setting-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;margin-right:6px;}
+.status-ok{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
+.status-ng{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+.status-warn{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
+.setting-arrow{color:var(--muted);font-size:18px;margin-left:6px;}
+
+.share-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);}
+.share-row:last-child{border-bottom:none;}
+.share-row.highlight{background:rgba(101,206,165,0.08);border-radius:10px;padding:11px 14px;margin-top:6px;border:1px solid var(--line-strong);}
+.share-row .label{font-size:12px;color:var(--main-light);}
+.share-row .label .sub{display:block;font-size:9px;color:var(--muted);margin-top:2px;}
+.share-row .amt{font-size:15px;font-weight:800;color:#fff;}
+.share-row.highlight .label{color:var(--main);font-weight:700;}
+.share-row.highlight .amt{color:var(--main);font-size:17px;}
+
+.logout-btn{background:rgba(255,138,138,0.08);border:1px solid rgba(255,138,138,0.3);color:var(--red);font-family:inherit;font-size:13px;font-weight:700;padding:12px 18px;border-radius:12px;cursor:pointer;width:100%;letter-spacing:0.05em;margin-top:20px;}
+.logout-btn:active{background:rgba(255,138,138,0.15);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_home.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>設定</h1>
+      <div class="sub">店舗運営の各種設定</div>
+    </div>
+  </div>
+
+  <!-- 店舗情報 -->
+  <div class="panel">
+    <div class="panel-title"><span>店舗情報</span></div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">店舗名・住所</div>
+        <div class="setting-sub" id="set-store-name">Golf Create 戸津池店</div>
+      </div>
+      <span class="setting-status status-ok">登録済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">営業時間</div>
+        <div class="setting-sub" id="set-business-hours">読込中...</div>
+      </div>
+      <span class="setting-status status-ok" id="set-hours-status">登録済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">特別営業日</div>
+        <div class="setting-sub" id="set-special-days">休業日・特別営業時間</div>
+      </div>
+      <span class="setting-status status-warn" id="set-special-status">未設定</span>
+      <div class="setting-arrow">→</div>
+    </div>
+  </div>
+
+  <!-- 打席管理(1行リンク) -->
+  <div class="panel">
+    <div class="panel-title"><span>打席管理</span></div>
+    <div class="setting-row" onclick="editSeats()">
+      <div class="setting-info">
+        <div class="setting-name">打席の編集</div>
+        <div class="setting-sub" id="set-seats">読込中...</div>
+      </div>
+      <span class="setting-status status-ok" id="set-seats-status">登録済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+  </div>
+
+  <!-- 分配率 -->
+  <div class="panel">
+    <div class="panel-title"><span>売上分配率</span><span class="meta">A方式</span></div>
+    <div class="share-row"><div class="label">本部</div><div class="amt">20%</div></div>
+    <div class="share-row"><div class="label">Stripe手数料<span class="sub">本部負担</span></div><div class="amt">3.6%</div></div>
+    <div class="share-row"><div class="label">コーチ取り分</div><div class="amt">80%</div></div>
+    <div class="share-row highlight"><div class="label">本部実質取り分</div><div class="amt">16.4%</div></div>
+  </div>
+
+  <!-- 外部連携 -->
+  <div class="panel">
+    <div class="panel-title"><span>外部連携</span></div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">Stripe Connect</div>
+        <div class="setting-sub">本部入金口座・決済処理</div>
+      </div>
+      <span class="setting-status status-ok">連携済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">LINE 公式アカウント</div>
+        <div class="setting-sub">予約・キャンセル通知</div>
+      </div>
+      <span class="setting-status status-ok">連携済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">hacomono CSV連携</div>
+        <div class="setting-sub" id="set-hacomono">読込中...</div>
+      </div>
+      <span class="setting-status status-ok" id="set-hacomono-status">取込済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+  </div>
+
+  <!-- 領収書 -->
+  <div class="panel">
+    <div class="panel-title"><span>領収書</span></div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">発行者情報</div>
+        <div class="setting-sub">株式会社ケイエスケー</div>
+      </div>
+      <span class="setting-status status-ok">登録済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">インボイス登録番号</div>
+        <div class="setting-sub">T1130001070904</div>
+      </div>
+      <span class="setting-status status-ok">登録済</span>
+      <div class="setting-arrow">→</div>
+    </div>
+  </div>
+
+  <!-- 通知 -->
+  <div class="panel">
+    <div class="panel-title"><span>通知設定</span></div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">LINE通知</div>
+        <div class="setting-sub">予約・キャンセル・決済</div>
+      </div>
+      <span class="setting-status status-ok">有効</span>
+      <div class="setting-arrow">→</div>
+    </div>
+    <div class="setting-row">
+      <div class="setting-info">
+        <div class="setting-name">メール通知</div>
+        <div class="setting-sub">月次レポート配信</div>
+      </div>
+      <span class="setting-status status-warn">未設定</span>
+      <div class="setting-arrow">→</div>
+    </div>
+  </div>
+
+  <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  await loadStore();
+  loadSeats();
+  await loadHacomonoStatus();
+})();
+
+async function loadStore(){
+  const{data}=await sb.from('stores')
+    .select('business_hours,special_dates,name')
+    .eq('store_key',STORE_KEY)
+    .maybeSingle();
+  
+  if(data){
+    if(data.business_hours){
+      document.getElementById('set-business-hours').textContent=data.business_hours;
+    }else{
+      document.getElementById('set-business-hours').textContent='未設定';
+      document.getElementById('set-hours-status').className='setting-status status-ng';
+      document.getElementById('set-hours-status').textContent='未登録';
+    }
+    
+    if(data.special_dates&&Object.keys(data.special_dates).length>0){
+      document.getElementById('set-special-days').textContent='設定済';
+      document.getElementById('set-special-status').className='setting-status status-ok';
+      document.getElementById('set-special-status').textContent='登録済';
+    }
+  }
+}
+
+function loadSeats(){
+  const seats=JSON.parse(localStorage.getItem('gc_seats_'+STORE_KEY)||'[]');
+  if(seats.length===0){
+    /* デフォルト4打席 */
+    document.getElementById('set-seats').textContent='4打席(1番右・2番右・3番右・4番左右兼用)';
+  }else{
+    const desc=seats.map(s=>s.number+'番'+(s.type==='left_right'?'左右兼用':s.type==='left'?'左':'右')).join(' · ');
+    document.getElementById('set-seats').textContent=seats.length+'打席('+desc+')';
+  }
+}
+
+async function loadHacomonoStatus(){
+  const{count}=await sb.from('members').select('*',{count:'exact',head:true}).eq('store_key',STORE_KEY).not('last_import_at','is',null);
+  if(count&&count>0){
+    document.getElementById('set-hacomono').textContent=count+'名 取込済';
+    document.getElementById('set-hacomono-status').className='setting-status status-ok';
+    document.getElementById('set-hacomono-status').textContent='取込済';
+  }else{
+    document.getElementById('set-hacomono').textContent='未取込';
+    document.getElementById('set-hacomono-status').className='setting-status status-warn';
+    document.getElementById('set-hacomono-status').textContent='未取込';
+  }
+}
+
+function editSeats(){
+  const current=JSON.parse(localStorage.getItem('gc_seats_'+STORE_KEY)||'[]');
+  const defaultSeats=[
+    {number:1,type:'right',label:'右打席'},
+    {number:2,type:'right',label:'右打席'},
+    {number:3,type:'right',label:'右打席'},
+    {number:4,type:'left_right',label:'左右兼用'}
+  ];
+  if(current.length===0){
+    if(confirm('打席のデフォルト設定を保存しますか?\n1番=右、2番=右、3番=右、4番=左右兼用')){
+      localStorage.setItem('gc_seats_'+STORE_KEY,JSON.stringify(defaultSeats));
+      loadSeats();
+      alert('保存しました');
+    }
+  }else{
+    alert('打席設定:\n'+current.map(s=>s.number+'番:'+s.label).join('\n')+'\n\n編集機能は次回アップデートで実装予定です。');
+  }
+}
+
+async function doLogout(){
+  if(!confirm('ログアウトしますか?'))return;
+  await sb.auth.signOut();
+  location.replace('store_login.html');
+}
+</script>
+</body>
+</html>
