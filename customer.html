@@ -413,7 +413,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <button class="snb" onclick="filterBookings('pending',this)">⏳ 承認待ち</button>
       <button class="snb" onclick="filterBookings('approved',this)">✅ 承認済み</button>
       <button class="snb" onclick="filterBookings('completed',this)">✓ 完了</button>
-      <button class="snb" onclick="filterBookings('cancelled',this)">🚫 キャンセル</button>
     </div>
     <div id="bookings-list">
       <div class="booking-empty">
@@ -715,19 +714,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
   </div>
 
   <div class="screen" id="s-review">
-    <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);">
-      <div style="font-size:13px;font-weight:500;">田中コーチへの評価(必須)</div>
-      <div style="font-size:12px;color:#666;margin-bottom:10px;">4月08日 インドアゴルフレッスン 50分</div>
-      <label style="font-size:12px;color:#666;">総合評価</label>
-      <div class="star-row" id="rev-stars">
-        <button class="starb" onclick="rate(1)">★</button>
-        <button class="starb" onclick="rate(2)">★</button>
-        <button class="starb" onclick="rate(3)">★</button>
-        <button class="starb" onclick="rate(4)">★</button>
-        <button class="starb" onclick="rate(5)">★</button>
-      </div>
-      <div class="form-group"><label>コメント(必須)</label><textarea placeholder="レッスンの感想をご記入ください。"></textarea></div>
-      <button class="btn-request">評価を送信する</button>
+    <div style="background:linear-gradient(135deg,#064D3B,#0a6c52);border-radius:12px;padding:14px;color:#fff;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">★ レビューのお願い</div>
+      <div style="font-size:11px;line-height:1.5;opacity:0.9;">レッスン後7日以内に星評価とコメントの投稿をお願いします。コーチのやる気促進と質の向上のため、ぜひご協力ください。</div>
+    </div>
+    <div id="review-pending-list">
+      <div style="text-align:center;padding:24px;color:#888;font-size:12px;">読み込み中...</div>
+    </div>
+    <div id="review-completed-section" style="margin-top:18px;display:none;">
+      <div style="font-size:12px;color:#666;font-weight:600;margin:12px 4px 8px;">投稿済みのレビュー</div>
+      <div id="review-completed-list"></div>
     </div>
   </div>
 </div>
@@ -917,8 +913,6 @@ sb.auth.getSession().then(async function(res){
   updateNonMemberBanner();
   handlePaymentReturn();
   loadBookings();
-  /* 【2026/5/21 追加】キャンセルURL受け取り処理 */
-  checkCancelRequestUrl();
 });
 
 /* ============================================
@@ -951,6 +945,7 @@ function tab(btn,id){
   document.getElementById(id).classList.add('on');
   if(id==='s-bookings'){loadBookings();}
   if(id==='s-mypage'){refreshLineLinkStatus();}
+  if(id==='s-review'){loadReviewScreen();}
 }
 
 var currentType='indoor';
@@ -967,55 +962,6 @@ function checkPaymentConfirmUrl(){
   if(action==='pay'&&bookingId){
     showPaymentConfirmModal(bookingId);
   }
-}
-
-/* 【2026/5/21 追加】LINE 予約確定カード「予約をキャンセルする」ボタンから
-   ?action=cancel&booking_id=XXX で遷移してきた場合の処理。
-   ログイン必須(未ログインならログイン画面へ遷移)。
-   loadBookings に依存せず、bookings テーブルから直接取得する。*/
-async function checkCancelRequestUrl(){
-  var params=new URLSearchParams(window.location.search);
-  var action=params.get('action');
-  var bookingId=params.get('booking_id');
-  if(action!=='cancel'||!bookingId) return;
-  /* 認証確認 */
-  var sres=await sb.auth.getSession();
-  if(!sres.data.session){
-    alert('キャンセル申請にはログインが必要です。ログイン画面に移動します。');
-    window.location.href='customer_login.html?redirect='+encodeURIComponent(window.location.pathname+window.location.search);
-    return;
-  }
-  /* 予約情報を取得 */
-  var{data:booking,error}=await sb.from('bookings').select('id,total_price,status,booking_date,booking_time').eq('id',bookingId).maybeSingle();
-  if(error||!booking){
-    alert('ご予約が見つかりませんでした。');
-    window.history.replaceState({},document.title,window.location.pathname);
-    return;
-  }
-  if(booking.status==='cancelled'||booking.status==='refunded'){
-    alert('このご予約は既にキャンセル済みです。');
-    window.history.replaceState({},document.title,window.location.pathname);
-    return;
-  }
-  if(booking.status!=='confirmed'){
-    alert('このご予約は現在キャンセル申請できる状態ではありません。\n状態: '+booking.status);
-    window.history.replaceState({},document.title,window.location.pathname);
-    return;
-  }
-  /* allBookings に予約データを反映してから openCancelRequestModal を呼ぶ
-     (openCancelRequestModal が allBookings から booking_date/booking_time を参照して返金額計算するため)*/
-  if(!window.allBookings) window.allBookings=[];
-  var exists=false;
-  for(var i=0;i<allBookings.length;i++){
-    if(allBookings[i].id===booking.id){allBookings[i]=booking;exists=true;break;}
-  }
-  if(!exists) allBookings.push(booking);
-  /* 予約一覧タブへ切り替えてからモーダル表示 */
-  var bookingsTab=document.getElementById('snb-bookings');
-  if(bookingsTab) bookingsTab.click();
-  openCancelRequestModal(booking.id,booking.total_price);
-  /* URLパラメータをクリア */
-  window.history.replaceState({},document.title,window.location.pathname);
 }
 
 async function showPaymentConfirmModal(bookingId){
@@ -1144,6 +1090,16 @@ async function loadBookings(){
     var{data:bookings,error}=await sb.from('bookings').select('*').eq('customer_id',customerId).order('booking_date',{ascending:false});
     if(error){console.error('bookings取得エラー',error);throw error;}
     allBookings=bookings||[];
+    
+    /* レビュー未投稿カウント・バッジ更新 */
+    var todayStr=getJSTDateStr(0);
+    var pendingReviewCount=allBookings.filter(function(b){
+      return b.booking_date<=todayStr 
+        && ['confirmed','approved','completed'].indexOf(b.status)>=0
+        && b.review_status!=='submitted'
+        && b.review_status!=='expired';
+    }).length;
+    updateReviewBadge(pendingReviewCount);
     if(allBookings.length===0){
       document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">予約がありません</div><div class="booking-empty-text">まずはコーチを探してレッスンを予約しましょう</div><div style="margin-top:16px;"><button class="booking-empty-btn" onclick="document.getElementById(\'snb-search\').click()">コーチを探す</button></div></div>';
       return;
@@ -1169,7 +1125,6 @@ function renderBookings(filter){
   if(filter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
   else if(filter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
   else if(filter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
-  else if(filter==='cancelled'){filtered=allBookings.filter(function(b){return b.status==='cancelled'||b.status==='refunded'||b.status==='rejected';});}
   if(filtered.length===0){
     document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">該当する予約がありません</div><div class="booking-empty-text">フィルタを変更してください</div></div>';
     return;
@@ -1198,12 +1153,11 @@ function renderBookingCard(b,idx){
   if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
   else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
   else if(rawStatus==='completed') status='completed';
-  else if(rawStatus==='cancelled'||rawStatus==='refunded'||rawStatus==='rejected') status='cancelled';
+  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
   var statusLabel={pending:'⏳ 承認待ち',approved:'✅ 承認済み',completed:'✓ 完了',cancelled:'🚫 キャンセル'}[status]||'⏳ 承認待ち';
   if(rawStatus==='approved_pending_payment') statusLabel='💳 決済待ち';
   if(rawStatus==='confirmed') statusLabel='✅ 予約確定';
   if(rawStatus==='rejected') statusLabel='🚫 却下';
-  if(rawStatus==='refunded') statusLabel='🚫 キャンセル(返金済)';
   var msgMap={
     pending:'<div class="bk-msg pending">⏳ コーチの承認をお待ちしています。LINEに通知が届きます。</div>',
     approved:'<div class="bk-msg approved">✅ 承認されました!レッスン当日お待ちしています</div>',
@@ -1269,7 +1223,6 @@ function showBookingDetail(idx){
   if(currentBookingFilter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
   else if(currentBookingFilter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
   else if(currentBookingFilter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
-  else if(currentBookingFilter==='cancelled'){filtered=allBookings.filter(function(b){return b.status==='cancelled'||b.status==='refunded'||b.status==='rejected';});}
   var b=filtered[idx];
   if(!b) return;
   var coachMap=window._coachMap||{};
@@ -1282,7 +1235,7 @@ function showBookingDetail(idx){
   if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
   else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
   else if(rawStatus==='completed') status='completed';
-  else if(rawStatus==='cancelled'||rawStatus==='refunded'||rawStatus==='rejected') status='cancelled';
+  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
   var statusInfo={
     pending:{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'},
     approved:{icon:'✅',title:'承認済み',sub:'レッスン当日お待ちしています'},
@@ -1940,11 +1893,255 @@ function checkBoothTime(){
   }else{if(warningEl) warningEl.style.display='none';return true;}
 }
 
-function rate(n){
-  document.querySelectorAll('#rev-stars .starb').forEach(function(s,i){
+function rate(n,bookingId){
+  /* 該当予約のカード内の星のみ更新 */
+  var stars=document.querySelectorAll('#rev-stars-'+bookingId+' .starb');
+  stars.forEach(function(s,i){
     s.classList.toggle('on',i<n);
   });
+  /* 選択値を保持 */
+  var card=document.getElementById('rev-card-'+bookingId);
+  if(card) card.setAttribute('data-rating',n);
 }
+
+/* ============================================
+   レビュー機能(投稿・期限管理)
+============================================ */
+var reviewPendingBookings=[];
+
+async function loadReviewScreen(){
+  var container=document.getElementById('review-pending-list');
+  var completedSection=document.getElementById('review-completed-section');
+  var completedList=document.getElementById('review-completed-list');
+  
+  if(!currentUserId){
+    container.innerHTML='<div style="text-align:center;padding:24px;color:#888;font-size:12px;">ログインが必要です</div>';
+    return;
+  }
+
+  /* お客様情報取得 */
+  var{data:customerRow}=await sb.from('customers')
+    .select('id,name,store_key')
+    .eq('user_id',currentUserId)
+    .maybeSingle();
+  if(!customerRow){
+    container.innerHTML='<div style="text-align:center;padding:24px;color:#888;font-size:12px;">お客様情報の取得に失敗しました</div>';
+    return;
+  }
+  var customerId=customerRow.id;
+  var customerName=customerRow.name;
+
+  /* 完了したレッスンを取得(レッスン日が過去かつステータスがconfirmed/approved/completed) */
+  var todayStr=getJSTDateStr(0);
+  var{data:completedBookings}=await sb.from('bookings')
+    .select('id,coach_id,coach_name,store_key,lesson_type,minutes,booking_date,booking_time,total_price,status,review_status,review_deadline,reviewed_at')
+    .eq('customer_id',customerId)
+    .lte('booking_date',todayStr)
+    .in('status',['confirmed','approved','completed']);
+
+  completedBookings=completedBookings||[];
+
+  /* 7日経過したものを自動でexpiredに更新 */
+  var now=new Date();
+  for(var i=0;i<completedBookings.length;i++){
+    var b=completedBookings[i];
+    if(b.review_status==='submitted') continue;
+    if(b.review_status==='expired') continue;
+    var deadline=null;
+    if(b.review_deadline){
+      deadline=new Date(b.review_deadline);
+    }else{
+      /* deadline未設定なら booking_date + 7日として計算 */
+      var bd=new Date(b.booking_date+'T23:59:59+09:00');
+      bd.setDate(bd.getDate()+7);
+      deadline=bd;
+    }
+    if(now>deadline && b.review_status!=='submitted'){
+      /* 期限切れ自動更新 */
+      await sb.from('bookings').update({review_status:'expired'}).eq('id',b.id);
+      b.review_status='expired';
+    }
+  }
+
+  /* 投稿待ち(reviewed_at 未設定・期限内)*/
+  var pending=completedBookings.filter(function(b){
+    return b.review_status!=='submitted' && b.review_status!=='expired';
+  });
+
+  /* 投稿済み */
+  var submitted=completedBookings.filter(function(b){
+    return b.review_status==='submitted';
+  });
+
+  /* 投稿待ち表示 */
+  if(pending.length===0){
+    container.innerHTML='<div style="background:#fff;border-radius:12px;padding:24px;text-align:center;border:0.5px solid var(--border);"><div style="font-size:13px;color:#666;">投稿待ちのレビューはありません</div></div>';
+  }else{
+    container.innerHTML=pending.map(function(b){return renderReviewCard(b,customerId,customerName);}).join('');
+  }
+
+  /* 投稿済みのレビュー取得・表示 */
+  if(submitted.length>0){
+    var bookingIds=submitted.map(function(b){return b.id;});
+    var{data:reviews}=await sb.from('reviews')
+      .select('booking_id,rating,comment,coach_name,lesson_date,created_at')
+      .in('booking_id',bookingIds)
+      .order('created_at',{ascending:false});
+    reviews=reviews||[];
+    if(reviews.length>0){
+      completedSection.style.display='block';
+      completedList.innerHTML=reviews.map(function(r){
+        return '<div style="background:#fff;border-radius:12px;padding:12px;border:0.5px solid var(--border);margin-bottom:8px;">'+
+          '<div style="font-size:12px;color:#666;margin-bottom:4px;">'+escapeHtml(r.coach_name||'')+' · '+(r.lesson_date||'').replace(/-/g,'/')+'</div>'+
+          '<div style="color:#FFC107;font-size:14px;margin-bottom:6px;">'+'★'.repeat(r.rating)+'<span style="color:#ddd;">'+'★'.repeat(5-r.rating)+'</span></div>'+
+          '<div style="font-size:12px;color:#333;line-height:1.5;">'+escapeHtml(r.comment||'')+'</div>'+
+          '</div>';
+      }).join('');
+    }
+  }
+
+  /* バッジ更新 */
+  updateReviewBadge(pending.length);
+}
+
+function renderReviewCard(b,customerId,customerName){
+  var lessonMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴レッスン',comp:'コンペ',custom:'独自プラン'};
+  var lessonLabel=lessonMap[b.lesson_type]||b.lesson_type;
+  var datePart=(b.booking_date||'').split('-');
+  var dateStr=datePart.length>=3?(parseInt(datePart[1])+'月'+parseInt(datePart[2])+'日'):b.booking_date;
+  
+  /* 残り時間計算 */
+  var deadline=null;
+  if(b.review_deadline){
+    deadline=new Date(b.review_deadline);
+  }else{
+    var bd=new Date(b.booking_date+'T23:59:59+09:00');
+    bd.setDate(bd.getDate()+7);
+    deadline=bd;
+  }
+  var now=new Date();
+  var msLeft=deadline-now;
+  var daysLeft=Math.floor(msLeft/(1000*60*60*24));
+  var hoursLeft=Math.floor(msLeft/(1000*60*60));
+  var deadlineLabel='';
+  if(daysLeft>=1){
+    deadlineLabel='投稿期限まで '+daysLeft+'日';
+  }else if(hoursLeft>=1){
+    deadlineLabel='投稿期限まで '+hoursLeft+'時間';
+  }else{
+    deadlineLabel='まもなく期限切れ';
+  }
+
+  return '<div id="rev-card-'+b.id+'" data-rating="0" style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);margin-bottom:12px;">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'+
+      '<div style="font-size:14px;font-weight:600;">'+escapeHtml(b.coach_name||'(コーチ)')+'コーチへの評価</div>'+
+      '<div style="font-size:10px;color:#d97a00;font-weight:600;background:#fff3e0;padding:3px 8px;border-radius:100px;">'+deadlineLabel+'</div>'+
+    '</div>'+
+    '<div style="font-size:12px;color:#666;margin-bottom:10px;">'+dateStr+' '+lessonLabel+' '+(b.minutes||'')+'分</div>'+
+    '<label style="font-size:12px;color:#666;">総合評価(必須)</label>'+
+    '<div class="star-row" id="rev-stars-'+b.id+'">'+
+      '<button class="starb" onclick="rate(1,\''+b.id+'\')">★</button>'+
+      '<button class="starb" onclick="rate(2,\''+b.id+'\')">★</button>'+
+      '<button class="starb" onclick="rate(3,\''+b.id+'\')">★</button>'+
+      '<button class="starb" onclick="rate(4,\''+b.id+'\')">★</button>'+
+      '<button class="starb" onclick="rate(5,\''+b.id+'\')">★</button>'+
+    '</div>'+
+    '<div class="form-group"><label>コメント(必須)</label><textarea id="rev-comment-'+b.id+'" placeholder="レッスンの感想をご記入ください。"></textarea></div>'+
+    '<button class="btn-request" onclick="submitReview(\''+b.id+'\',\''+(b.coach_id||'')+'\',\''+(customerId||'')+'\',\''+escapeAttr(customerName||'')+'\',\''+escapeAttr(b.coach_name||'')+'\',\''+escapeAttr(b.store_key||'')+'\',\''+escapeAttr(b.lesson_type||'')+'\',\''+escapeAttr(b.booking_date||'')+'\')">評価を送信する</button>'+
+  '</div>';
+}
+
+async function submitReview(bookingId,coachId,customerId,customerName,coachName,storeKey,lessonType,lessonDate){
+  var card=document.getElementById('rev-card-'+bookingId);
+  if(!card)return;
+  var rating=parseInt(card.getAttribute('data-rating'))||0;
+  var commentEl=document.getElementById('rev-comment-'+bookingId);
+  var comment=commentEl?commentEl.value.trim():'';
+
+  if(rating<1||rating>5){
+    alert('星評価を選択してください(1〜5)');
+    return;
+  }
+  if(comment.length===0){
+    alert('コメントを入力してください');
+    return;
+  }
+  if(comment.length>2000){
+    alert('コメントは2000文字以内でお願いします');
+    return;
+  }
+
+  var btn=card.querySelector('.btn-request');
+  if(btn){btn.disabled=true;btn.textContent='送信中...';}
+
+  try{
+    /* reviews テーブルへ挿入 */
+    var{error:insertErr}=await sb.from('reviews').insert({
+      booking_id:bookingId,
+      coach_id:coachId||null,
+      customer_id:customerId||null,
+      store_key:storeKey||null,
+      rating:rating,
+      comment:comment,
+      status:'submitted',
+      customer_name:customerName||null,
+      coach_name:coachName||null,
+      lesson_type:lessonType||null,
+      lesson_date:lessonDate||null
+    });
+    if(insertErr){
+      if(insertErr.code==='23505'){
+        alert('このレッスンは既にレビュー投稿済みです');
+      }else{
+        alert('送信エラー: '+insertErr.message);
+      }
+      if(btn){btn.disabled=false;btn.textContent='評価を送信する';}
+      return;
+    }
+
+    /* bookings の review_status 更新 */
+    await sb.from('bookings').update({
+      review_status:'submitted',
+      reviewed_at:new Date().toISOString()
+    }).eq('id',bookingId);
+
+    /* 完了表示 */
+    card.innerHTML='<div style="text-align:center;padding:20px;"><div style="font-size:32px;margin-bottom:6px;color:#3aa57c;">✓</div><div style="font-size:13px;color:#333;font-weight:600;">レビューを投稿しました</div><div style="font-size:11px;color:#666;margin-top:4px;">ご協力ありがとうございました</div></div>';
+    
+    /* 一定時間後にリロード */
+    setTimeout(function(){loadReviewScreen();},2000);
+
+  }catch(e){
+    console.error('submitReview error',e);
+    alert('送信エラーが発生しました');
+    if(btn){btn.disabled=false;btn.textContent='評価を送信する';}
+  }
+}
+
+function updateReviewBadge(count){
+  var btn=document.getElementById('snb-review');
+  if(!btn)return;
+  /* 既存バッジ削除 */
+  var oldBadge=btn.querySelector('.review-badge');
+  if(oldBadge)oldBadge.remove();
+  if(count>0){
+    var badge=document.createElement('span');
+    badge.className='review-badge';
+    badge.style.cssText='display:inline-flex;align-items:center;justify-content:center;background:#ff5252;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;margin-left:4px;vertical-align:middle;';
+    badge.textContent=count;
+    btn.appendChild(badge);
+  }
+}
+
+function getJSTDateStr(offsetDays){
+  var d=new Date();
+  d.setHours(d.getHours()+9-d.getTimezoneOffset()/-60);
+  d.setDate(d.getDate()+(offsetDays||0));
+  return d.toISOString().slice(0,10);
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function escapeAttr(s){return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
 
 async function doLogout(){
   localStorage.removeItem('gc_login_time');
