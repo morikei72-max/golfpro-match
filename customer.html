@@ -916,6 +916,8 @@ sb.auth.getSession().then(async function(res){
   updateNonMemberBanner();
   handlePaymentReturn();
   loadBookings();
+  /* 【2026/5/21 追加】キャンセルURL受け取り処理 */
+  checkCancelRequestUrl();
 });
 
 /* ============================================
@@ -964,6 +966,55 @@ function checkPaymentConfirmUrl(){
   if(action==='pay'&&bookingId){
     showPaymentConfirmModal(bookingId);
   }
+}
+
+/* 【2026/5/21 追加】LINE 予約確定カード「予約をキャンセルする」ボタンから
+   ?action=cancel&booking_id=XXX で遷移してきた場合の処理。
+   ログイン必須(未ログインならログイン画面へ遷移)。
+   loadBookings に依存せず、bookings テーブルから直接取得する。*/
+async function checkCancelRequestUrl(){
+  var params=new URLSearchParams(window.location.search);
+  var action=params.get('action');
+  var bookingId=params.get('booking_id');
+  if(action!=='cancel'||!bookingId) return;
+  /* 認証確認 */
+  var sres=await sb.auth.getSession();
+  if(!sres.data.session){
+    alert('キャンセル申請にはログインが必要です。ログイン画面に移動します。');
+    window.location.href='customer_login.html?redirect='+encodeURIComponent(window.location.pathname+window.location.search);
+    return;
+  }
+  /* 予約情報を取得 */
+  var{data:booking,error}=await sb.from('bookings').select('id,total_price,status,booking_date,booking_time').eq('id',bookingId).maybeSingle();
+  if(error||!booking){
+    alert('ご予約が見つかりませんでした。');
+    window.history.replaceState({},document.title,window.location.pathname);
+    return;
+  }
+  if(booking.status==='cancelled'||booking.status==='refunded'){
+    alert('このご予約は既にキャンセル済みです。');
+    window.history.replaceState({},document.title,window.location.pathname);
+    return;
+  }
+  if(booking.status!=='confirmed'){
+    alert('このご予約は現在キャンセル申請できる状態ではありません。\n状態: '+booking.status);
+    window.history.replaceState({},document.title,window.location.pathname);
+    return;
+  }
+  /* allBookings に予約データを反映してから openCancelRequestModal を呼ぶ
+     (openCancelRequestModal が allBookings から booking_date/booking_time を参照して返金額計算するため)*/
+  if(!window.allBookings) window.allBookings=[];
+  var exists=false;
+  for(var i=0;i<allBookings.length;i++){
+    if(allBookings[i].id===booking.id){allBookings[i]=booking;exists=true;break;}
+  }
+  if(!exists) allBookings.push(booking);
+  /* 予約一覧タブへ切り替えてからモーダル表示 */
+  var bookingsTab=document.getElementById('snb-bookings');
+  if(bookingsTab) bookingsTab.click();
+  openCancelRequestModal(booking.id,booking.total_price);
+  /* URLパラメータをクリア */
+  window.history.replaceState({},document.title,window.location.pathname);
 }
 
 async function showPaymentConfirmModal(bookingId){
