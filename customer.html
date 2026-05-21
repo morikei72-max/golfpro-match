@@ -413,6 +413,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <button class="snb" onclick="filterBookings('pending',this)">⏳ 承認待ち</button>
       <button class="snb" onclick="filterBookings('approved',this)">✅ 承認済み</button>
       <button class="snb" onclick="filterBookings('completed',this)">✓ 完了</button>
+      <button class="snb" onclick="filterBookings('cancelled',this)">🚫 キャンセル</button>
     </div>
     <div id="bookings-list">
       <div class="booking-empty">
@@ -1168,6 +1169,7 @@ function renderBookings(filter){
   if(filter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
   else if(filter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
   else if(filter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
+  else if(filter==='cancelled'){filtered=allBookings.filter(function(b){return b.status==='cancelled'||b.status==='refunded'||b.status==='rejected';});}
   if(filtered.length===0){
     document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">該当する予約がありません</div><div class="booking-empty-text">フィルタを変更してください</div></div>';
     return;
@@ -1196,11 +1198,12 @@ function renderBookingCard(b,idx){
   if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
   else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
   else if(rawStatus==='completed') status='completed';
-  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
+  else if(rawStatus==='cancelled'||rawStatus==='refunded'||rawStatus==='rejected') status='cancelled';
   var statusLabel={pending:'⏳ 承認待ち',approved:'✅ 承認済み',completed:'✓ 完了',cancelled:'🚫 キャンセル'}[status]||'⏳ 承認待ち';
   if(rawStatus==='approved_pending_payment') statusLabel='💳 決済待ち';
   if(rawStatus==='confirmed') statusLabel='✅ 予約確定';
   if(rawStatus==='rejected') statusLabel='🚫 却下';
+  if(rawStatus==='refunded') statusLabel='🚫 キャンセル(返金済)';
   var msgMap={
     pending:'<div class="bk-msg pending">⏳ コーチの承認をお待ちしています。LINEに通知が届きます。</div>',
     approved:'<div class="bk-msg approved">✅ 承認されました!レッスン当日お待ちしています</div>',
@@ -1266,6 +1269,7 @@ function showBookingDetail(idx){
   if(currentBookingFilter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
   else if(currentBookingFilter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
   else if(currentBookingFilter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
+  else if(currentBookingFilter==='cancelled'){filtered=allBookings.filter(function(b){return b.status==='cancelled'||b.status==='refunded'||b.status==='rejected';});}
   var b=filtered[idx];
   if(!b) return;
   var coachMap=window._coachMap||{};
@@ -1278,7 +1282,7 @@ function showBookingDetail(idx){
   if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
   else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
   else if(rawStatus==='completed') status='completed';
-  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
+  else if(rawStatus==='cancelled'||rawStatus==='refunded'||rawStatus==='rejected') status='cancelled';
   var statusInfo={
     pending:{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'},
     approved:{icon:'✅',title:'承認済み',sub:'レッスン当日お待ちしています'},
