@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<title>MyCoach — コーチ登録 身分証</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--brown-deep:#1a1200;--brown-base:#3d2a05;--brown-mid:#6b4a14;--orange-bright:#BA7517;--orange-light:#E89C3E;--gold:#D4A85C;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);}
+html,body{font-family:'Noto Sans JP',sans-serif;min-height:100vh;color:var(--white);background:var(--brown-deep);}
+body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;}
+.bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(232,156,62,0.18),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(212,168,92,0.1),transparent 60%),linear-gradient(180deg,#1a1200 0%,#3d2a05 50%,#0f0900 100%);}
+.bg-noise{position:fixed;inset:0;z-index:1;opacity:0.05;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:1;}
+.orb-1{width:280px;height:280px;background:radial-gradient(circle,rgba(232,156,62,0.4),transparent 70%);top:-80px;right:-80px;}
+.orb-2{width:240px;height:240px;background:radial-gradient(circle,rgba(212,168,92,0.25),transparent 70%);bottom:-60px;left:-60px;}
+.wrap{position:relative;z-index:2;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;padding:30px 0;}
+.back-link{align-self:flex-start;margin-bottom:14px;color:var(--gold);font-size:11px;letter-spacing:2px;cursor:pointer;background:none;border:none;font-family:inherit;display:flex;align-items:center;gap:6px;}
+.back-link svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;}
+.brand{text-align:center;margin-bottom:20px;}
+.brand-mark{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px;}
+.brand-line{width:2px;height:24px;background:linear-gradient(180deg,var(--gold),var(--orange-bright));border-radius:1px;}
+.brand-text{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:1px;background:linear-gradient(135deg,var(--white) 30%,var(--orange-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.brand-tagline{display:inline-block;font-size:8px;letter-spacing:4px;color:var(--gold);background:rgba(212,168,92,0.1);border:1px solid rgba(212,168,92,0.3);padding:3px 10px;border-radius:10px;text-transform:uppercase;}
+.progress-label{text-align:center;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;}
+.progress{display:flex;align-items:center;gap:6px;margin-bottom:24px;justify-content:center;}
+.progress-dot{width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);}
+.progress-dot.active{background:linear-gradient(90deg,var(--gold),var(--orange-bright));box-shadow:0 0 12px rgba(212,168,92,0.35);}
+.progress-dot.done{background:var(--orange-bright);opacity:0.6;}
+.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:28px 22px;position:relative;}
+.glass-card::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05) 50%,rgba(212,168,92,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.section-title{font-size:20px;font-weight:600;color:var(--white);margin-bottom:6px;text-align:center;}
+.section-title .accent{color:var(--orange-light);font-family:'Cormorant Garamond',serif;font-weight:600;}
+.section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:22px;letter-spacing:0.5px;line-height:1.6;}
+.field{position:relative;margin-bottom:14px;}
+.field-label{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
+.field-label .required{color:#ff8a8a;margin-left:4px;}
+.id-type-group{display:grid;grid-template-columns:1fr;gap:8px;}
+.id-type-btn{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;color:var(--text-sub);font-size:13px;font-family:inherit;cursor:pointer;transition:all 0.3s;text-align:left;font-weight:600;display:flex;align-items:center;gap:10px;}
+.id-type-btn .icon{font-size:20px;}
+.id-type-btn.active{background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;border-color:var(--orange-light);box-shadow:0 4px 12px rgba(186,117,23,0.3);}
+.id-type-btn .desc{font-size:10px;color:var(--text-faint);margin-top:2px;font-weight:400;display:block;}
+.id-type-btn.active .desc{color:rgba(255,255,255,0.85);}
+.upload-zone{background:rgba(0,0,0,0.3);border:2px dashed rgba(212,168,92,0.4);border-radius:14px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.3s;margin-bottom:14px;}
+.upload-zone:hover{border-color:var(--orange-light);background:rgba(0,0,0,0.4);}
+.upload-zone.has-file{border-style:solid;border-color:var(--orange-light);padding:12px;}
+.upload-zone .upload-icon{font-size:32px;margin-bottom:8px;opacity:0.6;}
+.upload-zone .upload-text{font-size:12px;color:var(--text-sub);line-height:1.6;}
+.upload-zone .upload-text strong{color:var(--orange-light);font-weight:700;}
+.upload-zone .upload-hint{font-size:9px;color:var(--text-faint);margin-top:4px;letter-spacing:1px;}
+.upload-zone input{display:none;}
+.preview-img{max-width:100%;max-height:200px;border-radius:8px;display:block;margin:0 auto;}
+.preview-name{font-size:11px;color:var(--text-sub);margin-top:8px;word-break:break-all;}
+.upload-zone .change-btn{display:inline-block;margin-top:6px;font-size:10px;color:var(--orange-light);text-decoration:underline;}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:var(--white);border:none;border-radius:14px;padding:16px;font-size:14px;font-weight:700;letter-spacing:2px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px rgba(186,117,23,0.3),inset 0 1px 0 rgba(255,255,255,0.2);text-transform:uppercase;margin-top:14px;}
+.btn-primary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.btn-secondary{width:100%;background:transparent;color:var(--text-sub);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:14px;font-size:12px;font-weight:600;letter-spacing:2px;font-family:inherit;cursor:pointer;margin-top:8px;text-transform:uppercase;}
+.err{color:#ff8a8a;font-size:12px;margin-bottom:12px;display:none;text-align:center;padding:10px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;}
+.success-msg{color:var(--orange-light);font-size:11px;text-align:center;padding:8px;background:rgba(232,156,62,0.1);border:1px solid rgba(232,156,62,0.3);border-radius:10px;margin-top:8px;display:none;}
+.hint-card{background:rgba(212,168,92,0.08);border:1px solid rgba(212,168,92,0.2);border-radius:12px;padding:12px;margin-top:14px;font-size:10px;color:var(--text-sub);line-height:1.7;}
+.hint-card strong{color:var(--gold);font-weight:600;}
+.coach-badge{display:inline-block;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;font-size:9px;letter-spacing:3px;padding:4px 12px;border-radius:8px;margin-bottom:8px;font-weight:700;text-transform:uppercase;}
+.loading-screen{position:fixed;inset:0;background:var(--brown-deep);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.loading-screen.hidden{display:none;}
+.loader{width:50px;height:50px;border:3px solid rgba(212,168,92,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.uploading-bar{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-top:8px;display:none;}
+.uploading-bar.show{display:block;}
+.uploading-bar::before{content:'';display:block;height:100%;width:30%;background:linear-gradient(90deg,transparent,var(--orange-light),transparent);animation:loading 1.5s ease-in-out infinite;}
+@keyframes loading{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
+.hidden-section{display:none;}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="loader"></div>
+</div>
+
+<div class="bg-layer"></div>
+<div class="bg-noise"></div>
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+
+<div class="wrap" id="main-content" style="display:none;">
+
+  <button class="back-link" onclick="location.href='coach_onboarding_step1.html'">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    前の画面に戻る
+  </button>
+
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="brand-line"></div>
+      <div class="brand-text">MyCoach</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="brand-tagline">For Golf Coaches</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
+    <span class="coach-badge">COACH REGISTRATION</span>
+  </div>
+
+  <div class="progress-label">STEP 3 OF 7</div>
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot active"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
+
+  <div class="glass-card">
+    <div class="section-title">Identity <span class="accent">Verification</span></div>
+    <div class="section-sub">本人確認書類をアップロードしてください<br>提出された画像は本部承認まで他者から見えません</div>
+
+    <div id="err" class="err"></div>
+
+    <!-- 身分証種類選択 -->
+    <div class="field">
+      <div class="field-label">身分証の種類<span class="required">*</span></div>
+      <div class="id-type-group">
+        <button type="button" class="id-type-btn" data-type="drivers_license" onclick="selectType('drivers_license')">
+          <span class="icon">🚗</span>
+          <span>運転免許証<span class="desc">表面・裏面の両方が必要</span></span>
+        </button>
+        <button type="button" class="id-type-btn" data-type="mynumber_card" onclick="selectType('mynumber_card')">
+          <span class="icon">🪪</span>
+          <span>マイナンバーカード<span class="desc">表面が必要(裏面は任意)</span></span>
+        </button>
+        <button type="button" class="id-type-btn" data-type="passport" onclick="selectType('passport')">
+          <span class="icon">📘</span>
+          <span>パスポート<span class="desc">顔写真ページのみ</span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 表面アップロード -->
+    <div class="field hidden-section" id="front-section">
+      <div class="field-label" id="front-label">表面<span class="required">*</span></div>
+      <label class="upload-zone" id="front-zone">
+        <div id="front-default">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text"><strong>タップして撮影 / 選択</strong></div>
+          <div class="upload-hint">JPG / PNG / HEIC / PDF (5MB以下)</div>
+        </div>
+        <div id="front-preview" style="display:none;"></div>
+        <input type="file" id="front-file" accept="image/jpeg,image/png,image/heic,image/heif,application/pdf" onchange="handleFile('front')">
+      </label>
+      <div class="uploading-bar" id="front-bar"></div>
+      <div class="success-msg" id="front-success">✅ アップロード完了</div>
+    </div>
+
+    <!-- 裏面アップロード -->
+    <div class="field hidden-section" id="back-section">
+      <div class="field-label" id="back-label">裏面<span class="required" id="back-required">*</span></div>
+      <label class="upload-zone" id="back-zone">
+        <div id="back-default">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text"><strong>タップして撮影 / 選択</strong></div>
+          <div class="upload-hint">JPG / PNG / HEIC / PDF (5MB以下)</div>
+        </div>
+        <div id="back-preview" style="display:none;"></div>
+        <input type="file" id="back-file" accept="image/jpeg,image/png,image/heic,image/heif,application/pdf" onchange="handleFile('back')">
+      </label>
+      <div class="uploading-bar" id="back-bar"></div>
+      <div class="success-msg" id="back-success">✅ アップロード完了</div>
+    </div>
+
+    <button class="btn-primary" id="next-btn" onclick="saveAndNext()" disabled>
+      次へ進む
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+
+    <div class="hint-card">
+      <strong>🔒 セキュリティ:</strong><br>
+      アップロードされた身分証画像は暗号化されて保存され、本部の管理者のみが閲覧できます。本部承認後も、お客様や他のコーチからは見えません。
+    </div>
+  </div>
+
+</div>
+
+<script>
+const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+let currentUserId=null;
+let currentCoachId=null;
+let selectedType=null;
+let frontUrl=null;
+let backUrl=null;
+
+const BUCKET='coach-id-cards';
+
+/* セッション確認 + 既存データロード */
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){
+    location.replace('coach_login.html');
+    return;
+  }
+  currentUserId=session.user.id;
+
+  const {data:coach}=await sb.from('coaches').select('id,id_card_type,id_card_url,id_card_back_url').eq('user_id',currentUserId).maybeSingle();
+  if(!coach){
+    /* Step1未完了の場合は戻す */
+    location.replace('coach_onboarding_step1.html');
+    return;
+  }
+  currentCoachId=coach.id;
+
+  if(coach.id_card_type){
+    selectType(coach.id_card_type);
+  }
+  if(coach.id_card_url){
+    frontUrl=coach.id_card_url;
+    showPreview('front',coach.id_card_url);
+    document.getElementById('front-success').style.display='block';
+  }
+  if(coach.id_card_back_url){
+    backUrl=coach.id_card_back_url;
+    showPreview('back',coach.id_card_back_url);
+    document.getElementById('back-success').style.display='block';
+  }
+  validateAndToggleNextBtn();
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('main-content').style.display='flex';
+})();
+
+function selectType(type){
+  selectedType=type;
+  document.querySelectorAll('.id-type-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.id-type-btn[data-type="${type}"]`).classList.add('active');
+
+  document.getElementById('front-section').style.display='block';
+
+  if(type==='passport'){
+    /* パスポートは表面のみ */
+    document.getElementById('back-section').style.display='none';
+    document.getElementById('front-label').innerHTML='顔写真ページ<span class="required">*</span>';
+  }else if(type==='mynumber_card'){
+    /* マイナンバーカードは裏面任意 */
+    document.getElementById('back-section').style.display='block';
+    document.getElementById('front-label').innerHTML='表面<span class="required">*</span>';
+    document.getElementById('back-label').innerHTML='裏面(任意)';
+    document.getElementById('back-required').style.display='none';
+  }else{
+    /* 運転免許証は両面必須 */
+    document.getElementById('back-section').style.display='block';
+    document.getElementById('front-label').innerHTML='表面<span class="required">*</span>';
+    document.getElementById('back-label').innerHTML='裏面<span class="required">*</span>';
+    document.getElementById('back-required').style.display='inline';
+  }
+  validateAndToggleNextBtn();
+}
+
+async function handleFile(side){
+  const fileInput=document.getElementById(`${side}-file`);
+  const file=fileInput.files[0];
+  const err=document.getElementById('err');
+  err.style.display='none';
+
+  if(!file)return;
+
+  /* サイズチェック(5MB) */
+  if(file.size>5*1024*1024){
+    err.textContent='ファイルサイズは5MB以下にしてください';
+    err.style.display='block';
+    fileInput.value='';
+    return;
+  }
+
+  /* 形式チェック */
+  const okTypes=['image/jpeg','image/png','image/heic','image/heif','application/pdf'];
+  if(!okTypes.includes(file.type)){
+    err.textContent='対応形式:JPG / PNG / HEIC / PDF のみ';
+    err.style.display='block';
+    fileInput.value='';
+    return;
+  }
+
+  const bar=document.getElementById(`${side}-bar`);
+  const successMsg=document.getElementById(`${side}-success`);
+  successMsg.style.display='none';
+  bar.classList.add('show');
+
+  try{
+    /* 拡張子取得 */
+    const ext=file.name.split('.').pop().toLowerCase();
+    const fileName=`${currentUserId}/${side}.${ext}`;
+
+    /* Supabase Storageへアップロード(上書き有効) */
+    const {data:uploadData,error:uploadError}=await sb.storage.from(BUCKET).upload(fileName,file,{
+      cacheControl:'3600',
+      upsert:true
+    });
+
+    if(uploadError){
+      bar.classList.remove('show');
+      err.textContent='アップロード失敗:'+uploadError.message;
+      err.style.display='block';
+      fileInput.value='';
+      return;
+    }
+
+    /* 署名付きURLを取得(1年間有効) */
+    const {data:signedData,error:signedError}=await sb.storage.from(BUCKET).createSignedUrl(fileName,60*60*24*365);
+
+    if(signedError){
+      bar.classList.remove('show');
+      err.textContent='URL生成失敗:'+signedError.message;
+      err.style.display='block';
+      return;
+    }
+
+    const url=signedData.signedUrl;
+    if(side==='front'){
+      frontUrl=url;
+    }else{
+      backUrl=url;
+    }
+
+    /* プレビュー表示 */
+    showPreview(side,url,file);
+
+    bar.classList.remove('show');
+    successMsg.style.display='block';
+
+    validateAndToggleNextBtn();
+  }catch(e){
+    bar.classList.remove('show');
+    err.textContent='エラー:'+e.message;
+    err.style.display='block';
+  }
+}
+
+function showPreview(side,url,file){
+  const defaultDiv=document.getElementById(`${side}-default`);
+  const previewDiv=document.getElementById(`${side}-preview`);
+  const zone=document.getElementById(`${side}-zone`);
+
+  defaultDiv.style.display='none';
+  previewDiv.style.display='block';
+  zone.classList.add('has-file');
+
+  /* PDFか画像かで表示分け */
+  if(file && file.type==='application/pdf'){
+    previewDiv.innerHTML=`<div style="text-align:center;padding:20px;"><div style="font-size:40px;">📄</div><div class="preview-name">${file.name}</div><div class="change-btn">タップして変更</div></div>`;
+  }else if(url){
+    previewDiv.innerHTML=`<img class="preview-img" src="${url}" onerror="this.style.display='none'"><div class="change-btn" style="text-align:center;margin-top:6px;">タップして変更</div>`;
+  }
+}
+
+function validateAndToggleNextBtn(){
+  const btn=document.getElementById('next-btn');
+  if(!selectedType){btn.disabled=true;return;}
+  if(!frontUrl){btn.disabled=true;return;}
+  /* 運転免許証は裏面必須 */
+  if(selectedType==='drivers_license' && !backUrl){btn.disabled=true;return;}
+  btn.disabled=false;
+}
+
+async function saveAndNext(){
+  const err=document.getElementById('err');
+  const btn=document.getElementById('next-btn');
+  err.style.display='none';
+
+  btn.disabled=true;
+  btn.textContent='保存中...';
+
+  const updateData={
+    id_card_type:selectedType,
+    id_card_url:frontUrl,
+    id_card_back_url:backUrl,
+    id_card_status:'pending',
+    id_card_uploaded_at:new Date().toISOString(),
+    updated_at:new Date().toISOString()
+  };
+
+  const {error}=await sb.from('coaches').update(updateData).eq('id',currentCoachId);
+
+  if(error){
+    err.textContent='保存失敗:'+error.message;
+    err.style.display='block';
+    btn.disabled=false;
+    btn.innerHTML='次へ進む <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+    return;
+  }
+
+  location.href='coach_onboarding_step3.html';
+}
+</script>
+</body>
+</html>
