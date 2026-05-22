@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<title>MyCoach — コーチ登録 プロフィール</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--brown-deep:#1a1200;--brown-base:#3d2a05;--brown-mid:#6b4a14;--orange-bright:#BA7517;--orange-light:#E89C3E;--gold:#D4A85C;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);}
+html,body{font-family:'Noto Sans JP',sans-serif;min-height:100vh;color:var(--white);background:var(--brown-deep);}
+body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;}
+.bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(232,156,62,0.18),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(212,168,92,0.1),transparent 60%),linear-gradient(180deg,#1a1200 0%,#3d2a05 50%,#0f0900 100%);}
+.bg-noise{position:fixed;inset:0;z-index:1;opacity:0.05;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:1;}
+.orb-1{width:280px;height:280px;background:radial-gradient(circle,rgba(232,156,62,0.4),transparent 70%);top:-80px;right:-80px;}
+.orb-2{width:240px;height:240px;background:radial-gradient(circle,rgba(212,168,92,0.25),transparent 70%);bottom:-60px;left:-60px;}
+.wrap{position:relative;z-index:2;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;padding:30px 0;}
+.back-link{align-self:flex-start;margin-bottom:14px;color:var(--gold);font-size:11px;letter-spacing:2px;cursor:pointer;background:none;border:none;font-family:inherit;display:flex;align-items:center;gap:6px;}
+.back-link svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;}
+.brand{text-align:center;margin-bottom:20px;}
+.brand-mark{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px;}
+.brand-line{width:2px;height:24px;background:linear-gradient(180deg,var(--gold),var(--orange-bright));border-radius:1px;}
+.brand-text{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:1px;background:linear-gradient(135deg,var(--white) 30%,var(--orange-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.brand-tagline{display:inline-block;font-size:8px;letter-spacing:4px;color:var(--gold);background:rgba(212,168,92,0.1);border:1px solid rgba(212,168,92,0.3);padding:3px 10px;border-radius:10px;text-transform:uppercase;}
+.progress-label{text-align:center;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;}
+.progress{display:flex;align-items:center;gap:6px;margin-bottom:24px;justify-content:center;}
+.progress-dot{width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);}
+.progress-dot.active{background:linear-gradient(90deg,var(--gold),var(--orange-bright));box-shadow:0 0 12px rgba(212,168,92,0.35);}
+.progress-dot.done{background:var(--orange-bright);opacity:0.6;}
+.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:28px 22px;position:relative;}
+.glass-card::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05) 50%,rgba(212,168,92,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.section-title{font-size:20px;font-weight:600;color:var(--white);margin-bottom:6px;text-align:center;}
+.section-title .accent{color:var(--orange-light);font-family:'Cormorant Garamond',serif;font-weight:600;}
+.section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:22px;letter-spacing:0.5px;line-height:1.6;}
+.field{position:relative;margin-bottom:14px;}
+.field-label{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
+.field-label .required{color:#ff8a8a;margin-left:4px;}
+.field-input,.field-textarea,.field-select{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;color:var(--white);font-size:14px;font-family:inherit;outline:none;transition:all 0.3s;}
+.field-textarea{resize:vertical;min-height:90px;}
+.field-input:focus,.field-textarea:focus,.field-select:focus{border-color:var(--orange-light);box-shadow:0 0 0 3px rgba(232,156,62,0.15);}
+.field-input::placeholder,.field-textarea::placeholder{color:rgba(255,255,255,0.35);}
+.field-select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23D4A85C' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;cursor:pointer;}
+.field-select option{background:var(--brown-base);color:var(--white);}
+.char-count{font-size:9px;color:var(--text-faint);text-align:right;margin-top:4px;letter-spacing:1px;}
+/* 顔写真アップロード */
+.photo-zone{display:flex;flex-direction:column;align-items:center;margin-bottom:14px;}
+.photo-frame{width:120px;height:120px;border-radius:50%;background:rgba(0,0,0,0.4);border:2px dashed rgba(212,168,92,0.4);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;transition:all 0.3s;margin-bottom:8px;position:relative;}
+.photo-frame:hover{border-color:var(--orange-light);}
+.photo-frame.has-photo{border-style:solid;border-color:var(--orange-light);}
+.photo-frame img{width:100%;height:100%;object-fit:cover;}
+.photo-frame .placeholder{font-size:36px;opacity:0.4;}
+.photo-frame input{display:none;}
+.photo-hint{font-size:10px;color:var(--text-faint);text-align:center;letter-spacing:1px;line-height:1.6;}
+.photo-hint strong{color:var(--orange-light);}
+.uploading-bar{width:100%;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-top:8px;display:none;}
+.uploading-bar.show{display:block;}
+.uploading-bar::before{content:'';display:block;height:100%;width:30%;background:linear-gradient(90deg,transparent,var(--orange-light),transparent);animation:loading 1.5s ease-in-out infinite;}
+@keyframes loading{0%{transform:translateX(-100%);}100%{transform:translateX(400%);}}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:var(--white);border:none;border-radius:14px;padding:16px;font-size:14px;font-weight:700;letter-spacing:2px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px rgba(186,117,23,0.3),inset 0 1px 0 rgba(255,255,255,0.2);text-transform:uppercase;margin-top:14px;}
+.btn-primary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.err{color:#ff8a8a;font-size:12px;margin-bottom:12px;display:none;text-align:center;padding:10px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;}
+.hint-card{background:rgba(212,168,92,0.08);border:1px solid rgba(212,168,92,0.2);border-radius:12px;padding:12px;margin-top:14px;font-size:10px;color:var(--text-sub);line-height:1.7;}
+.hint-card strong{color:var(--gold);font-weight:600;}
+.coach-badge{display:inline-block;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;font-size:9px;letter-spacing:3px;padding:4px 12px;border-radius:8px;margin-bottom:8px;font-weight:700;text-transform:uppercase;}
+.loading-screen{position:fixed;inset:0;background:var(--brown-deep);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.loading-screen.hidden{display:none;}
+.loader{width:50px;height:50px;border:3px solid rgba(212,168,92,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="loader"></div>
+</div>
+
+<div class="bg-layer"></div>
+<div class="bg-noise"></div>
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+
+<div class="wrap" id="main-content" style="display:none;">
+
+  <button class="back-link" onclick="location.href='coach_onboarding_step3.html'">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    前の画面に戻る
+  </button>
+
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="brand-line"></div>
+      <div class="brand-text">MyCoach</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="brand-tagline">For Golf Coaches</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
+    <span class="coach-badge">COACH REGISTRATION</span>
+  </div>
+
+  <div class="progress-label">STEP 5 OF 7</div>
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot active"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
+
+  <div class="glass-card">
+    <div class="section-title">Coach <span class="accent">Profile</span></div>
+    <div class="section-sub">プロフィールをご登録ください<br>お客様画面に表示される情報です</div>
+
+    <div id="err" class="err"></div>
+
+    <!-- 顔写真 -->
+    <div class="field">
+      <div class="field-label">顔写真<span class="required">*</span></div>
+      <div class="photo-zone">
+        <label class="photo-frame" id="photo-frame">
+          <div class="placeholder" id="photo-placeholder">📷</div>
+          <img id="photo-preview" style="display:none;">
+          <input type="file" id="photo-file" accept="image/jpeg,image/png,image/heic,image/heif" onchange="handlePhoto()">
+        </label>
+        <div class="photo-hint">
+          <strong>タップして撮影 / 選択</strong><br>
+          JPG / PNG / HEIC(5MB以下)
+        </div>
+        <div class="uploading-bar" id="photo-bar"></div>
+      </div>
+    </div>
+
+    <!-- 自己紹介 -->
+    <div class="field">
+      <div class="field-label">自己紹介<span class="required">*</span></div>
+      <textarea class="field-textarea" id="bio" placeholder="例:はじめまして、ゴルフ歴20年の山田です。初心者の方から上級者の方まで、それぞれのレベルに合わせた丁寧な指導を心がけています。" maxlength="500" oninput="updateCharCount('bio',500)"></textarea>
+      <div class="char-count"><span id="bio-count">0</span> / 500</div>
+    </div>
+
+    <!-- 経歴・実績 -->
+    <div class="field">
+      <div class="field-label">経歴・実績<span class="required">*</span></div>
+      <textarea class="field-textarea" id="experience" placeholder="例:PGA ティーチングプロA級・ベストスコア67・全国アマ大会出場経験あり" maxlength="300" oninput="updateCharCount('experience',300)"></textarea>
+      <div class="char-count"><span id="experience-count">0</span> / 300</div>
+    </div>
+
+    <!-- 経験年数 -->
+    <div class="field">
+      <div class="field-label">指導経験年数<span class="required">*</span></div>
+      <select class="field-select" id="experience_years">
+        <option value="">-- 選択してください --</option>
+        <option value="1">1年未満</option>
+        <option value="2">1〜3年</option>
+        <option value="5">3〜5年</option>
+        <option value="10">5〜10年</option>
+        <option value="15">10〜15年</option>
+        <option value="20">15〜20年</option>
+        <option value="25">20年以上</option>
+      </select>
+    </div>
+
+    <!-- 資格・ライセンス(任意) -->
+    <div class="field">
+      <div class="field-label">資格・ライセンス(任意)</div>
+      <input class="field-input" type="text" id="qualification" placeholder="例:PGAティーチングプロA級、JGRA公認コーチ">
+    </div>
+
+    <!-- 所属店舗 -->
+    <div class="field">
+      <div class="field-label">所属店舗<span class="required">*</span></div>
+      <select class="field-select" id="store_key">
+        <option value="">-- 選択してください --</option>
+      </select>
+      <div style="font-size:10px;color:var(--text-faint);margin-top:6px;letter-spacing:0.5px;">
+        ※レッスンを行う主な店舗をお選びください
+      </div>
+    </div>
+
+    <button class="btn-primary" id="next-btn" onclick="saveAndNext()" disabled>
+      次へ進む
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+
+    <div class="hint-card">
+      <strong>💡 公開範囲:</strong><br>
+      この情報は本部承認後、お客様画面の「コーチを探す」検索結果やコーチプロフィール画面に表示されます。
+    </div>
+  </div>
+
+</div>
+
+<script>
+const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+let currentUserId=null;
+let currentCoachId=null;
+let photoUrl=null;
+
+const PHOTO_BUCKET='images';
+
+/* セッション確認 + 既存データロード + 店舗リスト取得 */
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){
+    location.replace('coach_login.html');
+    return;
+  }
+  currentUserId=session.user.id;
+
+  /* 店舗リスト取得(有効店舗のみ) */
+  const {data:stores}=await sb.from('stores').select('store_key,name').eq('is_active',true).order('name');
+  const storeSelect=document.getElementById('store_key');
+  if(stores){
+    stores.forEach(s=>{
+      const opt=document.createElement('option');
+      opt.value=s.store_key;
+      opt.textContent=s.name;
+      storeSelect.appendChild(opt);
+    });
+  }
+
+  /* コーチ情報ロード */
+  const {data:coach}=await sb.from('coaches').select('id,photo_url,bio,experience,experience_years,qualification,store_key').eq('user_id',currentUserId).maybeSingle();
+  if(!coach){
+    location.replace('coach_onboarding_step1.html');
+    return;
+  }
+  currentCoachId=coach.id;
+
+  if(coach.photo_url){
+    photoUrl=coach.photo_url;
+    showPhoto(coach.photo_url);
+  }
+  if(coach.bio){
+    document.getElementById('bio').value=coach.bio;
+    updateCharCount('bio',500);
+  }
+  if(coach.experience){
+    document.getElementById('experience').value=coach.experience;
+    updateCharCount('experience',300);
+  }
+  if(coach.experience_years){
+    document.getElementById('experience_years').value=coach.experience_years;
+  }
+  if(coach.qualification){
+    document.getElementById('qualification').value=coach.qualification;
+  }
+  if(coach.store_key){
+    document.getElementById('store_key').value=coach.store_key;
+  }
+
+  validateAndToggleNextBtn();
+  attachListeners();
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('main-content').style.display='flex';
+})();
+
+function attachListeners(){
+  ['bio','experience','experience_years','qualification','store_key'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.addEventListener('input',validateAndToggleNextBtn);
+    if(el)el.addEventListener('change',validateAndToggleNextBtn);
+  });
+}
+
+function updateCharCount(id,max){
+  const el=document.getElementById(id);
+  const count=document.getElementById(`${id}-count`);
+  if(count)count.textContent=el.value.length;
+  validateAndToggleNextBtn();
+}
+
+async function handlePhoto(){
+  const fileInput=document.getElementById('photo-file');
+  const file=fileInput.files[0];
+  const err=document.getElementById('err');
+  err.style.display='none';
+
+  if(!file)return;
+
+  if(file.size>5*1024*1024){
+    err.textContent='ファイルサイズは5MB以下にしてください';
+    err.style.display='block';
+    fileInput.value='';
+    return;
+  }
+
+  const okTypes=['image/jpeg','image/png','image/heic','image/heif'];
+  if(!okTypes.includes(file.type)){
+    err.textContent='対応形式:JPG / PNG / HEIC のみ';
+    err.style.display='block';
+    fileInput.value='';
+    return;
+  }
+
+  const bar=document.getElementById('photo-bar');
+  bar.classList.add('show');
+
+  try{
+    const ext=file.name.split('.').pop().toLowerCase();
+    const fileName=`coach_photos/${currentUserId}_${Date.now()}.${ext}`;
+
+    /* images バケットへアップロード(Public) */
+    const {error:uploadError}=await sb.storage.from(PHOTO_BUCKET).upload(fileName,file,{
+      cacheControl:'3600',
+      upsert:true
+    });
+
+    if(uploadError){
+      bar.classList.remove('show');
+      err.textContent='アップロード失敗:'+uploadError.message;
+      err.style.display='block';
+      fileInput.value='';
+      return;
+    }
+
+    /* 公開URLを取得 */
+    const {data:urlData}=sb.storage.from(PHOTO_BUCKET).getPublicUrl(fileName);
+    photoUrl=urlData.publicUrl;
+    showPhoto(photoUrl);
+
+    bar.classList.remove('show');
+    validateAndToggleNextBtn();
+  }catch(e){
+    bar.classList.remove('show');
+    err.textContent='エラー:'+e.message;
+    err.style.display='block';
+  }
+}
+
+function showPhoto(url){
+  const frame=document.getElementById('photo-frame');
+  const placeholder=document.getElementById('photo-placeholder');
+  const img=document.getElementById('photo-preview');
+  img.src=url;
+  img.style.display='block';
+  placeholder.style.display='none';
+  frame.classList.add('has-photo');
+}
+
+function validateAndToggleNextBtn(){
+  const btn=document.getElementById('next-btn');
+  const bio=document.getElementById('bio').value.trim();
+  const experience=document.getElementById('experience').value.trim();
+  const experience_years=document.getElementById('experience_years').value;
+  const store_key=document.getElementById('store_key').value;
+
+  if(!photoUrl){btn.disabled=true;return;}
+  if(!bio){btn.disabled=true;return;}
+  if(!experience){btn.disabled=true;return;}
+  if(!experience_years){btn.disabled=true;return;}
+  if(!store_key){btn.disabled=true;return;}
+
+  btn.disabled=false;
+}
+
+async function saveAndNext(){
+  const err=document.getElementById('err');
+  const btn=document.getElementById('next-btn');
+  err.style.display='none';
+
+  const bio=document.getElementById('bio').value.trim();
+  const experience=document.getElementById('experience').value.trim();
+  const experience_years=parseInt(document.getElementById('experience_years').value)||null;
+  const qualification=document.getElementById('qualification').value.trim()||null;
+  const store_key=document.getElementById('store_key').value;
+
+  btn.disabled=true;
+  btn.textContent='保存中...';
+
+  const updateData={
+    photo_url:photoUrl,
+    bio,
+    experience,
+    experience_years,
+    qualification,
+    store_key,
+    updated_at:new Date().toISOString()
+  };
+
+  const {error}=await sb.from('coaches').update(updateData).eq('id',currentCoachId);
+
+  if(error){
+    err.textContent='保存失敗:'+error.message;
+    err.style.display='block';
+    btn.disabled=false;
+    btn.innerHTML='次へ進む <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+    return;
+  }
+
+  location.href='coach_onboarding_step5.html';
+}
+</script>
+</body>
+</html>
