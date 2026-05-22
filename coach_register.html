@@ -172,8 +172,10 @@ async function doRegister(){
     return;
   }
 
-  /* 既登録判定 */
-  const isExistingUser = !error && (!data?.user || (Array.isArray(data?.user?.identities) && data.user.identities.length === 0));
+  /* 既登録判定 - Supabase最新仕様
+     本当に既登録のユーザーは data.user.identities が空配列で返る
+     data.user が null の場合は単にメール確認待ち(新規登録成功)と判断する */
+  const isExistingUser = !error && data?.user && Array.isArray(data?.user?.identities) && data.user.identities.length === 0;
 
   if(isExistingUser){
     err.innerHTML='このメールアドレスは既に登録されています。<br><a href="coach_login.html">ログイン画面へ進む</a>';
