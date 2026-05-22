@@ -36,8 +36,8 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 .section-title{font-size:20px;font-weight:600;color:var(--white);margin-bottom:6px;text-align:center;}
 .section-title .accent{color:var(--orange-light);font-family:'Cormorant Garamond',serif;font-weight:600;}
 .section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:22px;letter-spacing:0.5px;line-height:1.6;}
-.field{position:relative;margin-bottom:14px;}
-.field-label{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
+.field{position:relative;margin-bottom:14px;display:block;width:100%;}
+.field-label{display:block;font-size:13px;letter-spacing:0;color:var(--gold);margin-bottom:8px;font-weight:700;}
 .field-label .required{color:#ff8a8a;margin-left:4px;}
 .id-type-group{display:grid;grid-template-columns:1fr;gap:8px;}
 .id-type-btn{background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px;color:var(--text-sub);font-size:13px;font-family:inherit;cursor:pointer;transition:all 0.3s;text-align:left;font-weight:600;display:flex;align-items:center;gap:10px;}
@@ -45,7 +45,7 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 .id-type-btn.active{background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;border-color:var(--orange-light);box-shadow:0 4px 12px rgba(186,117,23,0.3);}
 .id-type-btn .desc{font-size:10px;color:var(--text-faint);margin-top:2px;font-weight:400;display:block;}
 .id-type-btn.active .desc{color:rgba(255,255,255,0.85);}
-.upload-zone{background:rgba(0,0,0,0.3);border:2px dashed rgba(212,168,92,0.4);border-radius:14px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.3s;margin-bottom:14px;}
+.upload-zone{display:block;width:100%;background:rgba(0,0,0,0.3);border:2px dashed rgba(212,168,92,0.4);border-radius:14px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.3s;margin-bottom:14px;box-sizing:border-box;}
 .upload-zone:hover{border-color:var(--orange-light);background:rgba(0,0,0,0.4);}
 .upload-zone.has-file{border-style:solid;border-color:var(--orange-light);padding:12px;}
 .upload-zone .upload-icon{font-size:32px;margin-bottom:8px;opacity:0.6;}
