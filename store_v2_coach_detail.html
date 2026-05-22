@@ -267,7 +267,7 @@ async function loadAll(){
   await loadSlots();
 }
 
-/* ===== 操作ボタンパネル描画 ===== */
+/* ===== 操作ボタンパネル描画(身分証ボタン常時表示版) ===== */
 function renderActionPanel(){
   const panel=document.getElementById('action-panel');
   const titleEl=document.getElementById('action-title');
@@ -277,6 +277,7 @@ function renderActionPanel(){
   const status=coachData.coach_status||'active';
   const isApproved=!!coachData.is_approved;
   const isRejected=!!coachData.is_rejected;
+  const hasIdCard=!!coachData.id_card_url;
 
   let title='';
   let html='';
@@ -284,20 +285,12 @@ function renderActionPanel(){
   if(!isApproved&&!isRejected){
     /* 未承認(承認待ち)*/
     title='⏳ 承認待ち · 操作を選択してください';
-    const hasIdCard=!!coachData.id_card_url;
     html+='<button class="action-btn act-approve" onclick="approveCoach()">✅ 承認する</button>';
     html+='<button class="action-btn act-reject" onclick="rejectCoach()">❌ 却下する</button>';
-    if(hasIdCard){
-      html+='<button class="action-btn act-id" onclick="viewIdCard()">🪪 身分証を確認する</button>';
-    }
   }else if(isRejected){
     /* 却下済 */
     title='❌ 却下済 · 再審査する場合は承認してください';
     html+='<button class="action-btn act-approve" onclick="approveCoach()">✅ 承認する(再審査)</button>';
-    const hasIdCard=!!coachData.id_card_url;
-    if(hasIdCard){
-      html+='<button class="action-btn act-id" onclick="viewIdCard()">🪪 身分証を確認する</button>';
-    }
   }else if(status==='hidden'){
     /* 休止中(お客様に非表示)*/
     title='👁 お客様に非表示中 · 復活させる場合はボタンをタップ';
@@ -311,6 +304,11 @@ function renderActionPanel(){
     title='✅ 稼働中 · お客様に表示中';
     html+='<button class="action-btn act-hide" onclick="hideCoach()">👁 お客様に非表示</button>';
     html+='<button class="action-btn act-block" onclick="blockCoach()">🚫 ブロック</button>';
+  }
+
+  /* ===== 身分証ボタン:全状態で常時表示(身分証アップロード済の場合)===== */
+  if(hasIdCard){
+    html+='<button class="action-btn act-id" onclick="viewIdCard()">🪪 身分証を確認する</button>';
   }
 
   titleEl.textContent=title;
