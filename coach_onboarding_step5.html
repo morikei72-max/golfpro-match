@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<title>MyCoach — コーチ登録 料金設定</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--brown-deep:#1a1200;--brown-base:#3d2a05;--brown-mid:#6b4a14;--orange-bright:#BA7517;--orange-light:#E89C3E;--gold:#D4A85C;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);}
+html,body{font-family:'Noto Sans JP',sans-serif;min-height:100vh;color:var(--white);background:var(--brown-deep);}
+body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;}
+.bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(232,156,62,0.18),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(212,168,92,0.1),transparent 60%),linear-gradient(180deg,#1a1200 0%,#3d2a05 50%,#0f0900 100%);}
+.bg-noise{position:fixed;inset:0;z-index:1;opacity:0.05;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:1;}
+.orb-1{width:280px;height:280px;background:radial-gradient(circle,rgba(232,156,62,0.4),transparent 70%);top:-80px;right:-80px;}
+.orb-2{width:240px;height:240px;background:radial-gradient(circle,rgba(212,168,92,0.25),transparent 70%);bottom:-60px;left:-60px;}
+.wrap{position:relative;z-index:2;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;padding:30px 0;}
+.back-link{align-self:flex-start;margin-bottom:14px;color:var(--gold);font-size:11px;letter-spacing:2px;cursor:pointer;background:none;border:none;font-family:inherit;display:flex;align-items:center;gap:6px;}
+.back-link svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;}
+.brand{text-align:center;margin-bottom:20px;}
+.brand-mark{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px;}
+.brand-line{width:2px;height:24px;background:linear-gradient(180deg,var(--gold),var(--orange-bright));border-radius:1px;}
+.brand-text{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:1px;background:linear-gradient(135deg,var(--white) 30%,var(--orange-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.brand-tagline{display:inline-block;font-size:8px;letter-spacing:4px;color:var(--gold);background:rgba(212,168,92,0.1);border:1px solid rgba(212,168,92,0.3);padding:3px 10px;border-radius:10px;text-transform:uppercase;}
+.progress-label{text-align:center;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;}
+.progress{display:flex;align-items:center;gap:6px;margin-bottom:24px;justify-content:center;}
+.progress-dot{width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);}
+.progress-dot.active{background:linear-gradient(90deg,var(--gold),var(--orange-bright));box-shadow:0 0 12px rgba(212,168,92,0.35);}
+.progress-dot.done{background:var(--orange-bright);opacity:0.6;}
+.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:24px 18px;position:relative;}
+.glass-card::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05) 50%,rgba(212,168,92,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.section-title{font-size:20px;font-weight:600;color:var(--white);margin-bottom:6px;text-align:center;}
+.section-title .accent{color:var(--orange-light);font-family:'Cormorant Garamond',serif;font-weight:600;}
+.section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:22px;letter-spacing:0.5px;line-height:1.6;}
+/* レッスン種類ヘッダー */
+.lesson-section{margin-bottom:22px;}
+.lesson-header{font-size:13px;font-weight:700;color:var(--orange-light);margin-bottom:10px;letter-spacing:1px;display:flex;align-items:center;gap:8px;}
+.lesson-header .icon{font-size:18px;}
+.lesson-sub{font-size:10px;color:var(--text-faint);margin-bottom:10px;letter-spacing:0.5px;}
+/* クイック設定ボタン */
+.quick-set{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px;}
+.quick-btn{background:rgba(0,0,0,0.3);border:1px solid rgba(212,168,92,0.3);border-radius:10px;padding:10px 4px;color:var(--gold);font-size:11px;font-family:inherit;cursor:pointer;transition:all 0.3s;font-weight:700;text-align:center;}
+.quick-btn:hover{background:rgba(212,168,92,0.15);}
+.quick-btn.added{background:rgba(186,117,23,0.3);border-color:var(--orange-light);color:white;}
+/* 料金行 */
+.price-row{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px;margin-bottom:8px;display:grid;grid-template-columns:60px 1fr 1fr 32px;gap:6px;align-items:center;}
+.price-row .time-cell{display:flex;align-items:center;justify-content:center;background:rgba(212,168,92,0.15);border-radius:8px;padding:8px 4px;font-size:12px;font-weight:700;color:var(--gold);}
+.price-input-wrap{position:relative;}
+.price-input-wrap input{width:100%;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 8px 8px 18px;color:white;font-size:12px;font-family:inherit;outline:none;text-align:right;}
+.price-input-wrap input:focus{border-color:var(--orange-light);}
+.price-input-wrap::before{content:'¥';position:absolute;left:6px;top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:11px;font-weight:700;}
+.price-input-wrap .label{position:absolute;top:-5px;left:8px;background:var(--brown-deep);padding:0 4px;font-size:8px;color:var(--text-faint);letter-spacing:0.5px;}
+.remove-btn{background:rgba(255,107,107,0.15);border:1px solid rgba(255,107,107,0.3);border-radius:8px;color:#ff8a8a;width:28px;height:28px;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:inherit;}
+.remove-btn:hover{background:rgba(255,107,107,0.3);}
+/* カスタム時間追加 */
+.add-custom-row{display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:8px;}
+.add-custom-row input{width:100%;background:rgba(0,0,0,0.3);border:1px dashed rgba(212,168,92,0.3);border-radius:10px;padding:10px 8px;color:white;font-size:12px;font-family:inherit;outline:none;}
+.add-custom-row input:focus{border-color:var(--orange-light);}
+.add-btn{background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));border:none;border-radius:10px;color:white;padding:0 14px;font-size:12px;font-family:inherit;cursor:pointer;font-weight:700;}
+/* ラウンド系の単一料金行 */
+.single-price-row{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:var(--white);border:none;border-radius:14px;padding:16px;font-size:14px;font-weight:700;letter-spacing:2px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px rgba(186,117,23,0.3),inset 0 1px 0 rgba(255,255,255,0.2);text-transform:uppercase;margin-top:14px;}
+.btn-primary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;}
+.btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+.err{color:#ff8a8a;font-size:12px;margin-bottom:12px;display:none;text-align:center;padding:10px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;}
+.hint-card{background:rgba(212,168,92,0.08);border:1px solid rgba(212,168,92,0.2);border-radius:12px;padding:12px;margin-top:14px;font-size:10px;color:var(--text-sub);line-height:1.7;}
+.hint-card strong{color:var(--gold);font-weight:600;}
+.info-card{background:rgba(101,206,165,0.08);border:1px solid rgba(101,206,165,0.2);border-radius:12px;padding:12px;margin-bottom:14px;font-size:10px;color:var(--text-sub);line-height:1.7;}
+.info-card strong{color:#65CEA5;font-weight:600;}
+.coach-badge{display:inline-block;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;font-size:9px;letter-spacing:3px;padding:4px 12px;border-radius:8px;margin-bottom:8px;font-weight:700;text-transform:uppercase;}
+.loading-screen{position:fixed;inset:0;background:var(--brown-deep);display:flex;align-items:center;justify-content:center;z-index:9999;}
+.loading-screen.hidden{display:none;}
+.loader{width:50px;height:50px;border:3px solid rgba(212,168,92,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="loading-screen" id="loading">
+  <div class="loader"></div>
+</div>
+
+<div class="bg-layer"></div>
+<div class="bg-noise"></div>
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+
+<div class="wrap" id="main-content" style="display:none;">
+
+  <button class="back-link" onclick="location.href='coach_onboarding_step4.html'">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    前の画面に戻る
+  </button>
+
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="brand-line"></div>
+      <div class="brand-text">MyCoach</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="brand-tagline">For Golf Coaches</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
+    <span class="coach-badge">COACH REGISTRATION</span>
+  </div>
+
+  <div class="progress-label">STEP 6 OF 7</div>
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot active"></div>
+    <div class="progress-dot"></div>
+  </div>
+
+  <div class="glass-card">
+    <div class="section-title">Lesson <span class="accent">Pricing</span></div>
+    <div class="section-sub">レッスン料金をご設定ください<br>後から自由に変更できます</div>
+
+    <div class="info-card">
+      <strong>💰 料金分配について</strong><br>
+      お客様支払額のうち、店舗手数料・本部運営費を除いた金額がコーチ手取りとなります。手取り目安は支払額の約80%です。
+    </div>
+
+    <div id="err" class="err"></div>
+
+    <!-- インドアレッスン -->
+    <div class="lesson-section">
+      <div class="lesson-header">
+        <span class="icon">🏌</span>
+        <span>インドアレッスン</span>
+      </div>
+      <div class="lesson-sub">時間枠を選んで料金を設定してください(必須:1つ以上)</div>
+      <div class="quick-set">
+        <button type="button" class="quick-btn" data-min="30" onclick="addIndoorRow(30)">30分</button>
+        <button type="button" class="quick-btn" data-min="50" onclick="addIndoorRow(50)">50分</button>
+        <button type="button" class="quick-btn" data-min="80" onclick="addIndoorRow(80)">80分</button>
+        <button type="button" class="quick-btn" data-min="100" onclick="addIndoorRow(100)">100分</button>
+      </div>
+      <div id="indoor-rows"></div>
+      <div class="add-custom-row">
+        <input type="number" id="custom-min" placeholder="任意の分数(例:45)" min="10" max="240">
+        <button type="button" class="add-btn" onclick="addCustomIndoor()">追加</button>
+      </div>
+    </div>
+
+    <!-- ラウンドレッスン -->
+    <div class="lesson-section">
+      <div class="lesson-header">
+        <span class="icon">⛳</span>
+        <span>ラウンドレッスン(1R)</span>
+      </div>
+      <div class="lesson-sub">提供しない場合は空欄でOK</div>
+      <div class="single-price-row">
+        <div class="price-input-wrap">
+          <span class="label">お客様支払額</span>
+          <input type="number" id="round-price" placeholder="30000" min="0">
+        </div>
+        <div class="price-input-wrap">
+          <span class="label">コーチ手取り</span>
+          <input type="number" id="round-take" placeholder="24000" min="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- 同伴ラウンド -->
+    <div class="lesson-section">
+      <div class="lesson-header">
+        <span class="icon">🚗</span>
+        <span>同伴ラウンド(1R)</span>
+      </div>
+      <div class="lesson-sub">提供しない場合は空欄でOK</div>
+      <div class="single-price-row">
+        <div class="price-input-wrap">
+          <span class="label">お客様支払額</span>
+          <input type="number" id="accompany-price" placeholder="50000" min="0">
+        </div>
+        <div class="price-input-wrap">
+          <span class="label">コーチ手取り</span>
+          <input type="number" id="accompany-take" placeholder="40000" min="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- コンペ -->
+    <div class="lesson-section">
+      <div class="lesson-header">
+        <span class="icon">🏆</span>
+        <span>コンペ参加(1R)</span>
+      </div>
+      <div class="lesson-sub">提供しない場合は空欄でOK</div>
+      <div class="single-price-row">
+        <div class="price-input-wrap">
+          <span class="label">お客様支払額</span>
+          <input type="number" id="comp-price" placeholder="40000" min="0">
+        </div>
+        <div class="price-input-wrap">
+          <span class="label">コーチ手取り</span>
+          <input type="number" id="comp-take" placeholder="32000" min="0">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="next-btn" onclick="saveAndNext()" disabled>
+      次へ進む
+      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+
+    <div class="hint-card">
+      <strong>📋 次のステップ:</strong><br>
+      最後にLINE連携を行います。LINE連携完了後、本部承認をお待ちいただく形になります。
+    </div>
+  </div>
+
+</div>
+
+<script>
+const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+let currentUserId=null;
+let currentCoachId=null;
+let currentStoreId=null;
+let indoorRows=[];/* {minutes, price, take} */
+
+/* セッション確認 + 既存データロード */
+(async()=>{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){
+    location.replace('coach_login.html');
+    return;
+  }
+  currentUserId=session.user.id;
+
+  const {data:coach}=await sb.from('coaches').select('id,store_key').eq('user_id',currentUserId).maybeSingle();
+  if(!coach){
+    location.replace('coach_onboarding_step1.html');
+    return;
+  }
+  currentCoachId=coach.id;
+
+  if(!coach.store_key){
+    location.replace('coach_onboarding_step4.html');
+    return;
+  }
+
+  /* store_key から store_id を取得 */
+  const {data:store}=await sb.from('stores').select('id').eq('store_key',coach.store_key).maybeSingle();
+  if(store)currentStoreId=store.id;
+
+  /* 既存料金データロード */
+  const {data:items}=await sb.from('coach_price_items').select('*').eq('coach_id',currentCoachId).order('display_order');
+  if(items && items.length>0){
+    items.forEach(item=>{
+      if(item.lesson_type==='indoor'){
+        indoorRows.push({minutes:item.minutes,price:item.price,take:item.take_home});
+      }else if(item.lesson_type==='round'){
+        document.getElementById('round-price').value=item.price||'';
+        document.getElementById('round-take').value=item.take_home||'';
+      }else if(item.lesson_type==='accompany'){
+        document.getElementById('accompany-price').value=item.price||'';
+        document.getElementById('accompany-take').value=item.take_home||'';
+      }else if(item.lesson_type==='comp'){
+        document.getElementById('comp-price').value=item.price||'';
+        document.getElementById('comp-take').value=item.take_home||'';
+      }
+    });
+    renderIndoorRows();
+  }
+
+  attachListeners();
+  validateAndToggleNextBtn();
+
+  document.getElementById('loading').classList.add('hidden');
+  document.getElementById('main-content').style.display='flex';
+})();
+
+function attachListeners(){
+  ['round-price','round-take','accompany-price','accompany-take','comp-price','comp-take'].forEach(id=>{
+    document.getElementById(id).addEventListener('input',validateAndToggleNextBtn);
+  });
+}
+
+function addIndoorRow(min){
+  /* 同じ分数があれば追加しない */
+  if(indoorRows.some(r=>r.minutes===min)){
+    return;
+  }
+  indoorRows.push({minutes:min,price:'',take:''});
+  indoorRows.sort((a,b)=>a.minutes-b.minutes);
+  renderIndoorRows();
+}
+
+function addCustomIndoor(){
+  const input=document.getElementById('custom-min');
+  const min=parseInt(input.value);
+  if(!min || min<10 || min>240){
+    return;
+  }
+  if(indoorRows.some(r=>r.minutes===min)){
+    input.value='';
+    return;
+  }
+  indoorRows.push({minutes:min,price:'',take:''});
+  indoorRows.sort((a,b)=>a.minutes-b.minutes);
+  renderIndoorRows();
+  input.value='';
+}
+
+function removeIndoorRow(index){
+  indoorRows.splice(index,1);
+  renderIndoorRows();
+}
+
+function renderIndoorRows(){
+  const container=document.getElementById('indoor-rows');
+  container.innerHTML='';
+  indoorRows.forEach((row,index)=>{
+    const div=document.createElement('div');
+    div.className='price-row';
+    div.innerHTML=`
+      <div class="time-cell">${row.minutes}分</div>
+      <div class="price-input-wrap">
+        <span class="label">お客様支払額</span>
+        <input type="number" placeholder="6000" min="0" value="${row.price}" oninput="updateIndoor(${index},'price',this.value)">
+      </div>
+      <div class="price-input-wrap">
+        <span class="label">コーチ手取り</span>
+        <input type="number" placeholder="4800" min="0" value="${row.take}" oninput="updateIndoor(${index},'take',this.value)">
+      </div>
+      <button type="button" class="remove-btn" onclick="removeIndoorRow(${index})">×</button>
+    `;
+    container.appendChild(div);
+  });
+
+  /* クイックボタンの状態更新 */
+  document.querySelectorAll('.quick-btn').forEach(btn=>{
+    const min=parseInt(btn.dataset.min);
+    if(indoorRows.some(r=>r.minutes===min)){
+      btn.classList.add('added');
+    }else{
+      btn.classList.remove('added');
+    }
+  });
+
+  validateAndToggleNextBtn();
+}
+
+function updateIndoor(index,field,value){
+  indoorRows[index][field]=value;
+  validateAndToggleNextBtn();
+}
+
+function validateAndToggleNextBtn(){
+  const btn=document.getElementById('next-btn');
+
+  /* インドアが最低1つ必要、かつ price と take が両方入力されている */
+  const validIndoor=indoorRows.filter(r=>{
+    const p=parseInt(r.price)||0;
+    const t=parseInt(r.take)||0;
+    return p>0 && t>0;
+  });
+
+  if(validIndoor.length===0){
+    btn.disabled=true;
+    return;
+  }
+
+  /* 手取りが支払額を超えていないかチェック */
+  const invalid=indoorRows.some(r=>{
+    const p=parseInt(r.price)||0;
+    const t=parseInt(r.take)||0;
+    return p>0 && t>0 && t>p;
+  });
+  if(invalid){
+    btn.disabled=true;
+    return;
+  }
+
+  /* ラウンド系も手取り>支払額になっていないかチェック */
+  for(const prefix of ['round','accompany','comp']){
+    const p=parseInt(document.getElementById(`${prefix}-price`).value)||0;
+    const t=parseInt(document.getElementById(`${prefix}-take`).value)||0;
+    if(p>0 && t>p){btn.disabled=true;return;}
+    /* 片方だけ入力(price ありで take なし、その逆も)はNG */
+    if((p>0 && t===0) || (p===0 && t>0)){btn.disabled=true;return;}
+  }
+
+  btn.disabled=false;
+}
+
+async function saveAndNext(){
+  const err=document.getElementById('err');
+  const btn=document.getElementById('next-btn');
+  err.style.display='none';
+
+  btn.disabled=true;
+  btn.textContent='保存中...';
+
+  try{
+    /* 既存料金を全削除 */
+    const {error:delErr}=await sb.from('coach_price_items').delete().eq('coach_id',currentCoachId);
+    if(delErr){
+      err.textContent='既存料金削除失敗:'+delErr.message;
+      err.style.display='block';
+      btn.disabled=false;
+      btn.innerHTML='次へ進む <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      return;
+    }
+
+    /* 新規挿入 */
+    const items=[];
+    let order=0;
+
+    /* インドア */
+    indoorRows.forEach(row=>{
+      const p=parseInt(row.price)||0;
+      const t=parseInt(row.take)||0;
+      if(p>0 && t>0){
+        items.push({
+          coach_id:currentCoachId,
+          store_id:currentStoreId,
+          lesson_type:'indoor',
+          minutes:row.minutes,
+          price:p,
+          take_home:t,
+          display_order:order++
+        });
+      }
+    });
+
+    /* ラウンド系 */
+    [['round','round-price','round-take'],['accompany','accompany-price','accompany-take'],['comp','comp-price','comp-take']].forEach(([type,priceId,takeId])=>{
+      const p=parseInt(document.getElementById(priceId).value)||0;
+      const t=parseInt(document.getElementById(takeId).value)||0;
+      if(p>0 && t>0){
+        items.push({
+          coach_id:currentCoachId,
+          store_id:currentStoreId,
+          lesson_type:type,
+          round_count:1.0,
+          price:p,
+          take_home:t,
+          display_order:order++
+        });
+      }
+    });
+
+    if(items.length>0){
+      const {error:insErr}=await sb.from('coach_price_items').insert(items);
+      if(insErr){
+        err.textContent='料金保存失敗:'+insErr.message;
+        err.style.display='block';
+        btn.disabled=false;
+        btn.innerHTML='次へ進む <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+        return;
+      }
+    }
+
+    /* coachesテーブルのupdated_atも更新 */
+    await sb.from('coaches').update({updated_at:new Date().toISOString()}).eq('id',currentCoachId);
+
+    location.href='coach_onboarding_step6.html';
+  }catch(e){
+    err.textContent='エラー:'+e.message;
+    err.style.display='block';
+    btn.disabled=false;
+    btn.innerHTML='次へ進む <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  }
+}
+</script>
+</body>
+</html>
