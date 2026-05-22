@@ -258,6 +258,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .line-link-btn-open{display:flex;align-items:center;justify-content:center;gap:6px;background:#06C755;color:#fff;border:none;border-radius:8px;padding:10px;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer;font-family:inherit;}
 .line-link-btn-reissue{background:#fff;color:var(--g);border:1px solid var(--g);border-radius:8px;padding:9px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;}
 .line-link-error{background:#ffe5e5;border:1px solid var(--red);border-radius:6px;padding:8px 10px;font-size:11px;color:#a00;margin-top:8px;}
+.cancel-policy-table{background:#fff;border:1px solid var(--border);border-radius:8px;padding:0;margin-bottom:12px;overflow:hidden;}
+.cancel-policy-table-title{background:var(--gl);color:var(--gd);font-size:11px;font-weight:700;padding:8px 10px;border-bottom:1px solid var(--border);}
+.cancel-policy-row{display:flex;padding:8px 10px;border-bottom:1px solid #f0f0f0;font-size:11px;}
+.cancel-policy-row:last-child{border-bottom:none;}
+.cancel-policy-row.applied{background:#fff8e1;border-left:3px solid var(--gold);font-weight:700;}
+.cancel-policy-row-when{flex:1;color:#444;}
+.cancel-policy-row-rate{color:var(--red);font-weight:700;white-space:nowrap;}
+.cancel-applied-banner{background:linear-gradient(135deg,var(--gl),#9FE1CB);border:2px solid var(--g);border-radius:10px;padding:12px;margin-bottom:12px;}
+.cancel-applied-title{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;}
+.cancel-applied-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;}
+.cancel-applied-row span:first-child{color:#555;}
+.cancel-applied-row span:last-child{color:var(--gd);font-weight:700;}
+.cancel-applied-refund{display:flex;justify-content:space-between;font-size:14px;padding:8px 0 3px;margin-top:6px;border-top:1px solid var(--g);font-weight:700;}
+.cancel-applied-refund span:first-child{color:var(--gd);}
+.cancel-applied-refund span:last-child{color:var(--red);font-size:18px;}
 </style>
 </head>
 <body>
@@ -267,9 +282,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     <div class="user-name" id="user-name"></div>
     <button class="logout-btn" onclick="doLogout()">ログアウト</button>
   </div>
-</div>
-
-<div class="content">
+</div><div class="content">
   <div class="entry-banner" id="entry-banner" style="display:none;">
     <div class="entry-banner-text">👤 コーチから探しています</div>
     <a href="search_hub.html" class="entry-back-btn">← 探し方を変える</a>
@@ -424,23 +437,45 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <button class="modal-close" onclick="closeCancelRequestModal()">×</button>
       </div>
       <div class="modal-body">
-        <div style="background:#fff8e1;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:8px;">📋 キャンセルポリシー</div>
-          <div style="font-size:11px;color:#7a5c00;line-height:1.8;">
-            ・48時間前まで:全額返金<br>
-            ・48時間前〜当日前:50%返金<br>
-            ・当日・ノーショー:返金なし
+
+        <!-- 全体ポリシー(規約と統一) -->
+        <div class="cancel-policy-table">
+          <div class="cancel-policy-table-title">📋 キャンセルポリシー(全体)</div>
+          <div class="cancel-policy-row" id="policy-row-full">
+            <div class="cancel-policy-row-when">✅ 72時間(3日)以上前</div>
+            <div class="cancel-policy-row-rate">96.4%返金</div>
+          </div>
+          <div class="cancel-policy-row" id="policy-row-half">
+            <div class="cancel-policy-row-when">⚠️ 72時間〜24時間前</div>
+            <div class="cancel-policy-row-rate">46.4%返金</div>
+          </div>
+          <div class="cancel-policy-row" id="policy-row-sameday">
+            <div class="cancel-policy-row-when">🚨 24時間以内・当日(事前連絡)</div>
+            <div class="cancel-policy-row-rate">16.4%返金</div>
+          </div>
+          <div class="cancel-policy-row">
+            <div class="cancel-policy-row-when">🚫 当日無断キャンセル</div>
+            <div class="cancel-policy-row-rate">0%(返金なし)</div>
           </div>
         </div>
-        <div style="background:#fff0f0;border:1px solid var(--red);border-radius:10px;padding:12px;margin-bottom:14px;">
-          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px;">⚠️ 重要:キャンセル料について</div>
-          <div style="font-size:11px;color:#791F1F;line-height:1.8;">
-            キャンセル時、決済手数料(3.6%)はお客様のご負担となります。<br>
-            ・決済額:<span id="cancel-total-display" style="font-weight:700;">¥0</span><br>
-            ・キャンセル料:<span id="cancel-fee-display" style="font-weight:700;">¥0</span><br>
-            ・返金予定額:<span id="cancel-refund-display" style="font-weight:700;color:var(--red);">¥0</span>
+
+        <!-- お客様の予約への適用(自動計算) -->
+        <div class="cancel-applied-banner">
+          <div class="cancel-applied-title" id="cancel-applied-title">✅ あなたの予約への適用</div>
+          <div class="cancel-applied-row"><span>適用ポリシー</span><span id="cancel-applied-policy">—</span></div>
+          <div class="cancel-applied-row"><span>決済額</span><span id="cancel-total-display">¥0</span></div>
+          <div class="cancel-applied-row"><span>キャンセル料</span><span id="cancel-fee-display">¥0</span></div>
+          <div class="cancel-applied-refund">
+            <span>返金予定額</span>
+            <span id="cancel-refund-display">¥0</span>
           </div>
         </div>
+
+        <div style="background:#fff0f0;border:1px solid var(--red);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:#791F1F;line-height:1.7;">
+          ⚠️ 決済手数料(3.6%)はお客様のご負担となります。<br>
+          返金は数日以内にご利用のクレジットカードへ反映されます。
+        </div>
+
         <div style="margin-bottom:14px;">
           <label style="display:block;font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">キャンセル理由(必須)</label>
           <select id="cancel-reason-category" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;outline:none;margin-bottom:8px;">
@@ -454,7 +489,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         </div>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:12px;font-weight:500;padding:12px;border:1px solid var(--red);border-radius:8px;cursor:pointer;margin-bottom:14px;background:#fff5f5;">
           <input type="checkbox" id="cancel-agree-chk" onchange="checkCancelAgree()" style="flex-shrink:0;width:16px;height:16px;accent-color:var(--red);margin-top:2px;">
-          <span>上記のキャンセルポリシーとキャンセル料の発生について確認し、同意した上でキャンセル申請します</span>
+          <span>上記の返金額に納得し、キャンセル申請します</span>
         </label>
         <div style="display:flex;gap:8px;">
           <button class="mdl-btn" style="flex:1;background:#f0f0f0;color:#666;" onclick="closeCancelRequestModal()">戻る</button>
@@ -593,7 +628,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <h4>第3条(個人情報の取り扱い)</h4>個人情報保護法に基づき個人情報を適切に管理します。
         <h4>第4条(お気に入り機能と情報開示)</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
         <h4>第5条(ラウンド系依頼におけるお客様負担事項)</h4>ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。ただし、コーチ独自プラン(その他カテゴリ)において「コーチがプレーフィーを負担する」設定がなされている場合を除きます。この場合、料金はすべてプランに含まれます。
-        <h4>第6条(キャンセルポリシー)</h4>レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
+        <h4>第6条(キャンセルポリシー)</h4>
+        72時間(3日)以上前:96.4%返金<br>
+        72時間〜24時間前:46.4%返金<br>
+        24時間以内・当日(事前連絡あり):16.4%返金<br>
+        当日無断キャンセル(ノーショー):返金なし<br>
+        ※決済手数料3.6%はお客様のご負担となります。
         <h4>第7条(レビュー義務)</h4>レッスン終了後、星評価(1〜5)の投稿が必須です。
         <h4>第8条(準拠法・管轄)</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
         <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #ccc;font-size:10px;">
@@ -699,1838 +739,722 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 </div><script>
-const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
-const{createClient}=supabase;
-const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
-  auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
-});
+const SUPABASE_URL = 'https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5NDcyODEsImV4cCI6MjA2NDUyMzI4MX0.HfKBVF9w9wbWUipMUOgGOyXcvBpfRQNB8aZSEdMnt-w';
+const supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-var entryMode='lesson';
-var entrySelectedCoachId=null;
-var entrySelectedCoachData=null;
-var currentUserId=null;
-var isMemberApproved=false;
+const STORE_KEYS = { 'tozuike': 'Golf Create 戸津池店' };
 
-function detectEntryMode(){
-  var urlParams=new URLSearchParams(window.location.search);
-  var entry=urlParams.get('entry');
-  if(entry==='coach'){
-    entryMode='coach';
-    document.getElementById('entry-banner').style.display='flex';
-    document.getElementById('coach-entry-area').style.display='block';
-    document.getElementById('lesson-type-section').style.display='none';
-    document.getElementById('cal-box').style.display='none';
-    loadAllCoaches();
-  }else{
-    entryMode='lesson';
-  }
-}
+let SESSION_KEY = 'mc_customer_login';
+let session = null;
+let curType = 'indoor';
+let curDate = null;
+let curTime = null;
+let curMonth = new Date();
+let curWeekStart = null;
+let selCoachId = null;
+let selPlanId = null;
+let selPlan = null;
+let availableCoaches = [];
+let bookings = [];
+let currentBookingFilter = 'all';
+let currentCancelRequestBookingId = null;
+let myLineUserId = null;
+let lineCodeTimer = null;
+let lineCodeData = null;
 
-/* ★★★ 修正1:お客様画面でブロック中・非表示中のコーチを除外 ★★★ */
-async function loadAllCoaches(){
-  var listEl=document.getElementById('coach-entry-list');
-  try{
-    var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,min_lesson,is_approved,coach_status').eq('is_approved',true).eq('coach_status','active');
-    if(error||!data||data.length===0){
-      listEl.innerHTML='<div class="coach-card-none">現在、在籍コーチが登録されていません。</div>';
-      return;
+window.onload = async () => {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) { window.location.href = 'index.html'; return; }
+    session = JSON.parse(raw);
+    document.getElementById('user-name').textContent = `👤 ${session.name || 'お客様'}`;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromHub = urlParams.get('from');
+    const coachId = urlParams.get('coach_id');
+    
+    if (fromHub === 'coach' && coachId) {
+      await loadCoachFromUrl(coachId);
+    } else if (fromHub === 'lesson') {
+      document.getElementById('entry-banner').style.display = 'none';
     }
-    var html='';
-    data.forEach(function(c){
-      var photoHtml=c.photo_url?'<img src="'+c.photo_url+'" alt="'+(c.name||'')+'">':(c.name?c.name.charAt(0):'?');
-      var name=c.name||'(お名前未登録)';
-      var license=c.license||'';
-      var tags=c.tags||'';
-      var bio=c.bio||'';
-      html+='<div class="coach-card" data-coach-id="'+c.id+'" onclick="selectEntryCoach(\''+c.id+'\')">';
-      html+='<div class="coach-card-photo">'+photoHtml+'</div>';
-      html+='<div class="coach-card-body">';
-      html+='<div class="coach-card-name">'+name+'</div>';
-      if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
-      if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
-      if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
-      html+='</div></div>';
+    
+    await loadCustomerProfile();
+    await loadCustomerAuthInfo();
+    await loadLineLinkStatus();
+    await checkUrgentCancellations();
+    initCal();
+    renderCal();
+    await loadAvailableCoaches();
+    await loadBookings();
+    document.querySelectorAll('input,select,textarea').forEach(el=>{
+      el.addEventListener('blur',()=>window.scrollTo(0,0));
     });
-    listEl.innerHTML=html;
-    window._entryCoachCache={};
-    data.forEach(function(c){window._entryCoachCache[c.id]=c;});
-  }catch(e){
-    console.error('loadAllCoaches error',e);
-    listEl.innerHTML='<div class="coach-card-none">コーチ情報の取得に失敗しました。</div>';
-  }
-}
-
-async function selectEntryCoach(coachId){
-  entrySelectedCoachId=coachId;
-  entrySelectedCoachData=window._entryCoachCache?window._entryCoachCache[coachId]:null;
-  document.getElementById('coach-entry-area').style.display='none';
-  document.getElementById('selected-coach-banner').style.display='flex';
-  document.getElementById('lesson-type-section').style.display='block';
-  document.getElementById('cal-box').style.display='block';
-  var photoEl=document.getElementById('entry-coach-photo');
-  if(entrySelectedCoachData&&entrySelectedCoachData.photo_url){
-    photoEl.innerHTML='<img src="'+entrySelectedCoachData.photo_url+'" style="width:100%;height:100%;object-fit:cover;">';
-  }else{
-    photoEl.innerHTML=entrySelectedCoachData&&entrySelectedCoachData.name?entrySelectedCoachData.name.charAt(0):'?';
-  }
-  document.getElementById('entry-coach-name').textContent=(entrySelectedCoachData&&entrySelectedCoachData.name)?entrySelectedCoachData.name:'(お名前未登録)';
-  document.getElementById('lesson-type-label').textContent='このコーチが提供するレッスン内容';
-  await filterLessonTypesByCoach(coachId);
-  setTimeout(function(){
-    var firstCard=document.querySelector('.type-card:not(.hidden-type)');
-    if(firstCard){
-      document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('on');});
-      firstCard.classList.add('on');
-      var typeName=firstCard.id.replace('card-','');
-      currentType=typeName;
-      if(typeName==='indoor'||typeName==='custom'){renderWeekCal();}else{renderMonthCal();}
-      document.getElementById('selected-coach-banner').scrollIntoView({behavior:'smooth',block:'start'});
-    }
-  },100);
-}
-
-async function filterLessonTypesByCoach(coachId){
-  document.querySelectorAll('.type-card').forEach(function(c){c.classList.add('hidden-type');});
-  var hasIndoor=false,hasRound=false,hasAccompany=false,hasComp=false,hasCustom=false;
-  try{
-    var{data:items}=await sb.from('coach_price_items').select('lesson_type').eq('coach_id',coachId);
-    if(items&&items.length>0){
-      items.forEach(function(it){
-        if(it.lesson_type==='indoor') hasIndoor=true;
-        if(it.lesson_type==='round') hasRound=true;
-        if(it.lesson_type==='accompany') hasAccompany=true;
-        if(it.lesson_type==='comp') hasComp=true;
-      });
-    }
-  }catch(e){console.warn('filter price_items err',e);}
-  try{
-    var{data:plans}=await sb.from('coach_custom_plans').select('id').eq('coach_id',coachId).eq('is_active',true);
-    if(plans&&plans.length>0) hasCustom=true;
-  }catch(e){console.warn('filter custom_plans err',e);}
-  if(hasIndoor) document.getElementById('card-indoor').classList.remove('hidden-type');
-  if(hasRound) document.getElementById('card-round').classList.remove('hidden-type');
-  if(hasAccompany) document.getElementById('card-accompany').classList.remove('hidden-type');
-  if(hasComp) document.getElementById('card-comp').classList.remove('hidden-type');
-  if(hasCustom) document.getElementById('card-custom').classList.remove('hidden-type');
-  var visible=document.querySelectorAll('.type-card:not(.hidden-type)');
-  if(visible.length===0){
-    document.getElementById('lesson-type-section').innerHTML='<div class="coach-card-none" style="padding:30px;">このコーチは現在レッスンプランを設定していません。<br>別のコーチをお選びください。</div>';
-  }
-}
-
-function resetEntryCoach(){
-  entrySelectedCoachId=null;
-  entrySelectedCoachData=null;
-  selectedCoachId=null;
-  selectedCoachData=null;
-  selectedPlan=null;
-  selectedDate=null;
-  selectedTime=null;
-  document.getElementById('selected-coach-banner').style.display='none';
-  document.getElementById('coach-entry-area').style.display='block';
-  document.getElementById('lesson-type-section').style.display='none';
-  document.getElementById('cal-box').style.display='none';
-  document.getElementById('btn-to-request').style.display='none';
-  document.getElementById('slot-area').style.display='none';
-  document.getElementById('coach-info-area').style.display='none';
-  document.getElementById('coach-select-area').style.display='none';
-  document.getElementById('coach-plans-area').style.display='none';
-  document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('hidden-type');});
-  document.getElementById('lesson-type-label').textContent='依頼の種類を選ぶ';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-checkPaymentConfirmUrl();
-
-sb.auth.getSession().then(async function(res){
-  var session=res.data.session;
-  if(!session){console.warn('セッションなし'); return;}
-  currentUserId=session.user.id;
-  var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
-  document.getElementById('user-name').textContent=name+'さん';
-  localStorage.setItem('gc_login_time',Date.now().toString());
-  fetchAvailDates();
-  detectEntryMode();
-  var{data}=await sb.from('customers').select('id,store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date,line_user_id').eq('user_id',currentUserId).single();
-  if(data){
-    window._customerRowId=data.id;
-    isMemberApproved=!!data.is_approved;
-    if(data.is_approved){
-      var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-      var storeLabels={tozuike:'Golf Create 戸津池店'};
-      document.getElementById('auth-form').style.display='none';
-      document.getElementById('approved-badge').style.display='block';
-      document.getElementById('approved-detail').textContent=(storeLabels[data.store_key]||data.store_key)+' / '+(typeLabels[data.member_type]||data.member_type);
-      document.getElementById('line-register-area').style.display='none';
-    }
-    if(data.name) document.getElementById('mp-name').value=data.name;
-    if(data.furigana) document.getElementById('mp-furigana').value=data.furigana;
-    if(data.email) document.getElementById('mp-email').value=data.email;
-    if(data.phone) document.getElementById('mp-phone').value=data.phone;
-    if(data.golf_history) document.getElementById('mp-golf-history').value=data.golf_history;
-    if(data.home_course) document.getElementById('mp-home-course').value=data.home_course;
-    if(data.handicap) document.getElementById('mp-handicap').value=data.handicap;
-    if(data.birth_date) document.getElementById('mp-birth-date').value=data.birth_date;
-    updateLineLinkStatus(data.line_user_id);
-  }else{
-    isMemberApproved=false;
-  }
-  updateNonMemberBanner();
-  handlePaymentReturn();
-  loadBookings();
-});
-
-function updateNonMemberBanner(){
-  var banner=document.getElementById('nonmember-banner');
-  if(!banner) return;
-  banner.style.display=isMemberApproved?'none':'block';
-}
-
-function goToMemberVerify(){
-  var btn=document.getElementById('snb-mypage');
-  if(btn) btn.click();
-  setTimeout(function(){
-    var block=document.getElementById('member-auth-block');
-    if(block) block.scrollIntoView({behavior:'smooth',block:'start'});
-  },150);
-}
-
-function tab(btn,id){
-  document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});
-  btn.classList.add('on');
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
-  document.getElementById(id).classList.add('on');
-  if(id==='s-bookings'){loadBookings();}
-  if(id==='s-mypage'){refreshLineLinkStatus();}
-  if(id==='s-review'){loadReviewScreen();}
-}
-
-var currentType='indoor';
-var selectedDate=null;
-var selectedTime=null;
-var selectedPlan=null;
-var allBookings=[];
-var currentBookingFilter='all';
-
-function checkPaymentConfirmUrl(){
-  var params=new URLSearchParams(window.location.search);
-  var action=params.get('action');
-  var bookingId=params.get('booking_id');
-  if(action==='pay'&&bookingId){
-    showPaymentConfirmModal(bookingId);
-  }
-}
-
-async function showPaymentConfirmModal(bookingId){
-  var modal=document.getElementById('payment-confirm-modal');
-  var body=document.getElementById('payment-confirm-body');
-  modal.classList.add('open');
-  body.innerHTML='<div class="pay-loading">予約情報を読み込み中...</div>';
-  try{
-    var{data:booking,error}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
-    if(error||!booking){
-      body.innerHTML='<div class="pay-error">ご予約が見つかりませんでした。<br>URLをご確認ください。</div>';
-      return;
-    }
-    if(booking.status==='confirmed'){
-      body.innerHTML='<div class="pay-info-card" style="text-align:center;padding:24px;"><div style="font-size:32px;margin-bottom:8px;">✅</div><div style="font-weight:700;color:var(--gd);margin-bottom:6px;">既にお支払い済みです</div><div style="font-size:11px;color:#666;">ご予約が確定しています。<br>予約一覧からご確認ください。</div></div><button class="pay-btn-main" onclick="closePaymentConfirmModal();document.getElementById(\'snb-bookings\').click();">予約一覧へ</button>';
-      return;
-    }
-    if(booking.status==='rejected'||booking.status==='cancelled'){
-      body.innerHTML='<div class="pay-error">このご予約は受付できませんでした。<br>別のコーチ・日程でお試しください。</div>';
-      return;
-    }
-    if(booking.status!=='approved_pending_payment'){
-      body.innerHTML='<div class="pay-error">このご予約は現在お支払いできる状態ではありません。<br>状態: '+booking.status+'</div>';
-      return;
-    }
-    var{data:coach}=await sb.from('coaches').select('name').eq('id',booking.coach_id).maybeSingle();
-    var coachName=coach?coach.name:(booking.coach_name||'コーチ');
-    var lessonTypeMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
-    var lessonLabel=lessonTypeMap[booking.lesson_type]||booking.lesson_type;
-    var dateStr=formatDateJP(booking.booking_date);
-    var timeStr=formatBookingTime(booking.booking_time);
-    var storeMap={tozuike:'Golf Create 戸津池店'};
-    var storeName=storeMap[booking.store_key]||booking.store_key;
-    var minutesStr=booking.minutes?booking.minutes+'分':'';
-    var amount=parseInt(booking.total_price)||0;
-    var html='<div class="pay-info-card">'+
-      '<div class="pay-info-row"><span>コーチ</span><span>'+escapeHtml(coachName)+'</span></div>'+
-      '<div class="pay-info-row"><span>種別</span><span>'+lessonLabel+'</span></div>'+
-      (minutesStr?'<div class="pay-info-row"><span>時間</span><span>'+minutesStr+'</span></div>':'')+
-      '<div class="pay-info-row"><span>日時</span><span>'+dateStr+' '+timeStr+'</span></div>'+
-      '<div class="pay-info-row"><span>店舗</span><span>'+storeName+'</span></div>'+
-    '</div>'+
-    '<div class="pay-amount-box">'+
-      '<div class="pay-amount-label">💳 お支払い金額</div>'+
-      '<div class="pay-amount-value">¥'+amount.toLocaleString()+'</div>'+
-    '</div>'+
-    '<div class="pay-warning-box">'+
-      '<span class="pay-warning-icon">⚠️</span>'+
-      'お支払いが完了するまで、予約は確定されません。<br>'+
-      '下記ボタンよりお支払いへお進みください。'+
-    '</div>'+
-    '<button class="pay-btn-main" id="pay-btn-main" onclick="proceedToStripePayment(\''+bookingId+'\')">'+
-      '💳 お支払いに進む'+
-    '</button>';
-    body.innerHTML=html;
-  }catch(e){
-    console.error('showPaymentConfirmModal error',e);
-    body.innerHTML='<div class="pay-error">通信エラーが発生しました。<br>しばらくしてから再度お試しください。</div>';
-  }
-}
-
-function closePaymentConfirmModal(){
-  document.getElementById('payment-confirm-modal').classList.remove('open');
-  window.history.replaceState({},document.title,window.location.pathname);
-}
-
-async function proceedToStripePayment(bookingId){
-  var btn=document.getElementById('pay-btn-main');
-  if(btn){btn.disabled=true;btn.textContent='⏳ 処理中...';}
-  try{
-    var{data:booking,error}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
-    if(error||!booking){alert('予約情報の取得に失敗しました');if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}return;}
-    var customerEmail='';
-    var customerName=booking.customer_name||'';
-    try{
-      var sres=await sb.auth.getSession();
-      if(sres.data.session){customerEmail=sres.data.session.user.email||'';}
-    }catch(e){}
-    var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
-    var lessonLabel=typeLabelMap[booking.lesson_type]||booking.lesson_type;
-    var resp=await fetch('/.netlify/functions/create-checkout-session',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        customer_user_id:booking.customer_id,coach_id:booking.coach_id,
-        store_key:booking.store_key,lesson_type:booking.lesson_type,
-        lesson_date:booking.booking_date,lesson_time:booking.booking_time,
-        duration_min:booking.minutes,amount_yen:booking.total_price,
-        lesson_label:lessonLabel,golf_history:'',comment:booking.comment||'',
-        customer_name:customerName,customer_email:customerEmail,
-        plan_kind:'',plan_id:'',plan_label:'',plan_golf_course:'',plan_start_time:'',
-        plan_coach_pays_greenfee:false,
-        approved_booking_id:bookingId
-      })
-    });
-    var json=await resp.json();
-    if(!resp.ok||!(json.url||json.checkout_url)){
-      console.error('checkout error:',json);
-      alert('決済セッションの作成に失敗しました\n'+(json.error||json.detail||''));
-      if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}
-      return;
-    }
-    window.location.href=json.url||json.checkout_url;
-  }catch(e){
+  } catch (e) {
     console.error(e);
-    alert('通信エラー:'+e.message);
-    if(btn){btn.disabled=false;btn.textContent='💳 お支払いに進む';}
+  }
+};
+
+async function loadCoachFromUrl(coachId) {
+  try {
+    document.getElementById('entry-banner').style.display = 'flex';
+    const { data: coach } = await supa.from('coaches').select('*').eq('id', coachId).maybeSingle();
+    if (!coach) return;
+    selCoachId = coachId;
+    document.getElementById('selected-coach-banner').style.display = 'flex';
+    const photo = document.getElementById('entry-coach-photo');
+    if (coach.photo_url) {
+      photo.innerHTML = `<img src="${coach.photo_url}" alt="${coach.name}">`;
+    } else {
+      photo.textContent = coach.name?.[0] || '';
+    }
+    document.getElementById('entry-coach-name').textContent = coach.name || 'コーチ';
+    document.getElementById('lesson-type-label').textContent = `${coach.name} コーチが提供するレッスンを選ぶ`;
+  } catch (e) {
+    console.error('loadCoachFromUrl error:', e);
   }
 }
 
-async function loadBookings(){
-  if(!currentUserId){
-    var res=await sb.auth.getSession();
-    if(res.data.session) currentUserId=res.data.session.user.id;
+function resetEntryCoach() {
+  if (!confirm('別のコーチに変更しますか?')) return;
+  window.location.href = 'search_hub.html';
+}
+
+function tab(b, id) {
+  document.querySelectorAll('.snb').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.screen').forEach(x => x.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  if (id === 's-bookings') loadBookings();
+  if (id === 's-review') loadReviews();
+}
+
+function selType(c, t) {
+  document.querySelectorAll('.type-card').forEach(x => x.classList.remove('on'));
+  c.classList.add('on');
+  curType = t;
+  selPlanId = null;
+  selPlan = null;
+  
+  let label = '';
+  if (t === 'indoor') label = ' / インドアゴルフレッスン';
+  else if (t === 'round') label = ' / ラウンドレッスン';
+  else if (t === 'accompany') label = ' / 同伴ラウンド';
+  else if (t === 'comp') label = ' / コンペ参加';
+  else if (t === 'custom') label = ' / コーチ独自プラン';
+  
+  document.getElementById('cal-type-label').textContent = label;
+  document.getElementById('cal-type-label').style.display = label ? 'inline' : 'none';
+  
+  curDate = null;
+  curTime = null;
+  document.getElementById('slot-area').style.display = 'none';
+  document.getElementById('coach-info-area').style.display = 'none';
+  document.getElementById('coach-select-area').style.display = 'none';
+  document.getElementById('coach-plans-area').style.display = 'none';
+  document.getElementById('btn-to-request').style.display = 'none';
+  initCal();
+  renderCal();
+  if (selCoachId) loadCoachAvailability();
+}
+
+async function loadAvailableCoaches() {
+  try {
+    const { data: coaches, error } = await supa.from('coaches').select('*').in('status',['approved','active']);
+    if (error) { console.error('loadAvailableCoaches error:', error); return; }
+    availableCoaches = coaches || [];
+    console.log('Available coaches loaded:', availableCoaches.length);
+  } catch (e) {
+    console.error('loadAvailableCoaches exception:', e);
   }
-  if(!currentUserId){
-    document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">🔒</div><div class="booking-empty-title">ログインが必要です</div><div class="booking-empty-text">ログインしてご予約を確認してください</div></div>';
+}
+
+async function loadCoachAvailability() {
+  console.log('loadCoachAvailability called', { selCoachId, curType });
+}
+
+function initCal() {
+  if (curType === 'indoor') {
+    const now = new Date();
+    const dow = now.getDay();
+    const diff = -dow;
+    curWeekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
+  } else {
+    curMonth = new Date();
+  }
+}
+
+function calPrev() {
+  if (curType === 'indoor') {
+    curWeekStart = new Date(curWeekStart.getFullYear(), curWeekStart.getMonth(), curWeekStart.getDate() - 7);
+  } else {
+    curMonth = new Date(curMonth.getFullYear(), curMonth.getMonth() - 1, 1);
+  }
+  renderCal();
+}
+
+function calNext() {
+  if (curType === 'indoor') {
+    curWeekStart = new Date(curWeekStart.getFullYear(), curWeekStart.getMonth(), curWeekStart.getDate() + 7);
+  } else {
+    curMonth = new Date(curMonth.getFullYear(), curMonth.getMonth() + 1, 1);
+  }
+  renderCal();
+}
+
+function renderCal() {
+  const body = document.getElementById('cal-body');
+  if (curType === 'indoor') {
+    renderWeekCal(body);
+  } else {
+    renderMonthCal(body);
+  }
+}
+
+function renderWeekCal(body) {
+  const ws = curWeekStart;
+  const we = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + 6);
+  document.getElementById('cal-title').textContent = `${ws.getMonth()+1}/${ws.getDate()} - ${we.getMonth()+1}/${we.getDate()}`;
+  
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const dayLabels = ['日','月','火','水','木','金','土'];
+  
+  let html = '<div class="week-grid">';
+  dayLabels.forEach(l => { html += `<div class="week-day-label">${l}</div>`; });
+  
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate() + i);
+    const isToday = d.getTime() === today.getTime();
+    const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const isAvail = d >= today;
+    const isSel = curDate === dateStr;
+    let cls = 'week-day';
+    if (isAvail) cls += ' avail';
+    if (isToday) cls += ' today';
+    if (isSel) cls += ' selected';
+    html += `<div class="${cls}" onclick="selDate('${dateStr}',this)">
+      <div class="wd-num">${d.getDate()}</div>
+      ${isAvail ? '<div class="wd-dot"></div>' : ''}
+    </div>`;
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function renderMonthCal(body) {
+  const y = curMonth.getFullYear();
+  const m = curMonth.getMonth();
+  document.getElementById('cal-title').textContent = `${y}年${m+1}月`;
+  
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const firstDay = new Date(y, m, 1);
+  const startDow = firstDay.getDay();
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  
+  const dayLabels = ['日','月','火','水','木','金','土'];
+  let html = '<div class="month-grid">';
+  dayLabels.forEach(l => { html += `<div class="month-day-label">${l}</div>`; });
+  
+  for (let i = 0; i < startDow; i++) {
+    html += '<div class="month-day other-month"></div>';
+  }
+  
+  for (let d = 1; d <= lastDay; d++) {
+    const date = new Date(y, m, d);
+    const isToday = date.getTime() === today.getTime();
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isAvail = date >= today;
+    const isSel = curDate === dateStr;
+    let cls = 'month-day';
+    if (isAvail) cls += ' avail';
+    if (isToday) cls += ' today';
+    if (isSel) cls += ' selected';
+    html += `<div class="${cls}" onclick="selDate('${dateStr}',this)">
+      <div class="md-num">${d}</div>
+    </div>`;
+  }
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function selDate(dateStr, el) {
+  curDate = dateStr;
+  document.querySelectorAll('.week-day, .month-day').forEach(x => x.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  document.getElementById('slot-area').style.display = 'block';
+  document.getElementById('slot-title').textContent = '時間を選択してください';
+  
+  const slotList = document.getElementById('slot-list');
+  const slots = ['09:00','10:00','11:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+  let html = '';
+  slots.forEach(s => {
+    html += `<div class="slot avail" onclick="selSlot('${s}',this)">${s}</div>`;
+  });
+  slotList.innerHTML = html;
+}
+
+function selSlot(time, el) {
+  curTime = time;
+  document.querySelectorAll('.slot').forEach(x => x.classList.remove('sel'));
+  el.classList.add('sel');
+  showCoachAndPlans();
+}
+
+async function showCoachAndPlans() {
+  if (!selCoachId) {
+    document.getElementById('coach-select-area').style.display = 'block';
+    document.getElementById('coach-list').innerHTML = await renderCoachList();
     return;
   }
-  try{
-    var custRes=await sb.from('customers').select('id').eq('user_id',currentUserId).maybeSingle();
-    var customerId=custRes.data?custRes.data.id:null;
-    if(!customerId){
-      document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">予約がありません</div><div class="booking-empty-text">まずはコーチを探してレッスンを予約しましょう</div><div style="margin-top:16px;"><button class="booking-empty-btn" onclick="document.getElementById(\'snb-search\').click()">コーチを探す</button></div></div>';
+  
+  document.getElementById('coach-info-area').style.display = 'block';
+  const { data: coach } = await supa.from('coaches').select('*').eq('id', selCoachId).maybeSingle();
+  if (coach) {
+    document.getElementById('coach-info-text').innerHTML = `🏌 <strong>${coach.name} コーチ</strong>のレッスンプラン`;
+  }
+  await loadCoachPlans();
+}
+
+async function renderCoachList() {
+  let html = '';
+  for (const c of availableCoaches) {
+    const photoHtml = c.photo_url ? `<img src="${c.photo_url}" alt="${c.name}">` : (c.name?.[0] || '');
+    html += `<div class="coach-card" onclick="selCoach('${c.id}',this)" data-id="${c.id}">
+      <div class="coach-card-photo">${photoHtml}</div>
+      <div class="coach-card-body">
+        <div class="coach-card-name">${c.name || ''}</div>
+        ${c.license ? `<div class="coach-card-license">${c.license}</div>` : ''}
+        ${c.tags ? `<div class="coach-card-tags">${c.tags}</div>` : ''}
+        ${c.bio ? `<div class="coach-card-bio">${c.bio}</div>` : ''}
+      </div>
+    </div>`;
+  }
+  return html || '<div class="coach-card-none">在籍中のコーチがいません</div>';
+}
+
+function selCoach(id, el) {
+  selCoachId = id;
+  document.querySelectorAll('.coach-card').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  loadCoachPlans();
+}
+
+async function loadCoachPlans() {
+  if (!selCoachId) return;
+  document.getElementById('coach-plans-area').style.display = 'block';
+  document.getElementById('coach-plans-list').innerHTML = '<div style="text-align:center;padding:12px;color:#888;font-size:11px;">プランを読み込み中...</div>';
+  
+  try {
+    const { data: plans } = await supa.from('coach_lesson_plans').select('*').eq('coach_id', selCoachId).eq('lesson_type', curType).eq('is_active', true);
+    if (!plans || plans.length === 0) {
+      document.getElementById('coach-plans-list').innerHTML = '<div class="coach-plans-none">このコーチはこの種別のプランを設定していません</div>';
       return;
     }
-    var{data:bookings,error}=await sb.from('bookings').select('*').eq('customer_id',customerId).order('booking_date',{ascending:false});
-    if(error){console.error('bookings取得エラー',error);throw error;}
-    allBookings=bookings||[];
-    var todayStr=getJSTDateStr(0);
-    var pendingReviewCount=allBookings.filter(function(b){
-      return b.booking_date<=todayStr 
-        && ['confirmed','approved','completed'].indexOf(b.status)>=0
-        && b.review_status!=='submitted'
-        && b.review_status!=='expired';
-    }).length;
-    updateReviewBadge(pendingReviewCount);
-    if(allBookings.length===0){
-      document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">予約がありません</div><div class="booking-empty-text">まずはコーチを探してレッスンを予約しましょう</div><div style="margin-top:16px;"><button class="booking-empty-btn" onclick="document.getElementById(\'snb-search\').click()">コーチを探す</button></div></div>';
-      return;
+    let html = '';
+    for (const p of plans) {
+      const desc = p.description || '';
+      const price = parseInt(p.amount) || 0;
+      html += `<div class="plan-option" onclick="selPlanFn('${p.id}',this)" data-id="${p.id}" data-amount="${price}" data-minutes="${p.minutes||50}" data-label="${p.label||''}" data-kind="${p.plan_kind||'standard'}" data-course="${p.course||''}" data-starttime="${p.start_time||''}" data-coach-pays="${p.coach_pays_greenfee||false}">
+        <input type="radio" name="plan">
+        <div class="plan-option-body">
+          <div class="plan-option-main">${p.label || ''}</div>
+          ${desc ? `<div class="plan-option-desc">${desc}</div>` : ''}
+        </div>
+        <div class="plan-option-price">¥${price.toLocaleString()}</div>
+      </div>`;
     }
-    var coachIds=[];
-    allBookings.forEach(function(b){if(b.coach_id&&coachIds.indexOf(b.coach_id)<0) coachIds.push(b.coach_id);});
-    var coachMap={};
-    if(coachIds.length>0){
-      var{data:coaches}=await sb.from('coaches').select('id,name,photo_url').in('id',coachIds);
-      (coaches||[]).forEach(function(c){coachMap[c.id]=c;});
-    }
-    window._coachMap=coachMap;
-    var bookingIds=allBookings.map(function(b){return b.id;});
-    var receiptMap={};
-    if(bookingIds.length>0){
-      var{data:receipts}=await sb.from('receipts').select('booking_id,receipt_no,issued_at,recipient_name').in('booking_id',bookingIds);
-      (receipts||[]).forEach(function(r){receiptMap[r.booking_id]=r;});
-    }
-    window._receiptMap=receiptMap;
-    renderBookings(currentBookingFilter);
-  }catch(e){
-    console.error('loadBookings例外',e);
-    document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">⚠️</div><div class="booking-empty-title">読み込みエラー</div><div class="booking-empty-text">予約情報の取得に失敗しました</div></div>';
+    document.getElementById('coach-plans-list').innerHTML = html;
+  } catch (e) {
+    console.error('loadCoachPlans error:', e);
+    document.getElementById('coach-plans-list').innerHTML = '<div class="coach-plans-none">プランの読み込みに失敗しました</div>';
   }
 }
 
-function renderBookings(filter){
-  currentBookingFilter=filter;
-  var filtered=allBookings;
-  if(filter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
-  else if(filter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
-  else if(filter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
-  if(filtered.length===0){
-    document.getElementById('bookings-list').innerHTML='<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">該当する予約がありません</div><div class="booking-empty-text">フィルタを変更してください</div></div>';
-    return;
-  }
-  var html='';
-  filtered.forEach(function(b,idx){html+=renderBookingCard(b,idx);});
-  document.getElementById('bookings-list').innerHTML=html;
-}
-
-function formatBookingTime(t){
-  if(!t) return '';
-  var s=String(t);
-  if(s.indexOf(':')<0) return s;
-  var parts=s.split(':');
-  return (parts[0]||'').padStart(2,'0')+':'+(parts[1]||'00');
-}
-
-function renderBookingCard(b,idx){
-  var coachMap=window._coachMap||{};
-  var coach=coachMap[b.coach_id]||{};
-  var coachName=coach.name||'コーチ';
-  var coachInitial=coachName.charAt(0);
-  var coachPhoto=coach.photo_url?'<img src="'+coach.photo_url+'" alt="'+coachName+'">':coachInitial;
-  var rawStatus=b.status||'pending_approval';
-  var status='pending';
-  if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
-  else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
-  else if(rawStatus==='completed') status='completed';
-  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
-  var statusLabel={pending:'⏳ 承認待ち',approved:'✅ 承認済み',completed:'✓ 完了',cancelled:'🚫 キャンセル'}[status]||'⏳ 承認待ち';
-  if(rawStatus==='approved_pending_payment') statusLabel='💳 決済待ち';
-  if(rawStatus==='confirmed') statusLabel='✅ 予約確定';
-  if(rawStatus==='rejected') statusLabel='🚫 却下';
-  var msgMap={
-    pending:'<div class="bk-msg pending">⏳ コーチの承認をお待ちしています。LINEに通知が届きます。</div>',
-    approved:'<div class="bk-msg approved">✅ 承認されました!レッスン当日お待ちしています</div>',
-    completed:'<div class="bk-msg completed">✓ レッスン完了しました。ぜひレビューをお願いします</div>',
-    cancelled:''
+function selPlanFn(planId, el) {
+  selPlanId = planId;
+  document.querySelectorAll('.plan-option').forEach(x => {
+    x.classList.remove('selected');
+    const radio = x.querySelector('input[type="radio"]');
+    if (radio) radio.checked = false;
+  });
+  el.classList.add('selected');
+  const radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+  selPlan = {
+    id: planId,
+    amount: parseInt(el.dataset.amount) || 0,
+    minutes: parseInt(el.dataset.minutes) || 50,
+    label: el.dataset.label || '',
+    kind: el.dataset.kind || 'standard',
+    course: el.dataset.course || '',
+    startTime: el.dataset.starttime || '',
+    coachPaysGreenfee: el.dataset.coachPays === 'true',
   };
-  if(rawStatus==='approved_pending_payment'){msgMap.approved='<div class="bk-msg approved">💳 承認されました!LINEに届いた決済リンクからお支払いください</div>';}
-  var dateStr=formatDateJP(b.booking_date);
-  var timeStr=formatBookingTime(b.booking_time);
-  var lessonLabel={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'}[b.lesson_type]||b.lesson_type||'レッスン';
-  var ago=calcAgoFromISO(b.created_at);
-  var price=parseInt(b.total_price)||0;
-  var receiptBtn='';
-  if(rawStatus==='completed'){
-    var receiptInfo=(window._receiptMap||{})[b.id];
-    if(receiptInfo){
-      receiptBtn='<a class="receipt-btn issued" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener" onclick="event.stopPropagation();">📄 領収書 (発行済 No.'+receiptInfo.receipt_no+')</a>';
-    }else{
-      receiptBtn='<a class="receipt-btn" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener" onclick="event.stopPropagation();">📄 領収書を発行する</a>';
-    }
+  document.getElementById('btn-to-request').style.display = 'block';
+}
+
+function goToRequest() {
+  if (!curDate || !curTime || !selCoachId || !selPlanId) {
+    alert('日付・時間・コーチ・プランを選択してください');
+    return;
   }
-  return '<div class="booking-card '+status+'" onclick="showBookingDetail('+idx+')">'+
-    '<div class="bk-head">'+
-      '<span class="bk-status '+status+'">'+statusLabel+'</span>'+
-      '<span class="bk-ago">'+ago+'</span>'+
-    '</div>'+
-    '<div class="bk-coach">'+
-      '<div class="bk-coach-photo">'+coachPhoto+'</div>'+
-      '<div class="bk-coach-info">'+
-        '<div class="bk-coach-name">'+coachName+'</div>'+
-        '<div class="bk-coach-lesson">'+lessonLabel+' / ¥'+price.toLocaleString()+'</div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="bk-detail">'+
-      '<div class="bk-detail-row"><span>📅 日時</span><span>'+dateStr+(timeStr?' '+timeStr:'')+'</span></div>'+
-      '<div class="bk-detail-row"><span>🏪 店舗</span><span>戸津池店</span></div>'+
-    '</div>'+
-    (msgMap[status]||'')+
-    receiptBtn+
-  '</div>';
+  document.querySelectorAll('.snb').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('.screen').forEach(x => x.classList.remove('on'));
+  document.getElementById('s-request').classList.add('on');
+  
+  document.getElementById('req-type').value = curType;
+  document.getElementById('req-date').value = curDate;
+  document.getElementById('req-time').value = curTime;
+  document.getElementById('req-plan-id').value = selPlanId;
+  document.getElementById('req-plan-amount').value = selPlan.amount;
+  document.getElementById('req-plan-minutes').value = selPlan.minutes;
+  document.getElementById('req-plan-label').value = selPlan.label;
+  document.getElementById('req-plan-kind').value = selPlan.kind;
+  document.getElementById('req-plan-course').value = selPlan.course;
+  document.getElementById('req-plan-starttime').value = selPlan.startTime;
+  document.getElementById('req-plan-coach-pays').value = selPlan.coachPaysGreenfee;
+  
+  let typeText = '';
+  if (curType === 'indoor') typeText = 'インドアゴルフレッスン';
+  else if (curType === 'round') typeText = 'ラウンドレッスン';
+  else if (curType === 'accompany') typeText = '同伴ラウンド';
+  else if (curType === 'comp') typeText = 'コンペ参加';
+  else if (curType === 'custom') typeText = 'コーチ独自プラン';
+  
+  document.getElementById('display-type').textContent = typeText;
+  document.getElementById('display-date').textContent = curDate;
+  document.getElementById('display-time').textContent = curTime;
+  document.getElementById('display-price').textContent = `¥${selPlan.amount.toLocaleString()}`;
+  document.getElementById('display-store').textContent = 'Golf Create 戸津池店';
+  
+  if (selPlan.label) {
+    document.getElementById('display-plan-row').style.display = 'block';
+    document.getElementById('display-plan').textContent = selPlan.label;
+  }
+  if (selPlan.course) {
+    document.getElementById('display-course-row').style.display = 'block';
+    document.getElementById('display-course').textContent = selPlan.course;
+  }
+  if (selPlan.startTime) {
+    document.getElementById('display-starttime-row').style.display = 'block';
+    document.getElementById('display-starttime').textContent = selPlan.startTime;
+  }
+  
+  loadSelectedCoachBox();
 }
 
-function formatDateJP(ds){
-  if(!ds) return '—';
-  var s=String(ds);
-  var parts=s.split('-');
-  if(parts.length<3) return s;
-  var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
-  var wd=['日','月','火','水','木','金','土'][d.getDay()];
-  return parseInt(parts[1])+'/'+parseInt(parts[2])+'('+wd+')';
+async function loadSelectedCoachBox() {
+  if (!selCoachId) return;
+  const { data: coach } = await supa.from('coaches').select('*').eq('id', selCoachId).maybeSingle();
+  if (!coach) return;
+  document.getElementById('selected-coach-box').style.display = 'block';
+  const photo = document.getElementById('sel-coach-photo');
+  if (coach.photo_url) {
+    photo.innerHTML = `<img src="${coach.photo_url}" style="width:100%;height:100%;object-fit:cover;">`;
+  } else {
+    photo.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--gd);font-weight:700;background:var(--gl);">${coach.name?.[0] || ''}</div>`;
+  }
+  document.getElementById('sel-coach-name').textContent = coach.name || '';
+  if (coach.license) document.getElementById('sel-coach-license').textContent = coach.license;
+  if (coach.tags) document.getElementById('sel-coach-tags').textContent = coach.tags;
 }
 
-function calcAgoFromISO(iso){
-  if(!iso) return '';
-  var then=new Date(iso).getTime();
-  var now=Date.now();
-  var diff=Math.floor((now-then)/1000);
-  if(diff<60) return 'たった今';
-  if(diff<3600) return Math.floor(diff/60)+'分前';
-  if(diff<86400) return Math.floor(diff/3600)+'時間前';
-  if(diff<86400*7) return Math.floor(diff/86400)+'日前';
-  return Math.floor(diff/86400/7)+'週間前';
+function checkAgree() {
+  const agree = document.getElementById('agreeChk').checked;
+  const booth = document.getElementById('boothReservedChk').checked;
+  document.getElementById('req-btn').disabled = !(agree && booth);
 }
 
-function filterBookings(status,btn){
-  document.querySelectorAll('#bookings-filter .snb').forEach(function(b){b.classList.remove('on');});
+function checkBoothTime() {
+  const boothMin = parseInt(document.getElementById('booth-duration').value);
+  const lessonMin = selPlan ? selPlan.minutes : 50;
+  if (lessonMin > boothMin) {
+    document.getElementById('booth-warning').style.display = 'block';
+  } else {
+    document.getElementById('booth-warning').style.display = 'none';
+  }
+}
+
+async function submitBooking() {
+  console.log('submitBooking called');
+  alert('予約機能は現在開発中です');
+}
+
+async function loadCustomerProfile() {
+  if (!session?.email) return;
+  try {
+    const { data } = await supa.from('customers').select('*').eq('email', session.email).maybeSingle();
+    if (data) {
+      document.getElementById('mp-name').value = data.name || '';
+      document.getElementById('mp-furigana').value = data.furigana || '';
+      document.getElementById('mp-email').value = data.email || '';
+      document.getElementById('mp-phone').value = data.phone || '';
+      document.getElementById('mp-golf-history').value = data.golf_history || '';
+      document.getElementById('mp-home-course').value = data.home_course || '';
+      document.getElementById('mp-handicap').value = data.handicap || '';
+      document.getElementById('mp-birth-date').value = data.birth_date || '';
+    }
+  } catch (e) {
+    console.error('loadCustomerProfile error:', e);
+  }
+}
+
+async function saveMyProfile() {
+  alert('お客様情報の保存機能は次の更新で実装予定');
+}
+
+async function loadCustomerAuthInfo() {
+  console.log('loadCustomerAuthInfo called');
+}
+
+async function verifyMember() {
+  alert('会員認証機能は次の更新で実装予定');
+}
+
+async function loadLineLinkStatus() {
+  document.getElementById('line-link-content').innerHTML = '<div style="text-align:center;color:#888;font-size:12px;padding:10px;">LINE連携機能は次の更新で実装予定</div>';
+}
+
+function doLogout() {
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.href = 'index.html';
+}
+
+function toggleHeart(b) { b.classList.toggle('fav'); }
+
+async function loadBookings() {
+  if (!session?.email) {
+    document.getElementById('bookings-list').innerHTML = '<div class="booking-empty"><div class="booking-empty-icon">🔒</div><div class="booking-empty-title">ログインが必要です</div></div>';
+    return;
+  }
+  try {
+    const { data: customer } = await supa.from('customers').select('id').eq('email', session.email).maybeSingle();
+    if (!customer) {
+      document.getElementById('bookings-list').innerHTML = '<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">予約はまだありません</div></div>';
+      return;
+    }
+    const { data, error } = await supa.from('bookings').select('*').eq('customer_id', customer.id).order('booking_date', { ascending: false });
+    if (error) { console.error('loadBookings error:', error); return; }
+    bookings = data || [];
+    renderBookings();
+  } catch (e) {
+    console.error('loadBookings exception:', e);
+  }
+}
+
+function filterBookings(filter, btn) {
+  currentBookingFilter = filter;
+  document.querySelectorAll('#bookings-filter .snb').forEach(x => x.classList.remove('on'));
   btn.classList.add('on');
-  renderBookings(status);
+  renderBookings();
 }
 
-function showBookingDetail(idx){
-  var filtered=allBookings;
-  if(currentBookingFilter==='pending'){filtered=allBookings.filter(function(b){var s=b.status||'pending_approval';return s==='pending_approval'||s==='pending';});}
-  else if(currentBookingFilter==='approved'){filtered=allBookings.filter(function(b){return b.status==='approved'||b.status==='approved_pending_payment'||b.status==='confirmed';});}
-  else if(currentBookingFilter==='completed'){filtered=allBookings.filter(function(b){return b.status==='completed';});}
-  var b=filtered[idx];
-  if(!b) return;
-  var coachMap=window._coachMap||{};
-  var coach=coachMap[b.coach_id]||{};
-  var coachName=coach.name||'コーチ';
-  var coachInitial=coachName.charAt(0);
-  var coachPhoto=coach.photo_url?'<img src="'+coach.photo_url+'" alt="'+coachName+'">':coachInitial;
-  var rawStatus=b.status||'pending_approval';
-  var status='pending';
-  if(rawStatus==='pending_approval'||rawStatus==='pending') status='pending';
-  else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
-  else if(rawStatus==='completed') status='completed';
-  else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
-  var statusInfo={
-    pending:{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'},
-    approved:{icon:'✅',title:'承認済み',sub:'レッスン当日お待ちしています'},
-    completed:{icon:'✓',title:'完了',sub:'レッスンありがとうございました'},
-    cancelled:{icon:'🚫',title:'キャンセル',sub:''}
-  }[status]||{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'};
-  if(rawStatus==='approved_pending_payment'){statusInfo={icon:'💳',title:'決済待ち',sub:'LINEに届いた決済リンクからお支払いください'};}
-  if(rawStatus==='confirmed'){statusInfo={icon:'✅',title:'予約確定',sub:'レッスン当日お待ちしています'};}
-  if(rawStatus==='rejected'){statusInfo={icon:'🚫',title:'却下',sub:'別のコーチ・日程でお試しください'};}
-  var countdownHTML='';
-  if(status==='pending'||status==='approved'){
-    var cd=calcCountdown(b.booking_date,b.booking_time);
-    if(cd){
-      countdownHTML='<div class="mdl-countdown"><div class="mdl-countdown-label">⏰ レッスンまで</div><div class="mdl-countdown-value">'+cd+'</div></div>';
+function renderBookings() {
+  let filtered = bookings;
+  if (currentBookingFilter !== 'all') {
+    if (currentBookingFilter === 'pending') {
+      filtered = bookings.filter(b => b.status === 'pending');
+    } else if (currentBookingFilter === 'approved') {
+      filtered = bookings.filter(b => b.status === 'approved' || b.status === 'confirmed');
+    } else if (currentBookingFilter === 'completed') {
+      filtered = bookings.filter(b => b.status === 'completed');
     }
   }
-  var dateStr=formatDateJP(b.booking_date);
-  var timeStr=formatBookingTime(b.booking_time)||'-';
-  var lessonLabel={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'}[b.lesson_type]||b.lesson_type||'レッスン';
-  var buttonsHTML='';
-  if(rawStatus==='confirmed'){
-    buttonsHTML='<button class="mdl-btn mdl-btn-line" onclick="window.open(\'https://line.me/R/\',\'_blank\')">💬 コーチに問い合わせ(LINE)</button>'+
-'<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal(\''+b.id+'\','+(parseInt(b.total_price)||0)+')">予約をキャンセル</button>'+
-      '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:48時間前まで無料。以降50%、当日100%</div>';
+  const list = document.getElementById('bookings-list');
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="booking-empty"><div class="booking-empty-icon">📋</div><div class="booking-empty-title">該当する予約がありません</div></div>';
+    return;
   }
-  if(rawStatus==='completed'){
-    var receiptInfo=(window._receiptMap||{})[b.id];
-    if(receiptInfo){
-      buttonsHTML+='<a class="mdl-btn" style="display:block;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-top:6px;border:1px solid #65CEA5;box-shadow:0 0 16px rgba(101,206,165,0.2);" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener">📄 領収書 (発行済 No.'+receiptInfo.receipt_no+')</a>';
-    }else{
-      buttonsHTML+='<a class="mdl-btn" style="display:block;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-top:6px;border:1px solid #65CEA5;box-shadow:0 0 16px rgba(101,206,165,0.2);" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener">📄 領収書を発行する</a>';
-    }
+  let html = '';
+  filtered.forEach(b => {
+    const statusClass = b.status;
+    const lessonTypeMap = { indoor: 'インドア', round: 'ラウンド', accompany: '同伴', comp: 'コンペ', custom: 'カスタム' };
+    const lt = lessonTypeMap[b.lesson_type] || b.lesson_type;
+    html += `<div class="booking-card ${statusClass}" onclick="openBookingDetail('${b.id}')">
+      <div class="bk-head"><div class="bk-status ${statusClass}">${getStatusText(b.status)}</div></div>
+      <div class="bk-coach">
+        <div class="bk-coach-photo">${b.coach_name?.[0] || ''}</div>
+        <div class="bk-coach-info">
+          <div class="bk-coach-name">${b.coach_name || 'コーチ'}</div>
+          <div class="bk-coach-lesson">${lt} / ${b.minutes||50}分</div>
+        </div>
+      </div>
+      <div class="bk-detail">
+        <div class="bk-detail-row"><span>日時</span><span>${b.booking_date} ${(b.booking_time||'').substring(0,5)}</span></div>
+        <div class="bk-detail-row"><span>料金</span><span>¥${parseInt(b.total_price||0).toLocaleString()}</span></div>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+function getStatusText(status) {
+  const map = {
+    pending: '⏳ 承認待ち',
+    approved: '✅ 承認済み',
+    confirmed: '✅ 確定',
+    completed: '✓ 完了',
+    cancelled: '❌ キャンセル',
+    rejected: '❌ 拒否',
+  };
+  return map[status] || status;
+}
+
+function openBookingDetail(id) {
+  const b = bookings.find(x => x.id === id);
+  if (!b) return;
+  const lessonTypeMap = { indoor: 'インドアゴルフレッスン', round: 'ラウンドレッスン', accompany: '同伴ラウンド', comp: 'コンペ参加', custom: 'コーチ独自プラン' };
+  const lt = lessonTypeMap[b.lesson_type] || b.lesson_type;
+  let html = `<div class="mdl-status-card ${b.status}">
+    <div class="mdl-status-icon">${b.status === 'confirmed' || b.status === 'approved' ? '✅' : '⏳'}</div>
+    <div class="mdl-status-title">${getStatusText(b.status)}</div>
+  </div>
+  <div class="mdl-info-card">
+    <div class="mdl-info-coach">
+      <div class="mdl-info-coach-photo">${b.coach_name?.[0]||''}</div>
+      <div><div class="mdl-info-coach-name">${b.coach_name||'コーチ'}</div></div>
+    </div>
+    <div class="mdl-info-row"><span>レッスン</span><span>${lt}</span></div>
+    <div class="mdl-info-row"><span>日時</span><span>${b.booking_date} ${(b.booking_time||'').substring(0,5)}</span></div>
+    <div class="mdl-info-row"><span>料金</span><span>¥${parseInt(b.total_price||0).toLocaleString()}</span></div>
+  </div>`;
+  if (b.status === 'confirmed' || b.status === 'approved') {
+    html += `<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal('${b.id}')">⚠️ 予約をキャンセル</button>
+    <div class="mdl-cancel-note">
+      ⚠️ キャンセル時、決済手数料(3.6%)はお客様のご負担となります。<br>
+      <strong>72時間以上前:96.4%返金 / 72-24時間前:46.4% / 24時間以内:16.4% / 無断キャンセル:0%</strong>
+    </div>`;
   }
-  var price=parseInt(b.total_price)||0;
-  var minutesStr=b.minutes?b.minutes+'分':'';
-  var html='<div class="mdl-status-card '+status+'">'+
-    '<div class="mdl-status-icon">'+statusInfo.icon+'</div>'+
-    '<div class="mdl-status-title">'+statusInfo.title+'</div>'+
-    (statusInfo.sub?'<div class="mdl-status-sub">'+statusInfo.sub+'</div>':'')+
-  '</div>'+
-  countdownHTML+
-  '<div class="mdl-info-card">'+
-    '<div class="mdl-info-coach">'+
-      '<div class="mdl-info-coach-photo">'+coachPhoto+'</div>'+
-      '<div><div class="mdl-info-coach-name">'+coachName+' コーチ</div></div>'+
-    '</div>'+
-    '<div class="mdl-info-row"><span>📅 日時</span><span>'+dateStr+' '+timeStr+'</span></div>'+
-    '<div class="mdl-info-row"><span>🏌 種類</span><span>'+lessonLabel+(minutesStr?' / '+minutesStr:'')+'</span></div>'+
-    '<div class="mdl-info-row"><span>🏪 店舗</span><span>戸津池店</span></div>'+
-    '<div class="mdl-info-row" style="padding-top:6px;border-top:1px solid #f0f0f0;margin-top:6px;"><span>💰 支払済み</span><span>¥'+price.toLocaleString()+'</span></div>'+
-  '</div>'+
-  buttonsHTML;
-  document.getElementById('booking-detail-body').innerHTML=html;
+  document.getElementById('booking-detail-body').innerHTML = html;
   document.getElementById('booking-detail-modal').classList.add('open');
 }
 
-function closeBookingDetail(){
+function closeBookingDetail() {
   document.getElementById('booking-detail-modal').classList.remove('open');
 }
 
-function calcCountdown(dateStr,timeStr){
-  if(!dateStr) return null;
-  var s=String(dateStr);
-  var parts=s.split('-');
-  if(parts.length<3) return null;
-  var hour=10,minute=0;
-  if(timeStr){
-    var tp=String(timeStr).split(':');
-    hour=parseInt(tp[0])||10;
-    minute=parseInt(tp[1])||0;
+async function checkUrgentCancellations() {
+  console.log('checkUrgentCancellations called');
+}
+
+/**
+ * 【新方針】返金額自動計算
+ * - 72時間(3日)以上前 : 96.4%返金(レッスン料の100% - 決済手数料3.6%)
+ * - 72時間〜24時間前   : 46.4%返金(レッスン料の50% - 決済手数料3.6%)
+ * - 24時間以内・当日   : 16.4%返金(レッスン料の20% - 決済手数料3.6%)
+ * - 無断キャンセル     : 0%返金(キャンセル申請なし)
+ */
+function calculateRefundForCancel(bookingDate, bookingTime, totalPrice) {
+  const STRIPE_FEE_RATE = 0.036;
+  const stripeFee = Math.round(totalPrice * STRIPE_FEE_RATE);
+  const timeStr = (bookingTime || '00:00:00').substring(0, 8);
+  const lessonDateTime = new Date(`${bookingDate}T${timeStr}+09:00`);
+  const now = new Date();
+  const hoursUntilLesson = (lessonDateTime - now) / (1000 * 60 * 60);
+  
+  let policy, refundAmount, cancelFee, policyLabel;
+  if (hoursUntilLesson >= 72) {
+    policy = 'full_refund';
+    cancelFee = stripeFee;
+    refundAmount = totalPrice - stripeFee;
+    policyLabel = '72時間(3日)以上前(96.4%返金)';
+  } else if (hoursUntilLesson >= 24) {
+    policy = 'half_refund';
+    const halfFee = Math.round(totalPrice * 0.5);
+    cancelFee = halfFee + stripeFee;
+    refundAmount = totalPrice - cancelFee;
+    policyLabel = '72時間〜24時間前(46.4%返金)';
+  } else {
+    policy = 'sameday_refund';
+    const eightyFee = Math.round(totalPrice * 0.8);
+    cancelFee = eightyFee + stripeFee;
+    refundAmount = totalPrice - cancelFee;
+    policyLabel = '24時間以内・当日(16.4%返金)';
   }
-  var target=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]),hour,minute,0);
-  var now=new Date();
-  var diff=target.getTime()-now.getTime();
-  if(diff<=0) return null;
-  var days=Math.floor(diff/(1000*60*60*24));
-  var hours=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
-  return days+'日 '+hours+'時間';
+  return { policy, refundAmount, cancelFee, hoursUntilLesson, policyLabel };
 }
 
-function selType(card,type){
-  document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('on');});
-  card.classList.add('on');
-  currentType=type;
-  selectedDate=null;
-  selectedTime=null;
-  if(entryMode!=='coach'){selectedCoachId=null;selectedCoachData=null;}
-  selectedPlan=null;
-  document.getElementById('btn-to-request').style.display='none';
-  document.getElementById('slot-area').style.display='none';
-  document.getElementById('coach-info-area').style.display='none';
-  var coachSelArea=document.getElementById('coach-select-area');
-  if(coachSelArea) coachSelArea.style.display='none';
-  var plansArea=document.getElementById('coach-plans-area');
-  if(plansArea) plansArea.style.display='none';
-  document.getElementById('cal-box').scrollIntoView({behavior:'smooth',block:'start'});
-  var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
-  document.getElementById('cal-type-label').textContent=labels[type]||type;
-  if(type==='indoor'||type==='custom'){renderWeekCal();}else{renderMonthCal();}
-}
-
-var availCache={};
-
-/* ★★★ 修正2:アクティブなコーチのスケジュールのみ取得 ★★★ */
-async function fetchAvailDates(){
-  availCache={};
-  try{
-    var todayStr=fmt(new Date());
-    /* アクティブなコーチのIDのみを取得 */
-    var{data:activeCoaches}=await sb.from('coaches')
-      .select('id')
-      .eq('is_approved',true)
-      .eq('coach_status','active');
-    var activeCoachIds=(activeCoaches||[]).map(function(c){return c.id;});
-    if(activeCoachIds.length===0){
-      renderWeekCal();
-      renderMonthCal();
-      return;
-    }
-    var{data,error}=await sb.from('schedules')
-      .select('coach_id,slot_date,slot_hour,lesson_type,status')
-      .eq('status','available')
-      .gte('slot_date',todayStr)
-      .in('coach_id',activeCoachIds);
-    if(error){console.error('schedules取得エラー',error);}
-    if(data&&data.length>0){
-      data.forEach(function(row){
-        var ds=row.slot_date;
-        var lt=row.lesson_type;
-        var coachId=row.coach_id;
-        if(!ds||!lt||!coachId) return;
-        if(!availCache[ds]) availCache[ds]={};
-        if(lt==='indoor'){
-          if(!availCache[ds].indoor) availCache[ds].indoor={times:[],coaches:[]};
-          var hr=row.slot_hour;
-          if(hr!==null&&hr!==undefined&&hr>=1){
-            var t=(hr<10?'0'+hr:''+hr)+':00';
-            if(availCache[ds].indoor.times.indexOf(t)<0) availCache[ds].indoor.times.push(t);
-          }
-          if(availCache[ds].indoor.coaches.indexOf(coachId)<0) availCache[ds].indoor.coaches.push(coachId);
-        }
-        else if(lt==='round'||lt==='accompany'||lt==='comp'||lt==='custom'){
-          ['round','accompany','comp','custom'].forEach(function(kind){
-            if(!availCache[ds][kind]) availCache[ds][kind]={times:[],coaches:[]};
-            if(availCache[ds][kind].coaches.indexOf(coachId)<0) availCache[ds][kind].coaches.push(coachId);
-          });
-        }
-      });
-      Object.keys(availCache).forEach(function(ds){
-        if(availCache[ds].indoor&&availCache[ds].indoor.times){
-          availCache[ds].indoor.times.sort();
-        }
-      });
-    }
-  }catch(e){console.error('fetchAvailDates例外',e);}
-  renderWeekCal();
-  renderMonthCal();
-}
-
-function getAvailDates(type){
-  var result={};
-  Object.keys(availCache).forEach(function(ds){
-    if(availCache[ds][type]){
-      if(entryMode==='coach'&&entrySelectedCoachId){
-        var coaches=availCache[ds][type].coaches||[];
-        if(coaches.indexOf(entrySelectedCoachId)<0) return;
-      }
-      if(type==='indoor'||type==='custom'){
-        result[ds]=availCache[ds][type].times;
-      }else{
-        result[ds]=true;
-      }
-    }
-  });
-  return result;
-}
-
-function getCoachesForDate(ds,type){
-  if(availCache[ds]&&availCache[ds][type]){return availCache[ds][type].coaches;}
-  return [];
-}
-
-function fmt(d){
-  var y=d.getFullYear();
-  var m=String(d.getMonth()+1).padStart(2,'0');
-  var dd=String(d.getDate()).padStart(2,'0');
-  return y+'-'+m+'-'+dd;
-}
-
-var weekStart=null;
-
-function getMonday(d){
-  var date=new Date(d);
-  var day=date.getDay();
-  var diff=date.getDate()-day+(day===0?-6:1);
-  date.setDate(diff);
-  date.setHours(0,0,0,0);
-  return date;
-}
-
-function renderWeekCal(){
-  if(!weekStart) weekStart=getMonday(new Date());
-  var avail=getAvailDates(currentType);
-  var today=fmt(new Date());
-  var weekEnd=new Date(weekStart);weekEnd.setDate(weekEnd.getDate()+6);
-  document.getElementById('cal-title').textContent=(weekStart.getMonth()+1)+'月'+weekStart.getDate()+'日〜'+(weekEnd.getMonth()+1)+'月'+weekEnd.getDate()+'日';
-  var days=['月','火','水','木','金','土','日'];
-  var html='<div class="week-grid">';
-  days.forEach(function(d){html+='<div class="week-day-label">'+d+'</div>';});
-  for(var i=0;i<7;i++){
-    var d=new Date(weekStart);d.setDate(d.getDate()+i);
-    var ds=fmt(d);
-    var cls='week-day';
-    if(avail[ds]) cls+=' avail';
-    if(ds===today) cls+=' today';
-    if(ds===selectedDate) cls+=' selected';
-    html+='<div class="'+cls+'" onclick="selectWeekDay(\''+ds+'\')">';
-    html+='<div class="wd-num">'+d.getDate()+'</div>';
-    if(avail[ds]) html+='<div class="wd-dot"></div>';
-    html+='</div>';
+function openCancelRequestModal(bookingId) {
+  const b = bookings.find(x => x.id === bookingId);
+  if (!b) return;
+  currentCancelRequestBookingId = bookingId;
+  const total = parseInt(b.total_price) || 0;
+  const calc = calculateRefundForCancel(b.booking_date, b.booking_time, total);
+  
+  document.getElementById('cancel-applied-policy').textContent = calc.policyLabel;
+  document.getElementById('cancel-total-display').textContent = '¥' + total.toLocaleString();
+  document.getElementById('cancel-fee-display').textContent = '¥' + calc.cancelFee.toLocaleString();
+  document.getElementById('cancel-refund-display').textContent = '¥' + calc.refundAmount.toLocaleString();
+  
+  document.querySelectorAll('.cancel-policy-row').forEach(x => x.classList.remove('applied'));
+  if (calc.policy === 'full_refund') {
+    document.getElementById('policy-row-full').classList.add('applied');
+  } else if (calc.policy === 'half_refund') {
+    document.getElementById('policy-row-half').classList.add('applied');
+  } else if (calc.policy === 'sameday_refund') {
+    document.getElementById('policy-row-sameday').classList.add('applied');
   }
-  html+='</div>';
-  var body=document.getElementById('cal-body');
-  if(body) body.innerHTML=html;
-}
-
-function selectWeekDay(ds){
-  var avail=getAvailDates(currentType);
-  if(!avail[ds]) return;
-  selectedDate=ds;
-  if(entryMode!=='coach'){selectedCoachId=null;selectedCoachData=null;}
-  selectedPlan=null;
-  renderWeekCal();
-  var slots=avail[ds]||[];
-  var area=document.getElementById('slot-area');
-  area.style.display='block';
-  document.getElementById('slot-title').textContent=ds.replace(/-/g,'/')+' の空き時間';
-  var html='';
-  slots.forEach(function(t){
-    var normalizedTime=normalizeTime(t);
-    var sel=normalizedTime===selectedTime?' sel':'';
-    html+='<div class="slot avail'+sel+'" onclick="selectSlot(\''+normalizedTime+'\')">'+normalizedTime+'</div>';
-  });
-  document.getElementById('slot-list').innerHTML=html;
-  document.getElementById('coach-info-area').style.display='none';
-  var coachSelArea=document.getElementById('coach-select-area');
-  if(coachSelArea) coachSelArea.style.display='none';
-  var plansArea=document.getElementById('coach-plans-area');
-  if(plansArea) plansArea.style.display='none';
-  document.getElementById('btn-to-request').style.display='none';
-}
-
-function normalizeTime(t){
-  if(!t) return '';
-  var s=String(t).trim();
-  if(s.indexOf(':')<0){
-    var h=parseInt(s,10);
-    if(isNaN(h)) return s;
-    return (h<10?'0'+h:''+h)+':00';
-  }
-  var parts=s.split(':');
-  var h=parseInt(parts[0],10);
-  var m=parts[1]||'00';
-  if(isNaN(h)) return s;
-  return (h<10?'0'+h:''+h)+':'+(m.length===1?'0'+m:m);
-}
-
-function selectSlot(t){
-  selectedTime=normalizeTime(t);
-  document.querySelectorAll('#slot-list .slot').forEach(function(el){
-    el.classList.toggle('sel',el.textContent===selectedTime);
-  });
-  showCoachInfo();
-}
-
-var calYear=null;
-var calMonth=null;
-
-function renderMonthCal(){
-  var today=new Date();
-  if(calYear===null){calYear=today.getFullYear();calMonth=today.getMonth();}
-  var avail=getAvailDates(currentType);
-  var todayStr=fmt(today);
-  var firstDay=new Date(calYear,calMonth,1);
-  var lastDay=new Date(calYear,calMonth+1,0);
-  document.getElementById('cal-title').textContent=calYear+'年'+(calMonth+1)+'月';
-  var days=['月','火','水','木','金','土','日'];
-  var html='<div class="month-grid">';
-  days.forEach(function(d){html+='<div class="month-day-label">'+d+'</div>';});
-  var startDow=firstDay.getDay()===0?6:firstDay.getDay()-1;
-  for(var i=0;i<startDow;i++){
-    var d=new Date(calYear,calMonth,1-startDow+i);
-    html+='<div class="month-day other-month"><div class="md-num">'+d.getDate()+'</div></div>';
-  }
-  for(var day=1;day<=lastDay.getDate();day++){
-    var d=new Date(calYear,calMonth,day);
-    var ds=fmt(d);
-    var cls='month-day';
-    if(avail[ds]) cls+=' avail';
-    if(ds===todayStr) cls+=' today';
-    if(ds===selectedDate) cls+=' selected';
-    html+='<div class="'+cls+'" onclick="selectMonthDay(\''+ds+'\')">';
-    html+='<div class="md-num">'+day+'</div>';
-    if(avail[ds]) html+='<div class="avail-badge">●</div>';
-    html+='</div>';
-  }
-  var total=startDow+lastDay.getDate();
-  var remain=(7-total%7)%7;
-  for(var i=1;i<=remain;i++){
-    html+='<div class="month-day other-month"><div class="md-num">'+i+'</div></div>';
-  }
-  html+='</div>';
-  var body=document.getElementById('cal-body');
-  if(body) body.innerHTML=html;
-  document.getElementById('slot-area').style.display='none';
-}
-
-function selectMonthDay(ds){
-  var avail=getAvailDates(currentType);
-  if(!avail[ds]) return;
-  selectedDate=ds;
-  selectedTime=null;
-  if(entryMode!=='coach'){selectedCoachId=null;selectedCoachData=null;}
-  selectedPlan=null;
-  renderMonthCal();
-  showCoachInfo();
-}
-
-var selectedCoachId=null;
-var selectedCoachData=null;
-
-async function showCoachInfo(){
-  var area=document.getElementById('coach-info-area');
-  area.style.display='block';
-  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
-  var msg=selectedDate?selectedDate.replace(/-/g,'/'):'';
-  if(selectedTime) msg+=' '+selectedTime;
-  msg+=' 【'+typeNames[currentType]+'】';
-  document.getElementById('coach-info-text').textContent='選択中:'+msg;
-  if(entryMode==='coach'&&entrySelectedCoachId){
-    selectedCoachId=entrySelectedCoachId;
-    selectedCoachData=entrySelectedCoachData;
-    document.getElementById('coach-select-area').style.display='none';
-    await loadCoachPlans(selectedCoachId);
-  }else{
-    await loadCoachesForDate();
-  }
-}
-
-/* ★★★ 修正3:お客様画面でブロック中・非表示中のコーチを除外 ★★★ */
-async function loadCoachesForDate(){
-  var area=document.getElementById('coach-select-area');
-  var listEl=document.getElementById('coach-list');
-  area.style.display='block';
-  document.getElementById('btn-to-request').style.display='none';
-  var plansArea=document.getElementById('coach-plans-area');
-  if(plansArea) plansArea.style.display='none';
-  selectedCoachId=null;
-  selectedCoachData=null;
-  selectedPlan=null;
-  var coachIds=getCoachesForDate(selectedDate,currentType);
-  coachIds=coachIds.filter(function(id){return id&&id!=='sample';});
-  coachIds=Array.from(new Set(coachIds));
-  if(coachIds.length===0){
-    listEl.innerHTML='<div class="coach-card-none">この日程に対応可能なコーチが見つかりませんでした。<br>別の日時をお選びください。</div>';
-    return;
-  }
-  try{
-    var{data,error}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,min_lesson,coach_status').in('id',coachIds).eq('coach_status','active');
-    if(error||!data||data.length===0){listEl.innerHTML='<div class="coach-card-none">コーチ情報を取得できませんでした。</div>';return;}
-    renderCoachList(data);
-  }catch(e){listEl.innerHTML='<div class="coach-card-none">通信エラーが発生しました。</div>';}
-}
-
-function renderCoachList(coaches){
-  var listEl=document.getElementById('coach-list');
-  var html='';
-  coaches.forEach(function(c){
-    var photoHtml=c.photo_url?'<img src="'+c.photo_url+'" alt="'+(c.name||'')+'">':(c.name?c.name.charAt(0):'?');
-    var name=c.name||'(お名前未登録)';
-    var license=c.license||'';
-    var tags=c.tags||'';
-    var bio=c.bio||'';
-    html+='<div class="coach-card" data-coach-id="'+c.id+'" onclick="selectCoach(\''+c.id+'\')">';
-    html+='<div class="coach-card-photo">'+photoHtml+'</div>';
-    html+='<div class="coach-card-body">';
-    html+='<div class="coach-card-name">'+name+'</div>';
-    if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
-    if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
-    if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
-    html+='</div></div>';
-  });
-  listEl.innerHTML=html;
-  window._coachCache={};
-  coaches.forEach(function(c){window._coachCache[c.id]=c;});
-}
-
-async function selectCoach(coachId){
-  selectedCoachId=coachId;
-  selectedCoachData=window._coachCache?window._coachCache[coachId]:null;
-  selectedPlan=null;
-  document.querySelectorAll('.coach-card').forEach(function(el){
-    el.classList.toggle('selected',el.getAttribute('data-coach-id')===coachId);
-  });
-  await loadCoachPlans(coachId);
-}
-
-async function loadCoachPlans(coachId){
-  var plansArea=document.getElementById('coach-plans-area');
-  var listEl=document.getElementById('coach-plans-list');
-  plansArea.style.display='block';
-  listEl.innerHTML='<div class="coach-plans-none">料金プランを読み込み中...</div>';
-  document.getElementById('btn-to-request').style.display='none';
-  try{
-    var coachData=selectedCoachData||{};
-    var minLessonMin=parseInt(coachData.min_lesson||'0',10)||0;
-    if(currentType==='custom'){
-      var{data:plans,error}=await sb.from('coach_custom_plans').select('*').eq('coach_id',coachId).eq('is_active',true).order('display_order',{ascending:true});
-      if(error||!plans||plans.length===0){listEl.innerHTML='<div class="coach-plans-none">このコーチは独自プランを設定していません。</div>';return;}
-      renderCustomPlans(plans);
-    }else{
-      var{data:items,error}=await sb.from('coach_price_items').select('*').eq('coach_id',coachId).eq('lesson_type',currentType).order('display_order',{ascending:true});
-      if(error||!items||items.length===0){listEl.innerHTML='<div class="coach-plans-none">このコーチは料金プランを設定していません。</div>';return;}
-      renderPriceItems(items,minLessonMin);
-    }
-  }catch(e){console.error('loadCoachPlans error',e);listEl.innerHTML='<div class="coach-plans-none">料金プランの取得に失敗しました。</div>';}
-}
-
-function renderPriceItems(items,minLessonMin){
-  var listEl=document.getElementById('coach-plans-list');
-  var html='';
-  items.forEach(function(item,idx){
-    var timeLabel='';
-    var disabled=false;
-    var disabledReason='';
-    if(item.lesson_type==='indoor'){
-      timeLabel=(item.minutes||'-')+'分';
-      if(minLessonMin>0&&item.minutes<minLessonMin){disabled=true;disabledReason='最低'+minLessonMin+'分以上の予約が必要です';}
-    }else{
-      var rc=parseFloat(item.round_count)||1;
-      timeLabel=rc+'R';
-    }
-    var optId='price-item-'+idx;
-    var cls='plan-option'+(disabled?' plan-option-disabled':'');
-    var onclick=disabled?'':' onclick="selectPriceItem('+idx+')"';
-    html+='<label class="'+cls+'" id="'+optId+'"'+onclick+'>';
-    if(!disabled) html+='<input type="radio" name="price-plan" value="'+idx+'">';
-    html+='<div class="plan-option-body">';
-    html+='<div class="plan-option-main">'+timeLabel+'</div>';
-    if(disabled) html+='<div class="plan-option-disabled-reason">⚠️ '+disabledReason+'</div>';
-    html+='</div>';
-    html+='<div class="plan-option-price">¥'+parseInt(item.price).toLocaleString()+'</div>';
-    html+='</label>';
-  });
-  listEl.innerHTML=html;
-  window._priceItemsCache=items;
-}
-
-function selectPriceItem(idx){
-  var items=window._priceItemsCache||[];
-  var item=items[idx];
-  if(!item) return;
-  document.querySelectorAll('#coach-plans-list .plan-option').forEach(function(el,i){
-    el.classList.toggle('selected',i===idx);
-    var radio=el.querySelector('input[type="radio"]');
-    if(radio) radio.checked=(i===idx);
-  });
-  var timeLabel='';
-  if(item.lesson_type==='indoor'){timeLabel=(item.minutes||'-')+'分';}
-  else{var rc=parseFloat(item.round_count)||1;timeLabel=rc+'R';}
-  selectedPlan={
-    kind:'price_item',id:item.id,price:parseInt(item.price),take_home:parseInt(item.take_home),
-    minutes:item.minutes||null,round_count:item.round_count||null,
-    label:timeLabel+' ¥'+parseInt(item.price).toLocaleString(),
-    coach_pays_greenfee:false,golf_course_name:null,start_time:null
-  };
-  document.getElementById('btn-to-request').style.display='block';
-}
-
-function renderCustomPlans(plans){
-  var listEl=document.getElementById('coach-plans-list');
-  var html='';
-  plans.forEach(function(plan,idx){
-    var optId='custom-plan-'+idx;
-    html+='<label class="plan-option" id="'+optId+'" onclick="selectCustomPlan('+idx+')">';
-    html+='<input type="radio" name="price-plan" value="'+idx+'">';
-    html+='<div class="plan-option-body">';
-    html+='<div class="plan-option-main">'+escapeHtml(plan.plan_name)+' <span style="font-size:11px;color:#666;">('+escapeHtml(plan.duration_text)+')</span></div>';
-    html+='<div class="plan-option-desc">'+escapeHtml(plan.description)+'</div>';
-    if(plan.coach_pays_greenfee){
-      html+='<div class="plan-greenfee-badge">✅ プレーフィー・キャディフィー込み</div>';
-      if(plan.golf_course_name||plan.start_time){
-        html+='<div class="plan-greenfee-info">';
-        if(plan.golf_course_name) html+='⛳ 指定コース: '+escapeHtml(plan.golf_course_name)+'<br>';
-        if(plan.start_time) html+='⏰ スタート時間: '+escapeHtml(plan.start_time);
-        html+='</div>';
-      }
-    }
-    html+='</div>';
-    html+='<div class="plan-option-price">¥'+parseInt(plan.price).toLocaleString()+'</div>';
-    html+='</label>';
-  });
-  listEl.innerHTML=html;
-  window._customPlansCache=plans;
-}
-
-function selectCustomPlan(idx){
-  var plans=window._customPlansCache||[];
-  var plan=plans[idx];
-  if(!plan) return;
-  document.querySelectorAll('#coach-plans-list .plan-option').forEach(function(el,i){
-    el.classList.toggle('selected',i===idx);
-    var radio=el.querySelector('input[type="radio"]');
-    if(radio) radio.checked=(i===idx);
-  });
-  selectedPlan={
-    kind:'custom_plan',id:plan.id,price:parseInt(plan.price),take_home:parseInt(plan.take_home),
-    minutes:null,round_count:null,
-    label:plan.plan_name+' ('+plan.duration_text+') ¥'+parseInt(plan.price).toLocaleString(),
-    plan_name:plan.plan_name,duration_text:plan.duration_text,description:plan.description,
-    coach_pays_greenfee:!!plan.coach_pays_greenfee,
-    golf_course_name:plan.golf_course_name||null,start_time:plan.start_time||null
-  };
-  document.getElementById('btn-to-request').style.display='block';
-}
-
-function escapeHtml(s){
-  if(!s) return '';
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function goToRequest(){
-  if(!selectedDate){alert('日程を選択してください');return;}
-  if(!selectedCoachId){alert('コーチを選択してください');return;}
-  if(!selectedPlan){alert('料金プランを選択してください');return;}
-  document.getElementById('req-type').value=currentType;
-  document.getElementById('req-date').value=selectedDate;
-  document.getElementById('req-time').value=selectedTime||(selectedPlan.start_time||'10:00');
-  document.getElementById('req-store').value=document.getElementById('req-store').value||'tozuike';
-  document.getElementById('req-plan-id').value=selectedPlan.id||'';
-  document.getElementById('req-plan-kind').value=selectedPlan.kind||'';
-  document.getElementById('req-plan-amount').value=selectedPlan.price||0;
-  document.getElementById('req-plan-minutes').value=selectedPlan.minutes||'';
-  document.getElementById('req-plan-label').value=selectedPlan.label||'';
-  document.getElementById('req-plan-course').value=selectedPlan.golf_course_name||'';
-  document.getElementById('req-plan-starttime').value=selectedPlan.start_time||'';
-  document.getElementById('req-plan-coach-pays').value=selectedPlan.coach_pays_greenfee?'true':'false';
-  var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 コーチ独自プラン'};
-  var storeLabelMap={tozuike:'Golf Create 戸津池店'};
-  var weekdayNames=['日','月','火','水','木','金','土'];
-  document.getElementById('display-type').textContent=typeLabelMap[currentType]||currentType;
-  if(selectedPlan.kind==='custom_plan'){
-    document.getElementById('display-plan-row').style.display='block';
-    document.getElementById('display-plan').textContent=selectedPlan.plan_name+'('+selectedPlan.duration_text+')';
-  }else{document.getElementById('display-plan-row').style.display='none';}
-  document.getElementById('display-price').textContent='¥'+parseInt(selectedPlan.price).toLocaleString()+(selectedPlan.minutes?'('+selectedPlan.minutes+'分)':'');
-  if(selectedDate){
-    var parts=selectedDate.split('-');
-    var d=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));
-    var dateStr=parts[0]+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日('+weekdayNames[d.getDay()]+')';
-    document.getElementById('display-date').textContent=dateStr;
-  }else{document.getElementById('display-date').textContent='—';}
-  if(selectedTime){document.getElementById('display-time').textContent=selectedTime+'〜';}
-  else if(selectedPlan.kind==='custom_plan'&&selectedPlan.start_time){document.getElementById('display-time').textContent=selectedPlan.start_time+'(コース指定)';}
-  else if(currentType!=='indoor'&&currentType!=='custom'){document.getElementById('display-time').textContent='(ラウンド系のため時間指定なし)';}
-  else{document.getElementById('display-time').textContent='—';}
-  if(selectedPlan.coach_pays_greenfee){
-    document.getElementById('display-course-row').style.display='block';
-    document.getElementById('display-course').textContent=selectedPlan.golf_course_name||'—';
-    if(selectedPlan.start_time){
-      document.getElementById('display-starttime-row').style.display='block';
-      document.getElementById('display-starttime').textContent=selectedPlan.start_time+'(プレーフィー・キャディフィー込み)';
-    }else{document.getElementById('display-starttime-row').style.display='none';}
-  }else{
-    document.getElementById('display-course-row').style.display='none';
-    document.getElementById('display-starttime-row').style.display='none';
-  }
-  var storeVal=document.getElementById('req-store').value;
-  document.getElementById('display-store').textContent=storeLabelMap[storeVal]||storeVal;
-  document.getElementById('dur-group').style.display='none';
-  var boothSec=document.getElementById('booth-reservation-section');
-  if(boothSec){
-    var showBooth=(currentType==='indoor')||(currentType==='custom'&&!selectedPlan.coach_pays_greenfee);
-    boothSec.style.display=showBooth?'block':'none';
-  }
-  var boothChk=document.getElementById('boothReservedChk');
-  if(boothChk) boothChk.checked=false;
-  var agreeChk=document.getElementById('agreeChk');
-  if(agreeChk) agreeChk.checked=false;
-  document.getElementById('req-btn').disabled=true;
-  var warningEl=document.getElementById('booth-warning');
-  if(warningEl) warningEl.style.display='none';
-  if(selectedCoachData){
-    var box=document.getElementById('selected-coach-box');
-    box.style.display='block';
-    var photoEl=document.getElementById('sel-coach-photo');
-    if(selectedCoachData.photo_url){
-      photoEl.innerHTML='<img src="'+selectedCoachData.photo_url+'" style="width:100%;height:100%;object-fit:cover;">';
-    }else{
-      photoEl.innerHTML='<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:var(--gd);font-weight:700;">'+(selectedCoachData.name?selectedCoachData.name.charAt(0):'?')+'</div>';
-    }
-    document.getElementById('sel-coach-name').textContent=selectedCoachData.name||'(お名前未登録)';
-    document.getElementById('sel-coach-license').textContent=selectedCoachData.license?'📜 '+selectedCoachData.license:'';
-    document.getElementById('sel-coach-tags').textContent=selectedCoachData.tags?'🏌 '+selectedCoachData.tags:'';
-  }
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
-  document.getElementById('s-request').classList.add('on');
-  document.querySelectorAll('.snb').forEach(function(b){b.classList.remove('on');});
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function calPrev(){
-  if(currentType==='indoor'||currentType==='custom'){
-    if(!weekStart) weekStart=getMonday(new Date());
-    weekStart.setDate(weekStart.getDate()-7);
-    renderWeekCal();
-  }else{
-    if(calYear===null){var t=new Date();calYear=t.getFullYear();calMonth=t.getMonth();}
-    calMonth--;
-    if(calMonth<0){calMonth=11;calYear--;}
-    renderMonthCal();
-  }
-}
-
-function calNext(){
-  if(currentType==='indoor'||currentType==='custom'){
-    if(!weekStart) weekStart=getMonday(new Date());
-    weekStart.setDate(weekStart.getDate()+7);
-    renderWeekCal();
-  }else{
-    if(calYear===null){var t=new Date();calYear=t.getFullYear();calMonth=t.getMonth();}
-    calMonth++;
-    if(calMonth>11){calMonth=0;calYear++;}
-    renderMonthCal();
-  }
-}
-
-function toggleHeart(btn){
-  var f=btn.classList.contains('fav');
-  btn.classList.toggle('fav',!f);
-  btn.textContent=f?'♡':'♥';
-}
-
-function checkAgree(){
-  var chk=document.getElementById('agreeChk');
-  var btn=document.getElementById('req-btn');
-  var reqType=document.getElementById('req-type').value;
-  var coachPays=document.getElementById('req-plan-coach-pays').value==='true';
-  var needBooth=(reqType==='indoor')||(reqType==='custom'&&!coachPays);
-  if(!needBooth){btn.disabled=!chk.checked;return;}
-  var boothChk=document.getElementById('boothReservedChk');
-  var boothTimeOk=checkBoothTime();
-  btn.disabled=!(chk.checked && boothChk.checked && boothTimeOk);
-}
-
-function checkBoothTime(){
-  var reqType=document.getElementById('req-type').value;
-  var warningEl=document.getElementById('booth-warning');
-  var coachPays=document.getElementById('req-plan-coach-pays').value==='true';
-  var needBooth=(reqType==='indoor')||(reqType==='custom'&&!coachPays);
-  if(!needBooth){if(warningEl) warningEl.style.display='none';return true;}
-  var boothMinEl=document.getElementById('booth-duration');
-  if(!boothMinEl){if(warningEl) warningEl.style.display='none';return true;}
-  var boothMin=parseInt(boothMinEl.value,10)||120;
-  var lessonMin=parseInt(document.getElementById('req-plan-minutes').value,10);
-  if(isNaN(lessonMin)||lessonMin<=0){if(warningEl) warningEl.style.display='none';return true;}
-  if(lessonMin>boothMin){
-    if(warningEl) warningEl.style.display='block';
-    var btn=document.getElementById('req-btn');
-    if(btn) btn.disabled=true;
-    return false;
-  }else{if(warningEl) warningEl.style.display='none';return true;}
-}
-
-function rate(n,bookingId){
-  var stars=document.querySelectorAll('#rev-stars-'+bookingId+' .starb');
-  stars.forEach(function(s,i){
-    s.classList.toggle('on',i<n);
-  });
-  var card=document.getElementById('rev-card-'+bookingId);
-  if(card) card.setAttribute('data-rating',n);
-}
-
-var reviewPendingBookings=[];
-
-async function loadReviewScreen(){
-  var container=document.getElementById('review-pending-list');
-  var completedSection=document.getElementById('review-completed-section');
-  var completedList=document.getElementById('review-completed-list');
-  if(!currentUserId){
-    container.innerHTML='<div style="text-align:center;padding:24px;color:#888;font-size:12px;">ログインが必要です</div>';
-    return;
-  }
-  var{data:customerRow}=await sb.from('customers')
-    .select('id,name,store_key')
-    .eq('user_id',currentUserId)
-    .maybeSingle();
-  if(!customerRow){
-    container.innerHTML='<div style="text-align:center;padding:24px;color:#888;font-size:12px;">お客様情報の取得に失敗しました</div>';
-    return;
-  }
-  var customerId=customerRow.id;
-  var customerName=customerRow.name;
-  var todayStr=getJSTDateStr(0);
-  var{data:completedBookings}=await sb.from('bookings')
-    .select('id,coach_id,coach_name,store_key,lesson_type,minutes,booking_date,booking_time,total_price,status,review_status,review_deadline,reviewed_at')
-    .eq('customer_id',customerId)
-    .lte('booking_date',todayStr)
-    .in('status',['confirmed','approved','completed']);
-  completedBookings=completedBookings||[];
-  var now=new Date();
-  for(var i=0;i<completedBookings.length;i++){
-    var b=completedBookings[i];
-    if(b.review_status==='submitted') continue;
-    if(b.review_status==='expired') continue;
-    var deadline=null;
-    if(b.review_deadline){
-      deadline=new Date(b.review_deadline);
-    }else{
-      var bd=new Date(b.booking_date+'T23:59:59+09:00');
-      bd.setDate(bd.getDate()+7);
-      deadline=bd;
-    }
-    if(now>deadline && b.review_status!=='submitted'){
-      await sb.from('bookings').update({review_status:'expired'}).eq('id',b.id);
-      b.review_status='expired';
-    }
-  }
-  var pending=completedBookings.filter(function(b){
-    return b.review_status!=='submitted' && b.review_status!=='expired';
-  });
-  var submitted=completedBookings.filter(function(b){
-    return b.review_status==='submitted';
-  });
-  if(pending.length===0){
-    container.innerHTML='<div style="background:#fff;border-radius:12px;padding:24px;text-align:center;border:0.5px solid var(--border);"><div style="font-size:13px;color:#666;">投稿待ちのレビューはありません</div></div>';
-  }else{
-    container.innerHTML=pending.map(function(b){return renderReviewCard(b,customerId,customerName);}).join('');
-  }
-  if(submitted.length>0){
-    var bookingIds=submitted.map(function(b){return b.id;});
-    var{data:reviews}=await sb.from('reviews')
-      .select('booking_id,rating,comment,coach_name,lesson_date,created_at')
-      .in('booking_id',bookingIds)
-      .order('created_at',{ascending:false});
-    reviews=reviews||[];
-    if(reviews.length>0){
-      completedSection.style.display='block';
-      completedList.innerHTML=reviews.map(function(r){
-        return '<div style="background:#fff;border-radius:12px;padding:12px;border:0.5px solid var(--border);margin-bottom:8px;">'+
-          '<div style="font-size:12px;color:#666;margin-bottom:4px;">'+escapeHtml(r.coach_name||'')+' · '+(r.lesson_date||'').replace(/-/g,'/')+'</div>'+
-          '<div style="color:#FFC107;font-size:14px;margin-bottom:6px;">'+'★'.repeat(r.rating)+'<span style="color:#ddd;">'+'★'.repeat(5-r.rating)+'</span></div>'+
-          '<div style="font-size:12px;color:#333;line-height:1.5;">'+escapeHtml(r.comment||'')+'</div>'+
-          '</div>';
-      }).join('');
-    }
-  }
-  updateReviewBadge(pending.length);
-}
-
-function renderReviewCard(b,customerId,customerName){
-  var lessonMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴レッスン',comp:'コンペ',custom:'独自プラン'};
-  var lessonLabel=lessonMap[b.lesson_type]||b.lesson_type;
-  var datePart=(b.booking_date||'').split('-');
-  var dateStr=datePart.length>=3?(parseInt(datePart[1])+'月'+parseInt(datePart[2])+'日'):b.booking_date;
-  var deadline=null;
-  if(b.review_deadline){
-    deadline=new Date(b.review_deadline);
-  }else{
-    var bd=new Date(b.booking_date+'T23:59:59+09:00');
-    bd.setDate(bd.getDate()+7);
-    deadline=bd;
-  }
-  var now=new Date();
-  var msLeft=deadline-now;
-  var daysLeft=Math.floor(msLeft/(1000*60*60*24));
-  var hoursLeft=Math.floor(msLeft/(1000*60*60));
-  var deadlineLabel='';
-  if(daysLeft>=1){
-    deadlineLabel='投稿期限まで '+daysLeft+'日';
-  }else if(hoursLeft>=1){
-    deadlineLabel='投稿期限まで '+hoursLeft+'時間';
-  }else{
-    deadlineLabel='まもなく期限切れ';
-  }
-  return '<div id="rev-card-'+b.id+'" data-rating="0" style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid var(--border);margin-bottom:12px;">'+
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">'+
-      '<div style="font-size:14px;font-weight:600;">'+escapeHtml(b.coach_name||'(コーチ)')+'コーチへの評価</div>'+
-      '<div style="font-size:10px;color:#d97a00;font-weight:600;background:#fff3e0;padding:3px 8px;border-radius:100px;">'+deadlineLabel+'</div>'+
-    '</div>'+
-    '<div style="font-size:12px;color:#666;margin-bottom:10px;">'+dateStr+' '+lessonLabel+' '+(b.minutes||'')+'分</div>'+
-    '<label style="font-size:12px;color:#666;">総合評価(必須)</label>'+
-    '<div class="star-row" id="rev-stars-'+b.id+'">'+
-      '<button class="starb" onclick="rate(1,\''+b.id+'\')">★</button>'+
-      '<button class="starb" onclick="rate(2,\''+b.id+'\')">★</button>'+
-      '<button class="starb" onclick="rate(3,\''+b.id+'\')">★</button>'+
-      '<button class="starb" onclick="rate(4,\''+b.id+'\')">★</button>'+
-      '<button class="starb" onclick="rate(5,\''+b.id+'\')">★</button>'+
-    '</div>'+
-    '<div class="form-group"><label>コメント(必須)</label><textarea id="rev-comment-'+b.id+'" placeholder="レッスンの感想をご記入ください。"></textarea></div>'+
-    '<button class="btn-request" onclick="submitReview(\''+b.id+'\',\''+(b.coach_id||'')+'\',\''+(customerId||'')+'\',\''+escapeAttr(customerName||'')+'\',\''+escapeAttr(b.coach_name||'')+'\',\''+escapeAttr(b.store_key||'')+'\',\''+escapeAttr(b.lesson_type||'')+'\',\''+escapeAttr(b.booking_date||'')+'\')">評価を送信する</button>'+
-  '</div>';
-}
-
-async function submitReview(bookingId,coachId,customerId,customerName,coachName,storeKey,lessonType,lessonDate){
-  var card=document.getElementById('rev-card-'+bookingId);
-  if(!card)return;
-  var rating=parseInt(card.getAttribute('data-rating'))||0;
-  var commentEl=document.getElementById('rev-comment-'+bookingId);
-  var comment=commentEl?commentEl.value.trim():'';
-  if(rating<1||rating>5){
-    alert('星評価を選択してください(1〜5)');
-    return;
-  }
-  if(comment.length===0){
-    alert('コメントを入力してください');
-    return;
-  }
-  if(comment.length>2000){
-    alert('コメントは2000文字以内でお願いします');
-    return;
-  }
-  var btn=card.querySelector('.btn-request');
-  if(btn){btn.disabled=true;btn.textContent='送信中...';}
-  try{
-    var{error:insertErr}=await sb.from('reviews').insert({
-      booking_id:bookingId,
-      coach_id:coachId||null,
-      customer_id:customerId||null,
-      store_key:storeKey||null,
-      rating:rating,
-      comment:comment,
-      status:'submitted',
-      customer_name:customerName||null,
-      coach_name:coachName||null,
-      lesson_type:lessonType||null,
-      lesson_date:lessonDate||null
-    });
-    if(insertErr){
-      if(insertErr.code==='23505'){
-        alert('このレッスンは既にレビュー投稿済みです');
-      }else{
-        alert('送信エラー: '+insertErr.message);
-      }
-      if(btn){btn.disabled=false;btn.textContent='評価を送信する';}
-      return;
-    }
-    await sb.from('bookings').update({
-      review_status:'submitted',
-      reviewed_at:new Date().toISOString()
-    }).eq('id',bookingId);
-    card.innerHTML='<div style="text-align:center;padding:20px;"><div style="font-size:32px;margin-bottom:6px;color:#3aa57c;">✓</div><div style="font-size:13px;color:#333;font-weight:600;">レビューを投稿しました</div><div style="font-size:11px;color:#666;margin-top:4px;">ご協力ありがとうございました</div></div>';
-    setTimeout(function(){loadReviewScreen();},2000);
-  }catch(e){
-    console.error('submitReview error',e);
-    alert('送信エラーが発生しました');
-    if(btn){btn.disabled=false;btn.textContent='評価を送信する';}
-  }
-}
-
-function updateReviewBadge(count){
-  var btn=document.getElementById('snb-review');
-  if(!btn)return;
-  var oldBadge=btn.querySelector('.review-badge');
-  if(oldBadge)oldBadge.remove();
-  if(count>0){
-    var badge=document.createElement('span');
-    badge.className='review-badge';
-    badge.style.cssText='display:inline-flex;align-items:center;justify-content:center;background:#ff5252;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;padding:0 5px;margin-left:4px;vertical-align:middle;';
-    badge.textContent=count;
-    btn.appendChild(badge);
-  }
-}
-
-function getJSTDateStr(offsetDays){
-  var d=new Date();
-  d.setHours(d.getHours()+9-d.getTimezoneOffset()/-60);
-  d.setDate(d.getDate()+(offsetDays||0));
-  return d.toISOString().slice(0,10);
-}
-
-function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function escapeAttr(s){return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;');}
-
-async function doLogout(){
-  localStorage.removeItem('gc_login_time');
-  await sb.auth.signOut();
-  window.location.href='customer_login.html?from=top';
-}
-
-async function verifyMember(){
-  var storeKey=document.getElementById('mp-store-key').value;
-  var memberEmail=document.getElementById('mp-member-email').value.trim().toLowerCase();
-  var msg=document.getElementById('auth-msg');
-  if(!storeKey){msg.style.display='block';msg.style.color='#E24B4A';msg.textContent='店舗を選択してください';return;}
-  if(!memberEmail){msg.style.display='block';msg.style.color='#E24B4A';msg.textContent='メールアドレスを入力してください';return;}
-  document.getElementById('verify-btn').textContent='照合中...';
-  document.getElementById('verify-btn').disabled=true;
-  var{data,error}=await sb.from('members').select('*').eq('store_key',storeKey).eq('email',memberEmail).eq('is_active',true).single();
-  if(error||!data){
-    msg.style.display='block';msg.style.color='#E24B4A';
-    msg.textContent='会員情報が見つかりません。店舗またはメールアドレスをご確認ください。';
-    document.getElementById('verify-btn').textContent='会員認証する';
-    document.getElementById('verify-btn').disabled=false;
-    return;
-  }
-  var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
-  var storeLabels={tozuike:'Golf Create 戸津池店'};
-  var res=await sb.auth.getSession();
-  var uid=res.data.session.user.id;
-  await sb.from('customers').upsert({
-    user_id:uid,store_key:storeKey,member_number:data.member_number,member_type:data.member_type,
-    is_approved:true,updated_at:new Date().toISOString()
-  },{onConflict:'user_id'});
-  document.getElementById('auth-form').style.display='none';
-  document.getElementById('approved-badge').style.display='block';
-  document.getElementById('approved-detail').textContent=storeLabels[storeKey]+' / '+(typeLabels[data.member_type]||data.member_type);
-  msg.style.display='none';
-  document.getElementById('verify-btn').textContent='会員認証する';
-  document.getElementById('verify-btn').disabled=false;
-  isMemberApproved=true;
-  updateNonMemberBanner();
-  var lineReg=document.getElementById('line-register-area');
-  if(lineReg) lineReg.style.display='none';
-}
-
-async function saveMyProfile(){
-  var res=await sb.auth.getSession();
-  var session=res.data.session;
-  if(!session) return;
-  var uid=session.user.id;
-  var payload={
-    user_id:uid,name:document.getElementById('mp-name').value,
-    furigana:document.getElementById('mp-furigana').value,
-    email:document.getElementById('mp-email').value,
-    phone:document.getElementById('mp-phone').value,
-    golf_history:document.getElementById('mp-golf-history').value,
-    handicap:document.getElementById('mp-handicap').value||null,
-    birth_date:document.getElementById('mp-birth-date').value||null,
-    home_course:document.getElementById('mp-home-course').value,
-    updated_at:new Date().toISOString()
-  };
-  var result=await sb.from('customers').upsert(payload,{onConflict:'user_id'});
-  if(result.error){alert('保存に失敗しました');}
-  else{alert('プロフィールを保存しました!');}
-}
-
-async function submitBooking(){
-  var btn=document.getElementById('req-btn');
-  var chk=document.getElementById('agreeChk');
-  if(!chk.checked){alert('利用規約に同意してください');return;}
-  if(!isMemberApproved){
-    alert('ご予約には会員認証が必要です\n\nMyCoach は Golf Create 戸津池店の\n会員様向けサービスとなっております。\n\n▶ 会員の方:マイページから認証へお進みください\n▶ 未入会の方:画面上部から入会のご案内をご覧ください');
-    goToMemberVerify();
-    return;
-  }
-  var sres=await sb.auth.getSession();
-  var session=sres.data.session;
-  if(!session){alert('ログインが必要です');window.location.href='customer_login.html?from=top';return;}
-  var uid=session.user.id;
-  var lessonType=document.getElementById('req-type').value;
-  var lessonDate=document.getElementById('req-date').value;
-  var lessonTime=document.getElementById('req-time').value;
-  var storeKey=document.getElementById('req-store').value;
-  var golfHistory=document.getElementById('req-golf-history').value;
-  var comment=document.getElementById('req-comment').value;
-  if(!lessonDate){alert('希望日を入力してください');return;}
-  var amountYen=parseInt(document.getElementById('req-plan-amount').value,10)||0;
-  var durationMin=parseInt(document.getElementById('req-plan-minutes').value,10)||null;
-  var planLabel=document.getElementById('req-plan-label').value||'';
-  if(!amountYen||amountYen<100){alert('金額が取得できませんでした。料金プランを選択してください。');return;}
-  var customerName='';
-  try{
-    var c=await sb.from('customers').select('id,name').eq('user_id',uid).maybeSingle();
-    if(c.data){customerName=c.data.name||'';}
-  }catch(e){}
-  var coachName='';
-  if(selectedCoachData&&selectedCoachData.name){coachName=selectedCoachData.name;}
-  if(!coachName&&entrySelectedCoachData&&entrySelectedCoachData.name){coachName=entrySelectedCoachData.name;}
-  var typeLabelMap={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
-  var lessonLabel=(typeLabelMap[lessonType]||lessonType)+(planLabel?' / '+planLabel:'');
-  var fullComment=comment;
-  if(golfHistory){fullComment='【ゴルフ歴】'+golfHistory+(comment?'\n\n'+comment:'');}
-  if(planLabel){fullComment='【プラン】'+planLabel+(fullComment?'\n\n'+fullComment:'');}
-  btn.disabled=true;
-  btn.textContent='処理中...';
-  try{
-    var resp=await fetch('/.netlify/functions/create-booking-request',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        customer_user_id:uid,
-        coach_id:selectedCoachId,
-        store_key:storeKey,
-        lesson_type:lessonType,
-        minutes:durationMin,
-        total_price:amountYen,
-        booking_date:lessonDate,
-        booking_time:lessonTime,
-        comment:fullComment,
-        agreed_terms:true,
-        customer_name:customerName,
-        coach_name:coachName||lessonLabel
-      })
-    });
-    var json=await resp.json();
-    if(!resp.ok||!json.ok){
-      console.error('booking request error:',json);
-      var errMsg=(json.error||'')+(json.detail||'');
-      var userMsg='';
-      if(errMsg.indexOf('duplicate')>=0||errMsg.indexOf('unique')>=0||errMsg.indexOf('idx_bookings_unique_active')>=0||errMsg.indexOf('insert failed')>=0){
-        userMsg='申し訳ございません。\n\nこの時間は既に他の方の予約が入っております。\n別の日時をお選びください。';
-      }else{
-        userMsg='予約申込の送信に失敗しました。\n\nお手数ですが、しばらくしてから再度お試しください。\n問題が続く場合は店舗までご連絡ください。';
-      }
-      alert(userMsg);
-      btn.disabled=false;btn.textContent='同意して依頼を確定する →';return;
-    }
-    alert('✅ コーチへ承認依頼を送信しました。\n\nコーチの承認後、決済リンクがLINEに届きます。\n\n予約一覧でステータスをご確認ください。');
-    document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
-    var bookingsTab=document.getElementById('snb-bookings');
-    if(bookingsTab){bookingsTab.click();}
-    document.getElementById('agreeChk').checked=false;
-    document.getElementById('req-comment').value='';
-    btn.disabled=false;
-    btn.textContent='同意して依頼を確定する →';
-  }catch(e){
-    console.error(e);alert('通信エラー:'+e.message);
-    btn.disabled=false;
-    btn.textContent='同意して依頼を確定する →';
-  }
-}
-
-function handlePaymentReturn(){
-  var params=new URLSearchParams(window.location.search);
-  var result=params.get('payment');
-  if(result==='success'){
-    alert('✅ お支払いが完了しました。\nご予約が確定しました。');
-    window.history.replaceState({},document.title,window.location.pathname);
-    setTimeout(function(){
-      var bookingsTab=document.getElementById('snb-bookings');
-      if(bookingsTab) bookingsTab.click();
-    },500);
-  }else if(result==='cancel'){
-    alert('決済がキャンセルされました。');
-    window.history.replaceState({},document.title,window.location.pathname);
-  }
-}
-
-var lineLinkCountdownTimer=null;
-var lineLinkPollingTimer=null;
-var lineLinkCurrentCode=null;
-
-function updateLineLinkStatus(lineUserId){
-  var contentEl=document.getElementById('line-link-content');
-  if(!contentEl) return;
-  if(lineUserId){
-    contentEl.innerHTML='<div class="line-link-status-linked">'+
-      '<div class="line-link-status-linked-title">✅ LINE連携済み</div>'+
-      '<div class="line-link-status-linked-sub">予約状況や決済案内をLINEで受け取れます</div>'+
-    '</div>';
-    stopLineLinkTimers();
-  }else{
-    contentEl.innerHTML='<button class="line-link-btn-issue" onclick="issueLineLinkCode()">'+
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>'+
-      '連携コードを発行する'+
-    '</button>';
-  }
-}
-
-async function refreshLineLinkStatus(){
-  if(!currentUserId) return;
-  try{
-    var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
-    if(data){updateLineLinkStatus(data.line_user_id);}
-  }catch(e){console.error('refreshLineLinkStatus error',e);}
-}
-
-async function issueLineLinkCode(){
-  var contentEl=document.getElementById('line-link-content');
-  if(!contentEl) return;
-  if(!window._customerRowId){
-    contentEl.innerHTML='<div class="line-link-error">❌ お客様情報が取得できません。<br>会員認証を完了してから再度お試しください。</div>'+
-      '<button class="line-link-btn-issue" style="margin-top:10px;" onclick="issueLineLinkCode()">再試行</button>';
-    return;
-  }
-  contentEl.innerHTML='<div style="text-align:center;color:#888;font-size:12px;padding:20px;">コード発行中...</div>';
-  try{
-    var resp=await fetch('/.netlify/functions/generate-link-code',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user_type:'customer',user_id:window._customerRowId})
-    });
-    var json=await resp.json();
-    if(!resp.ok||!json.success){
-      if(json.already_linked){
-        await refreshLineLinkStatus();
-        return;
-      }
-      contentEl.innerHTML='<div class="line-link-error">❌ '+(json.error||'コードの発行に失敗しました')+'</div>'+
-        '<button class="line-link-btn-issue" style="margin-top:10px;" onclick="issueLineLinkCode()">再試行</button>';
-      return;
-    }
-    lineLinkCurrentCode=json.code;
-    var expiresAt=new Date(json.expires_at).getTime();
-    showLineLinkCode(json.code,expiresAt);
-    startLineLinkPolling();
-  }catch(e){
-    console.error('issueLineLinkCode error',e);
-    contentEl.innerHTML='<div class="line-link-error">❌ 通信エラーが発生しました</div>'+
-      '<button class="line-link-btn-issue" style="margin-top:10px;" onclick="issueLineLinkCode()">再試行</button>';
-  }
-}
-
-function showLineLinkCode(code,expiresAt){
-  var contentEl=document.getElementById('line-link-content');
-  if(!contentEl) return;
-  contentEl.innerHTML=
-    '<div class="line-link-code-display">'+
-      '<div class="line-link-code-label">📱 連携コード</div>'+
-      '<div class="line-link-code-value">'+code+'</div>'+
-      '<div class="line-link-countdown" id="line-link-countdown">⏰ 残り時間を計算中...</div>'+
-    '</div>'+
-    '<div class="line-link-instruction">'+
-      '<strong>📌 連携手順</strong><br>'+
-      '1. 下のボタンからMyCoach公式LINEを開く<br>'+
-      '2. 友だち追加(初回のみ)<br>'+
-      '3. トーク画面で <strong>'+code+'</strong> を送信'+
-    '</div>'+
-    '<div class="line-link-actions">'+
-      '<a href="https://lin.ee/VkQyw4n" target="_blank" class="line-link-btn-open">'+
-        '<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/></svg>'+
-        'MyCoach公式LINEを開く'+
-      '</a>'+
-      '<button class="line-link-btn-reissue" onclick="issueLineLinkCode()">コードを再発行</button>'+
-    '</div>';
-  startLineLinkCountdown(expiresAt);
-}
-
-function startLineLinkCountdown(expiresAt){
-  stopLineLinkCountdown();
-  var update=function(){
-    var now=Date.now();
-    var diff=expiresAt-now;
-    var el=document.getElementById('line-link-countdown');
-    if(!el) return;
-    if(diff<=0){
-      el.textContent='⏰ コードの有効期限が切れました';
-      el.classList.add('expired');
-      stopLineLinkCountdown();
-      return;
-    }
-    var totalSec=Math.floor(diff/1000);
-    var min=Math.floor(totalSec/60);
-    var sec=totalSec%60;
-    el.textContent='⏰ 残り '+min+':'+(sec<10?'0'+sec:sec);
-  };
-  update();
-  lineLinkCountdownTimer=setInterval(update,1000);
-}
-
-function stopLineLinkCountdown(){
-  if(lineLinkCountdownTimer){
-    clearInterval(lineLinkCountdownTimer);
-    lineLinkCountdownTimer=null;
-  }
-}
-
-function startLineLinkPolling(){
-  stopLineLinkPolling();
-  lineLinkPollingTimer=setInterval(async function(){
-    if(!currentUserId){stopLineLinkPolling();return;}
-    try{
-      var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
-      if(data&&data.line_user_id){
-        stopLineLinkTimers();
-        updateLineLinkStatus(data.line_user_id);
-        alert('✅ LINE連携が完了しました!');
-      }
-    }catch(e){console.warn('polling error',e);}
-  },5000);
-}
-
-function stopLineLinkPolling(){
-  if(lineLinkPollingTimer){
-    clearInterval(lineLinkPollingTimer);
-    lineLinkPollingTimer=null;
-  }
-}
-
-function stopLineLinkTimers(){
-  stopLineLinkCountdown();
-  stopLineLinkPolling();
-}
-
-var cancelRequestBookingId=null;
-var cancelRequestTotalPrice=0;
-
-function openCancelRequestModal(bookingId,totalPrice){
-  cancelRequestBookingId=bookingId;
-  cancelRequestTotalPrice=parseInt(totalPrice)||0;
-  var booking=null;
-  if(allBookings){
-    for(var i=0;i<allBookings.length;i++){
-      if(allBookings[i].id===bookingId){booking=allBookings[i];break;}
-    }
-  }
-  var refundCalc=calculateRefundForCancel(booking,cancelRequestTotalPrice);
-  cancelRequestPolicy=refundCalc.policy;
-  cancelRequestRefundAmount=refundCalc.refundAmount;
-  cancelRequestCancelFee=refundCalc.cancelFee;
-  var policyLabelEl=document.getElementById('cancel-policy-applied');
-  if(policyLabelEl){
-    if(refundCalc.policy==='full_refund') policyLabelEl.textContent='✅ 適用ポリシー:48時間以上前(全額返金)';
-    else if(refundCalc.policy==='half_refund') policyLabelEl.textContent='⚠️ 適用ポリシー:48時間以内(50%返金)';
-    else policyLabelEl.textContent='🚫 適用ポリシー:当日キャンセル(返金なし)';
-    policyLabelEl.style.color=refundCalc.policy==='no_refund'?'#B71C1C':refundCalc.policy==='half_refund'?'#E65100':'#2E7D32';
-  }
-  document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString();
-  document.getElementById('cancel-fee-display').textContent='¥'+refundCalc.cancelFee.toLocaleString();
-  document.getElementById('cancel-refund-display').textContent='¥'+refundCalc.refundAmount.toLocaleString();
-  document.getElementById('cancel-reason-category').value='';
-  document.getElementById('cancel-reason-text').value='';
-  document.getElementById('cancel-agree-chk').checked=false;
-  document.getElementById('cancel-submit-btn').disabled=true;
+  
+  document.getElementById('cancel-reason-category').value = '';
+  document.getElementById('cancel-reason-text').value = '';
+  document.getElementById('cancel-agree-chk').checked = false;
+  document.getElementById('cancel-submit-btn').disabled = true;
+  
   closeBookingDetail();
   document.getElementById('cancel-request-modal').classList.add('open');
 }
 
-function calculateRefundForCancel(booking,totalPrice){
-  var STRIPE_FEE_RATE=0.036;
-  var stripeFee=Math.round(totalPrice*STRIPE_FEE_RATE);
-  if(!booking||!booking.booking_date){
-    return {policy:'full_refund',cancelFee:stripeFee,refundAmount:totalPrice-stripeFee};
-  }
-  var timeStr=(booking.booking_time||'00:00:00').substring(0,8);
-  var lessonDateTime=new Date(booking.booking_date+'T'+timeStr+'+09:00');
-  var now=new Date();
-  var hoursUntilLesson=(lessonDateTime-now)/(1000*60*60);
-  if(hoursUntilLesson>=48){
-    return {policy:'full_refund',cancelFee:stripeFee,refundAmount:totalPrice-stripeFee};
-  }else if(hoursUntilLesson>=24){
-    var halfFee=Math.round(totalPrice*0.5);
-    var fee2=halfFee+stripeFee;
-    return {policy:'half_refund',cancelFee:fee2,refundAmount:totalPrice-fee2};
-  }else{
-    var eightyFee=Math.round(totalPrice*0.8);
-    var fee3=eightyFee+stripeFee;
-    return {policy:'sameday_refund',cancelFee:fee3,refundAmount:totalPrice-fee3};
-  }
-}
-
-var cancelRequestPolicy='full_refund';
-var cancelRequestRefundAmount=0;
-var cancelRequestCancelFee=0;
-
-function closeCancelRequestModal(){
+function closeCancelRequestModal() {
   document.getElementById('cancel-request-modal').classList.remove('open');
-  cancelRequestBookingId=null;
-  cancelRequestTotalPrice=0;
+  currentCancelRequestBookingId = null;
 }
 
-function checkCancelAgree(){
-  var chk=document.getElementById('cancel-agree-chk');
-  var btn=document.getElementById('cancel-submit-btn');
-  if(btn) btn.disabled=!chk.checked;
+function checkCancelAgree() {
+  document.getElementById('cancel-submit-btn').disabled = !document.getElementById('cancel-agree-chk').checked;
 }
 
-async function submitCancelRequest(){
-  if(!cancelRequestBookingId){alert('予約情報が取得できません');return;}
-  var category=document.getElementById('cancel-reason-category').value;
-  var reasonText=document.getElementById('cancel-reason-text').value.trim();
-  var agreeChk=document.getElementById('cancel-agree-chk').checked;
-  if(!agreeChk){alert('キャンセルポリシーに同意してください');return;}
-  if(!category){alert('キャンセル理由を選択してください');return;}
-  if(!reasonText){alert('キャンセル理由の詳細を入力してください');return;}
-  var policyText=cancelRequestPolicy==='full_refund'?'全額返金(48時間以上前)':cancelRequestPolicy==='half_refund'?'50%返金(24~48時間前)':'20%返金(24時間以内・当日)';
-  var confirmMsg='【最終確認】\n\n本当にこのご予約をキャンセルしますか?\n\n'+
-    '■ 適用ポリシー:\n'+policyText+'\n\n'+
-    '■ 返金内容:\n'+
-    '・決済額:¥'+cancelRequestTotalPrice.toLocaleString()+'\n'+
-    '・キャンセル料:¥'+cancelRequestCancelFee.toLocaleString()+'\n'+
-    '・返金額:¥'+cancelRequestRefundAmount.toLocaleString()+'\n\n'+
-    '※この処理は取り消せません。\n'+
-    '※返金は数日以内にカード会社経由で反映されます。\n\n'+
-    'よろしいですか?';
-  if(!confirm(confirmMsg)){return;}
-  var btn=document.getElementById('cancel-submit-btn');
-  btn.disabled=true;
-  btn.textContent='処理中...';
-  try{
-    var resp=await fetch('/.netlify/functions/customer-cancel-request',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        booking_id:cancelRequestBookingId,
-        reason_category:category,
-        reason_text:reasonText
+async function submitCancelRequest() {
+  if (!currentCancelRequestBookingId) return;
+  const reasonCategory = document.getElementById('cancel-reason-category').value;
+  const reasonText = document.getElementById('cancel-reason-text').value.trim();
+  if (!reasonCategory) { alert('キャンセル理由を選択してください'); return; }
+  if (!reasonText) { alert('詳細をご記入ください'); return; }
+  const btn = document.getElementById('cancel-submit-btn');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  try {
+    const res = await fetch('/.netlify/functions/customer-cancel-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        booking_id: currentCancelRequestBookingId,
+        reason_category: reasonCategory,
+        reason_text: reasonText,
       })
     });
-    var json=await resp.json();
-    if(!resp.ok||!json.ok){
-      alert('キャンセル処理に失敗しました\n'+(json.error||'不明なエラー'));
-      btn.disabled=false;
-      btn.textContent='キャンセル申請を送信';
-      return;
+    const json = await res.json();
+    if (json.ok) {
+      alert('✅ キャンセル申請を送信しました。\n返金額:¥' + (json.refund_amount||0).toLocaleString());
+      closeCancelRequestModal();
+      await loadBookings();
+    } else {
+      alert('エラー:' + (json.error || '不明なエラー'));
+      btn.disabled = false;
+      btn.textContent = 'キャンセル申請を送信';
     }
-    var successMsg='✅ キャンセル処理が完了しました\n\n';
-    if(json.refund_amount>0){
-      successMsg+='返金額:¥'+(json.refund_amount||0).toLocaleString()+'\n';
-      successMsg+='\n返金は数日以内にご利用のクレジットカードへ反映されます。';
-    }else{
-      successMsg+='当日キャンセルのため、返金はございません。';
-    }
-    alert(successMsg);
-    closeCancelRequestModal();
-    loadBookings();
-  }catch(e){
-    console.error('submitCancelRequest error',e);
-    alert('通信エラー:'+e.message);
-    btn.disabled=false;
-    btn.textContent='キャンセル申請を送信';
+  } catch (e) {
+    console.error('submitCancelRequest error:', e);
+    alert('通信エラーが発生しました');
+    btn.disabled = false;
+    btn.textContent = 'キャンセル申請を送信';
   }
+}
+
+async function loadReviews() {
+  document.getElementById('review-pending-list').innerHTML = '<div style="text-align:center;padding:24px;color:#888;font-size:12px;">レビュー機能は次の更新で実装予定</div>';
 }
 </script>
 </body>
