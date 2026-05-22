@@ -63,7 +63,7 @@ body::before{
 .coach-photo{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;border:1px solid var(--line-strong);overflow:hidden;}
 .coach-photo img{width:100%;height:100%;object-fit:cover;}
 .coach-info{flex:1;min-width:0;}
-.coach-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;}
+.coach-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .coach-star{font-size:11px;color:#FFD27A;font-weight:700;background:rgba(255,210,122,0.1);padding:2px 8px;border-radius:100px;border:1px solid rgba(255,210,122,0.3);}
 .coach-star-zero{color:var(--muted);background:rgba(101,206,165,0.04);border-color:var(--line);}
 .coach-meta{font-size:11px;color:var(--muted);margin-top:3px;}
@@ -76,6 +76,9 @@ body::before{
 .pill-active{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
 .pill-pending{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
 .pill-stopped{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+.pill-hidden{background:rgba(255,210,122,0.2);color:var(--yellow);border:1px solid var(--yellow);}
+.pill-blocked{background:rgba(255,138,138,0.2);color:var(--red);border:1px solid var(--red);}
+.pill-rejected{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
 
 /* タブ */
 .tabs{display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:12px;padding:4px;}
@@ -139,9 +142,9 @@ let currentTab='all';
 })();
 
 async function loadCoaches(){
-  /* コーチ取得 */
+  /* コーチ取得(coach_status, is_rejected を追加) */
   const{data,error}=await sb.from('coaches')
-    .select('id,name,photo_url,is_approved,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,created_at')
+    .select('id,name,photo_url,is_approved,is_rejected,coach_status,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,created_at')
     .eq('store_key',STORE_KEY)
     .order('is_approved',{ascending:false})
     .order('created_at',{ascending:false});
@@ -154,7 +157,7 @@ async function loadCoaches(){
 
   /* KPI集計 */
   const active=allCoaches.filter(c=>c.is_approved);
-  const pending=allCoaches.filter(c=>!c.is_approved);
+  const pending=allCoaches.filter(c=>!c.is_approved&&!c.is_rejected);
   const stripeOK=active.filter(c=>c.stripe_charges_enabled&&c.stripe_payouts_enabled);
 
   document.getElementById('kpi-active').innerHTML=active.length+'<span class="u">名</span>';
@@ -225,7 +228,7 @@ async function loadCoaches(){
 function renderList(){
   let filtered=allCoaches;
   if(currentTab==='active') filtered=allCoaches.filter(c=>c.is_approved);
-  if(currentTab==='pending') filtered=allCoaches.filter(c=>!c.is_approved);
+  if(currentTab==='pending') filtered=allCoaches.filter(c=>!c.is_approved&&!c.is_rejected);
 
   if(filtered.length===0){
     document.getElementById('coach-list').innerHTML='<div class="empty">該当するコーチがいません</div>';
@@ -238,14 +241,30 @@ function renderList(){
   const html=filtered.map(c=>{
     const initial=(c.name||'?').charAt(0);
     const photo=c.photo_url?`<img src="${c.photo_url}" alt="">`:initial;
-    let pill='';
-    if(!c.is_approved){
-      pill='<span class="pill pill-pending">未承認</span>';
-    }else if(!c.stripe_charges_enabled||!c.stripe_payouts_enabled){
-      pill='<span class="pill pill-pending">Stripe未完了</span>';
+
+    /* ピル表示ロジック(複数表示対応) */
+    const pills=[];
+    const status=c.coach_status||'active';
+
+    if(c.is_rejected){
+      pills.push('<span class="pill pill-rejected">却下済</span>');
+    }else if(!c.is_approved){
+      pills.push('<span class="pill pill-pending">未承認</span>');
+    }else if(status==='hidden'){
+      pills.push('<span class="pill pill-hidden">👁 お客様非表示</span>');
+    }else if(status==='blocked'){
+      pills.push('<span class="pill pill-blocked">🚫 ブロック中</span>');
     }else{
-      pill='<span class="pill pill-active">稼働中</span>';
+      pills.push('<span class="pill pill-active">稼働中</span>');
     }
+
+    /* Stripe状態を追加で表示(承認済のみ) */
+    if(c.is_approved&&!c.is_rejected){
+      if(!c.stripe_charges_enabled||!c.stripe_payouts_enabled){
+        pills.push('<span class="pill pill-pending">Stripe未完了</span>');
+      }
+    }
+
     /* ★表示 */
     const reviewAvg=c._reviewAvg||0;
     const reviewCount=c._reviewCount||0;
@@ -259,7 +278,7 @@ function renderList(){
       <a class="coach-card" href="store_v2_coach_detail.html?id=${c.id}">
         <div class="coach-photo">${photo}</div>
         <div class="coach-info">
-          <div class="coach-name">${escapeHtml(c.name||'(名前未設定)')} ${starDisplay} ${pill}</div>
+          <div class="coach-name">${escapeHtml(c.name||'(名前未設定)')} ${starDisplay} ${pills.join(' ')}</div>
           <div class="coach-meta">${escapeHtml(c.license||'')} ${reviewCount>0?'· '+reviewCount+'件のレビュー':'· レビュー未投稿'}</div>
           <div class="coach-stats">
             <span>予約 <strong>${c._monthCount||0}件</strong></span>
