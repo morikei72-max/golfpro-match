@@ -111,15 +111,15 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
     <span class="coach-badge">COACH REGISTRATION</span>
   </div>
 
-  <div class="progress-label">STEP 7 OF 7 — FINAL</div>
+  <div class="progress-label">STEP 6 OF 7</div>
   <div class="progress">
     <div class="progress-dot done"></div>
     <div class="progress-dot done"></div>
     <div class="progress-dot done"></div>
     <div class="progress-dot done"></div>
     <div class="progress-dot done"></div>
-    <div class="progress-dot done"></div>
     <div class="progress-dot active"></div>
+    <div class="progress-dot"></div>
   </div>
 
   <div class="glass-card">
@@ -128,7 +128,7 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
     <div id="before-linked">
       <div class="section-title">LINE <span class="accent">Linking</span></div>
       <div class="section-sub">
-        最後のステップ:公式LINEと連携してください<br>
+        次のステップ:公式LINEと連携してください<br>
         予約・承認依頼などの通知に必須です
       </div>
 
@@ -189,18 +189,17 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
         <div class="success-icon">🎉</div>
         <div class="success-title">LINE連携が完了しました!</div>
         <div class="success-sub">
-          コーチ登録が完了しました<br>
-          本部承認をお待ちください
+          最後のステップ:利用規約のご確認です
         </div>
         <div class="success-detail">
           <strong>📋 次の流れ</strong><br>
-          ・本部が登録内容を確認します(通常1〜2営業日)<br>
-          ・承認完了時に LINE でお知らせします<br>
-          ・承認後、コーチホーム画面で予約承認が可能になります
+          ・利用規約をご確認いただきます<br>
+          ・同意後、本部による登録審査が始まります<br>
+          ・承認完了時に LINE でお知らせします
         </div>
         <div style="text-align:center;color:rgba(255,255,255,0.7);font-size:11px;padding:14px 0 0;">
           <span class="spinner"></span>
-          コーチホームへ進みます...
+          利用規約画面へ進みます...
         </div>
       </div>
     </div>
@@ -387,16 +386,10 @@ function showLinkedSuccess(){
   document.getElementById('before-linked').style.display='none';
   document.getElementById('after-linked').style.display='block';
 
-  /* status を 'pending_approval' に更新(本部承認待ち) */
-  sb.from('coaches').update({
-    status:'pending_approval',
-    updated_at:new Date().toISOString()
-  }).eq('user_id',currentUserId).then(function(){
-    /* 3秒後にコーチホームへ遷移 */
-    setTimeout(function(){
-      window.location.href='coach.html';
-    },3000);
-  });
+  /* 3秒後に規約同意画面へ遷移(本部承認待ち status 更新は規約同意時に実行) */
+  setTimeout(function(){
+    window.location.href='coach_onboarding_step7.html';
+  },3000);
 }
 
 /* ページ離脱時にタイマーをクリーンアップ */

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MyCoach">
+<title>MyCoach — コーチ登録 利用規約同意</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{--brown-deep:#1a1200;--brown-base:#3d2a05;--brown-mid:#6b4a14;--orange-bright:#BA7517;--orange-light:#E89C3E;--gold:#D4A85C;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);}
+html,body{font-family:'Noto Sans JP',sans-serif;min-height:100vh;color:var(--white);background:var(--brown-deep);}
+body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;}
+.bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(232,156,62,0.18),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(212,168,92,0.1),transparent 60%),linear-gradient(180deg,#1a1200 0%,#3d2a05 50%,#0f0900 100%);}
+.bg-noise{position:fixed;inset:0;z-index:1;opacity:0.05;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.glow-orb{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:1;}
+.orb-1{width:280px;height:280px;background:radial-gradient(circle,rgba(232,156,62,0.4),transparent 70%);top:-80px;right:-80px;}
+.orb-2{width:240px;height:240px;background:radial-gradient(circle,rgba(212,168,92,0.2),transparent 70%);bottom:-60px;left:-60px;}
+.wrap{position:relative;z-index:2;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;padding:30px 0;}
+.brand{text-align:center;margin-bottom:20px;}
+.brand-mark{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px;}
+.brand-line{width:2px;height:24px;background:linear-gradient(180deg,var(--gold),var(--orange-bright));border-radius:1px;}
+.brand-text{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:1px;background:linear-gradient(135deg,var(--white) 30%,var(--orange-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.brand-tagline{display:inline-block;font-size:8px;letter-spacing:4px;color:var(--gold);background:rgba(212,168,92,0.1);border:1px solid rgba(212,168,92,0.3);padding:3px 10px;border-radius:10px;text-transform:uppercase;}
+.progress-label{text-align:center;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;}
+.progress{display:flex;align-items:center;gap:6px;margin-bottom:24px;justify-content:center;}
+.progress-dot{width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);}
+.progress-dot.active{background:linear-gradient(90deg,var(--gold),var(--orange-bright));box-shadow:0 0 12px rgba(212,168,92,0.35);}
+.progress-dot.done{background:var(--orange-bright);opacity:0.6;}
+.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:28px 22px;position:relative;}
+.glass-card::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05) 50%,rgba(212,168,92,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
+.section-title{font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px;text-align:center;}
+.section-title .accent{color:var(--orange-light);font-family:'Cormorant Garamond',serif;font-weight:600;}
+.section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:18px;letter-spacing:0.5px;line-height:1.6;}
+.coach-badge{display:inline-block;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;font-size:9px;letter-spacing:3px;padding:4px 12px;border-radius:8px;margin-bottom:8px;font-weight:700;text-transform:uppercase;}
+/* 規約本文エリア */
+.terms-box{background:rgba(0,0,0,0.25);border:1px solid rgba(212,168,92,0.2);border-radius:12px;padding:16px 14px;margin-bottom:16px;max-height:400px;overflow-y:scroll;font-size:11px;line-height:1.7;color:rgba(255,255,255,0.85);}
+.terms-box::-webkit-scrollbar{width:6px;}
+.terms-box::-webkit-scrollbar-track{background:rgba(255,255,255,0.05);border-radius:3px;}
+.terms-box::-webkit-scrollbar-thumb{background:rgba(212,168,92,0.4);border-radius:3px;}
+.terms-title-main{font-size:14px;font-weight:700;color:var(--orange-light);text-align:center;margin-bottom:4px;}
+.terms-title-sub{font-size:10px;color:var(--text-faint);text-align:center;margin-bottom:14px;}
+.terms-article-title{font-size:12px;font-weight:700;color:var(--gold);margin-top:14px;margin-bottom:6px;border-bottom:1px solid rgba(212,168,92,0.2);padding-bottom:3px;}
+.terms-section-title{font-size:11px;font-weight:700;color:var(--orange-light);margin-top:8px;margin-bottom:4px;}
+.terms-list{margin:4px 0 4px 16px;padding:0;}
+.terms-list li{margin-bottom:3px;}
+.terms-footer{margin-top:16px;padding-top:10px;border-top:1px solid rgba(212,168,92,0.2);text-align:center;font-size:10px;color:var(--text-faint);}
+/* 同意チェックボックス */
+.consent-box{background:rgba(212,168,92,0.08);border:1px solid rgba(212,168,92,0.25);border-radius:12px;padding:14px;margin-bottom:18px;}
+.consent-title{font-size:12px;font-weight:700;color:var(--gold);margin-bottom:10px;text-align:center;letter-spacing:1px;}
+.consent-item{display:flex;align-items:flex-start;gap:10px;padding:8px 4px;cursor:pointer;transition:background 0.15s;border-radius:8px;}
+.consent-item:hover{background:rgba(255,255,255,0.03);}
+.consent-checkbox{flex-shrink:0;width:22px;height:22px;border:2px solid var(--orange-light);border-radius:6px;background:rgba(0,0,0,0.3);position:relative;cursor:pointer;transition:all 0.2s;margin-top:1px;}
+.consent-checkbox.checked{background:var(--orange-bright);border-color:var(--orange-bright);}
+.consent-checkbox.checked::after{content:'';position:absolute;top:3px;left:7px;width:5px;height:11px;border:solid white;border-width:0 2.5px 2.5px 0;transform:rotate(45deg);}
+.consent-text{font-size:12px;color:var(--white);line-height:1.5;flex:1;}
+/* 同意ボタン */
+.agree-btn{width:100%;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:var(--white);border:none;padding:16px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(186,117,23,0.3);transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.agree-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(186,117,23,0.4);}
+.agree-btn:disabled{opacity:0.4;cursor:not-allowed;background:rgba(255,255,255,0.1);box-shadow:none;}
+.agree-btn svg{width:18px;height:18px;}
+.btn-note{text-align:center;font-size:10px;color:var(--text-faint);margin-top:10px;line-height:1.5;}
+/* エラー表示 */
+.err-msg{background:rgba(255,80,80,0.15);border:1px solid rgba(255,80,80,0.4);border-radius:10px;padding:10px 12px;font-size:11px;color:#ff9a9a;margin-bottom:14px;text-align:center;display:none;}
+.err-msg.show{display:block;}
+/* 完了画面 */
+.success-overlay{position:fixed;inset:0;z-index:100;background:rgba(26,18,0,0.95);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;}
+.success-overlay.show{display:flex;}
+.success-content{max-width:340px;text-align:center;}
+.success-icon{font-size:80px;margin-bottom:16px;animation:pop 0.6s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes pop{0%{transform:scale(0);opacity:0;}60%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
+.success-title{font-size:24px;font-weight:700;color:var(--white);margin-bottom:12px;}
+.success-sub{font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:20px;}
+.success-detail{background:rgba(212,168,92,0.1);border:1px solid rgba(212,168,92,0.25);border-radius:12px;padding:14px;font-size:12px;color:var(--text-sub);line-height:1.7;text-align:left;}
+.success-detail strong{color:var(--gold);font-weight:700;}
+.spinner-success{display:inline-block;width:14px;height:14px;border:2px solid rgba(212,168,92,0.3);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loader-text{margin-top:18px;font-size:11px;color:var(--text-faint);}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="bg-noise"></div>
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+
+<div class="wrap">
+
+  <div class="brand">
+    <div class="brand-mark">
+      <div class="brand-line"></div>
+      <div class="brand-text">MyCoach</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="brand-tagline">For Golf Coaches</div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:12px;">
+    <span class="coach-badge">COACH REGISTRATION</span>
+  </div>
+
+  <div class="progress-label">STEP 7 OF 7 — FINAL</div>
+  <div class="progress">
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot done"></div>
+    <div class="progress-dot active"></div>
+  </div>
+
+  <div class="glass-card">
+    <div class="section-title">Terms <span class="accent">of Service</span></div>
+    <div class="section-sub">
+      最後のステップ:利用規約をご確認ください<br>
+      内容にご同意いただいた上で、登録を完了します
+    </div>
+
+    <div class="err-msg" id="err-msg"></div>
+
+    <!-- 規約本文 -->
+    <div class="terms-box" id="terms-box">
+      <div class="terms-title-main">MyCoach コーチ利用規約</div>
+      <div class="terms-title-sub">制定日:2026年5月22日 / 運営者:株式会社ケイエスケー</div>
+
+      <div class="terms-article-title">第1条(総則)</div>
+      <ol class="terms-list">
+        <li>本規約は、株式会社ケイエスケー(以下「当社」といいます)が運営するゴルフコーチマッチングプラットフォーム「MyCoach」(以下「本サービス」といいます)において、コーチとして登録および活動する者(以下「コーチ」といいます)と当社との間の権利義務関係を定めるものです。</li>
+        <li>コーチは、本規約に同意の上、本サービスに登録するものとします。本サービスの利用をもって、本規約のすべての条項に同意したものとみなします。</li>
+      </ol>
+
+      <div class="terms-article-title">第2条(コーチの地位)</div>
+      <ol class="terms-list">
+        <li>本サービスは、コーチと利用者(以下「お客様」といいます)とのマッチングの場を提供するプラットフォームです。</li>
+        <li>コーチは、当社および店舗から業務上の指揮命令を受ける労働者ではなく、独立した事業者として活動するものとします。</li>
+        <li>レッスンの内容、方法、スケジュール、料金は、コーチが自ら決定するものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第3条(料金および収益分配)</div>
+      <ol class="terms-list">
+        <li>お客様がコーチに支払う料金からは、以下の手数料が控除されます。
+          <ul class="terms-list">
+            <li>決済手数料(Stripe):3.6%</li>
+            <li>本部運営手数料(店舗運営費を含む):16.4%</li>
+          </ul>
+        </li>
+        <li>上記控除後の金額(80%)が、コーチへの支払額となります。</li>
+        <li>コーチへの支払いは、Stripe Connect を通じて行われます。</li>
+        <li>当社は、店舗の運営状況その他の事情により、前項の比率を変更することができるものとします。変更にあたっては、事前にコーチに通知するものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第4条(請求書および領収書)</div>
+      <ol class="terms-list">
+        <li>当社(インボイス登録番号:T1130001070904)は、お客様への請求書および領収書を発行します。</li>
+        <li>コーチへの支払いは、業務委託費として処理します。</li>
+        <li>インボイス未登録のコーチも本サービスに登録することができます。</li>
+      </ol>
+
+      <div class="terms-article-title">第5条(予約のキャンセル)</div>
+      <ol class="terms-list">
+        <li>お客様による予約キャンセルが発生した場合、以下の返金規定が適用されます。
+          <ul class="terms-list">
+            <li>48時間以上前のキャンセル:お客様支払額の96.4%を返金</li>
+            <li>24時間以上48時間未満のキャンセル:お客様支払額の46.4%を返金</li>
+            <li>24時間未満のキャンセル:お客様支払額の16.4%を返金</li>
+          </ul>
+        </li>
+        <li>コーチ都合によるキャンセルが発生した場合、お客様への全額返金とします。コーチ都合のキャンセルが繰り返し発生した場合、当社および店舗は活動制限その他の措置を講じることができるものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第6条(コーチ評価制度)</div>
+      <ol class="terms-list">
+        <li>お客様は、レッスン完了後、コーチに対して5段階の星評価およびコメントを投稿することができます。</li>
+        <li>評価およびコメントは、本サービス上に公開されるものとします。</li>
+        <li>コーチは、評価に対する異議申立てを当社に行うことができますが、最終判断は当社が行うものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第7条(禁止事項)</div>
+      <p style="margin-bottom:6px;">コーチは、本サービスの利用にあたり、以下の行為を行ってはなりません。</p>
+
+      <div class="terms-section-title">(1)マナーに関する事項</div>
+      <ul class="terms-list">
+        <li>お客様、他のコーチ、店舗スタッフ、施設利用者その他関係者に対し、不快な思いをさせる言動</li>
+        <li>暴言、暴力、ハラスメント、威圧的態度</li>
+        <li>施設内での飲酒、喫煙、薬物使用</li>
+        <li>レッスン中の私語、スマートフォン操作その他レッスンに集中しない行為</li>
+        <li>不適切な服装および身だしなみ</li>
+      </ul>
+
+      <div class="terms-section-title">(2)取引に関する事項</div>
+      <ul class="terms-list">
+        <li>詐欺行為および詐欺的な勧誘</li>
+        <li>本サービスを経由しない、お客様との直接取引(連絡先の交換、別アプリへの誘導、現金授受等を含みます)</li>
+        <li>他のコーチ、店舗、本サービスからのお客様の引き抜き行為</li>
+        <li>他のコーチの引き抜き、勧誘行為</li>
+        <li>お客様に対する規定外の金銭要求</li>
+      </ul>
+
+      <div class="terms-section-title">(3)情報・信用に関する事項</div>
+      <ul class="terms-list">
+        <li>経歴、資格、所属その他登録情報の虚偽記載</li>
+        <li>第三者の写真、文章、資格情報等の無断使用</li>
+        <li>お客様の個人情報の業務目的外利用および第三者への漏洩</li>
+        <li>レッスン外におけるお客様への私的接触</li>
+        <li>当社、店舗、他のコーチ、お客様に対する誹謗中傷</li>
+        <li>本サービスの信用を毀損する行為</li>
+      </ul>
+
+      <div class="terms-section-title">(4)その他</div>
+      <ul class="terms-list">
+        <li>施設設備、備品の損壊</li>
+        <li>店舗および当社の定めるルールへの違反</li>
+        <li>法令違反行為</li>
+        <li>その他、当社または店舗が不適切と判断する行為</li>
+      </ul>
+
+      <div class="terms-article-title">第8条(登録の取消し)</div>
+      <ol class="terms-list">
+        <li>当社および所属店舗は、コーチが次の各号のいずれかに該当する場合、コーチの登録を取り消すことができるものとします。
+          <ul class="terms-list">
+            <li>第7条の禁止事項に違反した場合</li>
+            <li>登録情報に虚偽が判明した場合</li>
+            <li>お客様からの苦情、低評価が継続的に発生した場合</li>
+            <li>店舗の運営方針に協力的でないと店舗が判断した場合</li>
+            <li>コーチの態度、接客、マナーが店舗の方針にそぐわないと店舗が判断した場合</li>
+            <li>その他、当社または店舗が活動継続を不適切と判断した場合</li>
+          </ul>
+        </li>
+        <li>所属店舗が当社に対しコーチの登録取消しを申し出た場合、当社はこれを尊重するものとし、コーチは店舗の判断に従うものとします。</li>
+        <li>登録を取り消されたコーチは、当社の承認なく再登録することはできません。</li>
+      </ol>
+
+      <div class="terms-article-title">第9条(法的措置)</div>
+      <ol class="terms-list">
+        <li>第7条の禁止事項のうち、詐欺行為、引き抜き行為、直接取引、業務妨害、信用毀損その他重大な違反があった場合、当社および店舗は、登録取消しのほか、以下の措置を講じることができるものとします。
+          <ul class="terms-list">
+            <li>損害賠償の請求</li>
+            <li>警察への被害届の提出および刑事告訴</li>
+            <li>民事訴訟の提起</li>
+          </ul>
+        </li>
+        <li>前項の措置は、違反の程度および状況に応じて、当社および店舗の判断により決定するものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第10条(個人情報の取扱い)</div>
+      <ol class="terms-list">
+        <li>当社は、コーチおよびお客様の個人情報を、本サービスの提供および法令遵守の目的でのみ使用するものとします。</li>
+        <li>コーチは、本サービスを通じて取得したお客様の個人情報を、レッスン業務以外の目的(営業、宣伝、勧誘等を含みます)で使用してはなりません。</li>
+      </ol>
+
+      <div class="terms-article-title">第11条(当社の責任範囲)</div>
+      <ol class="terms-list">
+        <li>本サービスは、コーチとお客様とのマッチングの場を提供するものであり、当社は、コーチが提供するレッスン内容および結果について責任を負わないものとします。</li>
+        <li>コーチとお客様との間で紛争が発生した場合、当事者間で誠実に解決するものとします。当社および店舗は、必要に応じて調停に関与することができるものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第12条(規約の変更)</div>
+      <ol class="terms-list">
+        <li>当社は、必要に応じて本規約を変更することができるものとします。</li>
+        <li>重要な変更を行う場合、当社はコーチに通知の上、再同意を求めることができるものとします。</li>
+      </ol>
+
+      <div class="terms-article-title">第13条(準拠法および管轄)</div>
+      <ol class="terms-list">
+        <li>本規約の解釈および適用は、日本法に準拠するものとします。</li>
+        <li>本サービスに関連して当社とコーチとの間で紛争が生じた場合、京都地方裁判所を第一審の専属的合意管轄裁判所とします。</li>
+      </ol>
+
+      <div class="terms-footer">
+        — 以上 —<br>
+        制定日:2026年5月22日<br>
+        運営者:株式会社ケイエスケー
+      </div>
+    </div>
+
+    <!-- 同意チェックボックス -->
+    <div class="consent-box">
+      <div class="consent-title">📋 ご確認のお願い</div>
+
+      <div class="consent-item" onclick="toggleConsent(1)">
+        <div class="consent-checkbox" id="check-1"></div>
+        <div class="consent-text">上記の MyCoach コーチ利用規約をすべて確認し、同意します</div>
+      </div>
+
+      <div class="consent-item" onclick="toggleConsent(2)">
+        <div class="consent-checkbox" id="check-2"></div>
+        <div class="consent-text">登録情報に虚偽がないことを誓約します</div>
+      </div>
+    </div>
+
+    <!-- 同意ボタン -->
+    <button class="agree-btn" id="agree-btn" onclick="doAgree()" disabled>
+      同意して登録を完了する
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+
+    <div class="btn-note">
+      ※ 同意後、本部による登録審査が始まります<br>
+      ※ 承認完了時に LINE でお知らせします
+    </div>
+  </div>
+
+</div>
+
+<!-- 完了オーバーレイ -->
+<div class="success-overlay" id="success-overlay">
+  <div class="success-content">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">コーチ登録が完了しました!</div>
+    <div class="success-sub">
+      MyCoach へのご登録、誠にありがとうございます<br>
+      本部承認をお待ちください
+    </div>
+    <div class="success-detail">
+      <strong>📋 次の流れ</strong><br>
+      ・本部が登録内容を確認します(通常1〜2営業日)<br>
+      ・承認完了時に LINE でお知らせします<br>
+      ・承認後、コーチホーム画面で予約承認が可能になります
+    </div>
+    <div class="loader-text">
+      <span class="spinner-success"></span>
+      コーチホーム画面へ進みます...
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const TERMS_VERSION='v1.0';
+const{createClient}=supabase;
+const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const consents={1:false,2:false};
+let currentUserId=null;
+
+/* ページ読み込み時:認証チェック */
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){
+    window.location.replace('coach_login.html');
+    return;
+  }
+  currentUserId=session.user.id;
+
+  /* 既に同意済みの場合はコーチホームへ遷移 */
+  const{data:coachData}=await sb.from('coaches').select('terms_agreed_at').eq('user_id',currentUserId).maybeSingle();
+  if(coachData&&coachData.terms_agreed_at){
+    window.location.replace('coach.html');
+  }
+})();
+
+function toggleConsent(num){
+  consents[num]=!consents[num];
+  const el=document.getElementById('check-'+num);
+  if(consents[num]){
+    el.classList.add('checked');
+  }else{
+    el.classList.remove('checked');
+  }
+  updateButton();
+}
+
+function updateButton(){
+  const btn=document.getElementById('agree-btn');
+  const allChecked=consents[1]&&consents[2];
+  btn.disabled=!allChecked;
+}
+
+function showError(msg){
+  const el=document.getElementById('err-msg');
+  el.textContent=msg;
+  el.classList.add('show');
+  setTimeout(()=>{el.classList.remove('show');},5000);
+}
+
+async function doAgree(){
+  if(!consents[1]||!consents[2]){
+    showError('すべての項目にチェックしてください');
+    return;
+  }
+  if(!currentUserId){
+    showError('セッションが切れました。再度ログインしてください。');
+    setTimeout(()=>{window.location.replace('coach_login.html');},2000);
+    return;
+  }
+
+  const btn=document.getElementById('agree-btn');
+  btn.disabled=true;
+  btn.textContent='登録完了中...';
+
+  try{
+    /* coaches テーブルに規約同意日時・バージョン・status を更新 */
+    const{error}=await sb.from('coaches').update({
+      terms_agreed_at:new Date().toISOString(),
+      terms_version:TERMS_VERSION,
+      status:'pending_approval',
+      updated_at:new Date().toISOString()
+    }).eq('user_id',currentUserId);
+
+    if(error){
+      console.error('規約同意保存エラー',error);
+      showError('登録完了処理に失敗しました。再度お試しください。('+error.message+')');
+      btn.disabled=false;
+      btn.innerHTML='同意して登録を完了する <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      return;
+    }
+
+    /* 完了オーバーレイ表示 */
+    document.getElementById('success-overlay').classList.add('show');
+
+    /* 3秒後にコーチホームへ遷移 */
+    setTimeout(()=>{
+      window.location.href='coach.html';
+    },3000);
+  }catch(e){
+    console.error('予期しないエラー',e);
+    showError('予期しないエラーが発生しました');
+    btn.disabled=false;
+    btn.innerHTML='同意して登録を完了する <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  }
+}
+</script>
+</body>
+</html>
