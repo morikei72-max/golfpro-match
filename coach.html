@@ -19,6 +19,38 @@
 html,body{height:100%;background:#f0f7f4;}
 body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 
+/* ===== コーチ状態通知バナー(タスク追加) ===== */
+.coach-status-banner{
+  display:none;
+  padding:14px 16px;
+  margin:0 0 12px 0;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:700;
+  line-height:1.7;
+  border:2px solid;
+}
+.coach-status-banner.show{display:block;}
+.coach-status-banner.blocked{
+  background:#fff0f0;
+  color:#a01515;
+  border-color:var(--red);
+}
+.coach-status-banner.hidden-mode{
+  background:#fff8e1;
+  color:#633806;
+  border-color:var(--gold);
+}
+.coach-status-banner-title{
+  font-size:14px;
+  font-weight:900;
+  margin-bottom:4px;
+}
+.coach-status-banner-text{
+  font-size:12px;
+  font-weight:500;
+}
+
 /* ===== 店舗選択オーバーレイ ===== */
 .store-overlay{display:flex;position:fixed;inset:0;background:rgba(6,18,12,0.96);z-index:300;align-items:center;justify-content:center;flex-direction:column;padding:24px;}
 .store-overlay.hidden{display:none;}
@@ -448,9 +480,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 .daily-message-text{font-size:11px;color:var(--gd);line-height:1.6;}
 </style>
 </head>
-<body>
-
-<div class="store-overlay" id="store-overlay">
+<body><div class="store-overlay" id="store-overlay">
   <div class="store-logo">My<span>Coach</span></div>
   <div class="store-logo-sub">Golf Matching Service</div>
   <div class="store-overlay-title">担当店舗を選択してください</div>
@@ -493,6 +523,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
 </header>
 
 <main class="main">
+  <!-- ===== コーチ状態通知バナー(タスク追加) ===== -->
+  <div id="coach-status-banner" class="coach-status-banner"></div>
+
   <div id="msg-global" class="msg"></div>
 
   <div class="page active" id="page-home">
@@ -995,9 +1028,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <button class="tab-btn" onclick="switchTab('bookings',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>予約</span></button>
   <button class="tab-btn" onclick="switchTab('income',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>収入</span></button>
   <button class="tab-btn" onclick="switchTab('board',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>掲示板</span></button>
-</nav>
-
-<script>
+</nav><script>
 const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
@@ -1162,6 +1193,7 @@ let currentCoachId=null;
 let currentAuthId=null;
 let currentCoachEmail=null;
 let currentCoachName=null;
+let currentCoachStatus='active';
 let currentStore=null;
 let currentStoreId=null;
 let scheduleData={};
@@ -1178,6 +1210,23 @@ let idCardUrl=null;
 /* ===== タスク1:ステップ式UI 状態管理 ===== */
 let currentLessonType='indoor';
 let currentScheduleMode='week';
+
+/* ===== コーチ状態通知バナー更新(タスク追加) ===== */
+function updateCoachStatusBanner(){
+  const banner=document.getElementById('coach-status-banner');
+  if(!banner)return;
+  banner.className='coach-status-banner';
+  banner.innerHTML='';
+  if(currentCoachStatus==='blocked'){
+    banner.classList.add('show','blocked');
+    banner.innerHTML='<div class="coach-status-banner-title">🚫 あなたは現在ブロックされています</div>'
+      +'<div class="coach-status-banner-text">店舗管理者(GOLF Create 戸津池店)にご連絡ください。</div>';
+  }else if(currentCoachStatus==='hidden'){
+    banner.classList.add('show','hidden-mode');
+    banner.innerHTML='<div class="coach-status-banner-title">👁 現在お客様画面で非表示状態です</div>'
+      +'<div class="coach-status-banner-text">既存予約は通常対応してください。詳細は店舗管理者にご確認ください。</div>';
+  }
+}
 
 /* ===== 店舗データ読み込み(DB) ===== */
 async function loadStoresFromDB(){
@@ -1213,7 +1262,7 @@ async function loadStoresFromDB(){
 
   await loadStoresFromDB();
 
-  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,store_key,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted,id_card_url,id_card_status').eq('user_id',user.id).maybeSingle();
+  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,store_key,coach_status,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted,id_card_url,id_card_status').eq('user_id',user.id).maybeSingle();
   if(coachErr){console.error('coach取得エラー',coachErr);alert('❌ コーチ情報の取得に失敗しました: '+coachErr.message);return;}
   if(!coachRow){alert('❌ このアカウントにはコーチ情報が登録されていません。\n先にプロフィール画面で基本情報を保存してください。');}
   currentCoachId=coachRow?coachRow.id:null;
@@ -1221,6 +1270,10 @@ async function loadStoresFromDB(){
   currentCoachName=name;
   document.getElementById('coach-name').textContent=name;
   document.getElementById('welcome-name').textContent=name+'さん、こんにちは!';
+
+  /* ===== コーチ状態バナー更新(タスク追加) ===== */
+  currentCoachStatus=coachRow?.coach_status||'active';
+  updateCoachStatusBanner();
 
   stripeAccountId=coachRow?.stripe_account_id||null;
   stripeChargesEnabled=!!coachRow?.stripe_charges_enabled;
