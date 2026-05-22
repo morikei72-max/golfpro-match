@@ -19,20 +19,19 @@
   --muted:#7a9a8a;
   --red:#ff8a8a;
   --yellow:#FFD27A;
+  --orange:#FFA94D;
 }
 body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);}
 
 .wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
 
-/* ヘッダー */
 .head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
 .back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
 .page-title{flex:1;}
 .page-title h1{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
 .page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;}
 
-/* コーチプロフィール */
 .profile{background:linear-gradient(135deg,#064D3B,#0a3a2a);border:1px solid var(--line-strong);border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;}
 .profile::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(101,206,165,0.2),transparent 70%);}
 .profile-top{display:flex;align-items:center;gap:14px;position:relative;}
@@ -46,8 +45,22 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .pill-active{background:rgba(101,206,165,0.2);color:var(--main-light);border:1px solid var(--main);}
 .pill-pending{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
 .pill-warn{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+.pill-hidden{background:rgba(255,210,122,0.2);color:var(--yellow);border:1px solid var(--yellow);}
+.pill-blocked{background:rgba(255,138,138,0.2);color:var(--red);border:1px solid var(--red);}
 
-/* KPI */
+/* 操作ボタン群 */
+.action-panel{background:rgba(255,255,255,0.04);border:1px solid var(--line-strong);border-radius:18px;padding:16px;margin-bottom:14px;}
+.action-title{font-size:12px;font-weight:700;color:var(--main-light);margin-bottom:12px;letter-spacing:0.05em;}
+.action-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.action-btn{padding:14px 8px;border:none;border-radius:12px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+.action-btn:active{transform:scale(0.97);}
+.act-approve{background:linear-gradient(135deg,#3aa57c,#65CEA5);color:#fff;}
+.act-reject{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid var(--red);}
+.act-id{background:rgba(255,169,77,0.15);color:var(--orange);border:1px solid var(--orange);grid-column:span 2;}
+.act-hide{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid var(--yellow);}
+.act-block{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid var(--red);}
+.act-restore{background:linear-gradient(135deg,#3aa57c,#65CEA5);color:#fff;grid-column:span 2;}
+
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:14px;}
 .kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:14px;padding:14px;}
 .kpi .lab{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:6px;}
@@ -58,12 +71,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .kpi .d.warn{color:var(--yellow);}
 .kpi .d.dn{color:var(--red);}
 
-/* パネル */
 .panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
 .panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
 .panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
 
-/* グラフ */
 .chart{height:140px;display:flex;align-items:flex-end;gap:5px;padding-bottom:8px;border-bottom:1px solid var(--line);}
 .bar{flex:1;background:linear-gradient(180deg,var(--main),rgba(101,206,165,0.1));border-radius:4px 4px 0 0;opacity:0.5;}
 .bar.peak{opacity:1;background:linear-gradient(180deg,var(--main-light),var(--main));box-shadow:0 0 16px rgba(101,206,165,0.4);}
@@ -71,7 +82,6 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .chart-labels span{flex:1;text-align:center;}
 .chart-labels .now{color:var(--main);font-weight:700;}
 
-/* 予約行 */
 .row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);}
 .row:last-child{border-bottom:none;}
 .row .l-date{font-size:12px;font-weight:700;color:var(--main);width:60px;}
@@ -90,13 +100,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
 @keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 
-/* タブ */
 .tabs{display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:12px;padding:4px;}
 .tab{flex:1;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;}
 .tab.on{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;}
 
-/* セクションタイトル */
-.section-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;padding:0 4px;letter-spacing:0.05em;}
+/* 身分証モーダル */
+.id-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.id-modal-overlay.open{display:flex;}
+.id-modal-content{background:#0a1f1a;border:1px solid var(--line-strong);border-radius:14px;padding:20px;max-width:90vw;max-height:90vh;overflow-y:auto;width:600px;}
+.id-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--line);}
+.id-modal-title{font-size:14px;font-weight:700;color:#fff;}
+.id-modal-close{background:none;border:none;font-size:24px;color:var(--muted);cursor:pointer;}
+.id-modal-meta{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7;}
+.id-modal-body{text-align:center;background:#000;border-radius:8px;padding:10px;min-height:200px;}
+.id-modal-body img{max-width:100%;max-height:70vh;object-fit:contain;border-radius:6px;}
+.id-modal-body iframe{width:100%;height:60vh;border:none;border-radius:6px;background:#fff;}
+.id-modal-loading{font-size:13px;color:var(--muted);padding:60px 0;}
+.id-modal-warn{margin-top:10px;font-size:10px;color:var(--yellow);line-height:1.6;background:rgba(255,210,122,0.08);border:1px solid rgba(255,210,122,0.3);padding:8px 10px;border-radius:6px;}
 </style>
 </head>
 <body>
@@ -121,6 +141,12 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div class="profile-pills" id="p-pills"></div>
       </div>
     </div>
+  </div>
+
+  <!-- 操作ボタン群(動的表示) -->
+  <div class="action-panel" id="action-panel" style="display:none;">
+    <div class="action-title" id="action-title">操作</div>
+    <div class="action-btns" id="action-btns"></div>
   </div>
 
   <!-- KPI -->
@@ -177,6 +203,23 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 </div>
 
+<!-- 身分証プレビューモーダル -->
+<div class="id-modal-overlay" id="id-preview-modal" onclick="if(event.target===this)closeIdPreview()">
+  <div class="id-modal-content">
+    <div class="id-modal-header">
+      <div class="id-modal-title" id="id-modal-title">身分証明書プレビュー</div>
+      <button class="id-modal-close" onclick="closeIdPreview()">×</button>
+    </div>
+    <div class="id-modal-meta" id="id-modal-meta">読み込み中...</div>
+    <div class="id-modal-body" id="id-modal-body">
+      <div class="id-modal-loading">読み込み中...</div>
+    </div>
+    <div class="id-modal-warn">
+      ⚠️ この身分証画像は店舗管理者のみ閲覧可能です。本人確認・なりすまし防止・契約管理の目的でのみ使用してください。第三者への開示・転送は禁止です。
+    </div>
+  </div>
+</div>
+
 <script>
 const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -196,9 +239,8 @@ let bkgTab='recent';
 })();
 
 async function loadAll(){
-  /* コーチ情報 */
   const{data:coach,error}=await sb.from('coaches')
-    .select('id,name,photo_url,is_approved,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,bio,min_lesson,created_at,store_key')
+    .select('id,name,photo_url,is_approved,is_rejected,id_card_status,id_card_url,id_card_uploaded_at,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,bio,min_lesson,created_at,store_key,coach_status,email')
     .eq('id',coachId)
     .maybeSingle();
   if(error||!coach){
@@ -207,8 +249,8 @@ async function loadAll(){
   }
   coachData=coach;
   renderProfile();
+  renderActionPanel();
 
-  /* 全予約取得(過去6ヶ月分)*/
   const sixMonthAgo=new Date();sixMonthAgo.setMonth(sixMonthAgo.getMonth()-6);
   const{data:bkgs}=await sb.from('bookings')
     .select('id,total_price,status,booking_date,booking_time,lesson_type,customer_name,minutes')
@@ -218,31 +260,182 @@ async function loadAll(){
     .order('booking_time',{ascending:false});
   allBookings=bkgs||[];
 
-  /* KPI計算 */
   renderKPI();
-
-  /* グラフ */
   renderCharts();
-
-  /* 予約一覧 */
   renderBookings();
-
-  /* レビュー */
   await loadReviews();
-
-  /* 空き枠 */
   await loadSlots();
 }
 
+/* ===== 操作ボタンパネル描画 ===== */
+function renderActionPanel(){
+  const panel=document.getElementById('action-panel');
+  const titleEl=document.getElementById('action-title');
+  const btnsEl=document.getElementById('action-btns');
+  panel.style.display='block';
+
+  const status=coachData.coach_status||'active';
+  const isApproved=!!coachData.is_approved;
+  const isRejected=!!coachData.is_rejected;
+
+  let title='';
+  let html='';
+
+  if(!isApproved&&!isRejected){
+    /* 未承認(承認待ち)*/
+    title='⏳ 承認待ち · 操作を選択してください';
+    const hasIdCard=!!coachData.id_card_url;
+    html+='<button class="action-btn act-approve" onclick="approveCoach()">✅ 承認する</button>';
+    html+='<button class="action-btn act-reject" onclick="rejectCoach()">❌ 却下する</button>';
+    if(hasIdCard){
+      html+='<button class="action-btn act-id" onclick="viewIdCard()">🪪 身分証を確認する</button>';
+    }
+  }else if(isRejected){
+    /* 却下済 */
+    title='❌ 却下済 · 再審査する場合は承認してください';
+    html+='<button class="action-btn act-approve" onclick="approveCoach()">✅ 承認する(再審査)</button>';
+    const hasIdCard=!!coachData.id_card_url;
+    if(hasIdCard){
+      html+='<button class="action-btn act-id" onclick="viewIdCard()">🪪 身分証を確認する</button>';
+    }
+  }else if(status==='hidden'){
+    /* 休止中(お客様に非表示)*/
+    title='👁 お客様に非表示中 · 復活させる場合はボタンをタップ';
+    html+='<button class="action-btn act-restore" onclick="restoreCoach()">🔄 通常稼働に戻す</button>';
+  }else if(status==='blocked'){
+    /* ブロック中 */
+    title='🚫 ブロック中 · 復活させる場合はボタンをタップ';
+    html+='<button class="action-btn act-restore" onclick="restoreCoach()">🔄 通常稼働に戻す</button>';
+  }else{
+    /* 承認済・稼働中 */
+    title='✅ 稼働中 · お客様に表示中';
+    html+='<button class="action-btn act-hide" onclick="hideCoach()">👁 お客様に非表示</button>';
+    html+='<button class="action-btn act-block" onclick="blockCoach()">🚫 ブロック</button>';
+  }
+
+  titleEl.textContent=title;
+  btnsEl.innerHTML=html;
+}
+
+/* ===== 承認 ===== */
+async function approveCoach(){
+  if(!confirm('このコーチを承認しますか?\n\n承認後、コーチはお客様画面に表示され、予約を受け付けられるようになります。'))return;
+  const nowIso=new Date().toISOString();
+  const{error}=await sb.from('coaches').update({
+    is_approved:true,
+    is_rejected:false,
+    id_card_status:'approved',
+    coach_status:'active',
+    approved_at:nowIso,
+    updated_at:nowIso
+  }).eq('id',coachId);
+  if(error){alert('承認処理に失敗しました:'+error.message);return;}
+  alert('✅ コーチを承認しました');
+  await loadAll();
+}
+
+/* ===== 却下 ===== */
+async function rejectCoach(){
+  if(!confirm('このコーチを却下しますか?\n\n却下後、コーチはお客様画面に表示されません。'))return;
+  const nowIso=new Date().toISOString();
+  const{error}=await sb.from('coaches').update({
+    is_approved:false,
+    is_rejected:true,
+    id_card_status:'rejected',
+    rejected_at:nowIso,
+    updated_at:nowIso
+  }).eq('id',coachId);
+  if(error){alert('却下処理に失敗しました:'+error.message);return;}
+  alert('❌ コーチを却下しました');
+  await loadAll();
+}
+
+/* ===== 非表示(休止)===== */
+async function hideCoach(){
+  if(!confirm('このコーチをお客様画面で非表示にしますか?\n\n・既存予約はそのまま有効です\n・お客様予約画面に表示されなくなります\n・「通常稼働に戻す」でいつでも復活できます'))return;
+  const{error}=await sb.from('coaches').update({
+    coach_status:'hidden',
+    updated_at:new Date().toISOString()
+  }).eq('id',coachId);
+  if(error){alert('非表示処理に失敗しました:'+error.message);return;}
+  alert('👁 お客様画面で非表示にしました');
+  await loadAll();
+}
+
+/* ===== ブロック(完全停止)===== */
+async function blockCoach(){
+  if(!confirm('このコーチをブロックしますか?\n\n・既存予約はそのまま有効です\n・お客様予約画面に表示されなくなります\n・予約受付を完全停止します\n・「通常稼働に戻す」でいつでも復活できます'))return;
+  const{error}=await sb.from('coaches').update({
+    coach_status:'blocked',
+    updated_at:new Date().toISOString()
+  }).eq('id',coachId);
+  if(error){alert('ブロック処理に失敗しました:'+error.message);return;}
+  alert('🚫 コーチをブロックしました');
+  await loadAll();
+}
+
+/* ===== 復活 ===== */
+async function restoreCoach(){
+  if(!confirm('このコーチを通常稼働に戻しますか?\n\nお客様画面に再表示されます。'))return;
+  const{error}=await sb.from('coaches').update({
+    coach_status:'active',
+    updated_at:new Date().toISOString()
+  }).eq('id',coachId);
+  if(error){alert('復活処理に失敗しました:'+error.message);return;}
+  alert('🔄 通常稼働に戻しました');
+  await loadAll();
+}
+
+/* ===== 身分証プレビュー ===== */
+async function viewIdCard(){
+  const modal=document.getElementById('id-preview-modal');
+  const title=document.getElementById('id-modal-title');
+  const meta=document.getElementById('id-modal-meta');
+  const body=document.getElementById('id-modal-body');
+  modal.classList.add('open');
+  title.textContent=(coachData.name||'未設定')+' の身分証明書';
+  body.innerHTML='<div class="id-modal-loading">読み込み中...</div>';
+
+  if(!coachData.id_card_url){
+    body.innerHTML='<div class="id-modal-loading">身分証明書がアップロードされていません</div>';
+    meta.textContent='-';
+    return;
+  }
+
+  const statusLabel={none:'未アップロード',pending:'審査待ち',approved:'承認済み',rejected:'却下'};
+  const uploadDate=coachData.id_card_uploaded_at?new Date(coachData.id_card_uploaded_at).toLocaleString('ja-JP'):'-';
+  meta.innerHTML='ステータス:<strong style="color:#fff;">'+(statusLabel[coachData.id_card_status]||'-')+'</strong> ／ アップロード日時:'+uploadDate;
+
+  try{
+    const{data:signed,error:signErr}=await sb.storage.from('coach-id-cards').createSignedUrl(coachData.id_card_url,60);
+    if(signErr||!signed||!signed.signedUrl){
+      body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">画像URL取得に失敗しました</div>';
+      return;
+    }
+    const url=signed.signedUrl;
+    const ext=(coachData.id_card_url.split('.').pop()||'').toLowerCase();
+    if(ext==='pdf'){
+      body.innerHTML='<iframe src="'+url+'" title="身分証PDF"></iframe>';
+    }else{
+      body.innerHTML='<img src="'+url+'" alt="身分証画像">';
+    }
+  }catch(e){
+    body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">エラー:'+e.message+'</div>';
+  }
+}
+
+function closeIdPreview(){
+  document.getElementById('id-preview-modal').classList.remove('open');
+}
+
+/* ===== レビュー ===== */
 async function loadReviews(){
-  const{data,error}=await sb.from('reviews')
+  const{data}=await sb.from('reviews')
     .select('id,rating,comment,customer_name,lesson_type,lesson_date,created_at')
     .eq('coach_id',coachId)
     .eq('status','submitted')
     .order('created_at',{ascending:false});
   const reviews=data||[];
-
-  /* 平均★計算 */
   const count=reviews.length;
   if(count===0){
     document.getElementById('p-rating').innerHTML='★ 0.0 <span style="font-size:11px;color:#a8f0d0;font-weight:500;">(レビュー未投稿)</span>';
@@ -254,23 +447,19 @@ async function loadReviews(){
   const avg=(total/count).toFixed(1);
   document.getElementById('p-rating').innerHTML='★ '+avg+' <span style="font-size:11px;color:#a8f0d0;font-weight:500;">('+count+'件)</span>';
   document.getElementById('review-count').textContent=count+'件';
-
-  /* リスト表示(直近10件)*/
   const lessonMap={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自'};
   const html=reviews.slice(0,10).map(r=>{
     const lesson=lessonMap[r.lesson_type]||r.lesson_type||'';
     const dStr=r.lesson_date?formatDateShort(r.lesson_date):'';
     const stars='★'.repeat(r.rating)+'<span style="color:#3a3a3a;">'+'★'.repeat(5-r.rating)+'</span>';
-    return`
-      <div class="row" style="flex-direction:column;align-items:stretch;gap:6px;padding:14px 0;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div style="font-size:12px;font-weight:700;color:#fff;">${escapeHtml(r.customer_name||'(お客様)')}</div>
-          <div style="color:#FFD27A;font-size:14px;font-weight:700;">${stars}</div>
-        </div>
-        <div style="font-size:10px;color:var(--muted);">${dStr} · ${lesson}</div>
-        <div style="font-size:12px;color:#e8efe9;line-height:1.5;background:rgba(101,206,165,0.04);border-left:2px solid var(--main);padding:8px 10px;border-radius:0 6px 6px 0;">${escapeHtml(r.comment||'')}</div>
+    return`<div class="row" style="flex-direction:column;align-items:stretch;gap:6px;padding:14px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:12px;font-weight:700;color:#fff;">${escapeHtml(r.customer_name||'(お客様)')}</div>
+        <div style="color:#FFD27A;font-size:14px;font-weight:700;">${stars}</div>
       </div>
-    `;
+      <div style="font-size:10px;color:var(--muted);">${dStr} · ${lesson}</div>
+      <div style="font-size:12px;color:#e8efe9;line-height:1.5;background:rgba(101,206,165,0.04);border-left:2px solid var(--main);padding:8px 10px;border-radius:0 6px 6px 0;">${escapeHtml(r.comment||'')}</div>
+    </div>`;
   }).join('');
   document.getElementById('review-list').innerHTML=html;
 }
@@ -285,13 +474,21 @@ function renderProfile(){
     document.getElementById('p-photo').textContent=(coachData.name||'?').charAt(0);
   }
 
-  /* ステータスピル */
   const pills=[];
-  if(!coachData.is_approved){
+  const status=coachData.coach_status||'active';
+
+  if(coachData.is_rejected){
+    pills.push('<span class="pill pill-warn">却下済</span>');
+  }else if(!coachData.is_approved){
     pills.push('<span class="pill pill-pending">未承認</span>');
+  }else if(status==='hidden'){
+    pills.push('<span class="pill pill-hidden">👁 非表示中</span>');
+  }else if(status==='blocked'){
+    pills.push('<span class="pill pill-blocked">🚫 ブロック中</span>');
   }else{
     pills.push('<span class="pill pill-active">稼働中</span>');
   }
+
   if(!coachData.stripe_charges_enabled||!coachData.stripe_payouts_enabled){
     pills.push('<span class="pill pill-warn">Stripe未完了</span>');
   }else{
@@ -306,15 +503,12 @@ function renderKPI(){
   const monthBkgs=allBookings.filter(b=>b.booking_date>=monthStart&&b.booking_date<=today&&['confirmed','approved'].includes(b.status));
   const monthCxl=allBookings.filter(b=>b.booking_date>=monthStart&&b.booking_date<=today&&['cancelled','refunded'].includes(b.status));
   const monthAll=allBookings.filter(b=>b.booking_date>=monthStart&&b.booking_date<=today);
-
   const sales=monthBkgs.reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
   const cxlRate=monthAll.length>0?Math.round(monthCxl.length/monthAll.length*1000)/10:0;
-
   document.getElementById('kpi-bkg').innerHTML=monthBkgs.length+'<span class="u">件</span>';
   document.getElementById('kpi-sales').textContent=sales.toLocaleString();
   document.getElementById('kpi-cxl').innerHTML=cxlRate+'<span class="u">%</span>';
   document.getElementById('kpi-bkg-d').textContent='今月 '+monthAll.length+'件中';
-
   if(cxlRate>=10){
     document.getElementById('kpi-cxl-d').textContent='注意レベル';
     document.getElementById('kpi-cxl-d').classList.add('warn');
@@ -325,14 +519,12 @@ function renderKPI(){
 }
 
 async function renderCharts(){
-  /* 月別6ヶ月の予約数・売上を集計 */
   const months=[];
   const now=new Date();
   for(let i=5;i>=0;i--){
     const d=new Date(now.getFullYear(),now.getMonth()-i,1);
     months.push({y:d.getFullYear(),m:d.getMonth()+1});
   }
-
   const data=months.map(mo=>{
     const start=`${mo.y}-${String(mo.m).padStart(2,'0')}-01`;
     const lastDay=new Date(mo.y,mo.m,0).getDate();
@@ -344,8 +536,6 @@ async function renderCharts(){
       sales:monthBkgs.reduce((s,b)=>s+(parseInt(b.total_price)||0),0)
     };
   });
-
-  /* 予約数グラフ */
   const maxC=Math.max(...data.map(d=>d.count),1);
   document.getElementById('chart-bkg').innerHTML=data.map((d,i)=>{
     const h=d.count>0?Math.max(d.count/maxC*100,3):2;
@@ -356,8 +546,6 @@ async function renderCharts(){
     const cls=i===data.length-1?'now':'';
     return`<span class="${cls}">${d.label}<br>${d.count}件</span>`;
   }).join('');
-
-  /* 売上グラフ */
   const maxS=Math.max(...data.map(d=>d.sales),1);
   document.getElementById('chart-sales').innerHTML=data.map((d,i)=>{
     const h=d.sales>0?Math.max(d.sales/maxS*100,3):2;
@@ -373,25 +561,15 @@ async function renderCharts(){
 function renderBookings(){
   let filtered=allBookings;
   let title='直近の予約';
-  if(bkgTab==='recent'){
-    filtered=allBookings.slice(0,10);
-    title='直近10件';
-  }else if(bkgTab==='all'){
-    filtered=allBookings.slice(0,30);
-    title='直近30件';
-  }else if(bkgTab==='cxl'){
-    filtered=allBookings.filter(b=>['cancelled','refunded'].includes(b.status));
-    title='キャンセル一覧';
-  }
-
+  if(bkgTab==='recent'){filtered=allBookings.slice(0,10);title='直近10件';}
+  else if(bkgTab==='all'){filtered=allBookings.slice(0,30);title='直近30件';}
+  else if(bkgTab==='cxl'){filtered=allBookings.filter(b=>['cancelled','refunded'].includes(b.status));title='キャンセル一覧';}
   document.getElementById('bkg-list-title').textContent=title;
   document.getElementById('bkg-list-count').textContent=filtered.length+'件';
-
   if(filtered.length===0){
     document.getElementById('bkg-list').innerHTML='<div class="empty">該当する予約がありません</div>';
     return;
   }
-
   const html=filtered.map(b=>{
     const dStr=formatDateShort(b.booking_date);
     const tStr=b.booking_time?b.booking_time.slice(0,5):'';
@@ -405,16 +583,14 @@ function renderBookings(){
     else if(b.status==='approved_pending_payment') pill='<span class="bk-pill bk-pay">決済待</span>';
     else if(b.status==='cancelled'||b.status==='refunded') pill='<span class="bk-pill bk-cxl">キャンセル</span>';
     else pill='<span class="bk-pill bk-pnd">'+b.status+'</span>';
-    return`
-      <div class="row">
-        <div class="l-date">${dStr}<br><span style="color:var(--muted);font-size:10px;">${tStr}</span></div>
-        <div class="l-info">
-          <div class="l-name">${escapeHtml(b.customer_name||'(お客様名なし)')}</div>
-          <div class="l-meta">${lesson} ${minutes} · ¥${(b.total_price||0).toLocaleString()}</div>
-        </div>
-        ${pill}
+    return`<div class="row">
+      <div class="l-date">${dStr}<br><span style="color:var(--muted);font-size:10px;">${tStr}</span></div>
+      <div class="l-info">
+        <div class="l-name">${escapeHtml(b.customer_name||'(お客様名なし)')}</div>
+        <div class="l-meta">${lesson} ${minutes} · ¥${(b.total_price||0).toLocaleString()}</div>
       </div>
-    `;
+      ${pill}
+    </div>`;
   }).join('');
   document.getElementById('bkg-list').innerHTML=html;
 }
@@ -427,64 +603,45 @@ function setBkgTab(t,btn){
 }
 
 async function loadSlots(){
-  /* schedules テーブルから空き枠数取得 */
   const today=getDateStr(new Date());
   const future=new Date();future.setDate(future.getDate()+30);
-  const{data,error}=await sb.from('schedules')
+  const{data}=await sb.from('schedules')
     .select('id,slot_date,slot_hour,lesson_type,status')
     .eq('coach_id',coachId)
     .gte('slot_date',today)
     .lte('slot_date',getDateStr(future))
     .order('slot_date',{ascending:true})
     .order('slot_hour',{ascending:true});
-  
   const slots=data||[];
   const available=slots.filter(s=>s.status==='available');
   document.getElementById('kpi-slot').innerHTML=available.length+'<span class="u">枠</span>';
   document.getElementById('kpi-slot-d').textContent='30日先まで';
-
   if(slots.length===0){
     document.getElementById('slot-list').innerHTML='<div class="empty">空き枠が登録されていません</div>';
     return;
   }
-
-  /* 日付ごとにグループ化 */
   const byDate={};
   slots.forEach(s=>{
     if(!byDate[s.slot_date])byDate[s.slot_date]=[];
     byDate[s.slot_date].push(s);
   });
-
   const html=Object.entries(byDate).slice(0,7).map(([date,slotArr])=>{
     const dStr=formatDateShort(date);
     const hours=slotArr.map(s=>s.slot_hour+':00').join(' / ');
-    return`
-      <div class="row">
-        <div class="l-date">${dStr}</div>
-        <div class="l-info">
-          <div class="l-name" style="font-size:11px;">${hours}</div>
-          <div class="l-meta">${slotArr.length}枠</div>
-        </div>
+    return`<div class="row">
+      <div class="l-date">${dStr}</div>
+      <div class="l-info">
+        <div class="l-name" style="font-size:11px;">${hours}</div>
+        <div class="l-meta">${slotArr.length}枠</div>
       </div>
-    `;
+    </div>`;
   }).join('');
   document.getElementById('slot-list').innerHTML=html;
 }
 
-function getMonthStartString(){
-  const d=new Date();
-  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
-}
-function getDateStr(d){
-  return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function formatDateShort(ds){
-  if(!ds)return'';
-  const p=String(ds).split('-');
-  if(p.length<3)return ds;
-  const wd=['日','月','火','水','木','金','土'][new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])).getDay()];
-  return`${parseInt(p[1])}/${parseInt(p[2])}(${wd})`;
-}
+function getMonthStartString(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;}
+function getDateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function formatDateShort(ds){if(!ds)return'';const p=String(ds).split('-');if(p.length<3)return ds;const wd=['日','月','火','水','木','金','土'][new Date(parseInt(p[0]),parseInt(p[1])-1,parseInt(p[2])).getDay()];return`${parseInt(p[1])}/${parseInt(p[2])}(${wd})`;}
 function formatK(n){return n>=10000?Math.round(n/1000)+'k':n.toLocaleString();}
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
