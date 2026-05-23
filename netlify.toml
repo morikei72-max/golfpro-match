@@ -11,3 +11,11 @@
 [[scheduled.functions]]
   name = "release-coach-payout"
   cron = "0 17 * * *"
+
+# send-rating-request: 評価依頼LINE自動送信(Phase 2)
+# 毎日 日本時間 午後2時(UTC 5時)に実行
+# レッスン日翌日のお客様LINEへ評価依頼Flex Messageを送信
+# (お一人様1コーチ1回ルール:同じコーチへ既に評価済の場合はスキップ)
+[[scheduled.functions]]
+  name = "send-rating-request"
+  cron = "0 5 * * *"
