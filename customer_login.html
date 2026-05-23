@@ -118,7 +118,16 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 
 <script>
 const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
-(async()=>{const {data:{session}}=await sb.auth.getSession();if(session)location.replace('search_hub.html');})();
+async function routeAfterAuth(session){
+  if(!session) return;
+  const {data:cust}=await sb.from('customers').select('id,name,line_user_id').eq('user_id',session.user.id).maybeSingle();
+  if(cust && cust.name && cust.line_user_id){
+    location.replace('search_hub.html');
+  }else{
+    location.replace('onboarding_step2.html');
+  }
+}
+(async()=>{const {data:{session}}=await sb.auth.getSession();await routeAfterAuth(session);})();
 async function doLogin(){
   const email=document.getElementById('email').value;
   const pass=document.getElementById('pass').value;
@@ -134,7 +143,8 @@ async function doLogin(){
       localStorage.removeItem('gc');
     }
   }
-  location.replace('search_hub.html');
+  const {data:{session:newSession}}=await sb.auth.getSession();
+  await routeAfterAuth(newSession);
 }
 function goRegister(){
   location.href='onboarding_step1.html';
