@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#000000">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -34,13 +35,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 .profile{background:linear-gradient(135deg,#064D3B,#0a3a2a);border:1px solid var(--line-strong);border-radius:18px;padding:20px;margin-bottom:14px;position:relative;overflow:hidden;}
 .profile::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(101,206,165,0.2),transparent 70%);}
-.profile-top{display:flex;align-items:center;gap:14px;position:relative;}
-.profile-photo{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#0a6c52,#1a8868);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:28px;flex-shrink:0;border:2px solid var(--main);overflow:hidden;box-shadow:0 0 24px rgba(101,206,165,0.3);}
+.profile-top{display:flex;align-items:center;gap:14px;position:relative;flex-wrap:wrap;}
+.profile-photo{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#0a6c52,#1a8868);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:34px;flex-shrink:0;border:2px solid var(--main);overflow:hidden;box-shadow:0 0 24px rgba(101,206,165,0.3);}
 .profile-photo img{width:100%;height:100%;object-fit:cover;}
 .profile-info{flex:1;min-width:0;}
 .profile-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
 .profile-meta{font-size:11px;color:var(--main-light);margin-top:4px;}
 .profile-pills{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+/* ★ Phase 2: レーダーチャート(プロフィール右側) */
+.profile-radar-wrap{flex-shrink:0;width:170px;position:relative;}
+.profile-radar-title{text-align:center;font-size:10px;color:#FFD27A;font-weight:700;margin-bottom:2px;}
+.profile-radar-canvas-wrap{position:relative;width:170px;height:155px;}
+.profile-radar-empty{text-align:center;color:var(--muted);font-size:10px;padding:12px 6px;line-height:1.6;width:170px;}
 .pill{font-size:10px;padding:3px 8px;border-radius:100px;font-weight:700;}
 .pill-active{background:rgba(101,206,165,0.2);color:var(--main-light);border:1px solid var(--main);}
 .pill-pending{background:rgba(255,210,122,0.15);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
@@ -139,6 +145,14 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
         <div class="profile-meta" id="p-meta">--</div>
         <div class="profile-rating" id="p-rating" style="margin-top:8px;font-size:14px;font-weight:700;color:#FFD27A;">★ 0.0 <span style="font-size:11px;color:#a8f0d0;font-weight:500;">(0件)</span></div>
         <div class="profile-pills" id="p-pills"></div>
+      </div>
+      <!-- ★ Phase 2: コーチ評価レーダーチャート -->
+      <div class="profile-radar-wrap" id="profile-radar-wrap">
+        <div class="profile-radar-title" id="profile-radar-title" style="display:none;">★ 0.0 (0件)</div>
+        <div class="profile-radar-canvas-wrap" id="profile-radar-canvas-wrap" style="display:none;">
+          <canvas id="profile-radar-canvas"></canvas>
+        </div>
+        <div class="profile-radar-empty" id="profile-radar-empty">📊 評価データ蓄積中<br>(評価3件以上で表示)</div>
       </div>
     </div>
   </div>
@@ -265,6 +279,8 @@ async function loadAll(){
   renderBookings();
   await loadReviews();
   await loadSlots();
+  // ★ Phase 2: コーチ評価レーダーチャート
+  await loadCoachRatingsRadar();
 }
 
 /* ===== 操作ボタンパネル描画(身分証ボタン常時表示版) ===== */
@@ -460,6 +476,80 @@ async function loadReviews(){
     </div>`;
   }).join('');
   document.getElementById('review-list').innerHTML=html;
+}
+
+/* ===== ★ Phase 2: コーチ評価レーダーチャート ===== */
+let _coachRadarChart=null;
+async function loadCoachRatingsRadar(){
+  try{
+    const{data,error}=await sb.from('coach_ratings')
+      .select('rating_satisfaction,rating_value,rating_improvement,rating_clarity,rating_kindness,rating_rebooking')
+      .eq('coach_id',coachId);
+    if(error){console.warn('coach_ratings fetch error',error);return;}
+    const ratings=data||[];
+    const titleEl=document.getElementById('profile-radar-title');
+    const canvasWrap=document.getElementById('profile-radar-canvas-wrap');
+    const emptyEl=document.getElementById('profile-radar-empty');
+    if(ratings.length<3){
+      if(titleEl)titleEl.style.display='none';
+      if(canvasWrap)canvasWrap.style.display='none';
+      if(emptyEl){
+        emptyEl.style.display='block';
+        emptyEl.innerHTML='📊 評価データ蓄積中<br>(評価'+ratings.length+'件 / 3件以上で表示)';
+      }
+      return;
+    }
+    const n=ratings.length;
+    const avg=k=>Math.round((ratings.reduce((s,r)=>s+(r[k]||0),0)/n)*10)/10;
+    const vals={
+      satisfaction:avg('rating_satisfaction'),
+      value:avg('rating_value'),
+      improvement:avg('rating_improvement'),
+      clarity:avg('rating_clarity'),
+      kindness:avg('rating_kindness'),
+      rebooking:avg('rating_rebooking')
+    };
+    const overall=Math.round(((vals.satisfaction+vals.value+vals.improvement+vals.clarity+vals.kindness+vals.rebooking)/6)*10)/10;
+    if(titleEl){
+      titleEl.style.display='block';
+      titleEl.textContent='★ '+overall.toFixed(1)+' ('+n+'件)';
+    }
+    if(emptyEl)emptyEl.style.display='none';
+    if(canvasWrap)canvasWrap.style.display='block';
+    const ctx=document.getElementById('profile-radar-canvas');
+    if(_coachRadarChart){try{_coachRadarChart.destroy();}catch(e){}_coachRadarChart=null;}
+    if(ctx && window.Chart){
+      _coachRadarChart=new Chart(ctx,{
+        type:'radar',
+        data:{
+          labels:['満足度','コスパ','上達実感','わかりやすさ','人柄優しさ','また受けたい度'],
+          datasets:[{
+            data:[vals.satisfaction,vals.value,vals.improvement,vals.clarity,vals.kindness,vals.rebooking],
+            backgroundColor:'rgba(101,206,165,0.30)',
+            borderColor:'#65CEA5',
+            borderWidth:1.5,
+            pointRadius:2,
+            pointBackgroundColor:'#65CEA5'
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          layout:{padding:0},
+          scales:{r:{
+            min:0,max:5,
+            ticks:{display:false,stepSize:1},
+            pointLabels:{font:{size:9},color:'#65CEA5'},
+            grid:{color:'rgba(255,255,255,0.18)'},
+            angleLines:{color:'rgba(255,255,255,0.18)'}
+          }},
+          plugins:{legend:{display:false},tooltip:{enabled:false}}
+        }
+      });
+    }
+  }catch(e){
+    console.error('loadCoachRatingsRadar error',e);
+  }
 }
 
 function renderProfile(){
