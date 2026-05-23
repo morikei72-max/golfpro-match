@@ -1,12 +1,12 @@
 // netlify/functions/release-coach-payout.js
 // MyCoach コーチへの送金実行関数(エスクロー方式)
-// 【2026/5/23 v1】
+// 【2026/5/23 v2】コーチ完了ボタン不要・レッスン日+7日経過で自動送金
 //
 // 動作:
 //   bookings テーブルから以下を満たすレコードを抽出:
-//     - status = 'completed'(レッスン完了済)
+//     - status = 'confirmed'(決済確定済かつキャンセルされていない)
 //     - payout_status = 'pending'(未送金)
-//     - payout_eligible_at <= now()(送金可能日時を過ぎている)
+//     - payout_eligible_at <= now()(レッスン日+7日経過)
 //   ↓
 //   各レコードについて Stripe transfers.create() でコーチへ送金
 //   ↓
@@ -52,7 +52,7 @@ exports.handler = async (event) => {
     const { data: targets, error: selectErr } = await supabase
       .from('bookings')
       .select('id, coach_id, total_price, payout_amount, payout_eligible_at, booking_date, booking_time, lesson_type, customer_name, coach_name')
-      .eq('status', 'completed')
+      .eq('status', 'confirmed')
       .eq('payout_status', 'pending')
       .lte('payout_eligible_at', nowIso);
 
