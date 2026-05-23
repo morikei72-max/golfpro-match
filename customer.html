@@ -830,7 +830,7 @@ async function loadAllCoaches(){
       // ★ Phase 2:カード右側にコンパクトレーダーチャート(120×110px)
       var m=ratingsMap[c.id];
       if(m && m.count>=3 && m.overall>=3.0){
-        html+='<div class="coach-card-radar" onclick="event.stopPropagation();">';
+        html+='<div class="coach-card-radar" style="cursor:pointer;" onclick="event.stopPropagation();openRatingModal(\''+c.id+'\');">';
         html+='<div class="coach-card-radar-wrap"><canvas id="card-radar-'+c.id+'" width="120" height="110"></canvas></div>';
         html+='<div class="coach-card-radar-score"><span style="color:#BA7517;">★</span>'+m.overall.toFixed(1)+'<span class="rc">('+m.count+'件)</span></div>';
         html+='</div>';
