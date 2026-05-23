@@ -1,10 +1,11 @@
 // netlify/functions/customer-cancel-request.js
 // お客様からのキャンセル申請を受け付けて自動返金を実行するAPI
-// 【2026/4/25 v5】
+// 【2026/5/23 v6】
 //   ■ キャンセルポリシー(更新版):
-//     - 48時間以上前    : 96.4%返金(手数料3.6%のみ控除)
-//     - 48時間~当日前  : 46.4%返金(50%キャンセル料+手数料3.6%控除)
-//     - 当日キャンセル  : 16.4%返金(80%キャンセル料+手数料3.6%控除)
+//     - 72時間(3日)以上前         : 96.4%返金(手数料3.6%のみ控除)
+//     - 72時間~24時間前           : 46.4%返金(50%キャンセル料+手数料3.6%控除)
+//     - 24時間以内・当日(事前連絡): 16.4%返金(80%キャンセル料+手数料3.6%控除)
+//     - 当日無断キャンセル        : 0%返金(クライアント側で予約画面のキャンセルボタン押下なし)
 //   ■ Stripe決済情報の取得:
 //     1. Checkout Session 検索(過去の決済対応)
 //     2. payment_intent.search 検索(新規決済対応・予備)
@@ -58,22 +59,22 @@ function calculateRefund(bookingDate, bookingTime, totalPrice) {
 
   let policy, refundAmount, cancelFee;
 
-  if (hoursUntilLesson >= 48) {
-    // 48時間以上前:96.4%返金(手数料のみ控除)
+  if (hoursUntilLesson >= 72) {
+    // 72時間(3日)以上前:96.4%返金(手数料のみ控除)
     policy = 'full_refund';
     cancelFee = stripeFee;
     refundAmount = totalPrice - stripeFee;
   } else if (hoursUntilLesson >= 24) {
-    // 24時間~48時間前:46.4%返金(50%+手数料控除)
+    // 72時間~24時間前:46.4%返金(50%+手数料控除)
     policy = 'half_refund';
     const halfFee = Math.round(totalPrice * 0.5);
     cancelFee = halfFee + stripeFee;
     refundAmount = totalPrice - cancelFee;
   } else {
-    // 24時間以内(当日含む):16.4%返金(80%+手数料控除)
+    // 24時間以内・当日(事前連絡あり):16.4%返金(80%+手数料控除)
     policy = 'sameday_refund';
-    const eightyFee = Math.round(totalPrice * 0.8);
-    cancelFee = eightyFee + stripeFee;
+    const samedayFee = Math.round(totalPrice * 0.8);
+    cancelFee = samedayFee + stripeFee;
     refundAmount = totalPrice - cancelFee;
   }
 
@@ -300,9 +301,9 @@ exports.handler = async (event) => {
     // bookings 更新
     // ============================================
     const cancelTimestamp = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-    const policyLabel = policy === 'full_refund' ? '全額返金(48時間以上前)'
-                      : policy === 'half_refund' ? '50%返金(24~48時間前)'
-                      : '20%返金(24時間以内・当日)';
+    const policyLabel = policy === 'full_refund' ? '96.4%返金(72時間以上前)'
+                      : policy === 'half_refund' ? '46.4%返金(72〜24時間前)'
+                      : '16.4%返金(24時間以内・当日)';
     const cancelNote = `【キャンセル完了】\n申請日時:${cancelTimestamp}\nカテゴリ:${reason_category}\n詳細:${reason_text.trim()}\n適用ポリシー:${policyLabel}\n決済額:¥${totalPrice.toLocaleString()}\nキャンセル料:¥${cancelFee.toLocaleString()}\n返金額:¥${refundAmount.toLocaleString()}` +
       (refundResult ? `\nStripe Refund ID:${refundResult.id}` : '');
     const newComment = booking.comment ? `${booking.comment}\n\n${cancelNote}` : cancelNote;
@@ -427,9 +428,9 @@ function buildCustomerCancelCompleteFlex({
   customerName, coachName, lessonType, minutesStr,
   dateStr, timeStr, storeName, totalPrice, cancelFee, refundAmount, policy,
 }) {
-  const policyText = policy === 'full_refund' ? '48時間以上前のキャンセル(全額返金)'
-                    : policy === 'half_refund' ? '24~48時間前のキャンセル(50%返金)'
-                    : '24時間以内のキャンセル(20%返金)';
+  const policyText = policy === 'full_refund' ? '72時間以上前のキャンセル(96.4%返金)'
+                    : policy === 'half_refund' ? '72〜24時間前のキャンセル(46.4%返金)'
+                    : '24時間以内のキャンセル(16.4%返金)';
 
   return {
     type: 'bubble',
@@ -569,9 +570,9 @@ function buildAdminCancelNoticeFlex({
   dateStr, timeStr, storeName, totalPrice, cancelFee, refundAmount,
   reason_category, reason_text, policy, refundId,
 }) {
-  const policyLabel = policy === 'full_refund' ? '全額返金(48時間以上前)'
-                    : policy === 'half_refund' ? '50%返金(24~48時間前)'
-                    : '20%返金(24時間以内・当日)';
+  const policyLabel = policy === 'full_refund' ? '96.4%返金(72時間以上前)'
+                    : policy === 'half_refund' ? '46.4%返金(72〜24時間前)'
+                    : '16.4%返金(24時間以内・当日)';
 
   return {
     type: 'bubble',
