@@ -845,6 +845,7 @@ function resetEntryCoach(){
 }
 
 checkPaymentConfirmUrl();
+checkCancelRequestUrl();
 
 sb.auth.getSession().then(async function(res){
   var session=res.data.session;
@@ -923,6 +924,38 @@ function checkPaymentConfirmUrl(){
   if(action==='pay'&&bookingId){
     showPaymentConfirmModal(bookingId);
   }
+}
+
+async function checkCancelRequestUrl(){
+  var params=new URLSearchParams(window.location.search);
+  var action=params.get('action');
+  var bookingId=params.get('booking_id');
+  if(action!=='cancel'||!bookingId) return;
+  var sres=await sb.auth.getSession();
+  if(!sres.data.session){
+    alert('ログインが必要です。ログイン後、再度LINEからキャンセルリンクをタップしてください。');
+    window.location.href='customer_login.html?from=top';
+    return;
+  }
+  var{data:booking,error}=await sb.from('bookings').select('id,total_price,status,booking_date,booking_time').eq('id',bookingId).maybeSingle();
+  if(error||!booking){
+    alert('ご予約が見つかりませんでした。');
+    window.history.replaceState({},document.title,window.location.pathname);
+    return;
+  }
+  if(booking.status==='cancelled'||booking.status==='refunded'){
+    alert('このご予約は既にキャンセル済みです。');
+    window.history.replaceState({},document.title,window.location.pathname);
+    return;
+  }
+  if(booking.status!=='confirmed'){
+    alert('このご予約は現在キャンセルできない状態です。\n状態: '+booking.status);
+    window.history.replaceState({},document.title,window.location.pathname);
+    return;
+  }
+  await loadBookings();
+  openCancelRequestModal(bookingId,parseInt(booking.total_price)||0);
+  window.history.replaceState({},document.title,window.location.pathname);
 }
 
 async function showPaymentConfirmModal(bookingId){
