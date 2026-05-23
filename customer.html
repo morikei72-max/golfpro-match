@@ -1017,6 +1017,12 @@ function tab(btn,id){
   btn.classList.add('on');
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
   document.getElementById(id).classList.add('on');
+  if(id==='s-search'){
+    // ★ Phase 2 修正:コーチを探すボタンを押したら常にコーチ一覧画面に戻る
+    if(typeof resetEntryCoach==='function'){
+      try{resetEntryCoach();}catch(e){console.warn('resetEntryCoach skip',e);}
+    }
+  }
   if(id==='s-bookings'){loadBookings();}
   if(id==='s-mypage'){refreshLineLinkStatus();}
   if(id==='s-review'){loadReviewScreen();}
