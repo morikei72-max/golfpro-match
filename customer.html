@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MyCoach — お客様画面</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Playfair+Display:wght@700&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -106,6 +107,27 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .coach-card-license{font-size:11px;color:#555;margin-bottom:2px;line-height:1.4;}
 .coach-card-tags{font-size:11px;color:var(--g);margin-bottom:4px;}
 .coach-card-bio{font-size:11px;color:#777;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+/* ★ コーチカード評価表示(Phase 2) */
+.coach-card-rating{display:inline-flex;align-items:center;gap:4px;background:#FAEEDA;color:#7a5c00;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;margin-top:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.coach-card-rating:active{opacity:0.7;}
+.coach-card-rating-star{color:#BA7517;font-size:12px;}
+.coach-card-rating-count{font-size:10px;color:#999;font-weight:400;margin-left:2px;}
+/* レーダーチャートモーダル(Phase 2) */
+.rating-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;}
+.rating-modal-overlay.open{display:flex;}
+.rating-modal{background:#fff;border-radius:14px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;padding:18px 16px;}
+.rating-modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.rating-modal-title{font-size:15px;font-weight:700;color:var(--gd);}
+.rating-modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:#999;line-height:1;padding:0 4px;font-family:inherit;}
+.rating-modal-coach{text-align:center;padding:6px 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px;}
+.rating-modal-coach-name{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.rating-modal-coach-overall{font-size:13px;color:var(--gold);font-weight:700;}
+.rating-modal-coach-count{font-size:10px;color:#999;margin-top:2px;}
+.rating-modal-chart-wrap{position:relative;width:100%;height:240px;margin-bottom:10px;}
+.rating-modal-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;margin-top:8px;}
+.rating-modal-detail-item{background:#f7faf8;border-radius:6px;padding:6px 8px;}
+.rating-modal-detail-item strong{float:right;color:var(--gd);}
+.rating-modal-empty{text-align:center;padding:30px 12px;color:#999;font-size:12px;line-height:1.7;}
 .coach-card-none{padding:20px;text-align:center;color:#999;font-size:12px;background:#f9f9f9;border-radius:8px;}
 .coach-plans-box{background:#f9fbfa;border:1px solid #d8e8df;border-radius:10px;padding:12px;margin-top:10px;margin-bottom:10px;}
 .coach-plans-title{font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;}
@@ -261,6 +283,17 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 </style>
 </head>
 <body>
+<!-- ⭐ コーチ評価レーダーチャートモーダル(Phase 2) -->
+<div class="rating-modal-overlay" id="rating-modal-overlay" onclick="closeRatingModal(event)">
+  <div class="rating-modal" id="rating-modal-inner" onclick="event.stopPropagation();">
+    <div class="rating-modal-header">
+      <div class="rating-modal-title">⭐ コーチ評価</div>
+      <button class="rating-modal-close" onclick="closeRatingModal()">×</button>
+    </div>
+    <div id="rating-modal-body"></div>
+  </div>
+</div>
+
 <div class="header">
   <div class="logo">MyCoach</div>
   <div style="display:flex;align-items:center;gap:10px;">
@@ -731,6 +764,7 @@ function detectEntryMode(){
 }
 
 /* ★★★ 修正1:お客様画面でブロック中・非表示中のコーチを除外 ★★★ */
+/* ★★★ Phase 2: 各コーチの評価データを取得しカードに★表示 ★★★ */
 async function loadAllCoaches(){
   var listEl=document.getElementById('coach-entry-list');
   try{
@@ -739,6 +773,41 @@ async function loadAllCoaches(){
       listEl.innerHTML='<div class="coach-card-none">現在、在籍コーチが登録されていません。</div>';
       return;
     }
+    // ★ Phase 2:評価データ取得(全コーチ一括)
+    var coachIds=data.map(function(c){return c.id;});
+    var ratingsMap={};
+    try{
+      var{data:ratingsRows}=await sb.from('coach_ratings').select('coach_id,rating_satisfaction,rating_value,rating_improvement,rating_clarity,rating_kindness,rating_rebooking').in('coach_id',coachIds);
+      if(ratingsRows){
+        ratingsRows.forEach(function(r){
+          if(!ratingsMap[r.coach_id]){ratingsMap[r.coach_id]={count:0,sums:{s:0,v:0,i:0,c:0,k:0,r:0}};}
+          var m=ratingsMap[r.coach_id];
+          m.count++;
+          m.sums.s+=r.rating_satisfaction||0;
+          m.sums.v+=r.rating_value||0;
+          m.sums.i+=r.rating_improvement||0;
+          m.sums.c+=r.rating_clarity||0;
+          m.sums.k+=r.rating_kindness||0;
+          m.sums.r+=r.rating_rebooking||0;
+        });
+        Object.keys(ratingsMap).forEach(function(k){
+          var m=ratingsMap[k];
+          var n=m.count;
+          m.avg={
+            satisfaction:Math.round((m.sums.s/n)*10)/10,
+            value:Math.round((m.sums.v/n)*10)/10,
+            improvement:Math.round((m.sums.i/n)*10)/10,
+            clarity:Math.round((m.sums.c/n)*10)/10,
+            kindness:Math.round((m.sums.k/n)*10)/10,
+            rebooking:Math.round((m.sums.r/n)*10)/10
+          };
+          m.overall=Math.round(((m.avg.satisfaction+m.avg.value+m.avg.improvement+m.avg.clarity+m.avg.kindness+m.avg.rebooking)/6)*10)/10;
+        });
+      }
+    }catch(e){
+      console.warn('ratings fetch (non-fatal):',e);
+    }
+    window._coachRatingsMap=ratingsMap;
     var html='';
     data.forEach(function(c){
       var photoHtml=c.photo_url?'<img src="'+c.photo_url+'" alt="'+(c.name||'')+'">':(c.name?c.name.charAt(0):'?');
@@ -753,6 +822,11 @@ async function loadAllCoaches(){
       if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
       if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
       if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
+      // ★ Phase 2:評価バッジ(評価3件以上 かつ ★3.0以上のコーチのみ公開)
+      var m=ratingsMap[c.id];
+      if(m && m.count>=3 && m.overall>=3.0){
+        html+='<div class="coach-card-rating" onclick="event.stopPropagation();openRatingModal(\''+c.id+'\');"><span class="coach-card-rating-star">★</span>'+m.overall.toFixed(1)+'<span class="coach-card-rating-count">('+m.count+'件)</span> → 詳細</div>';
+      }
       html+='</div></div>';
     });
     listEl.innerHTML=html;
@@ -762,6 +836,44 @@ async function loadAllCoaches(){
     console.error('loadAllCoaches error',e);
     listEl.innerHTML='<div class="coach-card-none">コーチ情報の取得に失敗しました。</div>';
   }
+}
+
+/* ★ Phase 2:レーダーチャートモーダル ★ */
+var _ratingChartInstance=null;
+function openRatingModal(coachId){
+  var m=(window._coachRatingsMap||{})[coachId];
+  var coach=(window._entryCoachCache||{})[coachId];
+  var coachName=coach?coach.name||'コーチ':'コーチ';
+  var bodyEl=document.getElementById('rating-modal-body');
+  if(!bodyEl)return;
+  if(!m || m.count<3){
+    bodyEl.innerHTML='<div class="rating-modal-empty">📊 評価データ蓄積中<br><span style="font-size:11px;">このコーチへの評価がまだ少ないため<br>レーダーチャートは表示できません</span></div>';
+  }else{
+    bodyEl.innerHTML='<div class="rating-modal-coach"><div class="rating-modal-coach-name">'+coachName+' コーチ</div><div class="rating-modal-coach-overall">総合 ★'+m.overall.toFixed(1)+'</div><div class="rating-modal-coach-count">評価数 '+m.count+'件</div></div><div class="rating-modal-chart-wrap"><canvas id="rating-modal-canvas"></canvas></div><div class="rating-modal-detail-grid" id="rating-modal-detail"></div>';
+    setTimeout(function(){
+      var labels=['満足度','コスパ','上達実感','わかりやすさ','人柄・優しさ','また受けたい度'];
+      var vals=[m.avg.satisfaction,m.avg.value,m.avg.improvement,m.avg.clarity,m.avg.kindness,m.avg.rebooking];
+      var ctx=document.getElementById('rating-modal-canvas');
+      if(_ratingChartInstance){try{_ratingChartInstance.destroy();}catch(e){}_ratingChartInstance=null;}
+      if(ctx && window.Chart){
+        _ratingChartInstance=new Chart(ctx,{
+          type:'radar',
+          data:{labels:labels,datasets:[{label:'評価',data:vals,backgroundColor:'rgba(29,158,117,0.25)',borderColor:'#1D9E75',borderWidth:2,pointBackgroundColor:'#085041',pointRadius:4}]},
+          options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10}},pointLabels:{font:{size:11,weight:'500'}}}},plugins:{legend:{display:false}}}
+        });
+      }
+      var d=document.getElementById('rating-modal-detail');
+      if(d){
+        d.innerHTML=labels.map(function(l,i){return '<div class="rating-modal-detail-item">'+l+' <strong>'+vals[i].toFixed(1)+'</strong></div>';}).join('');
+      }
+    },10);
+  }
+  document.getElementById('rating-modal-overlay').classList.add('open');
+}
+function closeRatingModal(e){
+  if(e && e.target && e.target.id!=='rating-modal-overlay')return;
+  document.getElementById('rating-modal-overlay').classList.remove('open');
+  if(_ratingChartInstance){try{_ratingChartInstance.destroy();}catch(err){}_ratingChartInstance=null;}
 }
 
 async function selectEntryCoach(coachId){
