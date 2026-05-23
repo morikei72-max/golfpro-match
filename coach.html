@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MyCoach — コーチ画面</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -537,7 +538,7 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="home-stat-item"><div class="home-stat-num" id="stat-today">0</div><div class="home-stat-lbl">予約数</div></div>
         <div class="home-stat-item"><div class="home-stat-num home-stat-num-yen" id="stat-income">¥0</div><div class="home-stat-lbl">今月売上</div></div>
         <div class="home-stat-item"><div class="home-stat-num" id="stat-empty">0</div><div class="home-stat-lbl">空き枠</div></div>
-        <div class="home-stat-item"><div class="home-stat-num home-stat-num-rate" id="stat-rating">★4.8</div><div class="home-stat-lbl">お客様評価</div></div>
+        <div class="home-stat-item"><div class="home-stat-num home-stat-num-rate" id="stat-rating">-</div><div class="home-stat-lbl">お客様評価</div></div>
       </div>
     </div>
 
@@ -571,23 +572,41 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       <div class="achievement-row">
         <div class="achievement-card gold">
           <div class="achievement-lbl">📚 累計レッスン</div>
-          <div class="achievement-num" id="achievement-total">127名</div>
+          <div class="achievement-num" id="achievement-total">-</div>
           <div class="achievement-sub">のお客様に指導!</div>
         </div>
         <div class="achievement-card green">
-          <div class="achievement-lbl">💚 リピート率</div>
-          <div class="achievement-num" id="achievement-repeat">85%</div>
-          <div class="achievement-sub">お客様に愛されてます</div>
+          <div class="achievement-lbl">💚 累計お客様</div>
+          <div class="achievement-num" id="achievement-repeat">-</div>
+          <div class="achievement-sub">ユニーク顧客数</div>
         </div>
       </div>
       <div class="achievement-card blue achievement-full">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
             <div class="achievement-lbl">🎉 今月の新規お客様</div>
-            <div class="achievement-num" id="achievement-new">3名</div>
+            <div class="achievement-num" id="achievement-new">-</div>
           </div>
           <div class="achievement-sub-right">新規ご予約<br>ありがとうございます</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ⭐ お客様評価レーダーチャート(Phase 2 で本稼働) -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;display:flex;align-items:center;">
+        <span>⭐ お客様評価</span>
+        <span style="font-size:10px;color:var(--muted);font-weight:400;" id="rating-count-label"></span>
+      </div>
+      <div id="rating-container">
+        <div id="rating-empty" style="text-align:center;padding:24px 8px;color:var(--muted);font-size:13px;line-height:1.7;">
+          📊 評価データ蓄積中<br>
+          <span style="font-size:11px;">お客様からの評価が3件以上集まりますと<br>こちらにレーダーチャートが表示されます</span>
+        </div>
+        <div id="rating-chart-wrap" style="display:none;position:relative;width:100%;height:280px;">
+          <canvas id="rating-radar"></canvas>
+        </div>
+        <div id="rating-detail" style="display:none;margin-top:10px;display:none;grid-template-columns:repeat(2,1fr);gap:6px;font-size:11px;"></div>
       </div>
     </div>
 
@@ -903,49 +922,23 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <button class="filter-btn" onclick="filterBookings('cancelled',this)">キャンセル</button>
       </div>
       <div id="bookings-list">
-        <div class="booking-item" data-status="pending">
-          <div class="booking-header"><div class="booking-date">2026/04/15(水)11:00</div><span class="booking-status status-pending">承認待ち</span></div>
-          <div class="booking-customer">山田 太郎</div>
-          <div class="booking-detail">インドアゴルフレッスン・50分 ¥5,000</div>
-          <div class="booking-actions">
-            <button class="btn-approve" onclick="approveBooking(this)">承認する</button>
-            <button class="btn-decline" onclick="declineBooking(this)">断る</button>
-          </div>
-        </div>
-        <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/12(日)10:00</div><span class="booking-status status-approved">承認済み</span></div>
-          <div class="booking-customer">田中 次郎</div>
-          <div class="booking-detail">インドアゴルフレッスン・90分 ¥8,000</div>
-          <div class="booking-actions">
-            <button class="btn-done" onclick="completeBooking(this)">完了</button>
-            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
-          </div>
-        </div>
-        <div class="booking-item" data-status="approved">
-          <div class="booking-header"><div class="booking-date">2026/04/18(土)ラウンド</div><span class="booking-status status-approved">承認済み</span></div>
-          <div class="booking-customer">鈴木 花子</div>
-          <div class="booking-detail">ラウンドレッスン・1ラウンド ¥20,000</div>
-          <div class="booking-actions">
-            <button class="btn-done" onclick="completeBooking(this)">完了</button>
-            <button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>
-          </div>
-        </div>
+        <div id="bookings-empty" style="color:var(--muted);font-size:13px;text-align:center;padding:24px;">読み込み中...</div>
       </div>
     </div>
   </div>
 
   <div class="page" id="page-income">
     <div class="income-summary">
-      <div class="income-card green"><div class="income-amount">¥46,400</div><div class="income-label">今月の手取り収入</div></div>
-      <div class="income-card gold"><div class="income-amount">¥280,000</div><div class="income-label">累計手取り収入</div></div>
+      <div class="income-card green"><div class="income-amount" id="income-month-payout">¥0</div><div class="income-label">今月の手取り収入</div></div>
+      <div class="income-card gold"><div class="income-amount" id="income-total-payout">¥0</div><div class="income-label">累計手取り収入</div></div>
     </div>
     <div class="card">
       <div class="card-title">レッスン実績</div>
       <div class="count-grid">
-        <div class="count-item"><div class="count-num">12</div><div class="count-lbl">インドア</div></div>
-        <div class="count-item"><div class="count-num">3</div><div class="count-lbl">ラウンド</div></div>
-        <div class="count-item"><div class="count-num">2</div><div class="count-lbl">同伴</div></div>
-        <div class="count-item"><div class="count-num">1</div><div class="count-lbl">コンペ</div></div>
+        <div class="count-item"><div class="count-num" id="count-indoor">0</div><div class="count-lbl">インドア</div></div>
+        <div class="count-item"><div class="count-num" id="count-round">0</div><div class="count-lbl">ラウンド</div></div>
+        <div class="count-item"><div class="count-num" id="count-accompany">0</div><div class="count-lbl">同伴</div></div>
+        <div class="count-item"><div class="count-num" id="count-comp">0</div><div class="count-lbl">コンペ</div></div>
       </div>
       <div class="filter-wrap">
         <button class="filter-btn active" onclick="filterIncome('month',this)">今月</button>
@@ -954,14 +947,9 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <button class="filter-btn" onclick="filterIncome('all',this)">全期間</button>
       </div>
       <table class="income-table">
-        <thead><tr><th>日付</th><th>お客様</th><th>種別</th><th>請求額</th><th>手取り</th></tr></thead>
-        <tbody>
-          <tr><td>4/10</td><td>山田太郎</td><td><span class="type-badge type-indoor">インドア</span></td><td>¥5,000</td><td class="amount-cell">¥4,000</td></tr>
-          <tr><td>4/9</td><td>佐藤花子</td><td><span class="type-badge type-round">ラウンド</span></td><td>¥20,000</td><td class="amount-cell">¥16,000</td></tr>
-          <tr><td>4/8</td><td>田中次郎</td><td><span class="type-badge type-accompany">同伴</span></td><td>¥15,000</td><td class="amount-cell">¥12,000</td></tr>
-          <tr><td>4/7</td><td>鈴木一郎</td><td><span class="type-badge type-indoor">インドア</span></td><td>¥8,000</td><td class="amount-cell">¥6,400</td></tr>
-          <tr><td>4/5</td><td>高橋二郎</td><td><span class="type-badge type-comp">コンペ</span></td><td>¥10,000</td><td class="amount-cell">¥8,000</td></tr>
-          <tr class="total-row"><td colspan="3" style="text-align:right;font-size:11px;">合計</td><td>¥58,000</td><td class="amount-cell">¥46,400</td></tr>
+        <thead><tr><th>日付</th><th>お客様</th><th>種別</th><th>請求額</th><th>手取り</th><th>送金</th></tr></thead>
+        <tbody id="income-history-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px;font-size:12px;">読み込み中...</td></tr>
         </tbody>
       </table>
       <div style="background:#f7faf8;border-radius:10px;padding:10px;margin-top:10px;font-size:11px;color:var(--muted);line-height:1.8;">
@@ -985,8 +973,11 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   <div class="page" id="page-favorites">
     <div class="card">
       <div class="card-title">お気に入り登録者</div>
-      <div class="fav-item"><div class="fav-avatar">山</div><div class="fav-info"><div class="fav-name">山田 太郎</div><div class="fav-date">登録日:2026/04/01</div></div><div class="fav-count">予約3回</div></div>
-      <div class="fav-item"><div class="fav-avatar">鈴</div><div class="fav-info"><div class="fav-name">鈴木 花子</div><div class="fav-date">登録日:2026/03/20</div></div><div class="fav-count">予約1回</div></div>
+      <div id="favorites-list">
+        <div style="text-align:center;color:var(--muted);font-size:12px;padding:24px;">
+          お気に入り登録機能は準備中です
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1484,32 +1475,12 @@ async function selectStore(key){
   document.getElementById('fee-store-name').textContent=s.name+' の手数料';
   document.getElementById('fee-store').textContent=s.fees.indoor.toFixed(1)+'%';
   document.getElementById('fee-coach').textContent=coachPct.toFixed(1)+'%';
-  // ホーム画面サマリー(4項目)
-  document.getElementById('stat-today').textContent='2';
-  document.getElementById('stat-income').textContent='¥58,000';
-  const statEmpty=document.getElementById('stat-empty');if(statEmpty)statEmpty.textContent='18';
-  const statRating=document.getElementById('stat-rating');if(statRating)statRating.textContent='★4.8';
   // 今日の日付ラベル
   const todayLbl=document.getElementById('today-date-label');
   if(todayLbl){
     const now=new Date();
     const wd=['日','月','火','水','木','金','土'][now.getDay()];
     todayLbl.textContent=(now.getMonth()+1)+'/'+now.getDate()+'('+wd+')';
-  }
-  document.getElementById('today-list').innerHTML=`
-    <div class="today-item"><div class="today-time">11:00</div><div class="today-info"><div class="today-name">山田 太郎</div><div class="today-type">インドアゴルフレッスン・50分</div></div><span class="today-badge badge-indoor">インドア</span></div>
-    <div class="today-item"><div class="today-time">14:00</div><div class="today-info"><div class="today-name">田中 次郎</div><div class="today-type">インドアゴルフレッスン・90分</div></div><span class="today-badge badge-indoor">インドア</span></div>
-  `;
-  // 承認待ちアラート(サンプル表示)
-  const pendingAlert=document.getElementById('home-pending-alert');
-  if(pendingAlert){
-    pendingAlert.style.display='block';
-    const titleEl=document.getElementById('home-pending-title');
-    if(titleEl)titleEl.textContent='⏳ 承認待ちが1件あります';
-    const line1=document.getElementById('home-pending-line1');
-    if(line1)line1.textContent='5/20(水) 14:00 山田太郎様';
-    const line2=document.getElementById('home-pending-line2');
-    if(line2)line2.textContent='インドアレッスン 60分';
   }
   if(s.id)currentStoreId=s.id;
 
@@ -1525,6 +1496,8 @@ async function selectStore(key){
   recalcAllPrices();
   buildWeekGrid();
   await loadSchedule();
+  // ★ 実データ集計を読み込んで全タブの表示を更新
+  await loadDashboardData();
 }
 function showStoreSelect(){
   buildStoreOptions();
@@ -2337,29 +2310,73 @@ function buildMonthGrid(){
 }
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
-/* ===== 予約操作 ===== */
-function approveBooking(btn){
-  const item=btn.closest('.booking-item');item.dataset.status='approved';
-  item.querySelector('.booking-status').className='booking-status status-approved';
-  item.querySelector('.booking-status').textContent='承認済み';
-  item.querySelector('.booking-actions').innerHTML='<button class="btn-done" onclick="completeBooking(this)">完了</button><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button>';
+/* ===== 予約操作(実API連動・2026/5/23 v2) ===== */
+async function approveBooking(btn){
+  const item=btn.closest('.booking-item');
+  const bookingId=item?.dataset?.bookingId;
+  if(!bookingId){showMsg('予約IDが取得できませんでした','error');return;}
+  if(!confirm('この予約を承認しますか?\nお客様に決済案内をLINEで送信します。'))return;
+  btn.disabled=true;btn.textContent='処理中...';
+  try{
+    const res=await fetch('/.netlify/functions/coach-approve-booking',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({booking_id:bookingId})
+    });
+    const json=await res.json();
+    if(!res.ok||!json.ok){
+      throw new Error(json.error||'承認処理に失敗しました');
+    }
+    showMsg('✅ 予約を承認しました。お客様にLINEで決済案内を送信しました。','success');
+    await loadDashboardData();
+  }catch(e){
+    console.error('approve error:',e);
+    showMsg('❌ '+e.message,'error');
+    btn.disabled=false;btn.textContent='承認する';
+  }
 }
-function declineBooking(btn){
-  const item=btn.closest('.booking-item');item.dataset.status='cancelled';
-  item.querySelector('.booking-status').className='booking-status status-cancelled';
-  item.querySelector('.booking-status').textContent='キャンセル';
-  item.querySelector('.booking-actions').remove();
+
+async function declineBooking(btn){
+  const item=btn.closest('.booking-item');
+  const bookingId=item?.dataset?.bookingId;
+  if(!bookingId){showMsg('予約IDが取得できませんでした','error');return;}
+  const reason=prompt('却下理由を入力してください(3文字以上)\nお客様へLINE通知されます。','');
+  if(reason===null)return;
+  if(!reason||reason.trim().length<3){showMsg('却下理由は3文字以上で入力してください','error');return;}
+  if(!confirm('この予約を却下しますか?\n却下後は取り消せません。'))return;
+  btn.disabled=true;btn.textContent='処理中...';
+  try{
+    const res=await fetch('/.netlify/functions/coach-reject-booking',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({booking_id:bookingId,reason:reason.trim()})
+    });
+    const json=await res.json();
+    if(!res.ok||!json.ok){
+      throw new Error(json.error||'却下処理に失敗しました');
+    }
+    showMsg('予約を却下しました。お客様に通知を送信しました。','success');
+    await loadDashboardData();
+  }catch(e){
+    console.error('decline error:',e);
+    showMsg('❌ '+e.message,'error');
+    btn.disabled=false;btn.textContent='断る';
+  }
 }
+
+// 完了ボタンはエスクロー方式により不要(レッスン日+7日で自動送金)
+// 旧:DOM変更のみの処理は廃止
 function completeBooking(btn){
-  const btn2=btn;btn2.textContent='完了済み';btn2.disabled=true;
-  btn2.style.background='var(--gl)';btn2.style.color='var(--gd)';
+  showMsg('レッスン完了はレッスン日から7日後に自動的に確定し送金処理されます','success');
 }
+
 function filterBookings(status,btn){
   document.querySelectorAll('.filter-wrap .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
-  document.querySelectorAll('.booking-item').forEach(item=>{item.style.display=(status==='all'||item.dataset.status===status)?'block':'none';});
+  document.querySelectorAll('#bookings-list .booking-item').forEach(item=>{item.style.display=(status==='all'||item.dataset.status===status)?'block':'none';});
 }
 function filterIncome(period,btn){
   document.querySelectorAll('#page-income .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  renderIncomeHistory(period);
 }
 
 /* ===== 緊急キャンセル ===== */
@@ -2506,12 +2523,297 @@ async function uploadId(input){
 
 function uploadReceipt(input){const file=input.files[0];if(!file)return;showMsg('領収書をアップロードしました!','success');}
 
-/* ===== PDF出力 ===== */
+/* ============================================
+   ★★★ ダッシュボード実データ連動(2026/5/23 v1)
+   ============================================ */
+let dashboardData=null;
+let ratingChart=null;
+
+const LESSON_TYPE_LABEL_JA={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自',other:'その他'};
+const LESSON_TYPE_FULL_LABEL_JA={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン',other:'その他'};
+
+function fmtYen(n){return '¥'+Number(n||0).toLocaleString('ja-JP');}
+function fmtDateMonthDay(dateStr){
+  if(!dateStr)return '';
+  const [_,m,d]=dateStr.split('-');
+  return `${parseInt(m,10)}/${parseInt(d,10)}`;
+}
+function fmtDateFull(dateStr){
+  if(!dateStr)return '';
+  const [y,m,d]=dateStr.split('-').map(s=>parseInt(s,10));
+  const wd=['日','月','火','水','木','金','土'][new Date(y,m-1,d).getDay()];
+  return `${y}/${String(m).padStart(2,'0')}/${String(d).padStart(2,'0')}(${wd})`;
+}
+
+async function loadDashboardData(){
+  if(!currentCoachId){console.warn('coach_idなし - ダッシュボード読み込みスキップ');return;}
+  try{
+    const url='/.netlify/functions/coach-dashboard-data?coach_id='+encodeURIComponent(currentCoachId);
+    const res=await fetch(url);
+    if(!res.ok){throw new Error('HTTP '+res.status);}
+    const json=await res.json();
+    if(!json.ok){throw new Error(json.error||'集計取得に失敗');}
+    dashboardData=json;
+    renderDashboardHome(json);
+    renderBookingsList(json);
+    renderIncomeSummary(json);
+    renderLessonTypeCounts(json);
+    renderIncomeHistory('month');
+    renderRating(json);
+  }catch(e){
+    console.error('loadDashboardData error:',e);
+    showMsg('ダッシュボード集計の取得に失敗しました:'+e.message,'error');
+  }
+}
+
+function renderDashboardHome(d){
+  // 今月予約数
+  const elToday=document.getElementById('stat-today');
+  if(elToday)elToday.textContent=String(d.this_month.booking_count||0);
+  // 今月売上
+  const elIncome=document.getElementById('stat-income');
+  if(elIncome)elIncome.textContent=fmtYen(d.this_month.revenue);
+  // 空き枠(現状はsupabaseのschedulesを別途countする処理がないため0表示)
+  const elEmpty=document.getElementById('stat-empty');
+  if(elEmpty){
+    let empty=0;
+    if(scheduleData){
+      Object.values(scheduleData).forEach(slots=>{
+        if(slots && typeof slots==='object'){
+          Object.values(slots).forEach(v=>{if(v==='available')empty++;});
+        }
+      });
+    }
+    elEmpty.textContent=String(empty);
+  }
+  // お客様評価
+  const elRating=document.getElementById('stat-rating');
+  if(elRating){
+    if(d.rating){
+      const overall=Math.round(((d.rating.satisfaction+d.rating.value+d.rating.improvement+d.rating.clarity+d.rating.kindness+d.rating.rebooking)/6)*10)/10;
+      elRating.textContent='★'+overall.toFixed(1);
+    }else{
+      elRating.textContent='-';
+    }
+  }
+
+  // 今日の予定
+  const todayList=document.getElementById('today-list');
+  if(todayList){
+    if(d.today && d.today.length>0){
+      todayList.innerHTML=d.today.map(t=>{
+        const lt=LESSON_TYPE_FULL_LABEL_JA[t.lesson_type]||t.lesson_type;
+        const ltKey=LESSON_TYPE_LABEL_JA[t.lesson_type]||t.lesson_type;
+        return `<div class="today-item"><div class="today-time">${t.time}</div><div class="today-info"><div class="today-name">${escapeHtml(t.customer_name)}</div><div class="today-type">${lt}${t.minutes?' ・'+t.minutes+'分':''}</div></div><span class="today-badge badge-indoor">${ltKey}</span></div>`;
+      }).join('');
+    }else{
+      todayList.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">本日の予定はありません</div>';
+    }
+  }
+
+  // 承認待ちアラート
+  const alert=document.getElementById('home-pending-alert');
+  if(alert){
+    if(d.pending_approvals && d.pending_approvals.length>0){
+      alert.style.display='block';
+      const cnt=d.pending_approvals.length;
+      const titleEl=document.getElementById('home-pending-title');
+      if(titleEl)titleEl.textContent=`⏳ 承認待ちが${cnt}件あります`;
+      const first=d.pending_approvals[0];
+      const line1=document.getElementById('home-pending-line1');
+      if(line1)line1.textContent=`${fmtDateMonthDay(first.booking_date)} ${first.booking_time} ${first.customer_name}様`;
+      const line2=document.getElementById('home-pending-line2');
+      if(line2){
+        const lt=LESSON_TYPE_FULL_LABEL_JA[first.lesson_type]||first.lesson_type;
+        line2.textContent=lt+(first.minutes?' '+first.minutes+'分':'');
+      }
+    }else{
+      alert.style.display='none';
+    }
+  }
+
+  // 累計実績
+  const t=document.getElementById('achievement-total');
+  if(t)t.textContent=String(d.lifetime.total_lessons||0)+'件';
+  const r=document.getElementById('achievement-repeat');
+  if(r)r.textContent=String(d.lifetime.unique_customers||0)+'名';
+  const n=document.getElementById('achievement-new');
+  if(n)n.textContent=String(d.lifetime.new_customers_this_month||0)+'名';
+}
+
+function renderBookingsList(d){
+  const wrap=document.getElementById('bookings-list');
+  if(!wrap)return;
+  // 承認待ち(pending) + confirmed + cancelled + rejected すべて表示
+  const all=[];
+  (d.pending_approvals||[]).forEach(b=>all.push({...b,_status:'pending'}));
+  (d.income_history||[]).forEach(b=>all.push({...b,_status:'approved'}));
+  // ※キャンセル・却下は coach-dashboard-data の現在のレスポンスに含まれないため、
+  //   将来Phase 2でAPI拡張時に追加対応とする。
+  if(all.length===0){
+    wrap.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:24px;">予約はまだありません</div>';
+    return;
+  }
+  wrap.innerHTML=all.map(b=>{
+    const lt=LESSON_TYPE_FULL_LABEL_JA[b.lesson_type]||b.lesson_type;
+    const statusLabel=b._status==='pending'?'承認待ち':(b._status==='approved'?'承認済み':b._status);
+    const statusClass=b._status==='pending'?'status-pending':(b._status==='approved'?'status-approved':'status-cancelled');
+    const dt=`${fmtDateFull(b.booking_date)} ${b.booking_time||''}`;
+    const detail=`${lt}${b.minutes?' ・'+b.minutes+'分':''} ${fmtYen(b.total_price)}`;
+    let actions='';
+    if(b._status==='pending'){
+      actions=`<div class="booking-actions"><button class="btn-approve" onclick="approveBooking(this)">承認する</button><button class="btn-decline" onclick="declineBooking(this)">断る</button></div>`;
+    }else if(b._status==='approved'){
+      // エスクロー方式により「完了」ボタン削除。緊急キャンセルのみ残す。
+      actions=`<div class="booking-actions"><button class="btn-emergency" onclick="openCancelModal(this)">🚨 緊急キャンセル</button></div>`;
+    }
+    return `<div class="booking-item" data-status="${b._status}" data-booking-id="${b.id}">
+      <div class="booking-header"><div class="booking-date">${dt}</div><span class="booking-status ${statusClass}">${statusLabel}</span></div>
+      <div class="booking-customer">${escapeHtml(b.customer_name||'')}</div>
+      <div class="booking-detail">${detail}</div>
+      ${actions}
+    </div>`;
+  }).join('');
+}
+
+function renderIncomeSummary(d){
+  const mp=document.getElementById('income-month-payout');
+  if(mp)mp.textContent=fmtYen(d.this_month.payout);
+  const tp=document.getElementById('income-total-payout');
+  if(tp)tp.textContent=fmtYen(d.lifetime.total_payout);
+}
+
+function renderLessonTypeCounts(d){
+  const map={indoor:'count-indoor',round:'count-round',accompany:'count-accompany',comp:'count-comp'};
+  Object.entries(map).forEach(([k,id])=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent=String(d.lesson_type_counts[k]||0);
+  });
+}
+
+function renderIncomeHistory(period){
+  const tbody=document.getElementById('income-history-tbody');
+  if(!tbody||!dashboardData)return;
+  const history=dashboardData.income_history||[];
+  if(history.length===0){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px;font-size:12px;">確定済みの予約はまだありません</td></tr>';
+    return;
+  }
+  // 期間フィルタ
+  const now=new Date();
+  const jstOffset=9*60*60*1000;
+  const nowJst=new Date(now.getTime()+jstOffset);
+  const y=nowJst.getUTCFullYear();
+  const m=nowJst.getUTCMonth();
+  let from=null,to=null;
+  if(period==='month'){from=new Date(Date.UTC(y,m,1));to=new Date(Date.UTC(y,m+1,1));}
+  else if(period==='last'){from=new Date(Date.UTC(y,m-1,1));to=new Date(Date.UTC(y,m,1));}
+  else if(period==='3month'){from=new Date(Date.UTC(y,m-2,1));to=new Date(Date.UTC(y,m+1,1));}
+  // all はフィルタなし
+  const filtered=history.filter(h=>{
+    if(!from||!to)return true;
+    if(!h.booking_date)return false;
+    const bd=new Date(h.booking_date+'T00:00:00Z');
+    return bd>=from && bd<to;
+  });
+  if(filtered.length===0){
+    tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:18px;font-size:12px;">該当期間の確定予約はありません</td></tr>';
+    return;
+  }
+  let totalRevenue=0,totalPayout=0;
+  const rows=filtered.map(h=>{
+    totalRevenue+=h.total_price||0;
+    totalPayout+=h.payout_amount||0;
+    const lt=LESSON_TYPE_LABEL_JA[h.lesson_type]||h.lesson_type;
+    const ltClass='type-'+(h.lesson_type||'other');
+    let payoutStatusLabel='';
+    if(h.payout_status==='released'){
+      payoutStatusLabel='<span style="color:var(--g);font-size:10px;">送金済</span>';
+    }else if(h.payout_status==='refunded'){
+      payoutStatusLabel='<span style="color:var(--red);font-size:10px;">返金</span>';
+    }else if(h.payout_eligible_at){
+      const eligibleJst=new Date(new Date(h.payout_eligible_at).getTime()+jstOffset);
+      const label=String(eligibleJst.getUTCMonth()+1)+'/'+String(eligibleJst.getUTCDate());
+      payoutStatusLabel=`<span style="color:var(--muted);font-size:10px;">${label}送金予定</span>`;
+    }else{
+      payoutStatusLabel='<span style="color:var(--muted);font-size:10px;">-</span>';
+    }
+    return `<tr><td>${fmtDateMonthDay(h.booking_date)}</td><td>${escapeHtml(h.customer_name||'')}</td><td><span class="type-badge ${ltClass}">${lt}</span></td><td>${fmtYen(h.total_price)}</td><td class="amount-cell">${fmtYen(h.payout_amount)}</td><td>${payoutStatusLabel}</td></tr>`;
+  }).join('');
+  const totalRow=`<tr class="total-row"><td colspan="3" style="text-align:right;font-size:11px;">合計</td><td>${fmtYen(totalRevenue)}</td><td class="amount-cell">${fmtYen(totalPayout)}</td><td></td></tr>`;
+  tbody.innerHTML=rows+totalRow;
+}
+
+function renderRating(d){
+  const empty=document.getElementById('rating-empty');
+  const chartWrap=document.getElementById('rating-chart-wrap');
+  const detail=document.getElementById('rating-detail');
+  const countLbl=document.getElementById('rating-count-label');
+  if(!d.rating){
+    if(empty)empty.style.display='block';
+    if(chartWrap)chartWrap.style.display='none';
+    if(detail)detail.style.display='none';
+    if(countLbl)countLbl.textContent='';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  if(chartWrap)chartWrap.style.display='block';
+  if(detail)detail.style.display='grid';
+  if(countLbl)countLbl.textContent=`評価数 ${d.rating.count}件`;
+  const labels=['満足度','コスパ','上達実感','わかりやすさ','人柄・優しさ','また受けたい度'];
+  const values=[d.rating.satisfaction,d.rating.value,d.rating.improvement,d.rating.clarity,d.rating.kindness,d.rating.rebooking];
+  if(ratingChart){ratingChart.destroy();ratingChart=null;}
+  const ctx=document.getElementById('rating-radar');
+  if(ctx && window.Chart){
+    ratingChart=new Chart(ctx,{
+      type:'radar',
+      data:{labels:labels,datasets:[{label:'評価',data:values,backgroundColor:'rgba(29,158,117,0.25)',borderColor:'#1D9E75',borderWidth:2,pointBackgroundColor:'#085041',pointRadius:4}]},
+      options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10}},pointLabels:{font:{size:11,weight:'500'}}}},plugins:{legend:{display:false}}}
+    });
+  }
+  if(detail){
+    detail.innerHTML=labels.map((l,i)=>`<div style="background:#f7faf8;border-radius:6px;padding:6px 8px;">${l} <strong style="float:right;color:var(--gd);">${values[i].toFixed(1)}</strong></div>`).join('');
+  }
+}
+
+function escapeHtml(str){
+  if(str==null)return '';
+  return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ===== PDF出力(実データ版・2026/5/23 v2) ===== */
 function downloadPDF(){
+  if(!dashboardData){
+    showMsg('データ読み込み中です。少々お待ちください。','error');
+    return;
+  }
   const storeName=currentStore?storesData[currentStore].name:'店舗未選択';
   const coachName=document.getElementById('coach-name').textContent;
   const now=new Date();
-  const month=now.getFullYear()+'年'+(now.getMonth()+1)+'月';
+  const jstOffset=9*60*60*1000;
+  const nowJst=new Date(now.getTime()+jstOffset);
+  const yearJst=nowJst.getUTCFullYear();
+  const monthJst=nowJst.getUTCMonth();
+  const month=yearJst+'年'+(monthJst+1)+'月';
+  const monthStart=new Date(Date.UTC(yearJst,monthJst,1));
+  const monthEnd=new Date(Date.UTC(yearJst,monthJst+1,1));
+  const history=(dashboardData.income_history||[]).filter(h=>{
+    if(!h.booking_date)return false;
+    const bd=new Date(h.booking_date+'T00:00:00Z');
+    return bd>=monthStart && bd<monthEnd;
+  });
+  let totalRevenue=0,totalPayout=0;
+  const rowsHtml=history.map(h=>{
+    totalRevenue+=h.total_price||0;
+    totalPayout+=h.payout_amount||0;
+    const lt=LESSON_TYPE_LABEL_JA[h.lesson_type]||h.lesson_type;
+    const ltClass=h.lesson_type||'other';
+    const timeStr=h.minutes?(h.minutes+'分'):'-';
+    return `<tr><td>${fmtDateMonthDay(h.booking_date)}</td><td>${escapeHtml(h.customer_name||'')}</td><td><span class="badge ${ltClass}">${lt}</span></td><td>${timeStr}</td><td class="amount">${fmtYen(h.total_price)}</td><td class="amount">${fmtYen(h.payout_amount)}</td></tr>`;
+  }).join('');
+  const totalRow=history.length>0?`<tr class="total-row"><td colspan="4" style="text-align:right">合計</td><td class="amount">${fmtYen(totalRevenue)}</td><td class="amount">${fmtYen(totalPayout)}</td></tr>`:'<tr><td colspan="6" style="text-align:center;padding:20px;color:#6b8a78;">当月の確定予約はありません</td></tr>';
+  const totalPayoutLifetime=dashboardData.lifetime.total_payout||0;
+  const feeDeducted=totalRevenue-totalPayout;
   const html=`<!DOCTYPE html>
 <html lang="ja"><head><meta charset="UTF-8"><style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@700;900&display=swap');
@@ -2544,6 +2846,8 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 .round{background:#fff3cd;color:#856404;}
 .accompany{background:#e8f4fd;color:#0c5c8a;}
 .comp{background:#f3e8fd;color:#6b3c8a;}
+.custom{background:#fce8f4;color:#8a0c5a;}
+.other{background:#eee;color:#444;}
 .total-row{background:#E1F5EE!important;}
 .total-row td{font-weight:700;color:#085041;}
 .amount{font-family:'Montserrat',sans-serif;font-weight:700;color:#085041;}
@@ -2557,21 +2861,16 @@ tbody td{padding:10px 12px;font-size:12px;border-bottom:1px solid #e0ece6;}
 </style></head><body>
 <div class="header"><div><div class="logo">My<span>Coach</span></div><div class="logo-sub">Golf Matching Service</div></div><div class="doc-title"><h1>月次収入明細書</h1><p>${month}分 発行日:${now.toLocaleDateString('ja-JP')}</p></div></div>
 <div class="info-grid"><div class="info-box"><div class="info-box-label">コーチ名</div><div class="info-box-value">${coachName}</div></div><div class="info-box"><div class="info-box-label">所属店舗</div><div class="info-box-value">${storeName}</div></div></div>
-<div class="summary"><div class="summary-card green"><div class="summary-amount">¥46,400</div><div class="summary-label">今月の手取り収入</div></div><div class="summary-card gold"><div class="summary-amount">¥280,000</div><div class="summary-label">累計手取り収入</div></div></div>
+<div class="summary"><div class="summary-card green"><div class="summary-amount">${fmtYen(totalPayout)}</div><div class="summary-label">今月の手取り収入</div></div><div class="summary-card gold"><div class="summary-amount">${fmtYen(totalPayoutLifetime)}</div><div class="summary-label">累計手取り収入</div></div></div>
 <table><thead><tr><th>日付</th><th>お客様</th><th>種別</th><th>時間</th><th>請求額</th><th>手取り</th></tr></thead><tbody>
-<tr><td>4/10</td><td>山田 太郎</td><td><span class="badge indoor">インドア</span></td><td>50分</td><td class="amount">¥5,000</td><td class="amount">¥4,000</td></tr>
-<tr><td>4/9</td><td>佐藤 花子</td><td><span class="badge round">ラウンド</span></td><td>1R</td><td class="amount">¥20,000</td><td class="amount">¥16,000</td></tr>
-<tr><td>4/8</td><td>田中 次郎</td><td><span class="badge accompany">同伴</span></td><td>1R</td><td class="amount">¥15,000</td><td class="amount">¥12,000</td></tr>
-<tr><td>4/7</td><td>鈴木 一郎</td><td><span class="badge indoor">インドア</span></td><td>90分</td><td class="amount">¥8,000</td><td class="amount">¥6,400</td></tr>
-<tr><td>4/5</td><td>高橋 二郎</td><td><span class="badge comp">コンペ</span></td><td>1R</td><td class="amount">¥10,000</td><td class="amount">¥8,000</td></tr>
-<tr class="total-row"><td colspan="4" style="text-align:right">合計</td><td class="amount">¥58,000</td><td class="amount">¥46,400</td></tr>
+${rowsHtml}
+${totalRow}
 </tbody></table>
 <div class="fee-box"><div class="fee-box-title">手数料内訳(今月合計)</div>
-<div class="fee-row"><span>お客様請求額合計</span><span class="amount">¥58,000</span></div>
-<div class="fee-row"><span>決済手数料 (3.6%)</span><span class="fee-minus amount">▲¥2,088</span></div>
-<div class="fee-row"><span>店舗手数料 (16.4%)</span><span class="fee-minus amount">▲¥9,512</span></div>
-<div class="fee-row"><span>コーチ手取り合計</span><span class="amount">¥46,400</span></div></div>
-<div class="footer">本明細書はMyCoach(株式会社ケイエスケー)システムより自動発行されます。<br>Golf Create 戸津池 ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー</div>
+<div class="fee-row"><span>お客様請求額合計</span><span class="amount">${fmtYen(totalRevenue)}</span></div>
+<div class="fee-row"><span>手数料合計(本部・店舗・決済)</span><span class="fee-minus amount">▲${fmtYen(feeDeducted)}</span></div>
+<div class="fee-row"><span>コーチ手取り合計</span><span class="amount">${fmtYen(totalPayout)}</span></div></div>
+<div class="footer">本明細書はMyCoach(株式会社ケイエスケー)システムより自動発行されます。<br>${storeName} ／ 京都府八幡市 ／ © 2026 MyCoach by 株式会社ケイエスケー</div>
 <script>window.onload=function(){window.print();}<\/script>
 </body></html>`;
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
