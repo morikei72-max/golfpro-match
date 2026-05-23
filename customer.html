@@ -427,10 +427,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <div style="background:#fff8e1;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
           <div style="font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:8px;">📋 キャンセルポリシー</div>
           <div style="font-size:11px;color:#7a5c00;line-height:1.8;">
-            ・48時間前まで:全額返金<br>
-            ・48時間前〜当日前:50%返金<br>
-            ・当日・ノーショー:返金なし
+            ・72時間(3日)以上前:96.4%返金<br>
+            ・72時間〜24時間前:46.4%返金<br>
+            ・24時間以内・当日(事前連絡あり):16.4%返金<br>
+            ・当日無断キャンセル(ノーショー):返金なし<br>
+            ※決済手数料3.6%はお客様負担
           </div>
+          <div id="cancel-policy-applied" style="margin-top:10px;padding:8px 10px;background:#fff;border-radius:6px;font-size:11px;font-weight:700;border:1px solid #f0c040;"></div>
         </div>
         <div style="background:#fff0f0;border:1px solid var(--red);border-radius:10px;padding:12px;margin-bottom:14px;">
           <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:6px;">⚠️ 重要:キャンセル料について</div>
@@ -593,7 +596,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <h4>第3条(個人情報の取り扱い)</h4>個人情報保護法に基づき個人情報を適切に管理します。
         <h4>第4条(お気に入り機能と情報開示)</h4>お気に入り登録時、登録ユーザーの氏名がコーチに通知されます。
         <h4>第5条(ラウンド系依頼におけるお客様負担事項)</h4>ラウンドレッスン・同伴ラウンド・コンペ参加においては、コーチのプレーフィー・キャディフィーはお客様のご負担となります。ただし、コーチ独自プラン(その他カテゴリ)において「コーチがプレーフィーを負担する」設定がなされている場合を除きます。この場合、料金はすべてプランに含まれます。
-        <h4>第6条(キャンセルポリシー)</h4>レッスン開始48時間前まで無料。以降はレッスン料の50%、当日は全額を申し受けます。
+        <h4>第6条(キャンセルポリシー)</h4>レッスン開始72時間(3日)以上前のキャンセルは96.4%返金、72時間〜24時間前は46.4%返金、24時間以内・当日(事前連絡あり)は16.4%返金、当日無断キャンセル(ノーショー)は返金なしとなります。決済手数料3.6%はお客様負担となります。
         <h4>第7条(レビュー義務)</h4>レッスン終了後、星評価(1〜5)の投稿が必須です。
         <h4>第8条(準拠法・管轄)</h4>本規約は日本法に準拠し、京都地方裁判所を第一審の専属的合意管轄裁判所とします。
         <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #ccc;font-size:10px;">
@@ -1232,7 +1235,7 @@ function showBookingDetail(idx){
   if(rawStatus==='confirmed'){
     buttonsHTML='<button class="mdl-btn mdl-btn-line" onclick="window.open(\'https://line.me/R/\',\'_blank\')">💬 コーチに問い合わせ(LINE)</button>'+
 '<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal(\''+b.id+'\','+(parseInt(b.total_price)||0)+')">予約をキャンセル</button>'+
-      '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:48時間前まで無料。以降50%、当日100%</div>';
+      '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:72h以上前96.4%/72-24h前46.4%/24h以内16.4%/無断0%</div>';
   }
   if(rawStatus==='completed'){
     var receiptInfo=(window._receiptMap||{})[b.id];
@@ -2421,10 +2424,10 @@ function openCancelRequestModal(bookingId,totalPrice){
   cancelRequestCancelFee=refundCalc.cancelFee;
   var policyLabelEl=document.getElementById('cancel-policy-applied');
   if(policyLabelEl){
-    if(refundCalc.policy==='full_refund') policyLabelEl.textContent='✅ 適用ポリシー:48時間以上前(全額返金)';
-    else if(refundCalc.policy==='half_refund') policyLabelEl.textContent='⚠️ 適用ポリシー:48時間以内(50%返金)';
-    else policyLabelEl.textContent='🚫 適用ポリシー:当日キャンセル(返金なし)';
-    policyLabelEl.style.color=refundCalc.policy==='no_refund'?'#B71C1C':refundCalc.policy==='half_refund'?'#E65100':'#2E7D32';
+    if(refundCalc.policy==='full_refund') policyLabelEl.textContent='✅ 適用ポリシー:72時間以上前(96.4%返金)';
+    else if(refundCalc.policy==='half_refund') policyLabelEl.textContent='⚠️ 適用ポリシー:72〜24時間前(46.4%返金)';
+    else policyLabelEl.textContent='🚫 適用ポリシー:24時間以内・当日(16.4%返金)';
+    policyLabelEl.style.color=refundCalc.policy==='sameday_refund'?'#B71C1C':refundCalc.policy==='half_refund'?'#E65100':'#2E7D32';
   }
   document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString();
   document.getElementById('cancel-fee-display').textContent='¥'+refundCalc.cancelFee.toLocaleString();
@@ -2447,15 +2450,15 @@ function calculateRefundForCancel(booking,totalPrice){
   var lessonDateTime=new Date(booking.booking_date+'T'+timeStr+'+09:00');
   var now=new Date();
   var hoursUntilLesson=(lessonDateTime-now)/(1000*60*60);
-  if(hoursUntilLesson>=48){
+  if(hoursUntilLesson>=72){
     return {policy:'full_refund',cancelFee:stripeFee,refundAmount:totalPrice-stripeFee};
   }else if(hoursUntilLesson>=24){
     var halfFee=Math.round(totalPrice*0.5);
     var fee2=halfFee+stripeFee;
     return {policy:'half_refund',cancelFee:fee2,refundAmount:totalPrice-fee2};
   }else{
-    var eightyFee=Math.round(totalPrice*0.8);
-    var fee3=eightyFee+stripeFee;
+    var samedayFee=Math.round(totalPrice*0.8);
+    var fee3=samedayFee+stripeFee;
     return {policy:'sameday_refund',cancelFee:fee3,refundAmount:totalPrice-fee3};
   }
 }
@@ -2484,7 +2487,7 @@ async function submitCancelRequest(){
   if(!agreeChk){alert('キャンセルポリシーに同意してください');return;}
   if(!category){alert('キャンセル理由を選択してください');return;}
   if(!reasonText){alert('キャンセル理由の詳細を入力してください');return;}
-  var policyText=cancelRequestPolicy==='full_refund'?'全額返金(48時間以上前)':cancelRequestPolicy==='half_refund'?'50%返金(24~48時間前)':'20%返金(24時間以内・当日)';
+  var policyText=cancelRequestPolicy==='full_refund'?'96.4%返金(72時間以上前)':cancelRequestPolicy==='half_refund'?'46.4%返金(72〜24時間前)':'16.4%返金(24時間以内・当日)';
   var confirmMsg='【最終確認】\n\n本当にこのご予約をキャンセルしますか?\n\n'+
     '■ 適用ポリシー:\n'+policyText+'\n\n'+
     '■ 返金内容:\n'+
