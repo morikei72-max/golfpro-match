@@ -953,6 +953,7 @@ function resetEntryCoach(){
   document.getElementById('coach-plans-area').style.display='none';
   document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('hidden-type');});
   document.getElementById('lesson-type-label').textContent='依頼の種類を選ぶ';
+  loadAllCoaches();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
