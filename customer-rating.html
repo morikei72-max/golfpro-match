@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>MyCoach — レッスン評価</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --g:#1D9E75;--gd:#064D3B;--gl:#E1F5EE;
+  --accent:#65CEA5;--gold:#BA7517;--red:#E24B4A;
+  --border:#e0ece6;--text:#1a2e24;--muted:#6b8a78;
+  --bg:#f7faf8;
+}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+.header{background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;padding:18px 16px;text-align:center;}
+.header-logo{font-family:'Montserrat',sans-serif;font-size:22px;font-weight:900;letter-spacing:0.02em;}
+.header-logo span{color:var(--accent);}
+.header-sub{font-size:11px;letter-spacing:0.2em;margin-top:4px;opacity:0.85;}
+.main{padding:16px 14px;max-width:520px;margin:0 auto;}
+.card{background:#fff;border-radius:12px;padding:16px 14px;margin-bottom:14px;box-shadow:0 1px 4px rgba(8,80,65,0.05);}
+.card-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.lesson-info{background:linear-gradient(135deg,var(--gl),#fff);border-radius:12px;padding:14px;margin-bottom:14px;border-left:4px solid var(--g);}
+.lesson-info-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.1em;margin-bottom:4px;}
+.lesson-info-value{font-size:14px;font-weight:700;color:var(--gd);margin-bottom:8px;}
+.lesson-info-value:last-child{margin-bottom:0;}
+.intro{background:#fff;border-radius:12px;padding:16px 14px;margin-bottom:14px;text-align:center;}
+.intro-emoji{font-size:34px;margin-bottom:8px;}
+.intro-title{font-size:16px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.intro-text{font-size:12px;color:var(--muted);line-height:1.7;}
+.rating-item{padding:14px 12px;border-radius:10px;background:#fff;margin-bottom:10px;border:1px solid var(--border);}
+.rating-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.rating-name{font-size:13px;font-weight:700;color:var(--gd);}
+.rating-required{font-size:9px;background:var(--red);color:#fff;padding:1px 6px;border-radius:4px;font-weight:700;}
+.rating-desc{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+.stars{display:flex;justify-content:space-around;gap:4px;margin-top:6px;}
+.star{flex:1;text-align:center;padding:6px 0;font-size:24px;color:#ddd;cursor:pointer;user-select:none;transition:transform 0.1s,color 0.1s;}
+.star:active{transform:scale(1.2);}
+.star.selected{color:var(--gold);}
+.star.hover{color:#f5c84a;}
+.comment-wrap{margin-top:14px;}
+.comment-label{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
+.comment-optional{font-size:9px;background:var(--muted);color:#fff;padding:1px 6px;border-radius:4px;font-weight:700;}
+.comment-desc{font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.5;}
+.comment-textarea{width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);font-family:inherit;font-size:13px;min-height:80px;resize:vertical;}
+.comment-textarea:focus{outline:none;border-color:var(--g);}
+.submit-btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--gd),var(--g));color:#fff;font-size:15px;font-weight:700;border:none;cursor:pointer;margin-top:8px;letter-spacing:0.05em;}
+.submit-btn:disabled{background:#ccc;cursor:not-allowed;}
+.msg{margin:10px 0;padding:10px 12px;border-radius:8px;font-size:13px;display:none;}
+.msg.success{background:var(--gl);color:var(--gd);border:1px solid var(--g);display:block;}
+.msg.error{background:#fce8e8;color:var(--red);border:1px solid var(--red);display:block;}
+.loading{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px;}
+.completed-card{text-align:center;padding:30px 20px;}
+.completed-emoji{font-size:48px;margin-bottom:12px;}
+.completed-title{font-size:18px;font-weight:700;color:var(--gd);margin-bottom:10px;}
+.completed-text{font-size:13px;color:var(--muted);line-height:1.8;}
+.privacy{font-size:10px;color:var(--muted);text-align:center;line-height:1.7;margin-top:14px;padding:10px;}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">My<span>Coach</span></div>
+  <div class="header-sub">レッスン評価</div>
+</header>
+
+<main class="main" id="main">
+  <div class="loading" id="loading-state">読み込み中...</div>
+</main>
+
+<script>
+const SUPABASE_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+const RATING_ITEMS=[
+  {key:'satisfaction',name:'満足度',desc:'レッスン全体に満足できましたか?'},
+  {key:'value',name:'コスパ',desc:'料金に対して内容は充実していましたか?'},
+  {key:'improvement',name:'上達実感',desc:'受けてみてご自身が上手くなったと感じましたか?'},
+  {key:'clarity',name:'わかりやすさ',desc:'説明や指示は伝わりやすかったですか?'},
+  {key:'kindness',name:'人柄・優しさ',desc:'親身になって楽しく指導してくれましたか?'},
+  {key:'rebooking',name:'また受けたい度',desc:'このコーチにまたお願いしたいですか?'}
+];
+
+const LESSON_TYPE_LABEL={
+  indoor:'インドアゴルフレッスン',
+  round:'ラウンドレッスン',
+  accompany:'同伴ラウンド',
+  comp:'コンペ参加',
+  custom:'コーチ独自プラン'
+};
+
+const ratings={};
+
+function getBookingId(){
+  const params=new URLSearchParams(window.location.search);
+  return params.get('booking_id');
+}
+
+function fmtDate(d){
+  if(!d)return '';
+  const [y,m,day]=d.split('-').map(s=>parseInt(s,10));
+  const wd=['日','月','火','水','木','金','土'][new Date(y,m-1,day).getDay()];
+  return `${y}/${String(m).padStart(2,'0')}/${String(day).padStart(2,'0')}(${wd})`;
+}
+
+function escapeHtml(s){
+  if(s==null)return '';
+  return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function init(){
+  const main=document.getElementById('main');
+  const bookingId=getBookingId();
+  if(!bookingId){
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">URLが正しくありません</div><div class="completed-text">LINEから送信された評価リンクをご利用ください。</div></div></div>';
+    return;
+  }
+
+  // 予約情報取得
+  const {data:booking,error:bErr}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
+  if(bErr||!booking){
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">予約情報が見つかりません</div><div class="completed-text">URLをご確認のうえ、もう一度お試しください。</div></div></div>';
+    return;
+  }
+
+  // 既に評価済みかチェック
+  const {data:existingRating}=await sb.from('coach_ratings').select('id').eq('booking_id',bookingId).maybeSingle();
+  if(existingRating){
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">✅</div><div class="completed-title">評価ありがとうございました</div><div class="completed-text">このレッスンには既に評価をいただいております。<br>たくさんのご評価、ありがとうございます。</div></div></div>';
+    return;
+  }
+
+  // 確定済予約のみ評価可能
+  if(booking.status!=='confirmed'){
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">評価できない予約です</div><div class="completed-text">確定済みのレッスンのみ評価いただけます。</div></div></div>';
+    return;
+  }
+
+  // コーチ情報取得
+  const {data:coach}=await sb.from('coaches').select('id,name').eq('id',booking.coach_id).maybeSingle();
+  const coachName=coach?.name||booking.coach_name||'コーチ';
+  const lessonType=LESSON_TYPE_LABEL[booking.lesson_type]||booking.lesson_type||'レッスン';
+  const dateStr=fmtDate(booking.booking_date);
+  const timeStr=booking.booking_time?booking.booking_time.substring(0,5):'';
+
+  // 画面構築
+  let html=`
+    <div class="intro">
+      <div class="intro-emoji">⭐</div>
+      <div class="intro-title">レッスンはいかがでしたか?</div>
+      <div class="intro-text">皆様のご評価が、コーチの励みになります。<br>6項目すべてご評価ください。</div>
+    </div>
+
+    <div class="lesson-info">
+      <div class="lesson-info-label">コーチ</div>
+      <div class="lesson-info-value">${escapeHtml(coachName)} コーチ</div>
+      <div class="lesson-info-label">レッスン内容</div>
+      <div class="lesson-info-value">${escapeHtml(lessonType)}${booking.minutes?' ・'+booking.minutes+'分':''}</div>
+      <div class="lesson-info-label">日時</div>
+      <div class="lesson-info-value">${dateStr} ${timeStr}</div>
+    </div>
+
+    <div id="msg-area" class="msg"></div>
+  `;
+
+  RATING_ITEMS.forEach(item=>{
+    html+=`
+      <div class="rating-item" data-key="${item.key}">
+        <div class="rating-label">
+          <div class="rating-name">${item.name}</div>
+          <div class="rating-required">必須</div>
+        </div>
+        <div class="rating-desc">${item.desc}</div>
+        <div class="stars" data-rating="${item.key}">
+          ${[1,2,3,4,5].map(v=>`<div class="star" data-value="${v}">★</div>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  html+=`
+    <div class="card">
+      <div class="comment-wrap">
+        <div class="comment-label">
+          <span>コメント</span>
+          <span class="comment-optional">任意</span>
+        </div>
+        <div class="comment-desc">コーチ本人と運営のみが閲覧します(お客様画面には公開されません)</div>
+        <textarea id="comment-input" class="comment-textarea" placeholder="ご感想やお気づきの点があればご記入ください"></textarea>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitRating('${bookingId}','${booking.coach_id||''}','${booking.customer_id||''}')">評価を送信する</button>
+
+    <div class="privacy">
+      ご評価いただいた内容は、コーチへのフィードバックおよびサービス向上のために利用されます。<br>
+      お客様のお名前は他のお客様には公開されません。
+    </div>
+  `;
+
+  main.innerHTML=html;
+
+  // ★クリックイベント設定
+  document.querySelectorAll('.stars').forEach(starsEl=>{
+    const key=starsEl.dataset.rating;
+    const stars=starsEl.querySelectorAll('.star');
+    stars.forEach(star=>{
+      star.addEventListener('click',()=>{
+        const v=parseInt(star.dataset.value,10);
+        ratings[key]=v;
+        stars.forEach(s=>{
+          s.classList.toggle('selected',parseInt(s.dataset.value,10)<=v);
+        });
+      });
+      star.addEventListener('mouseenter',()=>{
+        const v=parseInt(star.dataset.value,10);
+        stars.forEach(s=>{
+          s.classList.toggle('hover',parseInt(s.dataset.value,10)<=v);
+        });
+      });
+      star.addEventListener('mouseleave',()=>{
+        stars.forEach(s=>s.classList.remove('hover'));
+      });
+    });
+  });
+}
+
+function showMsg(text,type){
+  const area=document.getElementById('msg-area');
+  if(!area)return;
+  area.className='msg '+type;
+  area.textContent=text;
+  if(type==='error'){
+    area.scrollIntoView({behavior:'smooth',block:'center'});
+  }
+}
+
+async function submitRating(bookingId,coachId,customerId){
+  // バリデーション:6項目すべて入力チェック
+  const missing=[];
+  RATING_ITEMS.forEach(item=>{
+    if(!ratings[item.key]){missing.push(item.name);}
+  });
+  if(missing.length>0){
+    showMsg('未評価の項目があります:'+missing.join('、'),'error');
+    return;
+  }
+
+  const comment=(document.getElementById('comment-input')?.value||'').trim();
+
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='送信中...';
+
+  try{
+    const res=await fetch('/.netlify/functions/submit-rating',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        booking_id:bookingId,
+        coach_id:coachId,
+        customer_id:customerId,
+        rating_satisfaction:ratings.satisfaction,
+        rating_value:ratings.value,
+        rating_improvement:ratings.improvement,
+        rating_clarity:ratings.clarity,
+        rating_kindness:ratings.kindness,
+        rating_rebooking:ratings.rebooking,
+        comment:comment||null
+      })
+    });
+    const json=await res.json();
+    if(!res.ok||!json.ok){
+      throw new Error(json.error||'送信に失敗しました');
+    }
+    document.getElementById('main').innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">🎉</div><div class="completed-title">評価ありがとうございました!</div><div class="completed-text">いただいたご評価は<br>コーチの励みになります。<br><br>これからも MyCoach を<br>よろしくお願いいたします。</div></div></div>';
+  }catch(e){
+    console.error('submit error:',e);
+    showMsg('❌ '+e.message,'error');
+    btn.disabled=false;btn.textContent='評価を送信する';
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>
