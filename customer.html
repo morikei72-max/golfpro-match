@@ -1720,6 +1720,11 @@ function selectWeekDay(ds){
   var plansArea=document.getElementById('coach-plans-area');
   if(plansArea) plansArea.style.display='none';
   document.getElementById('btn-to-request').style.display='none';
+  /* ★ 時間スロット位置へ自動スクロール */
+  setTimeout(function(){
+    var slotArea=document.getElementById('slot-area');
+    if(slotArea) slotArea.scrollIntoView({behavior:'smooth',block:'start'});
+  },50);
 }
 
 function normalizeTime(t){
@@ -1743,6 +1748,16 @@ function selectSlot(t){
     el.classList.toggle('sel',el.textContent===selectedTime);
   });
   showCoachInfo();
+  /* ★ コーチ情報/料金プラン位置へ自動スクロール */
+  setTimeout(function(){
+    var target=document.getElementById('coach-plans-area');
+    if(target && target.style.display!=='none'){
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
+    var info=document.getElementById('coach-info-area');
+    if(info) info.scrollIntoView({behavior:'smooth',block:'start'});
+  },150);
 }
 
 var calYear=null;
@@ -1796,6 +1811,16 @@ function selectMonthDay(ds){
   selectedPlan=null;
   renderMonthCal();
   showCoachInfo();
+  /* ★ コーチ情報位置へ自動スクロール */
+  setTimeout(function(){
+    var target=document.getElementById('coach-plans-area');
+    if(target && target.style.display!=='none'){
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
+    var info=document.getElementById('coach-info-area');
+    if(info) info.scrollIntoView({behavior:'smooth',block:'start'});
+  },150);
 }
 
 var selectedCoachId=null;
@@ -1880,6 +1905,11 @@ async function selectCoach(coachId){
     el.classList.toggle('selected',el.getAttribute('data-coach-id')===coachId);
   });
   await loadCoachPlans(coachId);
+  /* ★ 料金プラン位置へ自動スクロール */
+  setTimeout(function(){
+    var plansArea=document.getElementById('coach-plans-area');
+    if(plansArea && plansArea.style.display!=='none') plansArea.scrollIntoView({behavior:'smooth',block:'start'});
+  },50);
 }
 
 async function loadCoachPlans(coachId){
@@ -1952,6 +1982,11 @@ function selectPriceItem(idx){
     coach_pays_greenfee:false,golf_course_name:null,start_time:null
   };
   document.getElementById('btn-to-request').style.display='block';
+  /* ★ 依頼ボタン位置へ自動スクロール */
+  setTimeout(function(){
+    var btn=document.getElementById('btn-to-request');
+    if(btn) btn.scrollIntoView({behavior:'smooth',block:'center'});
+  },50);
 }
 
 function renderCustomPlans(plans){
@@ -1999,6 +2034,11 @@ function selectCustomPlan(idx){
     golf_course_name:plan.golf_course_name||null,start_time:plan.start_time||null
   };
   document.getElementById('btn-to-request').style.display='block';
+  /* ★ 依頼ボタン位置へ自動スクロール */
+  setTimeout(function(){
+    var btn=document.getElementById('btn-to-request');
+    if(btn) btn.scrollIntoView({behavior:'smooth',block:'center'});
+  },50);
 }
 
 function escapeHtml(s){
