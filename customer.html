@@ -97,8 +97,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .month-day.selected .avail-badge{color:#fff;}
 .coach-info-bar{background:var(--gl);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gd);}
 .btn-to-request{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
-.coach-card{display:flex;gap:10px;padding:12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:all .15s;-webkit-tap-highlight-color:transparent;align-items:flex-start;}
-.coach-card:hover{border-color:var(--g);background:var(--gl);}
+.coach-card{display:flex;gap:10px;padding:12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:all .15s;-webkit-tap-highlight-color:transparent;align-items:flex-start;}.coach-card:hover{border-color:var(--g);background:var(--gl);}
 .coach-card.selected{border-color:var(--g);background:var(--gl);box-shadow:0 0 0 2px rgba(29,158,117,.2);}
 .coach-card-photo{width:60px;height:60px;border-radius:50%;background:var(--gl);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--gd);font-weight:700;}
 .coach-card-photo img{width:100%;height:100%;object-fit:cover;}
@@ -112,6 +111,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .coach-card-rating:active{opacity:0.7;}
 .coach-card-rating-star{color:#BA7517;font-size:12px;}
 .coach-card-rating-count{font-size:10px;color:#999;font-weight:400;margin-left:2px;}
+.coach-card-radar{width:120px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;}
+.coach-card-radar-wrap{position:relative;width:120px;height:110px;}
+.coach-card-radar-pending{width:120px;height:110px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10px;color:#999;background:#f7faf8;border-radius:8px;line-height:1.4;padding:4px;}
+.coach-card-radar-score{margin-top:4px;font-size:11px;font-weight:700;color:var(--gold);text-align:center;}
+.coach-card-radar-score .rc{color:#999;font-size:10px;font-weight:400;margin-left:3px;}
 /* レーダーチャートモーダル(Phase 2) */
 .rating-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;-webkit-tap-highlight-color:transparent;}
 .rating-modal-overlay.open{display:flex;}
@@ -822,14 +826,54 @@ async function loadAllCoaches(){
       if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
       if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
       if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
-      // ★ Phase 2:評価バッジ(評価3件以上 かつ ★3.0以上のコーチのみ公開)
+      html+='</div>';
+      // ★ Phase 2:カード右側にコンパクトレーダーチャート(120×110px)
       var m=ratingsMap[c.id];
       if(m && m.count>=3 && m.overall>=3.0){
-        html+='<div class="coach-card-rating" onclick="event.stopPropagation();openRatingModal(\''+c.id+'\');"><span class="coach-card-rating-star">★</span>'+m.overall.toFixed(1)+'<span class="coach-card-rating-count">('+m.count+'件)</span> → 詳細</div>';
+        html+='<div class="coach-card-radar" onclick="event.stopPropagation();">';
+        html+='<div class="coach-card-radar-wrap"><canvas id="card-radar-'+c.id+'" width="120" height="110"></canvas></div>';
+        html+='<div class="coach-card-radar-score"><span style="color:#BA7517;">★</span>'+m.overall.toFixed(1)+'<span class="rc">('+m.count+'件)</span></div>';
+        html+='</div>';
+      }else{
+        html+='<div class="coach-card-radar" onclick="event.stopPropagation();">';
+        html+='<div class="coach-card-radar-pending">📊<br>評価データ<br>蓄積中</div>';
+        html+='</div>';
       }
-      html+='</div></div>';
+      html+='</div>';
     });
     listEl.innerHTML=html;
+    // ★ Phase 2:各コーチカード内レーダーチャートを描画
+    if(window.Chart){
+      data.forEach(function(c){
+        var m=ratingsMap[c.id];
+        if(!m || m.count<3 || m.overall<3.0) return;
+        var ctx=document.getElementById('card-radar-'+c.id);
+        if(!ctx) return;
+        try{
+          new Chart(ctx,{
+            type:'radar',
+            data:{
+              labels:['満足度','コスパ','上達','分かり','人柄','再受'],
+              datasets:[{
+                data:[m.avg.satisfaction,m.avg.value,m.avg.improvement,m.avg.clarity,m.avg.kindness,m.avg.rebooking],
+                backgroundColor:'rgba(101,206,165,0.35)',
+                borderColor:'#65CEA5',
+                borderWidth:1.5,
+                pointRadius:0,
+                pointBackgroundColor:'#65CEA5'
+              }]
+            },
+            options:{
+              responsive:false,
+              maintainAspectRatio:false,
+              plugins:{legend:{display:false},tooltip:{enabled:false}},
+              scales:{r:{min:0,max:5,beginAtZero:true,ticks:{display:false,stepSize:1},grid:{color:'rgba(0,0,0,0.08)'},angleLines:{color:'rgba(0,0,0,0.08)'},pointLabels:{font:{size:8},color:'#666'}}},
+              animation:false
+            }
+          });
+        }catch(err){console.warn('card radar render error',err);}
+      });
+    }
     window._entryCoachCache={};
     data.forEach(function(c){window._entryCoachCache[c.id]=c;});
   }catch(e){
