@@ -1,13 +1,16 @@
 // netlify/functions/create-checkout-session.js
 // MyCoach 決済セッション作成
-// 【2026/5/19 v5】transfer_data.amount のみでコーチ送金額を制御
+// 【2026/5/23 v6】エスクロー方式へ移行
 //
-// 振り分けロジック:
-//   transfer_data.destination = コーチのStripe Connectアカウント
-//   transfer_data.amount = コーチ送金額(= 総額 - 本部手数料 - 店舗手数料 - Stripe手数料)
-//   → 残額(本部手数料+店舗手数料)が自動的に本部Stripeアカウントに残る
-//   ※ application_fee_amount と transfer_data.amount は同時指定不可のため、
-//     transfer_data.amount のみを使用
+// 振り分けロジック(エスクロー方式):
+//   payment_intent_data.transfer_data は使用しない(コーチ即時帰属を止める)
+//   → 決済額全額が株式会社ケイエスケーStripeアカウントに保留される
+//   → コーチへの送金は release-coach-payout.js が
+//      レッスン完了+7日後に Stripe transfers.create() で実行する
+//
+// 旧方式(v5以前)では transfer_data.destination でコーチ即時帰属していたが、
+// レッスン未提供時のキャンセル・コーチ不正リスクが高かったため変更。
+//
 //
 // 手数料率:
 // ・本部手数料率: HQ_FEE_RATE = 0.164
@@ -151,11 +154,10 @@ exports.handler = async (event) => {
         success_url: `${origin}/customer.html?payment=success&booking_id=${approvedBookingId}`,
         cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${approvedBookingId}`,
         metadata: metadata,
+        // ★ エスクロー方式: transfer_data を指定しない
+        // 決済額は全額が株式会社ケイエスケーStripeアカウントに保留される
+        // コーチへの送金は release-coach-payout.js が完了+7日後に実行する
         payment_intent_data: {
-          transfer_data: {
-            destination: splitResult.coachStripeAccountId,
-            amount: splitResult.coachAmount,
-          },
           metadata: metadata,
         },
       });
@@ -290,11 +292,10 @@ exports.handler = async (event) => {
       success_url: `${origin}/customer.html?payment=success&booking_id=${bookingId}`,
       cancel_url:  `${origin}/customer.html?payment=cancel&booking_id=${bookingId}`,
       metadata: metadataB,
+      // ★ エスクロー方式: transfer_data を指定しない
+      // 決済額は全額が株式会社ケイエスケーStripeアカウントに保留される
+      // コーチへの送金は release-coach-payout.js が完了+7日後に実行する
       payment_intent_data: {
-        transfer_data: {
-          destination: splitResultB.coachStripeAccountId,
-          amount: splitResultB.coachAmount,
-        },
         metadata: metadataB,
       },
     });
