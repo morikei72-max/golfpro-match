@@ -123,6 +123,21 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 <script>
 const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 
+/* Supabase Auth エラーメッセージを日本語に翻訳 */
+function translateError(msg){
+  if(!msg) return '登録できませんでした。もう一度お試しください';
+  const m=msg.toLowerCase();
+  if(m.includes('invalid format')||m.includes('invalid email')) return 'メールアドレスの形式が正しくありません';
+  if(m.includes('already registered')||m.includes('already exists')) return 'このメールアドレスは既に登録されています';
+  if(m.includes('password should be at least')) return 'パスワードは6文字以上で入力してください';
+  if(m.includes('rate limit')) return 'しばらく時間をおいて再度お試しください';
+  if(m.includes('valid password')) return 'パスワードを入力してください';
+  if(m.includes('not confirmed')) return 'メール認証が完了していません。確認メールをご確認ください';
+  if(m.includes('weak password')) return 'パスワードが弱すぎます。英数字を組み合わせて6文字以上で入力してください';
+  if(m.includes('network')) return 'ネットワークエラーが発生しました。通信環境をご確認ください';
+  return '登録できませんでした('+msg+')';
+}
+
 async function doRegister(){
   const email=document.getElementById('email').value.trim();
   const pass=document.getElementById('pass').value;
@@ -156,7 +171,7 @@ async function doRegister(){
   });
 
   if(error){
-    err.textContent=error.message;
+    err.textContent=translateError(error.message);
     err.style.display='block';
     btn.disabled=false;
     btn.innerHTML='登録する <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
