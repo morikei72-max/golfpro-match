@@ -178,8 +178,16 @@ async function doRegister(){
     return;
   }
 
-  /* 既登録判定: error が null かつ、user が null または identities が空配列 */
-  const isExistingUser = !error && (!data?.user || (Array.isArray(data?.user?.identities) && data.user.identities.length === 0));
+  /* 既登録判定:
+     新規登録成功時:data.user.identities = [identity1個]・identity.identity_data等あり
+     既登録時:data.user は返るが、data.user.identities = [] (空配列)
+     ただし「confirmation_sent_at」が data.user に直近時刻で入っていれば「新規だが未認証」
+     真の既登録は「identities=[] かつ confirmation_sent_at が null/古い」 */
+  const u = data?.user;
+  const identitiesArr = u?.identities;
+  const hasIdentities = Array.isArray(identitiesArr) && identitiesArr.length > 0;
+  const justCreated = u?.created_at && (Date.now() - new Date(u.created_at).getTime()) < 60000;
+  const isExistingUser = !error && u && !hasIdentities && !justCreated;
 
   if(isExistingUser){
     /* 既に登録済 → 即座にログイン誘導(メール再送なし) */
