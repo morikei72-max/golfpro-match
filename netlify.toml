@@ -1,0 +1,13 @@
+[build]
+  functions = "netlify/functions"
+
+# ============================================
+# Scheduled Functions (定期実行関数)
+# ============================================
+
+# release-coach-payout: コーチへの送金実行
+# 毎日 日本時間 午前2時(UTC 17時)に実行
+# レッスン日+7日経過した予約を抽出してコーチへ自動送金
+[[scheduled.functions]]
+  name = "release-coach-payout"
+  cron = "0 17 * * *"
