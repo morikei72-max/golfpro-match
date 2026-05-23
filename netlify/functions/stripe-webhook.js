@@ -1,6 +1,10 @@
 // netlify/functions/stripe-webhook.js
 // MyCoach Stripe Webhook（MASTER_DB.md 準拠・2026/4/19）
-// bookings 実カラムのみ使用: status のみ UPDATE する
+// 【2026/5/23 v2】エスクロー方式対応
+//   ・決済確定時に payout_eligible_at(レッスン日+7日)を自動計算してDB保存
+//   ・payout_amount(コーチ送金額)も同時に保存
+//   ・payout_status='pending' を明示的にセット
+// bookings 実カラム使用: status / payout_status / payout_eligible_at / payout_amount
 
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
@@ -44,15 +48,45 @@ exports.handler = async (event) => {
         const bookingId = session.metadata?.booking_id;
 
         if (bookingId) {
+          // metadata からコーチ送金額を取得(create-checkout-session.jsで設定済)
+          const coachAmount = parseInt(session.metadata?.coach_amount || '0', 10);
+
+          // 該当予約の booking_date と booking_time を取得して payout_eligible_at を計算
+          const { data: booking, error: selectErr } = await supabase
+            .from('bookings')
+            .select('booking_date, booking_time')
+            .eq('id', bookingId)
+            .maybeSingle();
+
+          let payoutEligibleAt = null;
+          if (booking && booking.booking_date) {
+            // レッスン日時 + 7日 = payout_eligible_at
+            const timeStr = (booking.booking_time || '00:00:00').substring(0, 8);
+            const lessonDateTime = new Date(`${booking.booking_date}T${timeStr}+09:00`);
+            const eligibleDate = new Date(lessonDateTime.getTime() + 7 * 24 * 60 * 60 * 1000);
+            payoutEligibleAt = eligibleDate.toISOString();
+          } else {
+            console.warn('[stripe-webhook] booking_date not found for booking:', bookingId, selectErr);
+          }
+
+          const updatePayload = {
+            status: 'confirmed',
+            payout_status: 'pending',
+            payout_amount: coachAmount,
+          };
+          if (payoutEligibleAt) {
+            updatePayload.payout_eligible_at = payoutEligibleAt;
+          }
+
           const { error } = await supabase
             .from('bookings')
-            .update({ status: 'confirmed' })
+            .update(updatePayload)
             .eq('id', bookingId);
 
           if (error) {
             console.error('bookings update (confirmed) error:', error);
           } else {
-            console.log('Booking confirmed:', bookingId);
+            console.log('Booking confirmed:', bookingId, 'payout_eligible_at:', payoutEligibleAt, 'payout_amount:', coachAmount);
             // LINE通知（line-notify.js がある場合に備えて try-catch）
             await notifyLineSafely('booking_confirmed', { bookingId, session });
           }
