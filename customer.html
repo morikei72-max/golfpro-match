@@ -1527,6 +1527,35 @@ async function fetchAvailDates(){
       renderMonthCal();
       return;
     }
+    /* ★★★ 二重予約防止:アクティブな予約を取得して「予約済みコーチID」マップを構築 ★★★ */
+    var bookedMap={};
+    try{
+      var{data:activeBookings}=await sb.from('bookings')
+        .select('coach_id,booking_date,booking_time,lesson_type,status')
+        .in('status',['pending_approval','approved','approved_pending_payment','confirmed'])
+        .gte('booking_date',todayStr)
+        .in('coach_id',activeCoachIds);
+      if(activeBookings){
+        activeBookings.forEach(function(b){
+          if(!b.coach_id||!b.booking_date) return;
+          var ds=b.booking_date;
+          if(!bookedMap[ds]) bookedMap[ds]={indoor:{},dayFull:{}};
+          if(b.lesson_type==='indoor'){
+            /* インドアは時間単位で塞ぐ */
+            var t=(b.booking_time||'').substring(0,5);
+            if(!t) return;
+            if(!bookedMap[ds].indoor[t]) bookedMap[ds].indoor[t]={};
+            bookedMap[ds].indoor[t][b.coach_id]=true;
+          }else{
+            /* ラウンド/同伴/コンペ/独自プランは日単位で塞ぐ */
+            if(!bookedMap[ds].dayFull[b.coach_id]) bookedMap[ds].dayFull[b.coach_id]={};
+            bookedMap[ds].dayFull[b.coach_id][b.lesson_type||'unknown']=true;
+            bookedMap[ds].dayFull[b.coach_id]['_any_']=true;
+          }
+        });
+      }
+    }catch(e){console.warn('予約済み取得スキップ',e);}
+    window._bookedMap=bookedMap;
     var{data,error}=await sb.from('schedules')
       .select('coach_id,slot_date,slot_hour,lesson_type,status')
       .eq('status','available')
@@ -1541,25 +1570,46 @@ async function fetchAvailDates(){
         if(!ds||!lt||!coachId) return;
         if(!availCache[ds]) availCache[ds]={};
         if(lt==='indoor'){
-          if(!availCache[ds].indoor) availCache[ds].indoor={times:[],coaches:[]};
           var hr=row.slot_hour;
-          if(hr!==null&&hr!==undefined&&hr>=1){
-            var t=(hr<10?'0'+hr:''+hr)+':00';
-            if(availCache[ds].indoor.times.indexOf(t)<0) availCache[ds].indoor.times.push(t);
-          }
+          if(hr===null||hr===undefined||hr<1) return;
+          var t=(hr<10?'0'+hr:''+hr)+':00';
+          /* ★ このコーチがこの時間枠を既に予約済みならスキップ */
+          if(bookedMap[ds]&&bookedMap[ds].indoor[t]&&bookedMap[ds].indoor[t][coachId]) return;
+          if(!availCache[ds].indoor) availCache[ds].indoor={timeCoaches:{},coaches:[]};
+          if(!availCache[ds].indoor.timeCoaches[t]) availCache[ds].indoor.timeCoaches[t]=[];
+          if(availCache[ds].indoor.timeCoaches[t].indexOf(coachId)<0) availCache[ds].indoor.timeCoaches[t].push(coachId);
           if(availCache[ds].indoor.coaches.indexOf(coachId)<0) availCache[ds].indoor.coaches.push(coachId);
         }
         else if(lt==='round'||lt==='accompany'||lt==='comp'||lt==='custom'){
+          /* ★ このコーチがこの日に既に他のレッスンを予約済みなら全種別から除外 */
+          if(bookedMap[ds]&&bookedMap[ds].dayFull[coachId]&&bookedMap[ds].dayFull[coachId]['_any_']) return;
           ['round','accompany','comp','custom'].forEach(function(kind){
             if(!availCache[ds][kind]) availCache[ds][kind]={times:[],coaches:[]};
             if(availCache[ds][kind].coaches.indexOf(coachId)<0) availCache[ds][kind].coaches.push(coachId);
           });
         }
       });
+      /* インドアの times 配列(coachesが1名以上残った時間枠のみ)を構築 */
       Object.keys(availCache).forEach(function(ds){
-        if(availCache[ds].indoor&&availCache[ds].indoor.times){
-          availCache[ds].indoor.times.sort();
+        if(availCache[ds].indoor&&availCache[ds].indoor.timeCoaches){
+          var times=Object.keys(availCache[ds].indoor.timeCoaches).filter(function(t){
+            return availCache[ds].indoor.timeCoaches[t].length>0;
+          });
+          times.sort();
+          availCache[ds].indoor.times=times;
+          /* coaches は時間枠を持つコーチのみに再構築 */
+          var allCoaches={};
+          times.forEach(function(t){
+            availCache[ds].indoor.timeCoaches[t].forEach(function(cid){allCoaches[cid]=true;});
+          });
+          availCache[ds].indoor.coaches=Object.keys(allCoaches);
+          /* indoorに残った時間枠ゼロの場合はindoorエリア自体を削除 */
+          if(times.length===0) delete availCache[ds].indoor;
         }
+      });
+      /* 全種別ゼロの日付は削除 */
+      Object.keys(availCache).forEach(function(ds){
+        if(Object.keys(availCache[ds]).length===0) delete availCache[ds];
       });
     }
   }catch(e){console.error('fetchAvailDates例外',e);}
@@ -1575,8 +1625,20 @@ function getAvailDates(type){
         var coaches=availCache[ds][type].coaches||[];
         if(coaches.indexOf(entrySelectedCoachId)<0) return;
       }
-      if(type==='indoor'||type==='custom'){
-        result[ds]=availCache[ds][type].times;
+      if(type==='indoor'){
+        /* ★ コーチ起点の場合、そのコーチが空きを持つ時間枠のみに絞る */
+        if(entryMode==='coach'&&entrySelectedCoachId&&availCache[ds].indoor.timeCoaches){
+          var coachTimes=[];
+          Object.keys(availCache[ds].indoor.timeCoaches).forEach(function(t){
+            if(availCache[ds].indoor.timeCoaches[t].indexOf(entrySelectedCoachId)>=0) coachTimes.push(t);
+          });
+          coachTimes.sort();
+          if(coachTimes.length>0) result[ds]=coachTimes;
+        }else{
+          result[ds]=availCache[ds][type].times;
+        }
+      }else if(type==='custom'){
+        result[ds]=availCache[ds][type].times||true;
       }else{
         result[ds]=true;
       }
@@ -1769,6 +1831,11 @@ async function loadCoachesForDate(){
   selectedCoachData=null;
   selectedPlan=null;
   var coachIds=getCoachesForDate(selectedDate,currentType);
+  /* ★ インドアの場合、選択された時間枠で空きのあるコーチのみに絞り込む */
+  if(currentType==='indoor'&&selectedTime&&availCache[selectedDate]&&availCache[selectedDate].indoor&&availCache[selectedDate].indoor.timeCoaches){
+    var tc=availCache[selectedDate].indoor.timeCoaches[selectedTime]||[];
+    coachIds=coachIds.filter(function(id){return tc.indexOf(id)>=0;});
+  }
   coachIds=coachIds.filter(function(id){return id&&id!=='sample';});
   coachIds=Array.from(new Set(coachIds));
   if(coachIds.length===0){
