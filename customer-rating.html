@@ -115,27 +115,27 @@ async function init(){
   const main=document.getElementById('main');
   const bookingId=getBookingId();
   if(!bookingId){
-    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">URLが正しくありません</div><div class="completed-text">LINEから送信された評価リンクをご利用ください。</div></div></div>';
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">URLが正しくありません</div><div class="completed-text">LINEから送信された評価リンクをご利用ください。</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"><a href="https://soft-speculoos-5ef188.netlify.app/customer.html" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#064D3B,#1D9E75);color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">🏠 MyCoach ホームに戻る</a><a href="https://line.me/R/oaMessage/@mycoach_jp" style="display:block;width:100%;padding:14px;border-radius:12px;background:#00B900;color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">💬 LINEに戻る</a></div></div>';
     return;
   }
 
   // 予約情報取得
   const {data:booking,error:bErr}=await sb.from('bookings').select('*').eq('id',bookingId).maybeSingle();
   if(bErr||!booking){
-    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">予約情報が見つかりません</div><div class="completed-text">URLをご確認のうえ、もう一度お試しください。</div></div></div>';
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">予約情報が見つかりません</div><div class="completed-text">URLをご確認のうえ、もう一度お試しください。</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"><a href="https://soft-speculoos-5ef188.netlify.app/customer.html" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#064D3B,#1D9E75);color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">🏠 MyCoach ホームに戻る</a><a href="https://line.me/R/oaMessage/@mycoach_jp" style="display:block;width:100%;padding:14px;border-radius:12px;background:#00B900;color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">💬 LINEに戻る</a></div></div>';
     return;
   }
 
   // 既に評価済みかチェック
   const {data:existingRating}=await sb.from('coach_ratings').select('id').eq('booking_id',bookingId).maybeSingle();
   if(existingRating){
-    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">✅</div><div class="completed-title">評価ありがとうございました</div><div class="completed-text">このレッスンには既に評価をいただいております。<br>たくさんのご評価、ありがとうございます。</div></div></div>';
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">✅</div><div class="completed-title">評価ありがとうございました</div><div class="completed-text">このレッスンには既に評価をいただいております。<br>たくさんのご評価、ありがとうございます。</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"><a href="https://soft-speculoos-5ef188.netlify.app/customer.html" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#064D3B,#1D9E75);color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">🏠 MyCoach ホームに戻る</a><a href="https://line.me/R/oaMessage/@mycoach_jp" style="display:block;width:100%;padding:14px;border-radius:12px;background:#00B900;color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">💬 LINEに戻る</a></div></div>';
     return;
   }
 
   // 確定済予約のみ評価可能
   if(booking.status!=='confirmed'){
-    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">評価できない予約です</div><div class="completed-text">確定済みのレッスンのみ評価いただけます。</div></div></div>';
+    main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">評価できない予約です</div><div class="completed-text">確定済みのレッスンのみ評価いただけます。</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"><a href="https://soft-speculoos-5ef188.netlify.app/customer.html" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#064D3B,#1D9E75);color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">🏠 MyCoach ホームに戻る</a><a href="https://line.me/R/oaMessage/@mycoach_jp" style="display:block;width:100%;padding:14px;border-radius:12px;background:#00B900;color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">💬 LINEに戻る</a></div></div>';
     return;
   }
 
@@ -275,7 +275,7 @@ async function submitRating(bookingId,coachId,customerId){
     if(!res.ok||!json.ok){
       throw new Error(json.error||'送信に失敗しました');
     }
-    document.getElementById('main').innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">🎉</div><div class="completed-title">評価ありがとうございました!</div><div class="completed-text">いただいたご評価は<br>コーチの励みになります。<br><br>これからも MyCoach を<br>よろしくお願いいたします。</div></div></div>';
+    document.getElementById('main').innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">🎉</div><div class="completed-title">評価ありがとうございました!</div><div class="completed-text">いただいたご評価は<br>コーチの励みになります。<br><br>これからも MyCoach を<br>よろしくお願いいたします。</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"><a href="https://soft-speculoos-5ef188.netlify.app/customer.html" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#064D3B,#1D9E75);color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">🏠 MyCoach ホームに戻る</a><a href="https://line.me/R/oaMessage/@mycoach_jp" style="display:block;width:100%;padding:14px;border-radius:12px;background:#00B900;color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">💬 LINEに戻る</a><button onclick="window.close();" style="display:block;width:100%;padding:14px;border-radius:12px;background:#fff;color:#6b8a78;border:1px solid #e0ece6;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">この画面を閉じる</button></div>';
   }catch(e){
     console.error('submit error:',e);
     showMsg('❌ '+e.message,'error');
