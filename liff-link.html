@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — LINE連携</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+.container{background:#fff;border-radius:16px;padding:32px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
+.logo{font-size:24px;font-weight:700;color:#085041;margin-bottom:8px;}
+.title{font-size:18px;font-weight:700;color:#333;margin-bottom:16px;}
+.message{font-size:14px;color:#666;line-height:1.6;margin-bottom:24px;}
+.spinner{width:48px;height:48px;border:4px solid #E1F5EE;border-top-color:#1D9E75;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.success{color:#1D9E75;font-size:48px;margin-bottom:16px;}
+.error{color:#E24B4A;font-size:48px;margin-bottom:16px;}
+.btn{display:block;width:100%;background:#1D9E75;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;text-align:center;margin-top:16px;}
+.btn-line{background:#06C755;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">MyCoach</div>
+
+  <!-- 処理中 -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="title">LINE連携中...</div>
+    <div class="message">少々お待ちください</div>
+  </div>
+
+  <!-- 成功 -->
+  <div id="success" class="hidden">
+    <div class="success">✅</div>
+    <div class="title">LINE連携が完了しました</div>
+    <div class="message">予約状況や決済案内をLINEで受け取れます</div>
+    <a href="#" id="next-btn" class="btn">次へ進む</a>
+  </div>
+
+  <!-- エラー -->
+  <div id="error" class="hidden">
+    <div class="error">⚠️</div>
+    <div class="title">連携に失敗しました</div>
+    <div class="message" id="error-message">時間をおいて再度お試しください</div>
+    <a href="javascript:location.reload()" class="btn">再試行する</a>
+  </div>
+</div>
+
+<script>
+const LIFF_ID = '2010206965-HfioOoUZ';
+
+async function main() {
+  try {
+    // クエリパラメータ取得
+    const params = new URLSearchParams(window.location.search);
+    const userType = params.get('type') || 'customer'; // customer / coach
+    const userId = params.get('uid'); // MyCoach側のユーザーID
+
+    if (!userId) {
+      throw new Error('ユーザーIDが指定されていません');
+    }
+
+    // LIFF初期化
+    await liff.init({ liffId: LIFF_ID });
+
+    // LINEログイン未済の場合、ログイン要求
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: window.location.href });
+      return;
+    }
+
+    // LINE UserID取得
+    const profile = await liff.getProfile();
+    const lineUserId = profile.userId;
+    const displayName = profile.displayName;
+
+    // バックエンドに送信(DB保存)
+    const response = await fetch('/.netlify/functions/liff-link-process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        user_type: userType,
+        line_user_id: lineUserId,
+        display_name: displayName
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || '連携処理に失敗しました');
+    }
+
+    // 成功表示
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('success').classList.remove('hidden');
+
+    // 次画面のリンク設定
+    const nextUrl = userType === 'customer'
+      ? '/onboarding_step5.html'
+      : '/coach_onboarding_step7.html';
+    document.getElementById('next-btn').href = nextUrl;
+
+    // 2秒後に自動遷移
+    setTimeout(() => {
+      // LIFFブラウザを閉じてMyCoachに戻る
+      if (liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        window.location.href = nextUrl;
+      }
+    }, 2000);
+
+  } catch (e) {
+    console.error('[LIFF Error]', e);
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('error').classList.remove('hidden');
+    document.getElementById('error-message').textContent = e.message || '時間をおいて再度お試しください';
+  }
+}
+
+main();
+</script>
+
+</body>
+</html>
