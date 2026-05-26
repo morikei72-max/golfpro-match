@@ -697,8 +697,8 @@ async function handleVerificationCode({ code, lineUserId, supabase }) {
   const userName = userData.name || userLabel;
 
   const returnUrl = user_type === 'customer'
-    ? `${BASE_URL}/customer.html`
-    : `${BASE_URL}/coach.html`;
+    ? `${BASE_URL}/onboarding_step5.html`
+    : `${BASE_URL}/coach_onboarding_step7.html`;
 
   const greetingText = user_type === 'customer'
     ? `${userName}様、これから予約状況や決済案内をこのトークで受け取ることができます。`
