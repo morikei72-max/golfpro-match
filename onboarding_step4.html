@@ -501,6 +501,26 @@ body::after{
         </ul>
       </div>
 
+      <!-- 【2026/5/27 追加】LIFF方式:タップだけで自動連携(推奨) -->
+      <div id="liff-area" style="margin:20px 0;">
+        <button id="liff-link-btn" type="button" onclick="startLiffLink()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(6,199,85,0.3);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/>
+          </svg>
+          LINEで連携する(タップだけ)
+        </button>
+        <div style="font-size:11px;color:#666;text-align:center;margin-top:6px;">
+          LINEを開いて「許可する」を押すだけで連携完了
+        </div>
+      </div>
+
+      <!-- 区切り線 -->
+      <div style="display:flex;align-items:center;gap:10px;margin:24px 0 16px;color:#999;font-size:11px;">
+        <div style="flex:1;height:1px;background:#e0e0e0;"></div>
+        <span>うまくいかない場合</span>
+        <div style="flex:1;height:1px;background:#e0e0e0;"></div>
+      </div>
+
       <div id="code-area">
         <div class="code-loading">
           <span class="spinner"></span>
@@ -744,6 +764,17 @@ function showLinkedSuccess(){
 function skipLinkage(){
   stopAllTimers();
   window.location.href='onboarding_step5.html';
+}
+
+/* 【2026/5/27 追加】LIFF方式による自動連携 */
+function startLiffLink(){
+  if(!customerRowId){
+    showError('お客様情報が取得できていません。ページを再読み込みしてください。');
+    return;
+  }
+  /* LIFF専用ページへ遷移(LIFFが自動でLINE認証→DB保存→次画面遷移) */
+  var liffUrl='https://liff.line.me/2010206965-HfioOoUZ?type=customer&uid='+encodeURIComponent(customerRowId);
+  window.location.href=liffUrl;
 }
 
 /* ページ離脱時にタイマーをクリーンアップ */
