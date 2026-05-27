@@ -55,51 +55,46 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;d
 <script>
 const LIFF_ID = '2010206965-HfioOoUZ';
 
-/* 【2026/5/27 修正版】LINE公式仕様準拠
- * 重要:LIFF URL `https://liff.line.me/{liffId}?type=customer&uid=xxx` でアクセスすると、
- * LIFFサーバーが `?type=customer&uid=xxx` を `liff.state` パラメータにエンコードして
- * Endpoint URL にリダイレクトする。
- * `liff.init()` 実行時に SDK が `liff.state` を展開して URL に戻す。
- * したがって URLパラメータは `liff.init()` 完了後に取得する必要がある。
+/* 【2026/5/27 完全修正版】LINE公式仕様準拠
+ * 真の原因:LIFF URLで外部ブラウザアクセス時、未ログインだとliff.init()内で
+ * 自動的にLINE OAuthログインに遷移し、戻ってきた時にURLパラメータが消失する。
+ * 解決策:遷移元ページで localStorage に保存し、ここで取得・復元する。
  */
 
 async function main() {
   try {
-    // ステップ1:LIFF初期化を先に実行(liff.state の展開を待つ)
+    // ステップ1:LIFF初期化(必ず最初に実行)
     await liff.init({ liffId: LIFF_ID });
 
-    // ステップ2:外部ブラウザかつ未ログインの場合のみログイン要求
-    // LIFFブラウザ内では liff.init() で自動ログイン済み
+    // ステップ2:外部ブラウザかつ未ログインの場合はログイン要求
     if (!liff.isInClient() && !liff.isLoggedIn()) {
-      // 重要:redirectUri を指定しない(デフォルトは Endpoint URL)
-      // 指定するとパラメータが消える原因になる
       liff.login();
       return;
     }
 
-    // ステップ3:URLパラメータを取得(この時点で liff.state は展開済み)
+    // ステップ3:URLパラメータを取得(liff.state展開済み)
     const params = new URLSearchParams(window.location.search);
     let userType = params.get('type');
     let userId = params.get('uid');
 
-    // ステップ4:バックアップとして sessionStorage も確認
-    // (LINE外ブラウザでログイン経由した場合のフォールバック)
-    if (userId && userType) {
-      sessionStorage.setItem('liff_link_uid', userId);
-      sessionStorage.setItem('liff_link_type', userType);
+    // ステップ4:URLパラメータがない場合、localStorage から復元
+    // (外部ブラウザでLINEログイン経由した場合のフォールバック)
+    if (!userId) {
+      userId = localStorage.getItem('mycoach_liff_uid');
+      userType = localStorage.getItem('mycoach_liff_type');
     } else {
-      userId = sessionStorage.getItem('liff_link_uid');
-      userType = sessionStorage.getItem('liff_link_type');
+      // URLパラメータが取得できた場合は localStorage にも保存
+      localStorage.setItem('mycoach_liff_uid', userId);
+      localStorage.setItem('mycoach_liff_type', userType);
     }
 
     userType = userType || 'customer';
 
     if (!userId) {
-      // デバッグ情報を表示
       const debugInfo = 'URL: ' + window.location.href +
         ' | search: ' + window.location.search +
-        ' | type: ' + userType +
-        ' | uid: ' + userId;
+        ' | localStorage uid: ' + localStorage.getItem('mycoach_liff_uid') +
+        ' | localStorage type: ' + localStorage.getItem('mycoach_liff_type');
       throw new Error('ユーザーIDが指定されていません [DEBUG: ' + debugInfo + ']');
     }
 
@@ -126,9 +121,9 @@ async function main() {
       throw new Error(result.error || '連携処理に失敗しました');
     }
 
-    // sessionStorage クリーンアップ
-    sessionStorage.removeItem('liff_link_uid');
-    sessionStorage.removeItem('liff_link_type');
+    // localStorage クリーンアップ(連携成功後)
+    localStorage.removeItem('mycoach_liff_uid');
+    localStorage.removeItem('mycoach_liff_type');
 
     // 成功表示
     document.getElementById('loading').classList.add('hidden');
