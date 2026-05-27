@@ -19,6 +19,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;d
 .btn{display:block;width:100%;background:#1D9E75;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:none;text-align:center;margin-top:16px;}
 .btn-line{background:#06C755;}
 .hidden{display:none;}
+.debug{font-size:10px;color:#999;margin-top:12px;word-break:break-all;line-height:1.4;}
 </style>
 </head>
 <body>
@@ -47,53 +48,67 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;d
     <div class="title">連携に失敗しました</div>
     <div class="message" id="error-message">時間をおいて再度お試しください</div>
     <a href="javascript:location.reload()" class="btn">再試行する</a>
+    <div class="debug" id="error-debug"></div>
   </div>
 </div>
 
 <script>
 const LIFF_ID = '2010206965-HfioOoUZ';
 
+/* 【2026/5/27 修正版】LINE公式仕様準拠
+ * 重要:LIFF URL `https://liff.line.me/{liffId}?type=customer&uid=xxx` でアクセスすると、
+ * LIFFサーバーが `?type=customer&uid=xxx` を `liff.state` パラメータにエンコードして
+ * Endpoint URL にリダイレクトする。
+ * `liff.init()` 実行時に SDK が `liff.state` を展開して URL に戻す。
+ * したがって URLパラメータは `liff.init()` 完了後に取得する必要がある。
+ */
+
 async function main() {
   try {
-    // クエリパラメータ取得(URL から)
+    // ステップ1:LIFF初期化を先に実行(liff.state の展開を待つ)
+    await liff.init({ liffId: LIFF_ID });
+
+    // ステップ2:外部ブラウザかつ未ログインの場合のみログイン要求
+    // LIFFブラウザ内では liff.init() で自動ログイン済み
+    if (!liff.isInClient() && !liff.isLoggedIn()) {
+      // 重要:redirectUri を指定しない(デフォルトは Endpoint URL)
+      // 指定するとパラメータが消える原因になる
+      liff.login();
+      return;
+    }
+
+    // ステップ3:URLパラメータを取得(この時点で liff.state は展開済み)
     const params = new URLSearchParams(window.location.search);
     let userType = params.get('type');
     let userId = params.get('uid');
 
-    // 【2026/5/27 修正】LIFFログイン後のリダイレクトでパラメータが消失するため、
-    // sessionStorage に保存・復元する
+    // ステップ4:バックアップとして sessionStorage も確認
+    // (LINE外ブラウザでログイン経由した場合のフォールバック)
     if (userId && userType) {
-      // 初回アクセス:URLパラメータをsessionStorageに保存
       sessionStorage.setItem('liff_link_uid', userId);
       sessionStorage.setItem('liff_link_type', userType);
     } else {
-      // ログイン後のリダイレクト:sessionStorageから復元
       userId = sessionStorage.getItem('liff_link_uid');
       userType = sessionStorage.getItem('liff_link_type');
     }
 
-    // デフォルト値
     userType = userType || 'customer';
 
     if (!userId) {
-      throw new Error('ユーザーIDが指定されていません');
+      // デバッグ情報を表示
+      const debugInfo = 'URL: ' + window.location.href +
+        ' | search: ' + window.location.search +
+        ' | type: ' + userType +
+        ' | uid: ' + userId;
+      throw new Error('ユーザーIDが指定されていません [DEBUG: ' + debugInfo + ']');
     }
 
-    // LIFF初期化
-    await liff.init({ liffId: LIFF_ID });
-
-    // LINEログイン未済の場合、ログイン要求
-    if (!liff.isLoggedIn()) {
-      liff.login({ redirectUri: window.location.href });
-      return;
-    }
-
-    // LINE UserID取得
+    // ステップ5:LINE UserID取得
     const profile = await liff.getProfile();
     const lineUserId = profile.userId;
     const displayName = profile.displayName;
 
-    // バックエンドに送信(DB保存)
+    // ステップ6:バックエンドに送信(DB保存)
     const response = await fetch('/.netlify/functions/liff-link-process', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -111,7 +126,7 @@ async function main() {
       throw new Error(result.error || '連携処理に失敗しました');
     }
 
-    // 連携完了:sessionStorage をクリーンアップ
+    // sessionStorage クリーンアップ
     sessionStorage.removeItem('liff_link_uid');
     sessionStorage.removeItem('liff_link_type');
 
@@ -127,7 +142,6 @@ async function main() {
 
     // 2秒後に自動遷移
     setTimeout(() => {
-      // LIFFブラウザを閉じてMyCoachに戻る
       if (liff.isInClient()) {
         liff.closeWindow();
       } else {
@@ -139,7 +153,12 @@ async function main() {
     console.error('[LIFF Error]', e);
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('error').classList.remove('hidden');
-    document.getElementById('error-message').textContent = e.message || '時間をおいて再度お試しください';
+    const msg = e.message || '時間をおいて再度お試しください';
+    document.getElementById('error-message').textContent = msg.split('[DEBUG:')[0].trim() || '時間をおいて再度お試しください';
+    const debugMatch = msg.match(/\[DEBUG: (.+?)\]/);
+    if (debugMatch) {
+      document.getElementById('error-debug').textContent = debugMatch[1];
+    }
   }
 }
 
