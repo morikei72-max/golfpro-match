@@ -3,143 +3,501 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="MyCoach">
-<title>MyCoach — コーチ登録 LINE連携</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<title>MyCoach — LINE連携</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{--brown-deep:#1a1200;--brown-base:#3d2a05;--brown-mid:#6b4a14;--orange-bright:#BA7517;--orange-light:#E89C3E;--gold:#D4A85C;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);--line-green:#06C755;}
-html,body{font-family:'Noto Sans JP',sans-serif;min-height:100vh;color:var(--white);background:var(--brown-deep);}
-body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;}
-.bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(232,156,62,0.18),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(212,168,92,0.1),transparent 60%),linear-gradient(180deg,#1a1200 0%,#3d2a05 50%,#0f0900 100%);}
-.bg-noise{position:fixed;inset:0;z-index:1;opacity:0.05;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
-.glow-orb{position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:1;}
-.orb-1{width:280px;height:280px;background:radial-gradient(circle,rgba(232,156,62,0.4),transparent 70%);top:-80px;right:-80px;}
-.orb-2{width:240px;height:240px;background:radial-gradient(circle,rgba(6,199,85,0.2),transparent 70%);bottom:-60px;left:-60px;}
-.wrap{position:relative;z-index:2;width:100%;max-width:380px;display:flex;flex-direction:column;align-items:center;padding:30px 0;}
-.brand{text-align:center;margin-bottom:20px;}
-.brand-mark{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px;}
-.brand-line{width:2px;height:24px;background:linear-gradient(180deg,var(--gold),var(--orange-bright));border-radius:1px;}
-.brand-text{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:1px;background:linear-gradient(135deg,var(--white) 30%,var(--orange-light) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-.brand-tagline{display:inline-block;font-size:8px;letter-spacing:4px;color:var(--gold);background:rgba(212,168,92,0.1);border:1px solid rgba(212,168,92,0.3);padding:3px 10px;border-radius:10px;text-transform:uppercase;}
-.progress-label{text-align:center;font-size:10px;letter-spacing:3px;color:var(--gold);margin-bottom:10px;text-transform:uppercase;}
-.progress{display:flex;align-items:center;gap:6px;margin-bottom:24px;justify-content:center;}
-.progress-dot{width:20px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15);}
-.progress-dot.active{background:linear-gradient(90deg,var(--gold),var(--orange-bright));box-shadow:0 0 12px rgba(212,168,92,0.35);}
-.progress-dot.done{background:var(--orange-bright);opacity:0.6;}
-.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:28px 22px;position:relative;}
-.glass-card::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05) 50%,rgba(212,168,92,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
-.section-title{font-size:22px;font-weight:700;color:var(--white);margin-bottom:6px;text-align:center;}
-.section-title .accent{color:var(--orange-light);font-family:'Cormorant Garamond',serif;font-weight:600;}
-.section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:18px;letter-spacing:0.5px;line-height:1.6;}
-.coach-badge{display:inline-block;background:linear-gradient(135deg,var(--orange-bright),var(--brown-mid));color:white;font-size:9px;letter-spacing:3px;padding:4px 12px;border-radius:8px;margin-bottom:8px;font-weight:700;text-transform:uppercase;}
-/* メリット枠 */
-.benefits-box{background:rgba(212,168,92,0.08);border:1px solid rgba(212,168,92,0.2);border-radius:12px;padding:14px;margin-bottom:18px;}
-.benefits-title{font-size:11px;font-weight:700;color:var(--gold);margin-bottom:8px;letter-spacing:1px;}
-.benefits-list{list-style:none;margin:0;padding:0;}
-.benefits-list li{font-size:11px;color:var(--text-sub);padding:3px 0;padding-left:18px;position:relative;line-height:1.6;}
-.benefits-list li::before{content:'✓';position:absolute;left:0;color:var(--orange-light);font-weight:700;}
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow-x:hidden;}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:#051E18;
+  color:#fff;
+  min-height:100vh;
+  position:relative;
+  overflow-x:hidden;
+}
+
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(101,206,165,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 85%, rgba(201,169,97,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(6,77,59,0.6) 0%, transparent 70%);
+  z-index:0;
+  pointer-events:none;
+}
+
+body::after{
+  content:'';
+  position:fixed;
+  inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+  opacity:0.06;
+  z-index:0;
+  pointer-events:none;
+  mix-blend-mode:overlay;
+}
+
+.glow-orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(60px);
+  z-index:1;
+  pointer-events:none;
+  animation:float 8s ease-in-out infinite;
+}
+.glow-orb-1{
+  width:280px;height:280px;
+  background:radial-gradient(circle,rgba(101,206,165,0.4),transparent 70%);
+  top:-80px;right:-80px;
+}
+.glow-orb-2{
+  width:220px;height:220px;
+  background:radial-gradient(circle,rgba(6,199,85,0.25),transparent 70%);
+  bottom:-60px;left:-60px;
+  animation-delay:2s;
+}
+@keyframes float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(15px,-20px) scale(1.05);}
+}
+
+.container{
+  position:relative;
+  z-index:2;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:32px 24px;
+  max-width:480px;
+  margin:0 auto;
+}
+
+.step-indicator{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:36px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.1s forwards;
+}
+.step-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.2);
+  transition:all 0.3s;
+}
+.step-dot.done{background:#65CEA5;box-shadow:0 0 8px rgba(101,206,165,0.6);}
+.step-dot.current{
+  background:#C9A961;
+  width:24px;
+  border-radius:6px;
+  box-shadow:0 0 12px rgba(201,169,97,0.7);
+}
+.step-text{
+  font-size:11px;
+  color:rgba(255,255,255,0.55);
+  margin-left:8px;
+  letter-spacing:0.05em;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+.logo-area{
+  text-align:center;
+  margin-bottom:24px;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.2s forwards;
+}
+.logo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;
+  font-weight:600;
+  letter-spacing:0.02em;
+  background:linear-gradient(135deg,#fff 0%,#C9A961 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  line-height:1;
+  margin-bottom:6px;
+}
+.logo-sub{
+  font-family:'Cormorant Garamond',serif;
+  font-size:11px;
+  letter-spacing:0.3em;
+  color:rgba(255,255,255,0.6);
+  text-transform:uppercase;
+}
+
+.card{
+  width:100%;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:20px;
+  padding:28px 22px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+  opacity:0;
+  animation:fadeIn 0.7s ease 0.3s forwards;
+}
+
+.card-title{
+  font-size:20px;
+  font-weight:700;
+  text-align:center;
+  margin-bottom:8px;
+  letter-spacing:0.02em;
+  line-height:1.5;
+}
+.card-title .accent{color:#65CEA5;}
+.card-sub{
+  font-size:12px;
+  color:rgba(255,255,255,0.7);
+  text-align:center;
+  line-height:1.7;
+  margin-bottom:20px;
+}
+
+/* メリットボックス */
+.benefits-box{
+  background:rgba(101,206,165,0.06);
+  border:1px solid rgba(101,206,165,0.2);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:18px;
+}
+.benefits-title{
+  font-size:11px;
+  font-weight:700;
+  color:#65CEA5;
+  margin-bottom:8px;
+  letter-spacing:0.05em;
+}
+.benefits-list{
+  list-style:none;
+}
+.benefits-list li{
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  line-height:1.7;
+  padding-left:18px;
+  position:relative;
+}
+.benefits-list li::before{
+  content:'✓';
+  position:absolute;
+  left:0;
+  color:#65CEA5;
+  font-weight:700;
+}
+
 /* コード表示 */
-.code-display{background:linear-gradient(135deg,rgba(186,117,23,0.3),rgba(107,74,20,0.3));border:1.5px solid var(--orange-light);border-radius:14px;padding:18px 16px;text-align:center;margin-bottom:14px;}
-.code-label{font-size:10px;color:var(--gold);letter-spacing:2px;margin-bottom:6px;font-weight:600;}
-.code-value{font-size:42px;font-weight:900;color:var(--white);letter-spacing:10px;font-family:'Roboto Mono','Courier New',monospace;margin-bottom:8px;text-shadow:0 0 20px rgba(232,156,62,0.4);}
-.code-countdown{font-size:11px;color:var(--orange-light);letter-spacing:0.5px;font-weight:600;}
-.code-countdown.expired{color:#ff8a8a;}
-.code-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:30px 0;color:var(--text-sub);font-size:12px;}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(212,168,92,0.3);border-top-color:var(--orange-light);border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
+.code-display{
+  background:linear-gradient(135deg,#065F47,#0F8B68);
+  border:1px solid rgba(101,206,165,0.4);
+  border-radius:14px;
+  padding:18px 16px;
+  text-align:center;
+  margin-bottom:14px;
+  position:relative;
+  overflow:hidden;
+}
+.code-display::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 0%,rgba(101,206,165,0.3),transparent 70%);
+  pointer-events:none;
+}
+.code-label{
+  font-size:11px;
+  color:rgba(255,255,255,0.75);
+  margin-bottom:6px;
+  position:relative;
+  letter-spacing:0.05em;
+}
+.code-value{
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:8px;
+  color:#fff;
+  font-family:'Noto Sans JP',monospace;
+  text-shadow:0 2px 8px rgba(0,0,0,0.3);
+  position:relative;
+  margin:4px 0;
+}
+.code-countdown{
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  position:relative;
+  margin-top:4px;
+}
+.code-countdown.expired{color:#ffb0b0;}
+
+.code-loading{
+  text-align:center;
+  padding:30px 16px;
+  color:rgba(255,255,255,0.6);
+  font-size:12px;
+}
+
+/* 手順 */
+.instruction-box{
+  background:rgba(201,169,97,0.06);
+  border:1px solid rgba(201,169,97,0.25);
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:14px;
+}
+.instruction-title{
+  font-size:11px;
+  font-weight:700;
+  color:#C9A961;
+  margin-bottom:8px;
+  letter-spacing:0.05em;
+}
+.instruction-list{
+  list-style:none;
+  counter-reset:step;
+}
+.instruction-list li{
+  font-size:11px;
+  color:rgba(255,255,255,0.85);
+  line-height:1.7;
+  padding-left:24px;
+  position:relative;
+  counter-increment:step;
+  margin-bottom:4px;
+}
+.instruction-list li::before{
+  content:counter(step);
+  position:absolute;
+  left:0;
+  top:1px;
+  width:18px;
+  height:18px;
+  background:#C9A961;
+  color:#051E18;
+  border-radius:50%;
+  font-size:10px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.instruction-list strong{
+  background:rgba(201,169,97,0.3);
+  padding:1px 6px;
+  border-radius:4px;
+  color:#fff;
+  font-weight:700;
+}
+
 /* LINE ボタン */
-.line-btn{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--line-green);color:white;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;font-family:inherit;text-decoration:none;cursor:pointer;margin-bottom:10px;box-shadow:0 6px 18px rgba(6,199,85,0.3);}
-.line-btn:hover{filter:brightness(1.1);}
-/* 再発行ボタン */
-.btn-reissue{width:100%;background:transparent;border:1px solid rgba(255,255,255,0.2);color:var(--text-sub);border-radius:12px;padding:10px;font-size:11px;font-family:inherit;cursor:pointer;letter-spacing:1px;}
-.btn-reissue:hover{border-color:var(--orange-light);color:var(--orange-light);}
-/* 説明枠 */
-.instruction-box{background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:14px;}
-.instruction-title{font-size:11px;font-weight:700;color:var(--orange-light);margin-bottom:8px;letter-spacing:1px;}
-.instruction-list{list-style:none;margin:0;padding:0;counter-reset:step;}
-.instruction-list li{font-size:11px;color:var(--text-sub);padding:5px 0 5px 26px;position:relative;line-height:1.6;counter-increment:step;}
-.instruction-list li::before{content:counter(step);position:absolute;left:0;top:5px;width:18px;height:18px;background:var(--orange-bright);color:white;border-radius:50%;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
-.instruction-list strong{color:var(--orange-light);font-weight:700;}
-/* ポーリング状態 */
-.polling-status{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text-faint);font-size:11px;padding:10px;letter-spacing:0.5px;}
-.polling-dot{width:8px;height:8px;background:var(--orange-light);border-radius:50%;animation:pulse 1.5s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:0.3;transform:scale(0.9);}50%{opacity:1;transform:scale(1.1);}}
-/* エラー */
-.error-box{display:none;color:#ff8a8a;font-size:12px;text-align:center;padding:10px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;margin-bottom:14px;}
+.line-btn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  width:100%;
+  padding:15px;
+  background:#06C755;
+  color:#fff;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:700;
+  text-decoration:none;
+  border:none;
+  cursor:pointer;
+  font-family:inherit;
+  margin-bottom:10px;
+  box-shadow:0 8px 20px rgba(6,199,85,0.4);
+  transition:all 0.2s;
+}
+.line-btn:active{transform:scale(0.98);}
+.line-btn:hover{
+  background:#05b54c;
+  box-shadow:0 12px 28px rgba(6,199,85,0.5);
+  transform:translateY(-1px);
+}
+
+.btn-reissue{
+  width:100%;
+  padding:11px;
+  background:transparent;
+  color:rgba(255,255,255,0.7);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:10px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  margin-bottom:14px;
+  transition:all 0.2s;
+}
+.btn-reissue:hover{
+  background:rgba(255,255,255,0.05);
+  color:#fff;
+}
+
+/* スキップ */
+.skip-area{
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,0.1);
+  text-align:center;
+}
+.skip-text{
+  font-size:10px;
+  color:rgba(255,255,255,0.5);
+  margin-bottom:8px;
+  line-height:1.5;
+}
+.skip-btn{
+  background:none;
+  border:none;
+  color:rgba(255,255,255,0.55);
+  font-family:inherit;
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:underline;
+  padding:4px 8px;
+}
+.skip-btn:hover{color:rgba(255,255,255,0.85);}
+
+/* 連携完了表示 */
+.success-box{
+  background:linear-gradient(135deg,rgba(101,206,165,0.2),rgba(6,199,85,0.2));
+  border:1px solid #65CEA5;
+  border-radius:14px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:16px;
+}
+.success-icon{
+  font-size:48px;
+  margin-bottom:8px;
+}
+.success-title{
+  font-size:18px;
+  font-weight:700;
+  color:#65CEA5;
+  margin-bottom:6px;
+}
+.success-sub{
+  font-size:12px;
+  color:rgba(255,255,255,0.85);
+}
+
+.error-box{
+  background:rgba(226,75,74,0.15);
+  border:1px solid rgba(226,75,74,0.4);
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:11px;
+  color:#ffb0b0;
+  margin-bottom:14px;
+  line-height:1.5;
+  display:none;
+}
 .error-box.show{display:block;}
-/* 必須注意 */
-.required-notice{background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);border-radius:12px;padding:10px 14px;margin-top:14px;font-size:10px;color:#ff8a8a;line-height:1.6;text-align:center;letter-spacing:0.5px;}
-.required-notice strong{font-weight:700;}
-/* 連携完了画面 */
-.success-box{text-align:center;padding:20px 0;}
-.success-icon{font-size:64px;margin-bottom:14px;}
-.success-title{font-size:20px;font-weight:700;color:var(--white);margin-bottom:6px;}
-.success-sub{font-size:12px;color:var(--text-sub);line-height:1.6;}
-.success-detail{font-size:11px;color:var(--text-faint);margin-top:14px;line-height:1.7;padding:12px;background:rgba(212,168,92,0.08);border-radius:10px;}
-.success-detail strong{color:var(--gold);}
-.loading-screen{position:fixed;inset:0;background:var(--brown-deep);display:flex;align-items:center;justify-content:center;z-index:9999;}
-.loading-screen.hidden{display:none;}
-.loader{width:50px;height:50px;border:3px solid rgba(212,168,92,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;}
+
+.spinner{
+  display:inline-block;
+  width:14px;
+  height:14px;
+  border:2px solid rgba(255,255,255,0.3);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+  margin-right:6px;
+  vertical-align:middle;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ポーリング状態表示 */
+.polling-status{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-size:11px;
+  color:rgba(101,206,165,0.85);
+  padding:8px;
+  margin-bottom:10px;
+}
+.polling-dot{
+  width:8px;
+  height:8px;
+  background:#65CEA5;
+  border-radius:50%;
+  animation:pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1);}
+  50%{opacity:0.4;transform:scale(0.8);}
+}
+
+.footer-text{
+  margin-top:24px;
+  text-align:center;
+  font-size:10px;
+  color:rgba(255,255,255,0.4);
+  letter-spacing:0.05em;
+  opacity:0;
+  animation:fadeIn 0.6s ease 0.5s forwards;
+}
 </style>
 </head>
-<body> <button onclick="if(history.length>1){history.back();}else{location.href='coach_login.html';}" style="position:fixed;top:12px;left:12px;z-index:9999;background:rgba(255,255,255,0.9);border:1px solid #ddd;border-radius:20px;padding:8px 14px;font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);color:#333;">← 戻る</button>
+<body> <button onclick="if(history.length>1){history.back();}else{location.href='customer_login.html';}" style="position:fixed;top:12px;left:12px;z-index:9999;background:rgba(255,255,255,0.9);border:1px solid #ddd;border-radius:20px;padding:8px 14px;font-size:13px;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);color:#333;">← 戻る</button>
 
-<div class="loading-screen" id="loading">
-  <div class="loader"></div>
-</div>
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
 
-<div class="bg-layer"></div>
-<div class="bg-noise"></div>
-<div class="glow-orb orb-1"></div>
-<div class="glow-orb orb-2"></div>
+<div class="container">
 
-<div class="wrap" id="main-content" style="display:none;">
-
-  <div class="brand">
-    <div class="brand-mark">
-      <div class="brand-line"></div>
-      <div class="brand-text">MyCoach</div>
-      <div class="brand-line"></div>
-    </div>
-    <div class="brand-tagline">For Golf Coaches</div>
+  <div class="step-indicator">
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot done"></div>
+    <div class="step-dot current"></div>
+    <div class="step-dot"></div>
+    <div class="step-dot"></div>
+    <span class="step-text">STEP 4 / 6</span>
   </div>
 
-  <div style="text-align:center;margin-bottom:12px;">
-    <span class="coach-badge">COACH REGISTRATION</span>
+  <div class="logo-area">
+    <div class="logo">MyCoach</div>
+    <div class="logo-sub">Golf Coaching Platform</div>
   </div>
 
-  <div class="progress-label">STEP 6 OF 7</div>
-  <div class="progress">
-    <div class="progress-dot done"></div>
-    <div class="progress-dot done"></div>
-    <div class="progress-dot done"></div>
-    <div class="progress-dot done"></div>
-    <div class="progress-dot done"></div>
-    <div class="progress-dot active"></div>
-    <div class="progress-dot"></div>
-  </div>
-
-  <div class="glass-card">
-
+  <div class="card">
     <!-- 連携前画面 -->
     <div id="before-linked">
-      <div class="section-title">LINE <span class="accent">Linking</span></div>
-      <div class="section-sub">
-        次のステップ:公式LINEと連携してください<br>
-        予約・承認依頼などの通知に必須です
+      <div class="card-title">
+        <span class="accent">LINE連携</span>
+      </div>
+      <div class="card-sub">
+        公式LINEと連携すると<br>
+        予約や決済のお知らせを LINE で受け取れます
       </div>
 
       <div class="benefits-box">
-        <div class="benefits-title">📱 LINE連携で受け取れる通知</div>
+        <div class="benefits-title">📱 LINE連携でできること</div>
         <ul class="benefits-list">
-          <li>お客様からの予約申込通知</li>
-          <li>承認後の決済確定通知</li>
+          <li>予約承認通知が届く</li>
+          <li>決済リンクをLINEで受け取れる</li>
           <li>レッスン前日のリマインド</li>
-          <li>お客様からのキャンセル通知</li>
-          <li>本部からの承認通知・お知らせ</li>
+          <li>キャンセル通知</li>
         </ul>
       </div>
 
@@ -197,9 +555,13 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
         連携を待っています...
       </div>
 
-      <div class="required-notice">
-        <strong>⚠️ LINE連携は必須です</strong><br>
-        コーチへの予約申込通知はLINEで届くため、連携なしでは業務が成立しません。
+      <div class="skip-area">
+        <div class="skip-text">
+          後でマイページから連携することもできます
+        </div>
+        <button class="skip-btn" onclick="skipLinkage()">
+          スキップして次へ進む →
+        </button>
       </div>
     </div>
 
@@ -209,22 +571,17 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
         <div class="success-icon">🎉</div>
         <div class="success-title">LINE連携が完了しました!</div>
         <div class="success-sub">
-          最後のステップ:利用規約のご確認です
-        </div>
-        <div class="success-detail">
-          <strong>📋 次の流れ</strong><br>
-          ・利用規約をご確認いただきます<br>
-          ・同意後、本部による登録審査が始まります<br>
-          ・承認完了時に LINE でお知らせします
-        </div>
-        <div style="text-align:center;color:rgba(255,255,255,0.7);font-size:11px;padding:14px 0 0;">
-          <span class="spinner"></span>
-          利用規約画面へ進みます...
+          予約・決済通知を LINE で受け取れます
         </div>
       </div>
+      <div style="text-align:center;color:rgba(255,255,255,0.7);font-size:12px;padding:10px;">
+        <span class="spinner"></span>
+        次の画面へ進みます...
+      </div>
     </div>
-
   </div>
+
+  <div class="footer-text">© KSK.KK — Powered by Golf Create</div>
 
 </div>
 
@@ -237,7 +594,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 });
 
 var currentUserId=null;
-var coachRowId=null;
+var customerRowId=null;
 var currentCode=null;
 var countdownTimer=null;
 var pollingTimer=null;
@@ -246,29 +603,26 @@ var pollingTimer=null;
 window.addEventListener('DOMContentLoaded',async function(){
   var res=await sb.auth.getSession();
   if(!res.data.session){
-    window.location.href='coach_login.html';
+    window.location.href='customer_login.html';
     return;
   }
   currentUserId=res.data.session.user.id;
 
-  /* coaches レコード取得 */
-  var{data,error}=await sb.from('coaches').select('id,line_user_id').eq('user_id',currentUserId).maybeSingle();
+  /* customers レコード取得(認証済みのはず) */
+  var{data,error}=await sb.from('customers').select('id,line_user_id,is_approved').eq('user_id',currentUserId).maybeSingle();
   if(error||!data){
-    showError('コーチ情報が取得できません。最初のステップからやり直してください。');
-    setTimeout(function(){window.location.href='coach_onboarding_step1.html';},2000);
+    showError('お客様情報が取得できません。会員認証からやり直してください。');
+    setTimeout(function(){window.location.href='onboarding_step3.html';},2000);
     return;
   }
 
-  coachRowId=data.id;
+  customerRowId=data.id;
 
   /* 既にLINE連携済みの場合 → 完了画面へ */
   if(data.line_user_id){
     showLinkedSuccess();
     return;
   }
-
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('main-content').style.display='flex';
 
   /* コード発行 */
   await issueLinkCode();
@@ -297,8 +651,8 @@ async function issueLinkCode(){
   document.getElementById('instruction-box').style.display='none';
   document.getElementById('polling-status').style.display='none';
 
-  if(!coachRowId){
-    showError('コーチ情報が取得できません');
+  if(!customerRowId){
+    showError('お客様情報が取得できません');
     return;
   }
 
@@ -306,7 +660,7 @@ async function issueLinkCode(){
     var resp=await fetch('/.netlify/functions/generate-link-code',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user_type:'coach',user_id:coachRowId})
+      body:JSON.stringify({user_type:'customer',user_id:customerRowId})
     });
     var json=await resp.json();
 
@@ -378,8 +732,7 @@ function startPolling(){
   pollingTimer=setInterval(async function(){
     if(!currentUserId){stopPolling();return;}
     try{
-      /* coaches テーブルの line_user_id をポーリング */
-      var{data}=await sb.from('coaches').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
+      var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
       if(data&&data.line_user_id){
         showLinkedSuccess();
       }
@@ -401,25 +754,33 @@ function stopAllTimers(){
 
 function showLinkedSuccess(){
   stopAllTimers();
-  document.getElementById('loading').classList.add('hidden');
-  document.getElementById('main-content').style.display='flex';
   document.getElementById('before-linked').style.display='none';
   document.getElementById('after-linked').style.display='block';
-
-  /* 3秒後に規約同意画面へ遷移(本部承認待ち status 更新は規約同意時に実行) */
   setTimeout(function(){
-    window.location.href='coach_onboarding_step7.html';
-  },3000);
+    window.location.href='onboarding_step5.html';
+  },1500);
 }
 
-/* 【2026/5/27 追加】LIFF方式による自動連携(コーチ用) */
+function skipLinkage(){
+  stopAllTimers();
+  window.location.href='onboarding_step5.html';
+}
+
+/* 【2026/5/27 修正版】LIFF方式による自動連携
+ * 修正:LIFF遷移前にlocalStorageにuid/typeを保存することで、
+ * 外部ブラウザでLINEログインリダイレクトが起きてもパラメータが消えない
+ */
 function startLiffLink(){
-  if(!coachRowId){
-    showError('コーチ情報が取得できていません。ページを再読み込みしてください。');
+  if(!customerRowId){
+    showError('お客様情報が取得できていません。ページを再読み込みしてください。');
     return;
   }
+  /* 【重要】localStorageに保存(LIFFログインリダイレクトでURLパラメータが消えるため) */
+  localStorage.setItem('mycoach_liff_uid',customerRowId);
+  localStorage.setItem('mycoach_liff_type','customer');
+
   /* LIFF専用ページへ遷移(LIFFが自動でLINE認証→DB保存→次画面遷移) */
-  var liffUrl='https://liff.line.me/2010206965-HfioOoUZ?type=coach&uid='+encodeURIComponent(coachRowId);
+  var liffUrl='https://liff.line.me/2010206965-HfioOoUZ?type=customer&uid='+encodeURIComponent(customerRowId);
   window.location.href=liffUrl;
 }
 
