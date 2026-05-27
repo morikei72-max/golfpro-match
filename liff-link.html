@@ -55,10 +55,25 @@ const LIFF_ID = '2010206965-HfioOoUZ';
 
 async function main() {
   try {
-    // クエリパラメータ取得
+    // クエリパラメータ取得(URL から)
     const params = new URLSearchParams(window.location.search);
-    const userType = params.get('type') || 'customer'; // customer / coach
-    const userId = params.get('uid'); // MyCoach側のユーザーID
+    let userType = params.get('type');
+    let userId = params.get('uid');
+
+    // 【2026/5/27 修正】LIFFログイン後のリダイレクトでパラメータが消失するため、
+    // sessionStorage に保存・復元する
+    if (userId && userType) {
+      // 初回アクセス:URLパラメータをsessionStorageに保存
+      sessionStorage.setItem('liff_link_uid', userId);
+      sessionStorage.setItem('liff_link_type', userType);
+    } else {
+      // ログイン後のリダイレクト:sessionStorageから復元
+      userId = sessionStorage.getItem('liff_link_uid');
+      userType = sessionStorage.getItem('liff_link_type');
+    }
+
+    // デフォルト値
+    userType = userType || 'customer';
 
     if (!userId) {
       throw new Error('ユーザーIDが指定されていません');
@@ -95,6 +110,10 @@ async function main() {
     if (!response.ok || !result.success) {
       throw new Error(result.error || '連携処理に失敗しました');
     }
+
+    // 連携完了:sessionStorage をクリーンアップ
+    sessionStorage.removeItem('liff_link_uid');
+    sessionStorage.removeItem('liff_link_type');
 
     // 成功表示
     document.getElementById('loading').classList.add('hidden');
