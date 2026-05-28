@@ -34,7 +34,7 @@ body::after{
   content:'';
   position:fixed;
   inset:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.4'/%3E%3C/svg%3E");
   opacity:0.06;
   z-index:0;
   pointer-events:none;
@@ -167,28 +167,27 @@ body::after{
   margin-bottom:20px;
 }
 
-/* メリットボックス */
 .benefits-box{
   background:rgba(101,206,165,0.06);
   border:1px solid rgba(101,206,165,0.2);
   border-radius:12px;
-  padding:12px 14px;
-  margin-bottom:18px;
+  padding:14px 16px;
+  margin-bottom:22px;
 }
 .benefits-title{
   font-size:11px;
   font-weight:700;
   color:#65CEA5;
-  margin-bottom:8px;
+  margin-bottom:10px;
   letter-spacing:0.05em;
 }
 .benefits-list{
   list-style:none;
 }
 .benefits-list li{
-  font-size:11px;
+  font-size:12px;
   color:rgba(255,255,255,0.85);
-  line-height:1.7;
+  line-height:1.9;
   padding-left:18px;
   position:relative;
 }
@@ -200,126 +199,22 @@ body::after{
   font-weight:700;
 }
 
-/* コード表示 */
-.code-display{
-  background:linear-gradient(135deg,#065F47,#0F8B68);
-  border:1px solid rgba(101,206,165,0.4);
-  border-radius:14px;
-  padding:18px 16px;
-  text-align:center;
-  margin-bottom:14px;
-  position:relative;
-  overflow:hidden;
-}
-.code-display::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:radial-gradient(circle at 50% 0%,rgba(101,206,165,0.3),transparent 70%);
-  pointer-events:none;
-}
-.code-label{
-  font-size:11px;
-  color:rgba(255,255,255,0.75);
-  margin-bottom:6px;
-  position:relative;
-  letter-spacing:0.05em;
-}
-.code-value{
-  font-size:42px;
-  font-weight:900;
-  letter-spacing:8px;
-  color:#fff;
-  font-family:'Noto Sans JP',monospace;
-  text-shadow:0 2px 8px rgba(0,0,0,0.3);
-  position:relative;
-  margin:4px 0;
-}
-.code-countdown{
-  font-size:11px;
-  color:rgba(255,255,255,0.85);
-  position:relative;
-  margin-top:4px;
-}
-.code-countdown.expired{color:#ffb0b0;}
-
-.code-loading{
-  text-align:center;
-  padding:30px 16px;
-  color:rgba(255,255,255,0.6);
-  font-size:12px;
-}
-
-/* 手順 */
-.instruction-box{
-  background:rgba(201,169,97,0.06);
-  border:1px solid rgba(201,169,97,0.25);
-  border-radius:10px;
-  padding:12px 14px;
-  margin-bottom:14px;
-}
-.instruction-title{
-  font-size:11px;
-  font-weight:700;
-  color:#C9A961;
-  margin-bottom:8px;
-  letter-spacing:0.05em;
-}
-.instruction-list{
-  list-style:none;
-  counter-reset:step;
-}
-.instruction-list li{
-  font-size:11px;
-  color:rgba(255,255,255,0.85);
-  line-height:1.7;
-  padding-left:24px;
-  position:relative;
-  counter-increment:step;
-  margin-bottom:4px;
-}
-.instruction-list li::before{
-  content:counter(step);
-  position:absolute;
-  left:0;
-  top:1px;
-  width:18px;
-  height:18px;
-  background:#C9A961;
-  color:#051E18;
-  border-radius:50%;
-  font-size:10px;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.instruction-list strong{
-  background:rgba(201,169,97,0.3);
-  padding:1px 6px;
-  border-radius:4px;
-  color:#fff;
-  font-weight:700;
-}
-
-/* LINE ボタン */
 .line-btn{
   display:flex;
   align-items:center;
   justify-content:center;
   gap:10px;
   width:100%;
-  padding:15px;
+  padding:16px;
   background:#06C755;
   color:#fff;
   border-radius:12px;
-  font-size:14px;
+  font-size:15px;
   font-weight:700;
   text-decoration:none;
   border:none;
   cursor:pointer;
   font-family:inherit;
-  margin-bottom:10px;
   box-shadow:0 8px 20px rgba(6,199,85,0.4);
   transition:all 0.2s;
 }
@@ -329,30 +224,17 @@ body::after{
   box-shadow:0 12px 28px rgba(6,199,85,0.5);
   transform:translateY(-1px);
 }
-
-.btn-reissue{
-  width:100%;
-  padding:11px;
-  background:transparent;
-  color:rgba(255,255,255,0.7);
-  border:1px solid rgba(255,255,255,0.25);
-  border-radius:10px;
-  font-family:inherit;
-  font-size:12px;
-  font-weight:500;
-  cursor:pointer;
-  margin-bottom:14px;
-  transition:all 0.2s;
-}
-.btn-reissue:hover{
-  background:rgba(255,255,255,0.05);
-  color:#fff;
+.line-btn-note{
+  font-size:11px;
+  color:rgba(255,255,255,0.6);
+  text-align:center;
+  margin-top:10px;
+  line-height:1.6;
 }
 
-/* スキップ */
 .skip-area{
-  margin-top:14px;
-  padding-top:14px;
+  margin-top:20px;
+  padding-top:18px;
   border-top:1px solid rgba(255,255,255,0.1);
   text-align:center;
 }
@@ -374,7 +256,6 @@ body::after{
 }
 .skip-btn:hover{color:rgba(255,255,255,0.85);}
 
-/* 連携完了表示 */
 .success-box{
   background:linear-gradient(135deg,rgba(101,206,165,0.2),rgba(6,199,85,0.2));
   border:1px solid #65CEA5;
@@ -423,29 +304,6 @@ body::after{
   vertical-align:middle;
 }
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* ポーリング状態表示 */
-.polling-status{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  font-size:11px;
-  color:rgba(101,206,165,0.85);
-  padding:8px;
-  margin-bottom:10px;
-}
-.polling-dot{
-  width:8px;
-  height:8px;
-  background:#65CEA5;
-  border-radius:50%;
-  animation:pulse 1.5s ease-in-out infinite;
-}
-@keyframes pulse{
-  0%,100%{opacity:1;transform:scale(1);}
-  50%{opacity:0.4;transform:scale(0.8);}
-}
 
 .footer-text{
   margin-top:24px;
@@ -501,58 +359,17 @@ body::after{
         </ul>
       </div>
 
-      <!-- 【2026/5/27 追加】LIFF方式:タップだけで自動連携(推奨) -->
-      <div id="liff-area" style="margin:20px 0;">
-        <button id="liff-link-btn" type="button" onclick="startLiffLink()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 8px rgba(6,199,85,0.3);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-            <path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/>
-          </svg>
-          LINEで連携する(タップだけ)
-        </button>
-        <div style="font-size:11px;color:#666;text-align:center;margin-top:6px;">
-          LINEを開いて「許可する」を押すだけで連携完了
-        </div>
-      </div>
-
-      <!-- 区切り線 -->
-      <div style="display:flex;align-items:center;gap:10px;margin:24px 0 16px;color:#999;font-size:11px;">
-        <div style="flex:1;height:1px;background:#e0e0e0;"></div>
-        <span>うまくいかない場合</span>
-        <div style="flex:1;height:1px;background:#e0e0e0;"></div>
-      </div>
-
-      <div id="code-area">
-        <div class="code-loading">
-          <span class="spinner"></span>
-          連携コードを発行中...
-        </div>
-      </div>
-
       <div class="error-box" id="error-box"></div>
 
-      <div class="instruction-box" id="instruction-box" style="display:none;">
-        <div class="instruction-title">📌 連携手順</div>
-        <ul class="instruction-list">
-          <li>下のボタンから MyCoach公式LINE を開く</li>
-          <li>友だち追加(初回のみ)</li>
-          <li>トーク画面で上記の<strong id="code-inline-ref">6桁コード</strong>を送信</li>
-        </ul>
-      </div>
-
-      <a href="https://lin.ee/VkQyw4n" target="_blank" class="line-btn" id="line-btn" style="display:none;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+      <!-- LIFF方式:タップだけで自動連携 -->
+      <button id="liff-link-btn" type="button" onclick="startLiffLink()" class="line-btn">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
           <path d="M12 2C6.48 2 2 6.02 2 11c0 3.07 1.6 5.78 4.07 7.5L5 21l2.86-1.5A10.07 10.07 0 0012 20c5.52 0 10-4.02 10-9S17.52 2 12 2z"/>
         </svg>
-        MyCoach公式LINEを開く
-      </a>
-
-      <button class="btn-reissue" id="reissue-btn" style="display:none;" onclick="issueLinkCode()">
-        🔄 コードを再発行する
+        LINEで連携する(タップだけ)
       </button>
-
-      <div class="polling-status" id="polling-status" style="display:none;">
-        <span class="polling-dot"></span>
-        連携を待っています...
+      <div class="line-btn-note">
+        LINEを開いて「許可する」を押すだけで連携完了
       </div>
 
       <div class="skip-area">
@@ -595,20 +412,28 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
 
 var currentUserId=null;
 var customerRowId=null;
-var currentCode=null;
-var countdownTimer=null;
-var pollingTimer=null;
 
-/* ページ読み込み時:セッション確認 → コード自動発行 */
+/* 【2026/5/28 修正】セッション取得の堅牢化(step5と同方式) */
+async function getSessionRobust(){
+  for(var i=0;i<5;i++){
+    var res=await sb.auth.getSession();
+    if(res.data && res.data.session){
+      return res.data.session;
+    }
+    await new Promise(function(r){setTimeout(r,400);});
+  }
+  return null;
+}
+
+/* ページ読み込み時:セッション確認 → 連携状態確認 */
 window.addEventListener('DOMContentLoaded',async function(){
-  var res=await sb.auth.getSession();
-  if(!res.data.session){
+  var session=await getSessionRobust();
+  if(!session){
     window.location.href='customer_login.html';
     return;
   }
-  currentUserId=res.data.session.user.id;
+  currentUserId=session.user.id;
 
-  /* customers レコード取得(認証済みのはず) */
   var{data,error}=await sb.from('customers').select('id,line_user_id,is_approved').eq('user_id',currentUserId).maybeSingle();
   if(error||!data){
     showError('お客様情報が取得できません。会員認証からやり直してください。');
@@ -623,9 +448,6 @@ window.addEventListener('DOMContentLoaded',async function(){
     showLinkedSuccess();
     return;
   }
-
-  /* コード発行 */
-  await issueLinkCode();
 });
 
 function showError(msg){
@@ -639,121 +461,7 @@ function hideError(){
   el.classList.remove('show');
 }
 
-async function issueLinkCode(){
-  hideError();
-  stopAllTimers();
-
-  var codeArea=document.getElementById('code-area');
-  codeArea.innerHTML='<div class="code-loading"><span class="spinner"></span>連携コードを発行中...</div>';
-
-  document.getElementById('line-btn').style.display='none';
-  document.getElementById('reissue-btn').style.display='none';
-  document.getElementById('instruction-box').style.display='none';
-  document.getElementById('polling-status').style.display='none';
-
-  if(!customerRowId){
-    showError('お客様情報が取得できません');
-    return;
-  }
-
-  try{
-    var resp=await fetch('/.netlify/functions/generate-link-code',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({user_type:'customer',user_id:customerRowId})
-    });
-    var json=await resp.json();
-
-    if(!resp.ok||!json.success){
-      if(json.already_linked){
-        showLinkedSuccess();
-        return;
-      }
-      showError(json.error||'コードの発行に失敗しました');
-      codeArea.innerHTML='<button class="btn-reissue" onclick="issueLinkCode()" style="display:block;">🔄 再試行する</button>';
-      return;
-    }
-
-    currentCode=json.code;
-    var expiresAt=new Date(json.expires_at).getTime();
-    displayCode(json.code,expiresAt);
-    startPolling();
-  }catch(e){
-    console.error('issueLinkCode error',e);
-    showError('通信エラーが発生しました');
-    codeArea.innerHTML='<button class="btn-reissue" onclick="issueLinkCode()" style="display:block;">🔄 再試行する</button>';
-  }
-}
-
-function displayCode(code,expiresAt){
-  var codeArea=document.getElementById('code-area');
-  codeArea.innerHTML=
-    '<div class="code-display">'+
-      '<div class="code-label">📱 あなたの連携コード</div>'+
-      '<div class="code-value">'+code+'</div>'+
-      '<div class="code-countdown" id="code-countdown">⏰ 残り時間を計算中...</div>'+
-    '</div>';
-
-  document.getElementById('code-inline-ref').textContent=code;
-  document.getElementById('instruction-box').style.display='block';
-  document.getElementById('line-btn').style.display='flex';
-  document.getElementById('reissue-btn').style.display='block';
-  document.getElementById('polling-status').style.display='flex';
-
-  startCountdown(expiresAt);
-}
-
-function startCountdown(expiresAt){
-  if(countdownTimer) clearInterval(countdownTimer);
-  var update=function(){
-    var now=Date.now();
-    var diff=expiresAt-now;
-    var el=document.getElementById('code-countdown');
-    if(!el) return;
-    if(diff<=0){
-      el.textContent='⏰ コードの有効期限が切れました';
-      el.classList.add('expired');
-      clearInterval(countdownTimer);
-      countdownTimer=null;
-      stopPolling();
-      return;
-    }
-    var totalSec=Math.floor(diff/1000);
-    var min=Math.floor(totalSec/60);
-    var sec=totalSec%60;
-    el.textContent='⏰ 残り '+min+':'+(sec<10?'0'+sec:sec);
-  };
-  update();
-  countdownTimer=setInterval(update,1000);
-}
-
-function startPolling(){
-  stopPolling();
-  pollingTimer=setInterval(async function(){
-    if(!currentUserId){stopPolling();return;}
-    try{
-      var{data}=await sb.from('customers').select('line_user_id').eq('user_id',currentUserId).maybeSingle();
-      if(data&&data.line_user_id){
-        showLinkedSuccess();
-      }
-    }catch(e){console.warn('polling error',e);}
-  },5000);
-}
-
-function stopPolling(){
-  if(pollingTimer){
-    clearInterval(pollingTimer);
-    pollingTimer=null;
-  }
-}
-
-function stopAllTimers(){
-  if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
-  stopPolling();
-}
-
 function showLinkedSuccess(){
-  stopAllTimers();
   document.getElementById('before-linked').style.display='none';
   document.getElementById('after-linked').style.display='block';
   setTimeout(function(){
@@ -762,23 +470,18 @@ function showLinkedSuccess(){
 }
 
 function skipLinkage(){
-  stopAllTimers();
   window.location.href='onboarding_step5.html';
 }
 
-/* 【2026/5/27 追加】LIFF方式による自動連携 */
+/* LIFF方式による自動連携 */
 function startLiffLink(){
   if(!customerRowId){
     showError('お客様情報が取得できていません。ページを再読み込みしてください。');
     return;
   }
-  /* LIFF専用ページへ遷移(LIFFが自動でLINE認証→DB保存→次画面遷移) */
   var liffUrl='https://liff.line.me/2010206965-HfioOoUZ?type=customer&uid='+encodeURIComponent(customerRowId);
   window.location.href=liffUrl;
 }
-
-/* ページ離脱時にタイマーをクリーンアップ */
-window.addEventListener('beforeunload',stopAllTimers);
 </script>
 </body>
 </html>
