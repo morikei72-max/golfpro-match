@@ -55,11 +55,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;d
 <script>
 const LIFF_ID = '2010206965-HfioOoUZ';
 
-/* 【2026/5/27 完全修正版】LINE公式仕様準拠
- * 真の原因:LIFF URLで外部ブラウザアクセス時、未ログインだとliff.init()内で
- * 自動的にLINE OAuthログインに遷移し、戻ってきた時にURLパラメータが消失する。
- * 解決策:遷移元ページで localStorage に保存し、ここで取得・復元する。
+/* 【2026/5/28 行き止まり修正版】
+ * 旧版は連携成功後、LINEアプリ内(isInClient)では liff.closeWindow() を実行していた。
+ * しかし登録フローは元ブラウザで開始されているため、LINE内ウィンドウを閉じても
+ * 元の画面は「連携完了」のまま止まり、step5へ進まず行き止まりになっていた。
+ * 解決策:closeWindow をやめ、LINEアプリ内・外を問わず必ず次画面へ遷移する。
+ * あわせて遷移先を本番ドメイン付きの絶対URLにして 404 も防ぐ。
  */
+
+const BASE_URL = 'https://soft-speculoos-5ef188.netlify.app';
 
 async function main() {
   try {
@@ -78,12 +82,10 @@ async function main() {
     let userId = params.get('uid');
 
     // ステップ4:URLパラメータがない場合、localStorage から復元
-    // (外部ブラウザでLINEログイン経由した場合のフォールバック)
     if (!userId) {
       userId = localStorage.getItem('mycoach_liff_uid');
       userType = localStorage.getItem('mycoach_liff_type');
     } else {
-      // URLパラメータが取得できた場合は localStorage にも保存
       localStorage.setItem('mycoach_liff_uid', userId);
       localStorage.setItem('mycoach_liff_type', userType);
     }
@@ -129,19 +131,15 @@ async function main() {
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('success').classList.remove('hidden');
 
-    // 次画面のリンク設定
+    // 次画面のURL(本番ドメイン付き絶対URL=404防止)
     const nextUrl = userType === 'customer'
-      ? '/onboarding_step5.html'
-      : '/coach_onboarding_step7.html';
+      ? BASE_URL + '/onboarding_step5.html'
+      : BASE_URL + '/coach_onboarding_step7.html';
     document.getElementById('next-btn').href = nextUrl;
 
-    // 2秒後に自動遷移
+    // 【修正】LINEアプリ内・外を問わず、必ず次画面へ遷移する(closeWindowしない)
     setTimeout(() => {
-      if (liff.isInClient()) {
-        liff.closeWindow();
-      } else {
-        window.location.href = nextUrl;
-      }
+      window.location.href = nextUrl;
     }, 2000);
 
   } catch (e) {
