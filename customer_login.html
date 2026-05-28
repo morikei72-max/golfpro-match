@@ -120,10 +120,18 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 async function routeAfterAuth(session){
   if(!session) return;
-  const {data:cust}=await sb.from('customers').select('id,name,line_user_id').eq('user_id',session.user.id).maybeSingle();
-  if(cust && cust.name && cust.line_user_id){
+  const {data:cust}=await sb.from('customers').select('id,name,is_approved,line_user_id').eq('user_id',session.user.id).maybeSingle();
+  /* 【2026/5/28 修正】コーチ探しへ進む条件を「名前あり かつ 会員認証済」に変更。
+     LINE連携(line_user_id)は通知用の任意機能であり、必須条件から外す。
+     これによりLINE連携の有無やセッションの一時的な切れに関わらず、
+     登録を終えたお客様は確実に search_hub へ進める。 */
+  if(cust && cust.name && cust.is_approved){
     location.replace('search_hub.html');
+  }else if(cust && cust.is_approved){
+    /* 会員認証済だがプロフィール未入力 → プロフィール入力から再開 */
+    location.replace('onboarding_step5.html');
   }else{
+    /* 会員認証がまだ → 会員確認から */
     location.replace('onboarding_step2.html');
   }
 }
