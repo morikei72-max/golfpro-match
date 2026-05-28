@@ -1,3 +1,6 @@
+# ルートアクセスを top.html へ転送(2026/5/28 追加)
+/  /top.html  200
+
 # top.html から各ログイン画面へ素通し(from=topパラメータ付きの場合のみ)
 /customer_login.html  from=top  /customer_login.html  200
 /coach_login.html     from=top  /coach_login.html     200
