@@ -48,6 +48,19 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 .logout-btn{background:rgba(255,138,138,0.08);border:1px solid rgba(255,138,138,0.3);color:var(--red);font-family:inherit;font-size:13px;font-weight:700;padding:12px 18px;border-radius:12px;cursor:pointer;width:100%;letter-spacing:0.05em;margin-top:20px;}
 .logout-btn:active{background:rgba(255,138,138,0.15);}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:#0a1f1a;border:1px solid var(--line-strong);border-radius:16px;padding:20px;width:100%;max-width:420px;}
+.modal-title{font-size:15px;font-weight:700;color:#fff;margin-bottom:16px;}
+.modal-field{margin-bottom:14px;}
+.modal-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;}
+.modal-field input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;color:#fff;font-family:inherit;font-size:14px;}
+.modal-field input:focus{outline:none;border-color:var(--main);}
+.modal-btns{display:flex;gap:10px;margin-top:18px;}
+.modal-btn{flex:1;padding:12px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
+.modal-btn-save{background:linear-gradient(135deg,#3aa57c,#65CEA5);color:#fff;}
+.modal-btn-cancel{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--line);}
 </style>
 </head>
 <body>
@@ -64,7 +77,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   <!-- 店舗情報 -->
   <div class="panel">
     <div class="panel-title"><span>店舗情報</span></div>
-    <div class="setting-row">
+    <div class="setting-row" onclick="openStoreModal()">
       <div class="setting-info">
         <div class="setting-name">店舗名・住所</div>
         <div class="setting-sub" id="set-store-name">Golf Create 戸津池店</div>
@@ -187,12 +200,25 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 
 </div>
 
+<div class="modal-overlay" id="store-modal" onclick="if(event.target===this)closeStoreModal()">
+  <div class="modal-box">
+    <div class="modal-title">店舗名・住所の編集</div>
+    <div class="modal-field"><label>店舗名</label><input type="text" id="inp-store-name" placeholder="例:Golf Create 戸津池店"></div>
+    <div class="modal-field"><label>住所</label><input type="text" id="inp-store-address" placeholder="例:京都府八幡市..."></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeStoreModal()">キャンセル</button>
+      <button class="modal-btn modal-btn-save" id="store-save-btn" onclick="saveStoreInfo()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
 
 const STORE_KEY='tozuike';
+let currentStore={name:'',address:''};
 
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
@@ -226,11 +252,14 @@ function formatBusinessHours(bh){
 
 async function loadStore(){
   const{data}=await sb.from('stores')
-    .select('business_hours,special_dates,name')
+    .select('business_hours,special_dates,name,address')
     .eq('store_key',STORE_KEY)
     .maybeSingle();
   
   if(data){
+    currentStore.name=data.name||'';
+    currentStore.address=data.address||'';
+    document.getElementById('set-store-name').textContent=data.address?((data.name||'未設定')+' / '+data.address):(data.name||'未設定');
     if(data.business_hours){
       document.getElementById('set-business-hours').textContent=formatBusinessHours(data.business_hours);
     }else{
@@ -294,6 +323,29 @@ async function doLogout(){
   if(!confirm('ログアウトしますか?'))return;
   await sb.auth.signOut();
   location.replace('store_login.html');
+}
+
+function openStoreModal(){
+  document.getElementById('inp-store-name').value=currentStore.name||'';
+  document.getElementById('inp-store-address').value=currentStore.address||'';
+  document.getElementById('store-modal').classList.add('open');
+}
+function closeStoreModal(){
+  document.getElementById('store-modal').classList.remove('open');
+}
+async function saveStoreInfo(){
+  const name=document.getElementById('inp-store-name').value.trim();
+  const address=document.getElementById('inp-store-address').value.trim();
+  if(!name){alert('店舗名を入力してください');return;}
+  const btn=document.getElementById('store-save-btn');
+  btn.disabled=true;btn.textContent='保存中...';
+  const{error}=await sb.from('stores').update({name:name,address:address,updated_at:new Date().toISOString()}).eq('store_key',STORE_KEY);
+  btn.disabled=false;btn.textContent='保存';
+  if(error){alert('保存に失敗しました: '+error.message);return;}
+  currentStore.name=name;currentStore.address=address;
+  document.getElementById('set-store-name').textContent=address?(name+' / '+address):name;
+  closeStoreModal();
+  alert('保存しました');
 }
 </script>
 </body>
