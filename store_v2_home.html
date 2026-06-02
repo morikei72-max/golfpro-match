@@ -142,7 +142,7 @@ body::before{
       </div>
       <div class="meta">
         <div class="lbl">コーチ</div>
-        <div class="val">稼働 <strong id="a-cch">--</strong> 名</div>
+        <div class="val">稼働 <strong id="a-cch">--</strong> 名<span id="a-cch-pending"></span></div>
       </div>
       <span class="badge" id="a-cch-badge" style="display:none;">2</span>
     </a>
@@ -267,12 +267,12 @@ async function loadDashboard(){
     const todayCount=(todayBkg||[]).length;
     const pendingCount=(todayBkg||[]).filter(b=>['pending_approval','pending'].includes(b.status)).length;
 
-    /* コーチ */
+    /* コーチ(認証待ち=未承認かつ未却下。却下済はカウントしない) */
     const {data:coaches}=await sb.from('coaches')
-      .select('id,is_approved')
+      .select('id,is_approved,is_rejected')
       .eq('store_key',STORE_KEY);
     const activeCoach=(coaches||[]).filter(c=>c.is_approved).length;
-    const pendingCoach=(coaches||[]).filter(c=>!c.is_approved).length;
+    const pendingCoach=(coaches||[]).filter(c=>!c.is_approved&&!c.is_rejected).length;
 
     /* 会員 */
     const {count:memberCount}=await sb.from('members')
@@ -320,6 +320,8 @@ async function loadDashboard(){
     if(pendingCoach>0){
       const b=document.getElementById('a-cch-badge');
       b.textContent=pendingCoach;b.style.display='flex';
+      const p=document.getElementById('a-cch-pending');
+      if(p)p.innerHTML=' · <strong style="color:#ff8a8a;">認証待ち '+pendingCoach+'名</strong>';
     }
 
   }catch(e){
