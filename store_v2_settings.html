@@ -68,6 +68,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .hours-sep{color:var(--muted);font-size:12px;flex-shrink:0;}
 .hours-closed{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
 .hours-closed input{width:15px;height:15px;}
+.block-hint{font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.6;}
+.block-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px;}
+.block-item .blk-range{flex:1;font-weight:700;color:#fff;}
+.block-item .blk-days{font-size:11px;color:var(--main-light);flex-shrink:0;}
+.block-item .blk-del{background:rgba(255,138,138,0.1);border:1px solid rgba(255,138,138,0.3);color:var(--red);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;}
+.block-empty{color:var(--muted);font-size:12px;text-align:center;padding:14px 0;}
+.block-add{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-strong);}
+.block-add-row{display:flex;gap:10px;}
+.block-add-field{flex:1;}
+.block-add-field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;}
+.block-add-field input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;color:#fff;font-family:inherit;font-size:14px;}
+.blk-add-btn{background:linear-gradient(135deg,#3aa57c,#65CEA5);color:#fff;border:none;border-radius:10px;padding:11px 14px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;width:100%;margin-top:12px;}
 </style>
 </head>
 <body>
@@ -100,10 +112,10 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       <span class="setting-status status-ok" id="set-hours-status">登録済</span>
       <div class="setting-arrow">→</div>
     </div>
-    <div class="setting-row">
+    <div class="setting-row" onclick="openBlockModal()">
       <div class="setting-info">
-        <div class="setting-name">特別営業日</div>
-        <div class="setting-sub" id="set-special-days">休業日・特別営業時間</div>
+        <div class="setting-name">休業日</div>
+        <div class="setting-sub" id="set-special-days">休業期間を設定</div>
       </div>
       <span class="setting-status status-warn" id="set-special-status">未設定</span>
       <div class="setting-arrow">→</div>
@@ -242,6 +254,25 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   </div>
 </div>
 
+<div class="modal-overlay" id="block-modal" onclick="if(event.target===this)closeBlockModal()">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div class="modal-title">休業日の設定</div>
+    <div class="block-hint">休業にする期間を指定すると、その期間はコーチが予定を入れられなくなります。3ヶ月先などの期間も事前に設定できます。</div>
+    <div id="block-list"></div>
+    <div class="block-add">
+      <div class="block-add-row">
+        <div class="block-add-field"><label>開始日</label><input type="date" id="blk-from"></div>
+        <div class="block-add-field"><label>終了日</label><input type="date" id="blk-to"></div>
+      </div>
+      <button class="blk-add-btn" onclick="addBlockRange()">この期間を休業にする</button>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeBlockModal()">キャンセル</button>
+      <button class="modal-btn modal-btn-save" id="block-save-btn" onclick="saveBlock()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -251,6 +282,8 @@ const STORE_KEY='tozuike';
 let currentStore={name:'',address:''};
 let currentHours={};
 let currentIssuer={issuer_name:'株式会社ケイエスケー',invoice_number:'T1130001070904'};
+let currentBlock={};
+let draftBlock={};
 const DOW=[['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金'],['sat','土'],['sun','日'],['hol','祝']];
 
 (async()=>{
@@ -260,6 +293,7 @@ const DOW=[['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金']
   loadSeats();
   await loadHacomonoStatus();
   await loadIssuer();
+  await loadBlock();
 })();
 
 function formatBusinessHours(bh){
@@ -421,6 +455,101 @@ async function saveIssuer(){
   document.getElementById('set-issuer-name').textContent=issuer;
   document.getElementById('set-invoice-number').textContent=invoice||'未登録';
   closeIssuerModal();
+  alert('保存しました');
+}
+
+async function loadBlock(){
+  try{
+    const{data,error}=await sb.from('stores').select('special_dates').eq('store_key',STORE_KEY).maybeSingle();
+    if(error||!data)return;
+    currentBlock=data.special_dates||{};
+    updateBlockSummary();
+  }catch(e){/* 既存表示を維持し既存機能に影響させない */}
+}
+function updateBlockSummary(){
+  const n=Object.keys(currentBlock||{}).length;
+  const el=document.getElementById('set-special-days');
+  const st=document.getElementById('set-special-status');
+  if(n>0){
+    el.textContent=n+'日 休業設定';
+    st.className='setting-status status-ok';
+    st.textContent='設定済';
+  }else{
+    el.textContent='休業期間を設定';
+    st.className='setting-status status-warn';
+    st.textContent='未設定';
+  }
+}
+function fmtBlkDate(s){const p=s.split('-');return p[0]+'/'+parseInt(p[1])+'/'+parseInt(p[2]);}
+function blkDaysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000)+1;}
+function groupBlockRanges(obj){
+  const dates=Object.keys(obj||{}).filter(function(k){return obj[k]&&obj[k].closed===true;}).sort();
+  const ranges=[];
+  let start=null,prev=null;
+  dates.forEach(function(d){
+    if(start===null){start=d;prev=d;return;}
+    const diff=Math.round((new Date(d)-new Date(prev))/86400000);
+    if(diff===1){prev=d;}
+    else{ranges.push([start,prev]);start=d;prev=d;}
+  });
+  if(start!==null)ranges.push([start,prev]);
+  return ranges;
+}
+function renderBlockList(){
+  const wrap=document.getElementById('block-list');
+  const ranges=groupBlockRanges(draftBlock);
+  if(ranges.length===0){wrap.innerHTML='<div class="block-empty">休業日はまだありません</div>';return;}
+  wrap.innerHTML=ranges.map(function(r){
+    const label=(r[0]===r[1])?fmtBlkDate(r[0]):fmtBlkDate(r[0])+' 〜 '+fmtBlkDate(r[1]);
+    const nd=blkDaysBetween(r[0],r[1]);
+    return '<div class="block-item">'+
+      '<span class="blk-range">'+label+'</span>'+
+      '<span class="blk-days">'+nd+'日間</span>'+
+      '<button class="blk-del" onclick="removeBlockRange(\''+r[0]+'\',\''+r[1]+'\')">削除</button>'+
+      '</div>';
+  }).join('');
+}
+function eachDateKey(from,to,fn){
+  let cur=new Date(from);const end=new Date(to);let guard=0;
+  while(cur<=end&&guard<400){
+    const y=cur.getFullYear(),m=String(cur.getMonth()+1).padStart(2,'0'),d=String(cur.getDate()).padStart(2,'0');
+    fn(y+'-'+m+'-'+d);
+    cur.setDate(cur.getDate()+1);guard++;
+  }
+}
+function addBlockRange(){
+  const from=document.getElementById('blk-from').value;
+  const to=document.getElementById('blk-to').value||from;
+  if(!from){alert('開始日を選んでください');return;}
+  if(to<from){alert('終了日は開始日以降にしてください');return;}
+  eachDateKey(from,to,function(key){draftBlock[key]={closed:true};});
+  document.getElementById('blk-from').value='';
+  document.getElementById('blk-to').value='';
+  renderBlockList();
+}
+function removeBlockRange(from,to){
+  eachDateKey(from,to,function(key){delete draftBlock[key];});
+  renderBlockList();
+}
+function openBlockModal(){
+  draftBlock=JSON.parse(JSON.stringify(currentBlock||{}));
+  document.getElementById('blk-from').value='';
+  document.getElementById('blk-to').value='';
+  renderBlockList();
+  document.getElementById('block-modal').classList.add('open');
+}
+function closeBlockModal(){
+  document.getElementById('block-modal').classList.remove('open');
+}
+async function saveBlock(){
+  const btn=document.getElementById('block-save-btn');
+  btn.disabled=true;btn.textContent='保存中...';
+  const{error}=await sb.from('stores').update({special_dates:draftBlock,updated_at:new Date().toISOString()}).eq('store_key',STORE_KEY);
+  btn.disabled=false;btn.textContent='保存';
+  if(error){alert('保存に失敗しました: '+error.message);return;}
+  currentBlock=JSON.parse(JSON.stringify(draftBlock));
+  updateBlockSummary();
+  closeBlockModal();
   alert('保存しました');
 }
 
