@@ -310,7 +310,8 @@ async function loadDashboard(){
     document.getElementById('a-bkg').textContent=todayCount;
     document.getElementById('a-cch').textContent=activeCoach;
     document.getElementById('a-mbr').textContent=(memberCount||0);
-    document.getElementById('a-occ').textContent=busy+'/'+totalSeats;
+    const occEl=document.getElementById('a-occ');
+    if(occEl)occEl.textContent=busy+'/'+totalSeats;
 
     /* バッジ */
     if(pendingCount>0){
