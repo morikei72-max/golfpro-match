@@ -41,7 +41,7 @@ body::before{
 
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px;}
-.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;cursor:pointer;}
 .kpi .lab{font-size:10px;color:var(--muted);font-weight:600;margin-bottom:6px;}
 .kpi .num{font-size:24px;font-weight:800;color:#fff;line-height:1.1;letter-spacing:-0.02em;}
 .kpi .num .u{font-size:12px;color:var(--muted);margin-left:2px;}
@@ -121,10 +121,10 @@ body::before{
 
   <!-- KPI -->
   <div class="kpi-grid">
-    <div class="kpi"><div class="lab">総会員数</div><div class="num" id="kpi-total"><span class="skeleton">0</span><span class="u">名</span></div><div class="d" id="kpi-total-d">読込中</div></div>
-    <div class="kpi"><div class="lab">今月の新規</div><div class="num" id="kpi-new"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">今月入会</div></div>
-    <div class="kpi"><div class="lab">休眠会員</div><div class="num" id="kpi-dormant"><span class="skeleton">0</span><span class="u">名</span></div><div class="d warn">90日無受講</div></div>
-    <div class="kpi"><div class="lab">退会予定</div><div class="num" id="kpi-withdrawn"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">月末退会</div></div>
+    <div class="kpi" onclick="setFilter('active')"><div class="lab">総会員数</div><div class="num" id="kpi-total"><span class="skeleton">0</span><span class="u">名</span></div><div class="d" id="kpi-total-d">読込中</div></div>
+    <div class="kpi" onclick="setFilter('new')"><div class="lab">今月の新規</div><div class="num" id="kpi-new"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">今月入会</div></div>
+    <div class="kpi" onclick="setFilter('dormant')"><div class="lab">休眠会員</div><div class="num" id="kpi-dormant"><span class="skeleton">0</span><span class="u">名</span></div><div class="d warn">90日無受講</div></div>
+    <div class="kpi" onclick="setFilter('withdrawn')"><div class="lab">退会予定</div><div class="num" id="kpi-withdrawn"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">月末退会</div></div>
   </div>
 
   <!-- CSV取込パネル -->
@@ -149,11 +149,11 @@ body::before{
 
   <!-- フィルタタブ -->
   <div class="tabs">
-    <button class="tab on" onclick="setFilter('all',this)">すべて</button>
-    <button class="tab" onclick="setFilter('active',this)">アクティブ</button>
-    <button class="tab" onclick="setFilter('new',this)">新規</button>
-    <button class="tab" onclick="setFilter('dormant',this)">休眠</button>
-    <button class="tab" onclick="setFilter('withdrawn',this)">退会</button>
+    <button class="tab on" data-f="all" onclick="setFilter('all')">すべて</button>
+    <button class="tab" data-f="active" onclick="setFilter('active')">アクティブ</button>
+    <button class="tab" data-f="new" onclick="setFilter('new')">新規</button>
+    <button class="tab" data-f="dormant" onclick="setFilter('dormant')">休眠</button>
+    <button class="tab" data-f="withdrawn" onclick="setFilter('withdrawn')">退会予定</button>
   </div>
 
   <!-- 会員一覧 -->
@@ -222,12 +222,13 @@ function renderKPI(){
   document.getElementById('kpi-withdrawn').innerHTML=withdrawn+'<span class="u">名</span>';
 }
 
-function setFilter(f,btn){
+function setFilter(f){
   currentFilter=f;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
   displayLimit=50;
   filterAndRender();
+  const tabs=document.querySelector('.tabs');
+  if(tabs)tabs.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 function filterAndRender(){
@@ -253,7 +254,7 @@ function filterAndRender(){
       if(!m.last_visit_date)return false;
       if(new Date(m.last_visit_date)>=ninetyDaysAgo)return false;
     }else if(currentFilter==='withdrawn'){
-      if(m.is_active!==false&&!m.withdrawal_date)return false;
+      if(!(m.is_active!==false&&m.withdrawal_date))return false;
     }
     return true;
   });
