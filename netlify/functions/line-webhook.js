@@ -160,6 +160,23 @@ async function handlePostback({ ev, lineUserId, supabase }) {
   const data = ev.postback?.data || '';
   const params = parseQueryString(data);
   const action = params.action;
+
+  // ----- 【2026/6/2 追加】コーチ認証/却下(coach_id を使用・booking_id 不要)-----
+  if (action === 'approve_coach' || action === 'reject_coach') {
+    const coachId = params.coach_id;
+    if (!coachId) {
+      console.warn('[postback] coach action without coach_id:', data);
+      return;
+    }
+    if (action === 'approve_coach') {
+      await handleApproveCoach({ coachId, lineUserId, supabase });
+    } else {
+      await handleRejectCoach({ coachId, lineUserId, supabase });
+    }
+    return;
+  }
+
+  // ----- 以下、予約系(従来どおり)-----
   const bookingId = params.booking_id;
 
   console.log('[postback]', { action, bookingId, lineUserId });
@@ -190,6 +207,117 @@ async function handlePostback({ ev, lineUserId, supabase }) {
   }
 
   console.warn('[postback] unknown action:', action);
+}
+
+// ============================================
+// 【2026/6/2 新規】コーチ認証(LINEボタン → is_approved=true)
+//   - アプリ(store_v2_home.html / store_v2_coaches.html)は
+//     is_approved / is_rejected を見て表示しているため、同じ列を更新して連動させる
+// ============================================
+async function handleApproveCoach({ coachId, lineUserId, supabase }) {
+  const { data: coach } = await supabase
+    .from('coaches')
+    .select('id, name, is_approved, is_rejected, line_user_id')
+    .eq('id', coachId)
+    .maybeSingle();
+
+  if (!coach) {
+    await pushMessage(lineUserId, 'このコーチが見つかりませんでした。');
+    return;
+  }
+
+  if (coach.is_approved) {
+    await pushMessage(lineUserId, `${coach.name || 'このコーチ'}様は既に認証済みです。`);
+    return;
+  }
+
+  const { error: updateErr } = await supabase
+    .from('coaches')
+    .update({
+      is_approved: true,
+      is_rejected: false,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', coachId);
+
+  if (updateErr) {
+    console.error('[approve_coach] update error:', updateErr);
+    await pushMessage(lineUserId, '認証処理でエラーが発生しました。お手数ですがアプリからご確認ください。');
+    return;
+  }
+
+  const coachName = coach.name || 'コーチ';
+
+  // コーチ本人へ承認通知(LINE連携済みの場合のみ)
+  if (coach.line_user_id) {
+    await pushMessage(
+      coach.line_user_id,
+      `✅ コーチ登録が承認されました\n\n` +
+      `${coachName}様\n\n` +
+      `MyCoach コーチ登録が本部により承認されました。\n` +
+      `これよりお客様からのご予約を受け付けられます。\n\n` +
+      `— MyCoach`
+    );
+    console.log('[approve_coach] coach notified');
+  } else {
+    console.warn('[approve_coach] coach has no line_user_id');
+  }
+
+  // 本部(押した人)へ確認返信
+  await pushMessage(
+    lineUserId,
+    `✅ ${coachName}様を認証しました。\n\n` +
+    `コーチはお客様からのご予約を受け付けられる状態になりました。\n\n` +
+    `— MyCoach`
+  );
+}
+
+// ============================================
+// 【2026/6/2 新規】コーチ却下(LINEボタン → is_rejected=true)
+//   - コーチ本人へは自動通知しない(本部の判断で個別連絡)
+// ============================================
+async function handleRejectCoach({ coachId, lineUserId, supabase }) {
+  const { data: coach } = await supabase
+    .from('coaches')
+    .select('id, name, is_approved, is_rejected')
+    .eq('id', coachId)
+    .maybeSingle();
+
+  if (!coach) {
+    await pushMessage(lineUserId, 'このコーチが見つかりませんでした。');
+    return;
+  }
+
+  if (coach.is_rejected) {
+    await pushMessage(lineUserId, `${coach.name || 'このコーチ'}様は既に却下済みです。`);
+    return;
+  }
+
+  const { error: updateErr } = await supabase
+    .from('coaches')
+    .update({
+      is_approved: false,
+      is_rejected: true,
+      rejected_at: new Date().toISOString(),
+    })
+    .eq('id', coachId);
+
+  if (updateErr) {
+    console.error('[reject_coach] update error:', updateErr);
+    await pushMessage(lineUserId, '却下処理でエラーが発生しました。お手数ですがアプリからご確認ください。');
+    return;
+  }
+
+  const coachName = coach.name || 'コーチ';
+
+  // 本部(押した人)へ確認返信(コーチ本人へは自動通知しない)
+  await pushMessage(
+    lineUserId,
+    `❌ ${coachName}様を却下しました。\n\n` +
+    `このコーチはお客様一覧に表示されません。\n` +
+    `必要に応じて、コーチへ個別にご連絡ください。\n\n` +
+    `— MyCoach`
+  );
 }
 
 // ============================================
