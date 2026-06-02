@@ -2313,10 +2313,12 @@ async function buildWeekGrid(){
   document.getElementById('week-label').textContent=`${s.getMonth()+1}/${s.getDate()} 〜 ${e.getMonth()+1}/${e.getDate()}`;
 
   let businessHours=null;
+  let storeBlock={};
   if(currentStoreId){
     try{
-      const {data:storeRow}=await sb.from('stores').select('business_hours').eq('id',currentStoreId).maybeSingle();
+      const {data:storeRow}=await sb.from('stores').select('business_hours,special_dates').eq('id',currentStoreId).maybeSingle();
       if(storeRow?.business_hours)businessHours=storeRow.business_hours;
+      if(storeRow?.special_dates)storeBlock=storeRow.special_dates;
     }catch(err){console.error('営業時間取得エラー',err);}
   }
 
@@ -2332,6 +2334,14 @@ async function buildWeekGrid(){
   const holidayKeys=['hol','holiday','祝','祝日','hol_day'];
 
   function getDayHoursForDate(date){
+    // 店舗が指定した休業日(special_dates)を最優先で判定
+    const _y=date.getFullYear();
+    const _m=String(date.getMonth()+1).padStart(2,'0');
+    const _d=String(date.getDate()).padStart(2,'0');
+    const _blockKey=_y+'-'+_m+'-'+_d;
+    if(storeBlock&&storeBlock[_blockKey]&&storeBlock[_blockKey].closed===true){
+      return{closed:true};
+    }
     if(!businessHours)return{openH:8,closeH:20,closed:false};
     let entry=null;
     const isHoliday=isJapaneseHoliday(date);
