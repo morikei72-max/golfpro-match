@@ -124,7 +124,7 @@ body::before{
     <div class="kpi"><div class="lab">総会員数</div><div class="num" id="kpi-total"><span class="skeleton">0</span><span class="u">名</span></div><div class="d" id="kpi-total-d">読込中</div></div>
     <div class="kpi"><div class="lab">今月の新規</div><div class="num" id="kpi-new"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">今月入会</div></div>
     <div class="kpi"><div class="lab">休眠会員</div><div class="num" id="kpi-dormant"><span class="skeleton">0</span><span class="u">名</span></div><div class="d warn">90日無受講</div></div>
-    <div class="kpi"><div class="lab">退会者</div><div class="num" id="kpi-withdrawn"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">累計</div></div>
+    <div class="kpi"><div class="lab">退会予定</div><div class="num" id="kpi-withdrawn"><span class="skeleton">0</span><span class="u">名</span></div><div class="d">月末退会</div></div>
   </div>
 
   <!-- CSV取込パネル -->
@@ -213,7 +213,7 @@ function renderKPI(){
     if(!m.last_visit_date)return false;
     return new Date(m.last_visit_date)<ninetyDaysAgo;
   }).length;
-  const withdrawn=allMembers.filter(m=>m.is_active===false||m.withdrawal_date).length;
+  const withdrawn=allMembers.filter(m=>m.is_active!==false&&m.withdrawal_date).length;
 
   document.getElementById('kpi-total').innerHTML=total+'<span class="u">名</span>';
   document.getElementById('kpi-total-d').textContent='アクティブ会員';
@@ -454,7 +454,9 @@ function buildMemberRecord(row,colMap){
   };
   
   const withdrawal=parseDate(get('退会手続き日'));
-  const isActive=!withdrawal;
+  const planEnd=parseDate(get('プラン契約適用終了日'));
+  const todayStr=new Date(Date.now()+32400000).toISOString().slice(0,10);
+  const isActive=!planEnd||planEnd>=todayStr;
   
   return{
     store_key:STORE_KEY,
