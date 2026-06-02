@@ -202,6 +202,28 @@ const STORE_KEY='tozuike';
   await loadHacomonoStatus();
 })();
 
+function formatBusinessHours(bh){
+  if(bh===null||bh===undefined)return '未設定';
+  if(typeof bh==='string')return bh;
+  if(typeof bh!=='object')return String(bh);
+  const order=['mon','tue','wed','thu','fri','sat','sun','hol'];
+  const ranges=[];
+  let anyOpen=false;
+  order.forEach(k=>{
+    const d=bh[k];
+    if(d&&typeof d==='object'){
+      if(d.closed===false&&d.open&&d.close){
+        anyOpen=true;
+        ranges.push(d.open+'〜'+d.close);
+      }
+    }
+  });
+  if(!anyOpen)return '休業';
+  const uniq=[...new Set(ranges)];
+  if(uniq.length===1)return uniq[0];
+  return uniq[0]+' ほか（曜日により異なる）';
+}
+
 async function loadStore(){
   const{data}=await sb.from('stores')
     .select('business_hours,special_dates,name')
@@ -210,7 +232,7 @@ async function loadStore(){
   
   if(data){
     if(data.business_hours){
-      document.getElementById('set-business-hours').textContent=data.business_hours;
+      document.getElementById('set-business-hours').textContent=formatBusinessHours(data.business_hours);
     }else{
       document.getElementById('set-business-hours').textContent='未設定';
       document.getElementById('set-hours-status').className='setting-status status-ng';
