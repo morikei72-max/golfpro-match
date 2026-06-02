@@ -61,6 +61,13 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 .modal-btn{flex:1;padding:12px;border:none;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .modal-btn-save{background:linear-gradient(135deg,#3aa57c,#65CEA5);color:#fff;}
 .modal-btn-cancel{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--line);}
+.hours-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);}
+.hours-day{width:24px;font-size:13px;color:#fff;font-weight:700;flex-shrink:0;}
+.hours-row input[type="time"]{flex:1;min-width:0;background:rgba(255,255,255,0.05);border:1px solid var(--line-strong);border-radius:8px;padding:8px 6px;color:#fff;font-family:inherit;font-size:13px;}
+.hours-row input[type="time"]:disabled{opacity:0.35;}
+.hours-sep{color:var(--muted);font-size:12px;flex-shrink:0;}
+.hours-closed{display:flex;align-items:center;gap:3px;font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;}
+.hours-closed input{width:15px;height:15px;}
 </style>
 </head>
 <body>
@@ -85,7 +92,7 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
       <span class="setting-status status-ok">登録済</span>
       <div class="setting-arrow">→</div>
     </div>
-    <div class="setting-row">
+    <div class="setting-row" onclick="openHoursModal()">
       <div class="setting-info">
         <div class="setting-name">営業時間</div>
         <div class="setting-sub" id="set-business-hours">読込中...</div>
@@ -212,6 +219,17 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   </div>
 </div>
 
+<div class="modal-overlay" id="hours-modal" onclick="if(event.target===this)closeHoursModal()">
+  <div class="modal-box" style="max-height:85vh;overflow-y:auto;">
+    <div class="modal-title">営業時間の編集</div>
+    <div id="hours-fields"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeHoursModal()">キャンセル</button>
+      <button class="modal-btn modal-btn-save" id="hours-save-btn" onclick="saveHours()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -219,6 +237,8 @@ const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageK
 
 const STORE_KEY='tozuike';
 let currentStore={name:'',address:''};
+let currentHours={};
+const DOW=[['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金'],['sat','土'],['sun','日'],['hol','祝']];
 
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
@@ -260,6 +280,7 @@ async function loadStore(){
     currentStore.name=data.name||'';
     currentStore.address=data.address||'';
     document.getElementById('set-store-name').textContent=data.address?((data.name||'未設定')+' / '+data.address):(data.name||'未設定');
+    currentHours=data.business_hours||{};
     if(data.business_hours){
       document.getElementById('set-business-hours').textContent=formatBusinessHours(data.business_hours);
     }else{
@@ -345,6 +366,50 @@ async function saveStoreInfo(){
   currentStore.name=name;currentStore.address=address;
   document.getElementById('set-store-name').textContent=address?(name+' / '+address):name;
   closeStoreModal();
+  alert('保存しました');
+}
+
+function openHoursModal(){
+  const wrap=document.getElementById('hours-fields');
+  wrap.innerHTML=DOW.map(function(item){
+    const k=item[0],label=item[1];
+    const d=currentHours[k]||{open:'10:00',close:'22:00',closed:false};
+    const open=d.open||'10:00';
+    const close=d.close||'22:00';
+    const closed=d.closed===true;
+    return '<div class="hours-row" data-dow="'+k+'">'+
+      '<span class="hours-day">'+label+'</span>'+
+      '<input type="time" class="hours-open" value="'+open+'"'+(closed?' disabled':'')+'>'+
+      '<span class="hours-sep">〜</span>'+
+      '<input type="time" class="hours-close" value="'+close+'"'+(closed?' disabled':'')+'>'+
+      '<label class="hours-closed"><input type="checkbox" class="hours-closed-chk"'+(closed?' checked':'')+' onchange="toggleClosed(this)">休</label>'+
+      '</div>';
+  }).join('');
+  document.getElementById('hours-modal').classList.add('open');
+}
+function toggleClosed(chk){
+  const row=chk.closest('.hours-row');
+  row.querySelector('.hours-open').disabled=chk.checked;
+  row.querySelector('.hours-close').disabled=chk.checked;
+}
+function closeHoursModal(){document.getElementById('hours-modal').classList.remove('open');}
+async function saveHours(){
+  const newHours=Object.assign({},currentHours);
+  document.querySelectorAll('#hours-fields .hours-row').forEach(function(row){
+    const k=row.getAttribute('data-dow');
+    const closed=row.querySelector('.hours-closed-chk').checked;
+    const open=row.querySelector('.hours-open').value||'10:00';
+    const close=row.querySelector('.hours-close').value||'22:00';
+    newHours[k]={open:open,close:close,closed:closed};
+  });
+  const btn=document.getElementById('hours-save-btn');
+  btn.disabled=true;btn.textContent='保存中...';
+  const r=await sb.from('stores').update({business_hours:newHours,updated_at:new Date().toISOString()}).eq('store_key',STORE_KEY);
+  btn.disabled=false;btn.textContent='保存';
+  if(r.error){alert('保存に失敗しました: '+r.error.message);return;}
+  currentHours=newHours;
+  document.getElementById('set-business-hours').textContent=formatBusinessHours(newHours);
+  closeHoursModal();
   alert('保存しました');
 }
 </script>
