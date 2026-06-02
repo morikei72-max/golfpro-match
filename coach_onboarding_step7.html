@@ -410,6 +410,17 @@ async function doAgree(){
       return;
     }
 
+    /* 【2026/6/2 追加】本部へ「認証待ち」LINE通知を送る(結果は待たない・失敗しても登録完了を妨げない) */
+    try{
+      fetch('/.netlify/functions/notify-coach-pending',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({coach_user_id:currentUserId})
+      }).catch(function(err){console.error('notify-coach-pending failed',err);});
+    }catch(e){
+      console.error('notify-coach-pending exception',e);
+    }
+
     /* 完了オーバーレイ表示 */
     document.getElementById('success-overlay').classList.add('show');
 
