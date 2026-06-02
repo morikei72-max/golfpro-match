@@ -421,13 +421,19 @@ async function viewIdCard(){
   meta.innerHTML='ステータス:<strong style="color:#fff;">'+(statusLabel[coachData.id_card_status]||'-')+'</strong> ／ アップロード日時:'+uploadDate;
 
   try{
-    const{data:signed,error:signErr}=await sb.storage.from('coach-id-cards').createSignedUrl(coachData.id_card_url,60);
-    if(signErr||!signed||!signed.signedUrl){
-      body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">画像URL取得に失敗しました</div>';
-      return;
+    let url;
+    if(/^https?:\/\//i.test(coachData.id_card_url)){
+      url=coachData.id_card_url;
+    }else{
+      const{data:signed,error:signErr}=await sb.storage.from('coach-id-cards').createSignedUrl(coachData.id_card_url,60);
+      if(signErr||!signed||!signed.signedUrl){
+        body.innerHTML='<div class="id-modal-loading" style="color:var(--red);">画像URL取得に失敗しました</div>';
+        return;
+      }
+      url=signed.signedUrl;
     }
-    const url=signed.signedUrl;
-    const ext=(coachData.id_card_url.split('.').pop()||'').toLowerCase();
+    const pathForExt=coachData.id_card_url.split('?')[0];
+    const ext=(pathForExt.split('.').pop()||'').toLowerCase();
     if(ext==='pdf'){
       body.innerHTML='<iframe src="'+url+'" title="身分証PDF"></iframe>';
     }else{
