@@ -164,18 +164,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   <!-- 領収書 -->
   <div class="panel">
     <div class="panel-title"><span>領収書</span></div>
-    <div class="setting-row">
+    <div class="setting-row" onclick="openIssuerModal()">
       <div class="setting-info">
         <div class="setting-name">発行者情報</div>
-        <div class="setting-sub">株式会社ケイエスケー</div>
+        <div class="setting-sub" id="set-issuer-name">株式会社ケイエスケー</div>
       </div>
       <span class="setting-status status-ok">登録済</span>
       <div class="setting-arrow">→</div>
     </div>
-    <div class="setting-row">
+    <div class="setting-row" onclick="openIssuerModal()">
       <div class="setting-info">
         <div class="setting-name">インボイス登録番号</div>
-        <div class="setting-sub">T1130001070904</div>
+        <div class="setting-sub" id="set-invoice-number">T1130001070904</div>
       </div>
       <span class="setting-status status-ok">登録済</span>
       <div class="setting-arrow">→</div>
@@ -230,6 +230,18 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
   </div>
 </div>
 
+<div class="modal-overlay" id="issuer-modal" onclick="if(event.target===this)closeIssuerModal()">
+  <div class="modal-box">
+    <div class="modal-title">発行者情報・インボイス番号の編集</div>
+    <div class="modal-field"><label>発行者名(領収書に記載)</label><input type="text" id="inp-issuer-name" placeholder="例:株式会社ケイエスケー"></div>
+    <div class="modal-field"><label>インボイス登録番号</label><input type="text" id="inp-invoice-number" placeholder="例:T1130001070904"></div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-cancel" onclick="closeIssuerModal()">キャンセル</button>
+      <button class="modal-btn modal-btn-save" id="issuer-save-btn" onclick="saveIssuer()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
@@ -238,6 +250,7 @@ const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageK
 const STORE_KEY='tozuike';
 let currentStore={name:'',address:''};
 let currentHours={};
+let currentIssuer={issuer_name:'株式会社ケイエスケー',invoice_number:'T1130001070904'};
 const DOW=[['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金'],['sat','土'],['sun','日'],['hol','祝']];
 
 (async()=>{
@@ -246,6 +259,7 @@ const DOW=[['mon','月'],['tue','火'],['wed','水'],['thu','木'],['fri','金']
   await loadStore();
   loadSeats();
   await loadHacomonoStatus();
+  await loadIssuer();
 })();
 
 function formatBusinessHours(bh){
@@ -366,6 +380,47 @@ async function saveStoreInfo(){
   currentStore.name=name;currentStore.address=address;
   document.getElementById('set-store-name').textContent=address?(name+' / '+address):name;
   closeStoreModal();
+  alert('保存しました');
+}
+
+async function loadIssuer(){
+  try{
+    const{data,error}=await sb.from('stores')
+      .select('issuer_name,invoice_number')
+      .eq('store_key',STORE_KEY)
+      .maybeSingle();
+    if(error||!data)return;
+    if(data.issuer_name){
+      currentIssuer.issuer_name=data.issuer_name;
+      document.getElementById('set-issuer-name').textContent=data.issuer_name;
+    }
+    if(data.invoice_number){
+      currentIssuer.invoice_number=data.invoice_number;
+      document.getElementById('set-invoice-number').textContent=data.invoice_number;
+    }
+  }catch(e){/* 列未追加等。既存の固定表示を維持し既存機能に影響させない */}
+}
+function openIssuerModal(){
+  document.getElementById('inp-issuer-name').value=currentIssuer.issuer_name||'';
+  document.getElementById('inp-invoice-number').value=currentIssuer.invoice_number||'';
+  document.getElementById('issuer-modal').classList.add('open');
+}
+function closeIssuerModal(){
+  document.getElementById('issuer-modal').classList.remove('open');
+}
+async function saveIssuer(){
+  const issuer=document.getElementById('inp-issuer-name').value.trim();
+  const invoice=document.getElementById('inp-invoice-number').value.trim();
+  if(!issuer){alert('発行者名を入力してください');return;}
+  const btn=document.getElementById('issuer-save-btn');
+  btn.disabled=true;btn.textContent='保存中...';
+  const{error}=await sb.from('stores').update({issuer_name:issuer,invoice_number:invoice,updated_at:new Date().toISOString()}).eq('store_key',STORE_KEY);
+  btn.disabled=false;btn.textContent='保存';
+  if(error){alert('保存に失敗しました: '+error.message);return;}
+  currentIssuer.issuer_name=issuer;currentIssuer.invoice_number=invoice;
+  document.getElementById('set-issuer-name').textContent=issuer;
+  document.getElementById('set-invoice-number').textContent=invoice||'未登録';
+  closeIssuerModal();
   alert('保存しました');
 }
 
