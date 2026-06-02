@@ -55,11 +55,13 @@ body::before{
 .panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
 .panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
 
-/* コーチカード */
-.coach-card{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;transition:all .2s;}
-.coach-card:last-child{border-bottom:none;}
-.coach-card:active{background:rgba(101,206,165,0.04);}
-.coach-card:hover{background:rgba(101,206,165,0.03);}
+/* コーチカード(スワイプでアーカイブ対応) */
+.coach-row{position:relative;overflow:hidden;border-bottom:1px solid var(--line);}
+.coach-row:last-child{border-bottom:none;}
+.archive-action{position:absolute;top:0;right:0;bottom:0;width:96px;background:#c0392b;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:12px;font-weight:700;cursor:pointer;z-index:0;}
+.archive-action .ico{font-size:18px;line-height:1;}
+.coach-card{display:flex;align-items:center;gap:12px;padding:14px 4px 14px 0;cursor:pointer;text-decoration:none;background:#070707;position:relative;z-index:1;transform:translateX(0);transition:transform .2s;touch-action:pan-y;}
+.coach-card:active{background:#101010;}
 .coach-photo{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0;border:1px solid var(--line-strong);overflow:hidden;}
 .coach-photo img{width:100%;height:100%;object-fit:cover;}
 .coach-info{flex:1;min-width:0;}
@@ -86,6 +88,7 @@ body::before{
 .tab.on{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;}
 
 .empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
+.swipe-hint{text-align:center;font-size:10px;color:var(--muted-2);margin-top:10px;}
 .skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
 @keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
 </style>
@@ -122,6 +125,7 @@ body::before{
     <div id="coach-list">
       <div class="empty">コーチ情報を読み込み中...</div>
     </div>
+    <div class="swipe-hint">← カードを左にスワイプすると「アーカイブ」できます</div>
   </div>
 
 </div>
@@ -142,9 +146,9 @@ let currentTab='all';
 })();
 
 async function loadCoaches(){
-  /* コーチ取得(coach_status, is_rejected を追加) */
+  /* コーチ取得(coach_status, is_rejected, is_archived を追加) */
   const{data,error}=await sb.from('coaches')
-    .select('id,name,photo_url,is_approved,is_rejected,coach_status,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,created_at')
+    .select('id,name,photo_url,is_approved,is_rejected,is_archived,coach_status,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,created_at')
     .eq('store_key',STORE_KEY)
     .order('is_approved',{ascending:false})
     .order('created_at',{ascending:false});
@@ -153,7 +157,8 @@ async function loadCoaches(){
     document.getElementById('coach-list').innerHTML='<div class="empty">読込エラー: '+error.message+'</div>';
     return;
   }
-  allCoaches=data||[];
+  /* アーカイブ済みは一覧・集計から除外 */
+  allCoaches=(data||[]).filter(c=>!c.is_archived);
 
   /* KPI集計 */
   const active=allCoaches.filter(c=>c.is_approved);
@@ -274,23 +279,84 @@ function renderList(){
     }else{
       starDisplay='<span class="coach-star coach-star-zero">★ 0.0</span>';
     }
+    const safeName=escapeHtml(c.name||'(名前未設定)');
     return`
-      <a class="coach-card" href="store_v2_coach_detail.html?id=${c.id}">
-        <div class="coach-photo">${photo}</div>
-        <div class="coach-info">
-          <div class="coach-name">${escapeHtml(c.name||'(名前未設定)')} ${starDisplay} ${pills.join(' ')}</div>
-          <div class="coach-meta">${escapeHtml(c.license||'')} ${reviewCount>0?'· '+reviewCount+'件のレビュー':'· レビュー未投稿'}</div>
-          <div class="coach-stats">
-            <span>予約 <strong>${c._monthCount||0}件</strong></span>
-            <span>売上 <strong>¥${formatK(c._monthSales||0)}</strong></span>
-            <span>キャンセル <strong>${c._cxlRate||0}%</strong></span>
-          </div>
+      <div class="coach-row" data-id="${c.id}" data-name="${safeName}">
+        <div class="archive-action" onclick="archiveCoach('${c.id}',this)">
+          <span class="ico">🗂</span><span>アーカイブ</span>
         </div>
-        <div class="coach-arrow">→</div>
-      </a>
+        <a class="coach-card" href="store_v2_coach_detail.html?id=${c.id}">
+          <div class="coach-photo">${photo}</div>
+          <div class="coach-info">
+            <div class="coach-name">${safeName} ${starDisplay} ${pills.join(' ')}</div>
+            <div class="coach-meta">${escapeHtml(c.license||'')} ${reviewCount>0?'· '+reviewCount+'件のレビュー':'· レビュー未投稿'}</div>
+            <div class="coach-stats">
+              <span>予約 <strong>${c._monthCount||0}件</strong></span>
+              <span>売上 <strong>¥${formatK(c._monthSales||0)}</strong></span>
+              <span>キャンセル <strong>${c._cxlRate||0}%</strong></span>
+            </div>
+          </div>
+          <div class="coach-arrow">→</div>
+        </a>
+      </div>
     `;
   }).join('');
   document.getElementById('coach-list').innerHTML=html;
+  attachSwipe();
+}
+
+/* ============================
+   スワイプでアーカイブ(iPhone Safari / PC 両対応・Pointer Events)
+============================ */
+const SWIPE_WIDTH=96;
+function attachSwipe(){
+  document.querySelectorAll('.coach-card').forEach(card=>{
+    let startX=0,dragging=false,moved=false,baseOpen=false;
+    card.addEventListener('pointerdown',e=>{
+      dragging=true;moved=false;startX=e.clientX;
+      baseOpen=card.dataset.open==='1';
+      card.style.transition='none';
+    });
+    card.addEventListener('pointermove',e=>{
+      if(!dragging)return;
+      let dx=e.clientX-startX;
+      if(Math.abs(dx)>6)moved=true;
+      if(baseOpen)dx-=SWIPE_WIDTH;
+      if(dx>0)dx=0;
+      if(dx<-SWIPE_WIDTH)dx=-SWIPE_WIDTH;
+      card.style.transform='translateX('+dx+'px)';
+    });
+    function endDrag(e){
+      if(!dragging)return;
+      dragging=false;
+      card.style.transition='transform .2s';
+      let dx=e.clientX-startX;
+      if(baseOpen)dx-=SWIPE_WIDTH;
+      if(dx<-SWIPE_WIDTH/2){card.style.transform='translateX(-'+SWIPE_WIDTH+'px)';card.dataset.open='1';}
+      else{card.style.transform='translateX(0)';card.dataset.open='0';}
+    }
+    card.addEventListener('pointerup',endDrag);
+    card.addEventListener('pointercancel',endDrag);
+    /* タップ判定:スワイプした or 開いている時は詳細遷移しない */
+    card.addEventListener('click',e=>{
+      if(moved||card.dataset.open==='1'){e.preventDefault();}
+    });
+  });
+}
+
+async function archiveCoach(id,el){
+  const row=el.closest('.coach-row');
+  const name=row?row.getAttribute('data-name'):'このコーチ';
+  if(!confirm(name+'様を一覧から外します。よろしいですか?\n(予約・売上などの履歴は残り、後から戻せます)'))return;
+  const{error}=await sb.from('coaches')
+    .update({is_archived:true,archived_at:new Date().toISOString()})
+    .eq('id',id);
+  if(error){
+    alert('アーカイブに失敗しました: '+error.message);
+    return;
+  }
+  allCoaches=allCoaches.filter(c=>c.id!==id);
+  renderList();
 }
 
 function setTab(t,btn){
