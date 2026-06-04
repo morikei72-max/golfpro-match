@@ -1089,6 +1089,7 @@ function tab(btn,id){
   if(id==='s-bookings'){loadBookings();}
   if(id==='s-mypage'){refreshLineLinkStatus();}
   if(id==='s-review'){loadReviewScreen();}
+  if(id==='s-fav'){renderFav();}
 }
 
 var currentType='indoor';
@@ -2204,6 +2205,45 @@ async function toggleFav(coachId,btn){
       if(window._favSet)delete window._favSet[coachId];
     }catch(e){console.error('fav del',e);alert('解除に失敗しました。');}
   }
+}
+
+async function renderFav(){
+  var el=document.getElementById('fav-list');
+  if(!el)return;
+  el.innerHTML='<div style="text-align:center;color:#999;padding:24px;font-size:12px;">読み込み中...</div>';
+  try{
+    var myCid=await getMyCustomerId();
+    if(!myCid){el.innerHTML='<div style="text-align:center;color:#999;padding:24px;font-size:12px;">マイページの会員認証後にご利用いただけます。</div>';return;}
+    var{data:favRows}=await sb.from('favorites').select('coach_id').eq('customer_id',myCid);
+    if(!favRows||favRows.length===0){el.innerHTML='<div style="text-align:center;color:#999;padding:24px;font-size:12px;">お気に入りのコーチはまだありません。<br>「コーチから探す」で♥を押すと、ここに表示されます。</div>';return;}
+    var ids=favRows.map(function(f){return f.coach_id;});
+    var{data:coaches}=await sb.from('coaches').select('id,name,photo_url,license,tags').in('id',ids).eq('is_approved',true).eq('coach_status','active');
+    if(!coaches||coaches.length===0){el.innerHTML='<div style="text-align:center;color:#999;padding:24px;font-size:12px;">お気に入りのコーチはまだありません。</div>';return;}
+    var html='';
+    coaches.forEach(function(c){
+      var photo=c.photo_url?'<img src="'+c.photo_url+'" alt="">':(c.name?c.name.charAt(0):'?');
+      html+='<div class="ccard"><div class="ccard-top">';
+      html+='<div class="avatar">'+photo+'</div>';
+      html+='<div style="flex:1;"><div style="display:flex;justify-content:space-between;align-items:flex-start;">';
+      html+='<div class="cname">'+(c.name||'')+'</div>';
+      html+='<button class="cfav on" onclick="toggleFavFromList(\''+c.id+'\',this)">♥</button></div>';
+      if(c.license)html+='<div style="font-size:11px;color:#888;margin-top:2px;">📜 '+c.license+'</div>';
+      if(c.tags)html+='<div style="font-size:11px;color:#888;margin-top:2px;">🏌 '+c.tags+'</div>';
+      html+='<button class="btn-request" style="margin-top:8px;" onclick="selectEntryCoach(\''+c.id+'\')">このコーチに依頼する</button>';
+      html+='</div></div></div>';
+    });
+    el.innerHTML=html;
+  }catch(e){console.error('renderFav',e);el.innerHTML='<div style="text-align:center;color:#999;padding:24px;font-size:12px;">読み込みに失敗しました。</div>';}
+}
+async function toggleFavFromList(coachId,btn){
+  var myCid=await getMyCustomerId();
+  if(!myCid)return;
+  if(!confirm('お気に入りから外しますか?'))return;
+  try{
+    await sb.from('favorites').delete().eq('customer_id',myCid).eq('coach_id',coachId);
+    if(window._favSet)delete window._favSet[coachId];
+    renderFav();
+  }catch(e){console.error('fav list del',e);alert('解除に失敗しました。');}
 }
 
 function checkAgree(){
