@@ -174,6 +174,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .stars{color:var(--gold);font-size:12px;}
 .heart-btn{background:none;border:none;cursor:pointer;font-size:20px;color:#ccc;padding:0;}
 .heart-btn.fav{color:var(--red);}
+.cfav{background:none;border:none;cursor:pointer;font-size:18px;color:#ccc;padding:0 2px;line-height:1;vertical-align:middle;}
+.cfav.on{color:var(--red);}
 .btn-request{width:100%;margin-top:10px;padding:10px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;}
 .star-row{display:flex;gap:5px;margin:8px 0;}
 .starb{font-size:28px;background:none;border:none;cursor:pointer;color:#ccc;padding:0;line-height:1;}
@@ -785,6 +787,14 @@ async function loadAllCoaches(){
       listEl.innerHTML='<div class="coach-card-none">現在、在籍コーチが登録されていません。</div>';
       return;
     }
+    try{
+      var _myCid=await getMyCustomerId();
+      window._favSet={};
+      if(_myCid){
+        var{data:_favRows}=await sb.from('favorites').select('coach_id').eq('customer_id',_myCid);
+        if(_favRows)_favRows.forEach(function(f){window._favSet[f.coach_id]=true;});
+      }
+    }catch(e){console.warn('favSet load',e);}
     // ★ Phase 2:評価データ取得(全コーチ一括)
     var coachIds=data.map(function(c){return c.id;});
     var ratingsMap={};
@@ -830,7 +840,7 @@ async function loadAllCoaches(){
       html+='<div class="coach-card" data-coach-id="'+c.id+'" onclick="selectEntryCoach(\''+c.id+'\')">';
       html+='<div class="coach-card-photo">'+photoHtml+'</div>';
       html+='<div class="coach-card-body">';
-      html+='<div class="coach-card-name">'+name+'</div>';
+      html+='<div class="coach-card-name">'+name+' <button class="cfav'+((window._favSet&&window._favSet[c.id])?' on':'')+'" onclick="event.stopPropagation();toggleFav(\''+c.id+'\',this)">'+((window._favSet&&window._favSet[c.id])?'♥':'♡')+'</button></div>';
       if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
       if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
       if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
@@ -2164,6 +2174,36 @@ function toggleHeart(btn){
   var f=btn.classList.contains('fav');
   btn.classList.toggle('fav',!f);
   btn.textContent=f?'♡':'♥';
+}
+
+async function getMyCustomerId(){
+  if(window._myCustomerId)return window._myCustomerId;
+  try{
+    var{data}=await sb.from('customers').select('id').eq('user_id',currentUserId).maybeSingle();
+    window._myCustomerId=data?data.id:null;
+    return window._myCustomerId;
+  }catch(e){return null;}
+}
+async function toggleFav(coachId,btn){
+  var myCid=await getMyCustomerId();
+  if(!myCid){alert('お気に入りは、マイページの会員認証後にご利用いただけます。');return;}
+  var isFav=btn.classList.contains('on');
+  if(!isFav){
+    if(!confirm('このコーチをお気に入りに追加しますか?'))return;
+    try{
+      await sb.from('favorites').insert({customer_id:myCid,coach_id:coachId});
+      btn.classList.add('on');btn.textContent='♥';
+      if(!window._favSet)window._favSet={};
+      window._favSet[coachId]=true;
+    }catch(e){console.error('fav add',e);alert('追加に失敗しました。');}
+  }else{
+    if(!confirm('お気に入りから外しますか?'))return;
+    try{
+      await sb.from('favorites').delete().eq('customer_id',myCid).eq('coach_id',coachId);
+      btn.classList.remove('on');btn.textContent='♡';
+      if(window._favSet)delete window._favSet[coachId];
+    }catch(e){console.error('fav del',e);alert('解除に失敗しました。');}
+  }
 }
 
 function checkAgree(){
