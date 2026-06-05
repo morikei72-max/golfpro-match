@@ -96,6 +96,12 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 
     <div id="err" class="err"></div>
     <div id="success" class="success-msg"></div>
+    <div id="mail-help" class="hint-card" style="display:none;margin-top:14px;">
+      <strong>📩 数分待っても届かない場合:</strong><br>
+      ・迷惑メール / プロモーションのフォルダをご確認ください(送信元:noreply@appcreate.jp)<br>
+      ・受信箱の空き容量をご確認ください(いっぱいだと受信できません)<br>
+      ・それでも届かない場合は、別のアドレス(Gmail推奨)で再登録してください
+    </div>
 
     <div class="field">
       <div class="field-label">Email</div>
@@ -122,7 +128,7 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 
     <div class="hint-card">
       <strong>📧 登録後の流れ:</strong><br>
-      ご入力のメールアドレスに確認メールをお送りします。メール内のリンクをクリックして、続きの登録(個人情報・身分証・プロフィール・料金設定・LINE連携)へお進みください。
+      ご入力のメールアドレスに確認メールをお送りします。メール内のリンクをクリックして、続きの登録(個人情報・身分証・プロフィール・料金設定・LINE連携)へお進みください。<br><br>確実に受け取れるメールアドレス(Gmail推奨)でのご登録をおすすめします。
     </div>
   </div>
 
@@ -188,6 +194,7 @@ async function doRegister(){
   /* 通常の新規登録 = メール送信済 */
   success.innerHTML='✅ 確認メールを送信しました<br>メール内のリンクをクリックして<br>登録を続けてください';
   success.style.display='block';
+  document.getElementById('mail-help').style.display='block';
   btn.style.display='none';
 }
 </script>
