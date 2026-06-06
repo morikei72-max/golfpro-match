@@ -627,6 +627,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
         <textarea id="req-comment" placeholder="例:スイングの基礎から教えていただきたいです。"></textarea>
       </div>
       <!-- ===== クーポンコード入力欄 (2026/5/24 CP3 追加) ===== -->
+      <div id="auto-discount-banner" style="display:none;background:linear-gradient(135deg,#1b7a3e,#27ae60);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:14px;text-align:center;box-shadow:0 4px 12px rgba(39,174,96,0.3);"></div>
       <div class="form-group" id="coupon-input-section" style="background:#fffbe6;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
         <label style="display:block;font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:6px;">🎟 クーポンコード(お持ちの方)</label>
         <div style="display:flex;gap:6px;">
@@ -2081,6 +2082,7 @@ function goToRequest(){
   document.getElementById('req-plan-course').value=selectedPlan.golf_course_name||'';
   document.getElementById('req-plan-starttime').value=selectedPlan.start_time||'';
   document.getElementById('req-plan-coach-pays').value=selectedPlan.coach_pays_greenfee?'true':'false';
+  autoApplyDiscount();
   var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 コーチ独自プラン'};
   var storeLabelMap={tozuike:'Golf Create 戸津池店'};
   var weekdayNames=['日','月','火','水','木','金','土'];
@@ -3153,6 +3155,24 @@ function validateCoupon(c,ctx){
     }
   }
 
+  // N回ごと(required_visit_modulo):次回が N の倍数回目なら対象
+  if(c.required_visit_modulo&&c.required_visit_modulo>=2){
+    if(((ctx.visitCount||0)+1)%c.required_visit_modulo!==0){
+      return{ok:false,message:'このクーポンは'+c.required_visit_modulo+'回ごとの対象です'};
+    }
+  }
+  // 今週/今月(period_type):レッスン日が暦の今週/今月か
+  if(c.period_type&&ctx.lessonDate){
+    const ld=new Date(ctx.lessonDate), nw=new Date();
+    if(c.period_type==='this_month'){
+      if(ld.getFullYear()!==nw.getFullYear()||ld.getMonth()!==nw.getMonth())return{ok:false,message:'このクーポンは今月のレッスンが対象です'};
+    }else if(c.period_type==='this_week'){
+      const ws=new Date(nw); ws.setHours(0,0,0,0); ws.setDate(nw.getDate()-nw.getDay());
+      const we=new Date(ws); we.setDate(ws.getDate()+6); we.setHours(23,59,59,999);
+      if(ld<ws||ld>we)return{ok:false,message:'このクーポンは今週のレッスンが対象です'};
+    }
+  }
+
   return{ok:true};
 }
 
@@ -3183,6 +3203,54 @@ function clearAppliedCoupon(){
   document.getElementById('coupon-result-message').innerHTML='';
   document.getElementById('coupon-price-display').style.display='none';
   document.getElementById('coupon-code-input').value='';
+  const _b=document.getElementById('auto-discount-banner');if(_b)_b.style.display='none';
+}
+// ===== 自動割引(auto_apply) 自動適用 v1 (2026/6/7) =====
+async function autoApplyDiscount(){
+  const banner=document.getElementById('auto-discount-banner');
+  if(banner)banner.style.display='none';
+  try{
+    const coachId=selectedCoachId;
+    const amount=parseInt(document.getElementById('req-plan-amount').value,10)||0;
+    const lessonType=document.getElementById('req-type').value;
+    const lessonDate=document.getElementById('req-date').value;
+    const lessonTime=document.getElementById('req-time').value;
+    if(!coachId||!amount)return;
+    // 既に手動クーポン適用済みなら自動適用しない
+    if(appliedCoupon)return;
+    const sres=await sb.auth.getSession();
+    if(!sres.data.session)return;
+    const uid=sres.data.session.user.id;
+    const {data:cust}=await sb.from('customers').select('id').eq('user_id',uid).maybeSingle();
+    const customerId=cust?cust.id:null;
+    let visitCount=0;
+    if(customerId){
+      const {count}=await sb.from('bookings').select('id',{count:'exact',head:true})
+        .eq('coach_id',coachId).eq('customer_id',customerId)
+        .in('status',['completed','confirmed','approved_pending_payment','pending_payment']);
+      visitCount=count||0;
+    }
+    const {data:list}=await sb.from('coupons').select('*')
+      .eq('coach_id',coachId).eq('auto_apply',true).eq('is_active',true);
+    if(!list||list.length===0)return;
+    let best=null,bestDiscount=0;
+    for(const c of list){
+      const v=validateCoupon(c,{customerId,visitCount,lessonType,lessonDate,lessonTime});
+      if(!v.ok)continue;
+      const d=calcDiscount(c,amount);
+      if(d>bestDiscount){bestDiscount=d;best=c;}
+    }
+    if(!best||bestDiscount<=0)return;
+    const finalPrice=Math.max(0,amount-bestDiscount);
+    appliedCoupon={id:best.id,code:best.code,discount:bestDiscount,finalPrice:finalPrice,originalPrice:amount};
+    const lbl=best.discount_type==='percent'?(best.discount_value+'%OFF'):('¥'+best.discount_value.toLocaleString()+'OFF');
+    if(banner){
+      banner.innerHTML='<div style="font-size:13px;opacity:0.95;">'+(best.label?escapeHtml(best.label):'割引')+' 適用中</div>'+
+        '<div style="font-size:22px;font-weight:800;margin:4px 0;">'+lbl+'</div>'+
+        '<div style="font-size:14px;"><span style="text-decoration:line-through;opacity:0.8;">¥'+amount.toLocaleString()+'</span> → <strong>¥'+finalPrice.toLocaleString()+'</strong></div>';
+      banner.style.display='block';
+    }
+  }catch(e){console.warn('自動割引 評価エラー',e);}
 }
 /* ===== クーポン適用機能 ここまで ===== */
 

@@ -768,6 +768,54 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
       <button class="save-btn" onclick="savePrices()">料金を保存</button>
     </div>
+    <div class="card" id="auto-discount-section">
+      <div class="card-title">🏷 自動割引設定 <span style="font-size:10px;color:var(--muted);font-weight:400;">コード不要・条件に合えば自動適用</span></div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.7;">条件に合うお客様の予約画面で自動的に割引が表示・適用されます。<strong style="color:var(--red);">割引額はお客様の支払額から引かれます(手数料はその支払額に対して計算)。</strong></div>
+      <details style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px;background:#f9fffc;">
+        <summary style="cursor:pointer;font-weight:700;color:var(--g);font-size:15px;padding:4px;">＋ 新しい自動割引を作成</summary>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px;">
+          <div><label class="cpn-label">割引の種類</label>
+            <div class="cpn-radio-row" style="display:flex;gap:16px;">
+              <label><input type="radio" name="ad-type" value="percent" checked> %OFF</label>
+              <label><input type="radio" name="ad-type" value="fixed"> 円OFF</label>
+            </div></div>
+          <div><label class="cpn-label">割引する額</label>
+            <input type="number" id="ad-value" min="1" max="100000" placeholder="30" class="cpn-input"></div>
+          <div><label class="cpn-label">表示ラベル(任意・例:初回限定)</label>
+            <input type="text" id="ad-label" maxlength="20" placeholder="初回限定" class="cpn-input"></div>
+          <div><label class="cpn-label">適用条件(複数選択可)</label>
+            <div class="cpn-checkbox-row">
+              <label><input type="checkbox" class="ad-cond" value="first"> 初回のみ</label>
+              <label><input type="checkbox" class="ad-cond" value="month"> 今月</label>
+              <label><input type="checkbox" class="ad-cond" value="week"> 今週</label>
+              <label><input type="checkbox" class="ad-cond" value="date"> この日</label>
+              <label><input type="checkbox" class="ad-cond" value="modulo"> N回ごと</label>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <div style="flex:1;"><label class="cpn-label">「この日」の日付</label><input type="date" id="ad-date" class="cpn-input"></div>
+              <div style="flex:1;"><label class="cpn-label">「N回ごと」のN</label><input type="number" id="ad-modulo" min="2" max="99" placeholder="5" class="cpn-input"></div>
+            </div></div>
+          <div><label class="cpn-label">対象ジャンル(未選択=全種別)</label>
+            <div class="cpn-checkbox-row">
+              <label><input type="checkbox" class="ad-lt" value="indoor"> 🏌 インドア</label>
+              <label><input type="checkbox" class="ad-lt" value="round"> ⛳ ラウンド</label>
+              <label><input type="checkbox" class="ad-lt" value="accompany"> 🚗 同伴</label>
+              <label><input type="checkbox" class="ad-lt" value="comp"> 🏆 コンペ</label>
+            </div></div>
+          <div style="background:#f5f9f7;border:1px solid var(--border);border-radius:8px;padding:10px;">
+            <label class="cpn-label">💰 この割引でのあなたの手取り額(確認用・インドア基準)</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:12px;color:var(--muted);">サンプル料金</span>
+              <input type="number" id="ad-sample" min="0" placeholder="10000" class="cpn-input" style="width:120px;" oninput="updateAutoTakehome()">
+              <span style="font-size:12px;color:var(--muted);">円</span>
+            </div>
+            <div id="ad-takehome" style="font-size:13px;color:var(--gd);margin-top:8px;line-height:1.7;">金額を入力すると手取り額を表示します</div>
+          </div>
+          <button class="save-btn" style="margin-top:0;" onclick="saveAutoDiscount()">この自動割引を保存</button>
+        </div>
+      </details>
+      <div id="ad-list-container"></div>
+    </div>
     <!-- ===== クーポン発行セクション v3 カード式 (2026/5/24) ===== -->
     <style>
       .cpn-card{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:white;}
@@ -1536,7 +1584,7 @@ async function loadStoresFromDB(){
   updateStripeStatusUI(coachRow);
   updateScheduleLockUI();
   updateIdCardUI();
-  loadCoupons();
+  loadCoupons();loadAutoDiscounts();
 
   if(coachRow?.store_key&&storesData[coachRow.store_key]){
     await selectStore(coachRow.store_key);
@@ -2137,7 +2185,7 @@ function switchTab(tab,btn){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+tab).classList.add('active');btn.classList.add('active');
   if(tab==='schedule'){updateScheduleLockUI();buildWeekGrid();}
-  if(tab==='price'){loadCoupons();}
+  if(tab==='price'){loadCoupons();loadAutoDiscounts();}
   window.scrollTo(0,0);
 }
 function switchBoard(type,btn){
@@ -3349,6 +3397,103 @@ function renderCpnDates(){
 }
 
 // クーポン一覧表示
+/* ===== 自動割引(auto_apply) v1 (2026/6/7) ===== */
+const AD_HQ_RATE=0.164, AD_STRIPE_RATE=0.036;
+function adReadType(){const r=document.querySelector('input[name="ad-type"]:checked');return r?r.value:'percent';}
+function adCalcDiscount(type,value,amount){return type==='percent'?Math.floor(amount*value/100):Math.min(value,amount);}
+function updateAutoTakehome(){
+  const out=document.getElementById('ad-takehome');
+  const amount=parseInt(document.getElementById('ad-sample').value,10)||0;
+  const type=adReadType(), value=parseInt(document.getElementById('ad-value').value,10)||0;
+  if(!amount){out.textContent='金額を入力すると手取り額を表示します';return;}
+  const storePct=(storesData[currentStore]&&storesData[currentStore].fees?storesData[currentStore].fees.indoor:0)/100;
+  const discount=adCalcDiscount(type,value,amount);
+  const paid=Math.max(0,amount-discount);
+  const takehome=paid-Math.floor(paid*AD_HQ_RATE)-Math.floor(paid*storePct)-Math.floor(paid*AD_STRIPE_RATE);
+  out.innerHTML='通常料金 ¥'+amount.toLocaleString()+' → 割引後の支払額 <strong>¥'+paid.toLocaleString()+'</strong><br>あなたの手取り(本部16.4%・店舗'+(storePct*100).toFixed(1)+'%・決済3.6%控除後) <strong style="color:var(--g);">¥'+takehome.toLocaleString()+'</strong>';
+}
+async function saveAutoDiscount(){
+  if(!currentCoachId){alert('❌ ログイン情報が取得できません');return;}
+  const type=adReadType();
+  const value=parseInt(document.getElementById('ad-value').value,10);
+  const label=document.getElementById('ad-label').value.trim();
+  if(!value||value<=0){alert('❌ 割引する額を入力してください');return;}
+  if(type==='percent'&&value>100){alert('❌ %OFFは100以下で入力してください');return;}
+  const conds=Array.from(document.querySelectorAll('.ad-cond:checked')).map(e=>e.value);
+  if(conds.length===0){alert('❌ 適用条件を1つ以上選んでください');return;}
+  const lts=Array.from(document.querySelectorAll('.ad-lt:checked')).map(e=>e.value);
+  const row={
+    coach_id:currentCoachId,
+    code:'AUTO_'+Math.random().toString(36).slice(2,8).toUpperCase()+Date.now().toString(36).slice(-3).toUpperCase(),
+    discount_type:type, discount_value:value, label:label||null,
+    auto_apply:true, is_active:true, is_public:false,
+    target_lesson_types:lts.length>0?lts:null,
+    required_visit_min:null, required_visit_max:null, required_visit_modulo:null,
+    period_type:null, target_dates:null, usage_limit_per_user:null
+  };
+  if(conds.includes('first')){row.required_visit_min=0;row.required_visit_max=0;}
+  if(conds.includes('modulo')){
+    const n=parseInt(document.getElementById('ad-modulo').value,10);
+    if(!n||n<2){alert('❌ N回ごとのNは2以上で入力してください');return;}
+    row.required_visit_modulo=n;
+  }
+  if(conds.includes('date')){
+    const d=document.getElementById('ad-date').value;
+    if(!d){alert('❌ 「この日」の日付を選んでください');return;}
+    row.target_dates=[d];
+  }
+  if(conds.includes('week'))row.period_type='this_week';
+  else if(conds.includes('month'))row.period_type='this_month';
+  try{
+    const {error}=await sb.from('coupons').insert(row);
+    if(error){alert('❌ 保存に失敗しました\n'+error.message);return;}
+    alert('✅ 自動割引を保存しました');
+    document.getElementById('ad-value').value='';document.getElementById('ad-label').value='';
+    document.getElementById('ad-sample').value='';document.getElementById('ad-takehome').textContent='金額を入力すると手取り額を表示します';
+    document.querySelectorAll('.ad-cond:checked,.ad-lt:checked').forEach(e=>e.checked=false);
+    document.getElementById('ad-date').value='';document.getElementById('ad-modulo').value='';
+    await loadAutoDiscounts();
+  }catch(e){alert('❌ エラー: '+e.message);}
+}
+async function loadAutoDiscounts(){
+  const c=document.getElementById('ad-list-container');
+  if(!c)return;
+  if(!currentCoachId){c.innerHTML='';return;}
+  try{
+    const {data,error}=await sb.from('coupons').select('*').eq('coach_id',currentCoachId).eq('auto_apply',true).order('created_at',{ascending:false});
+    if(error){c.innerHTML='<div style="color:var(--red);font-size:12px;padding:10px;">読込失敗: '+error.message+'</div>';return;}
+    if(!data||data.length===0){c.innerHTML='<div style="text-align:center;padding:14px;color:var(--muted);font-size:12px;">まだ自動割引はありません。</div>';return;}
+    const ltl={indoor:'🏌',round:'⛳',accompany:'🚗',comp:'🏆'};
+    c.innerHTML=data.map(d=>{
+      const val=d.discount_type==='percent'?(d.discount_value+'%OFF'):('¥'+d.discount_value.toLocaleString()+'OFF');
+      const cond=[];
+      if(d.required_visit_min===0&&d.required_visit_max===0)cond.push('初回のみ');
+      if(d.required_visit_modulo)cond.push(d.required_visit_modulo+'回ごと');
+      if(d.period_type==='this_week')cond.push('今週');
+      if(d.period_type==='this_month')cond.push('今月');
+      if(d.target_dates&&d.target_dates.length>0)cond.push(d.target_dates.join(','));
+      const gen=d.target_lesson_types&&d.target_lesson_types.length>0?d.target_lesson_types.map(t=>ltl[t]||t).join(''):'全種別';
+      const inactive=!d.is_active;
+      return '<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:'+(inactive?'#f5f5f5':'white')+';opacity:'+(inactive?'0.6':'1')+';">'+
+        '<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;">'+
+        '<div><span style="font-weight:700;color:var(--red);font-size:15px;">'+val+'</span> '+(d.label?'<span style="font-size:11px;color:var(--muted);">('+escapeHtml(d.label)+')</span>':'')+
+        '<div style="font-size:11px;color:var(--gd);background:#f5f9f7;padding:5px 8px;border-radius:6px;margin-top:6px;">条件: '+(cond.length?escapeHtml(cond.join(' / ')):'なし')+' ／ 対象: '+gen+'</div></div>'+
+        '<div style="display:flex;flex-direction:column;gap:4px;">'+
+        '<button onclick="toggleAutoDiscount(\''+d.id+'\','+(!d.is_active)+')" style="font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:white;cursor:pointer;">'+(d.is_active?'停止':'再開')+'</button>'+
+        '<button onclick="deleteAutoDiscount(\''+d.id+'\')" style="font-size:11px;padding:5px 10px;border:1px solid var(--red);border-radius:6px;background:white;color:var(--red);cursor:pointer;">削除</button>'+
+        '</div></div></div>';
+    }).join('');
+  }catch(e){c.innerHTML='<div style="color:var(--red);font-size:12px;padding:10px;">エラー: '+e.message+'</div>';}
+}
+async function toggleAutoDiscount(id,next){
+  try{const {error}=await sb.from('coupons').update({is_active:next}).eq('id',id);if(error){alert('❌ '+error.message);return;}await loadAutoDiscounts();}catch(e){alert('❌ '+e.message);}
+}
+async function deleteAutoDiscount(id){
+  if(!confirm('この自動割引を削除しますか?'))return;
+  try{const {error}=await sb.from('coupons').delete().eq('id',id);if(error){alert('❌ '+error.message);return;}await loadAutoDiscounts();}catch(e){alert('❌ '+e.message);}
+}
+/* ===== 自動割引 ここまで ===== */
+
 async function loadCoupons(){
   const container=document.getElementById('coupon-list-container');
   if(!container)return;
@@ -3365,12 +3510,13 @@ async function loadCoupons(){
       container.innerHTML='<div style="text-align:center;padding:20px;color:var(--red);font-size:12px;">読込失敗: '+error.message+'</div>';
       return;
     }
-    if(!data||data.length===0){
+    const list=(data||[]).filter(c=>!c.auto_apply);
+    if(list.length===0){
       container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">まだクーポンがありません。上の「＋ 新しいクーポンを発行」から作成できます。</div>';
       return;
     }
     const now=new Date();
-    container.innerHTML=data.map(c=>renderCouponItem(c,now)).join('');
+    container.innerHTML=list.map(c=>renderCouponItem(c,now)).join('');
   }catch(e){
     console.error('クーポン読込例外',e);
     container.innerHTML='<div style="text-align:center;padding:20px;color:var(--red);font-size:12px;">エラー: '+e.message+'</div>';
