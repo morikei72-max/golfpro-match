@@ -2005,6 +2005,30 @@ function addCustomPlan(preset){
           <label class="form-label">スタート時間 <span style="color:var(--red)">※必須</span></label>
           <input type="time" class="form-input custom-plan-starttime" value="${preset?.start_time||''}">
         </div>
+        <div class="form-group">
+          <label class="form-label">開催日</label>
+          <input type="date" class="form-input custom-plan-event-date" value="${preset?.event_date||''}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">催行人数(代表者を含む)</label>
+          <select class="form-input custom-plan-minparty">
+            <option value="">選択してください</option>
+            <option value="2" ${preset?.min_party==2?'selected':''}>2名から</option>
+            <option value="3" ${preset?.min_party==3?'selected':''}>3名から</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">含まれるもの</label>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">※ 上記「料金」は1名あたりの金額として扱います。</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;"><input type="checkbox" class="custom-plan-inc" data-inc="round_fee" ${preset?.included?.round_fee?'checked':''}> ラウンド費</label>
+            <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;"><input type="checkbox" class="custom-plan-inc" data-inc="lunch" ${preset?.included?.lunch?'checked':''}> 昼食券</label>
+            <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;"><input type="checkbox" class="custom-plan-inc" data-inc="lesson_fee" ${preset?.included?.lesson_fee?'checked':''}> レッスンフィー</label>
+            <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;"><input type="checkbox" class="custom-plan-inc" data-inc="cart" ${preset?.included?.cart?'checked':''}> カート代</label>
+            <label style="font-size:12px;display:inline-flex;align-items:center;gap:4px;"><input type="checkbox" class="custom-plan-inc" data-inc="transport" ${preset?.included?.transport?'checked':''}> 交通費</label>
+          </div>
+          <input type="text" class="form-input custom-plan-inc-free" placeholder="自由記入(その他含まれるもの)" value="${preset?.included?.free_text||''}" style="margin-top:8px;">
+        </div>
       </div>
     </div>
   `;
@@ -2118,6 +2142,16 @@ async function savePrices(){
       const coachPays=card.querySelector('.custom-plan-greenfee').checked;
       const course=card.querySelector('.custom-plan-course')?.value.trim()||null;
       const startTime=card.querySelector('.custom-plan-starttime')?.value||null;
+      const eventDate=card.querySelector('.custom-plan-event-date')?.value||null;
+      const minParty=parseInt(card.querySelector('.custom-plan-minparty')?.value)||null;
+      const incObj={
+        round_fee:!!card.querySelector('.custom-plan-inc[data-inc="round_fee"]')?.checked,
+        lunch:!!card.querySelector('.custom-plan-inc[data-inc="lunch"]')?.checked,
+        lesson_fee:!!card.querySelector('.custom-plan-inc[data-inc="lesson_fee"]')?.checked,
+        cart:!!card.querySelector('.custom-plan-inc[data-inc="cart"]')?.checked,
+        transport:!!card.querySelector('.custom-plan-inc[data-inc="transport"]')?.checked,
+        free_text:card.querySelector('.custom-plan-inc-free')?.value.trim()||''
+      };
       if(coachPays&&(!course||!startTime)){
         alert('❌ コーチ負担プランは指定ゴルフ場とスタート時間が必須です');
         throw new Error('validation');
@@ -2137,6 +2171,9 @@ async function savePrices(){
         coach_pays_greenfee:coachPays,
         golf_course_name:coachPays?course:null,
         start_time:coachPays?startTime:null,
+        event_date:coachPays?eventDate:null,
+        included:coachPays?incObj:null,
+        min_party:coachPays?minParty:null,
         display_order:planOrder++,
         is_active:true
       });
