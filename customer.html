@@ -586,6 +586,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 
       <div style="font-size:12px;color:var(--gd);font-weight:700;margin-bottom:10px;">✏️ 以下をご入力ください</div>
 
+      <div id="round-booking-section" style="display:none;background:#eef7f2;border:1px solid var(--g);border-radius:10px;padding:12px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">⛳ ラウンド予約(参加人数・参加者)</div>
+        <div id="round-included-display" style="font-size:11px;color:var(--gd);background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.6;"></div>
+        <div class="form-group" style="margin-bottom:10px;">
+          <label style="font-size:12px;color:#333;">参加人数(代表者を含む)</label>
+          <select id="round-num-people" onchange="onRoundPeopleChange()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:14px;background:#fff;"></select>
+        </div>
+        <div id="round-participants" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div id="round-total-display" style="font-size:13px;color:var(--gd);margin-top:10px;"></div>
+        <div style="font-size:10px;color:#666;margin-top:8px;line-height:1.5;">※ 代表者(1人目)が会員であれば、同伴者は会員でなくてもご参加いただけます。お名前のみご入力ください。</div>
+      </div>
+
       <div id="booth-reservation-section" class="form-group" style="background:#fff8e1;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
         <div style="font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:6px;">⚠️ 店舗での打席予約について</div>
         <div style="font-size:11px;color:#7a5c00;line-height:1.6;margin-bottom:10px;">
@@ -2051,7 +2063,8 @@ function selectCustomPlan(idx){
     label:plan.plan_name+' ('+plan.duration_text+') ¥'+parseInt(plan.price).toLocaleString(),
     plan_name:plan.plan_name,duration_text:plan.duration_text,description:plan.description,
     coach_pays_greenfee:!!plan.coach_pays_greenfee,
-    golf_course_name:plan.golf_course_name||null,start_time:plan.start_time||null
+    golf_course_name:plan.golf_course_name||null,start_time:plan.start_time||null,
+    event_date:plan.event_date||null,min_party:plan.min_party||null,included:plan.included||null
   };
   document.getElementById('btn-to-request').style.display='block';
   /* ★ 依頼ボタン位置へ自動スクロール */
@@ -2059,6 +2072,49 @@ function selectCustomPlan(idx){
     var btn=document.getElementById('btn-to-request');
     if(btn) btn.scrollIntoView({behavior:'smooth',block:'center'});
   },50);
+}
+
+// ===== ラウンド予約UI(ステップ2 2026/6/7) =====
+function isRoundPlan(){ return !!(selectedPlan&&selectedPlan.min_party); }
+function roundIncludedLabels(inc){
+  if(!inc) return '含まれるもの: —';
+  var map={round_fee:'ラウンド費',lunch:'昼食券',lesson_fee:'レッスンフィー',cart:'カート代',transport:'交通費'};
+  var arr=[]; Object.keys(map).forEach(function(k){ if(inc[k]) arr.push(map[k]); });
+  var s=arr.length?('✅ 含まれるもの: '+arr.join(' / ')):'含まれるもの: —';
+  if(inc.free_text) s+='<br>📝 '+escapeHtml(inc.free_text);
+  return s;
+}
+function setupRoundBooking(){
+  var sec=document.getElementById('round-booking-section');
+  var booth=document.getElementById('booth-reservation-section');
+  if(!isRoundPlan()){ if(sec)sec.style.display='none'; return; }
+  if(sec)sec.style.display='block';
+  if(booth)booth.style.display='none';
+  document.getElementById('round-included-display').innerHTML=roundIncludedLabels(selectedPlan.included);
+  var min=parseInt(selectedPlan.min_party)||2;
+  var sel=document.getElementById('round-num-people');
+  var opts=''; for(var n=min;n<=3;n++){ opts+='<option value="'+n+'">'+n+'名</option>'; }
+  sel.innerHTML=opts; sel.value=String(min);
+  onRoundPeopleChange();
+}
+function onRoundPeopleChange(){
+  if(!isRoundPlan()) return;
+  var n=parseInt(document.getElementById('round-num-people').value,10)||parseInt(selectedPlan.min_party)||2;
+  var wrap=document.getElementById('round-participants');
+  var memberName=(document.getElementById('mp-name')&&document.getElementById('mp-name').value)||'';
+  var prev=[]; wrap.querySelectorAll('.round-participant-name').forEach(function(i){prev.push(i.value);});
+  var html='';
+  for(var i=0;i<n;i++){
+    var label=(i===0)?'代表者(会員)':'同伴者'+i;
+    var val=(i===0)?(prev[0]||memberName):(prev[i]||'');
+    html+='<div><label style="font-size:11px;color:#666;display:block;margin-bottom:2px;">'+label+' お名前</label>'+
+      '<input type="text" class="round-participant-name" value="'+escapeHtml(val)+'" placeholder="お名前" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;"></div>';
+  }
+  wrap.innerHTML=html;
+  var per=appliedCoupon?appliedCoupon.finalPrice:(parseInt(document.getElementById('req-plan-amount').value,10)||0);
+  var total=per*n;
+  var td=document.getElementById('round-total-display');
+  if(td) td.innerHTML='合計 <strong>¥'+total.toLocaleString()+'</strong> <span style="font-size:11px;color:#666;">(¥'+per.toLocaleString()+' × '+n+'名)</span>';
 }
 
 function escapeHtml(s){
@@ -2070,6 +2126,9 @@ function goToRequest(){
   if(!selectedDate){alert('日程を選択してください');return;}
   if(!selectedCoachId){alert('コーチを選択してください');return;}
   if(!selectedPlan){alert('料金プランを選択してください');return;}
+  if((currentType==='indoor'||isRoundPlan())&&!isMemberApproved){
+    alert('この予約は会員様限定です。マイページの会員認証を完了してからお申し込みください。');return;
+  }
   document.getElementById('req-type').value=currentType;
   document.getElementById('req-date').value=selectedDate;
   document.getElementById('req-time').value=selectedTime||(selectedPlan.start_time||'10:00');
@@ -2082,7 +2141,7 @@ function goToRequest(){
   document.getElementById('req-plan-course').value=selectedPlan.golf_course_name||'';
   document.getElementById('req-plan-starttime').value=selectedPlan.start_time||'';
   document.getElementById('req-plan-coach-pays').value=selectedPlan.coach_pays_greenfee?'true':'false';
-  autoApplyDiscount();
+  autoApplyDiscount().then(setupRoundBooking);
   var typeLabelMap={indoor:'⛳ インドアゴルフレッスン',round:'🏌 ラウンドレッスン',accompany:'🤝 同伴ラウンド',comp:'🏆 コンペ参加',custom:'💡 コーチ独自プラン'};
   var storeLabelMap={tozuike:'Golf Create 戸津池店'};
   var weekdayNames=['日','月','火','水','木','金','土'];
@@ -2589,6 +2648,26 @@ async function submitBooking(){
   var fullComment=comment;
   if(golfHistory){fullComment='【ゴルフ歴】'+golfHistory+(comment?'\n\n'+comment:'');}
   if(planLabel){fullComment='【プラン】'+planLabel+(fullComment?'\n\n'+fullComment:'');}
+  var _isRound=!!(selectedPlan&&selectedPlan.min_party);
+  if((lessonType==='indoor'||_isRound)&&!isMemberApproved){
+    alert('この予約は会員様限定です。マイページの会員認証を完了してからお申し込みください。');return;
+  }
+  var perPerson=appliedCoupon?appliedCoupon.finalPrice:amountYen;
+  var perOriginal=appliedCoupon?appliedCoupon.originalPrice:amountYen;
+  var perDiscount=appliedCoupon?appliedCoupon.discount:0;
+  var numPeople=1, participantNames=null, roundIncluded=null;
+  if(_isRound){
+    numPeople=parseInt(document.getElementById('round-num-people').value,10)||parseInt(selectedPlan.min_party)||2;
+    var _names=[];
+    document.querySelectorAll('.round-participant-name').forEach(function(inp){_names.push(inp.value.trim());});
+    _names=_names.slice(0,numPeople);
+    if(_names.some(function(x){return !x;})){ alert('参加者全員のお名前をご入力ください'); return; }
+    participantNames=_names;
+    roundIncluded=selectedPlan.included||null;
+  }
+  var totalPrice=perPerson*numPeople;
+  var totalOriginal=perOriginal*numPeople;
+  var totalDiscount=perDiscount*numPeople;
   btn.disabled=true;
   btn.textContent='処理中...';
   try{
@@ -2600,7 +2679,7 @@ async function submitBooking(){
         store_key:storeKey,
         lesson_type:lessonType,
         minutes:durationMin,
-        total_price:appliedCoupon?appliedCoupon.finalPrice:amountYen,
+        total_price:totalPrice,
         booking_date:lessonDate,
         booking_time:lessonTime,
         comment:fullComment,
@@ -2609,8 +2688,8 @@ async function submitBooking(){
         coach_name:coachName||lessonLabel,
         coupon_id:appliedCoupon?appliedCoupon.id:null,
         coupon_code:appliedCoupon?appliedCoupon.code:null,
-        original_price:appliedCoupon?appliedCoupon.originalPrice:amountYen,
-        discount_amount:appliedCoupon?appliedCoupon.discount:0
+        original_price:totalOriginal,
+        discount_amount:totalDiscount
       })
     });
     var json=await resp.json();
@@ -2625,6 +2704,10 @@ async function submitBooking(){
       }
       alert(userMsg);
       btn.disabled=false;btn.textContent='同意して依頼を確定する →';return;
+    }
+    if(_isRound&&json.booking_id){
+      try{ await sb.from('bookings').update({num_people:numPeople,participant_names:participantNames,round_included:roundIncluded}).eq('id',json.booking_id); }
+      catch(e){ console.warn('ラウンド情報の保存に失敗(予約は成立済)',e); }
     }
     alert('✅ コーチへ承認依頼を送信しました。\n\nコーチの承認後、決済リンクがLINEに届きます。\n\n予約一覧でステータスをご確認ください。');
     document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});
@@ -3245,7 +3328,8 @@ async function autoApplyDiscount(){
     appliedCoupon={id:best.id,code:best.code,discount:bestDiscount,finalPrice:finalPrice,originalPrice:amount};
     const lbl=best.discount_type==='percent'?(best.discount_value+'%OFF'):('¥'+best.discount_value.toLocaleString()+'OFF');
     if(banner){
-      banner.innerHTML='<div style="font-size:13px;opacity:0.95;">'+(best.label?escapeHtml(best.label):'割引')+' 適用中</div>'+
+      var _per=(selectedPlan&&selectedPlan.min_party)?' (1名あたり)':'';
+      banner.innerHTML='<div style="font-size:13px;opacity:0.95;">'+(best.label?escapeHtml(best.label):'割引')+' 適用中'+_per+'</div>'+
         '<div style="font-size:22px;font-weight:800;margin:4px 0;">'+lbl+'</div>'+
         '<div style="font-size:14px;"><span style="text-decoration:line-through;opacity:0.8;">¥'+amount.toLocaleString()+'</span> → <strong>¥'+finalPrice.toLocaleString()+'</strong></div>';
       banner.style.display='block';
