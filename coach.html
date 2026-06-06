@@ -672,6 +672,12 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
         <div class="form-group"><label class="form-label">🌐 公式サイト</label><input type="url" class="form-input" id="prof-website" placeholder="https://your-site.com"></div>
       </div>
 
+      <div style="margin-top:16px;padding:12px;background:#f7faf8;border-radius:10px;border:1px solid var(--border);" id="line-link-box">
+        <div style="font-size:12px;font-weight:700;color:var(--gd);margin-bottom:8px;">📱 LINE連携 <span style="color:var(--g);font-weight:400;font-size:10px;">予約・承認通知に必須</span></div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">公式LINEと連携すると、お客様からの予約申込・決済確定・キャンセルなどの通知が届きます。</div>
+        <div id="line-link-content" style="font-size:12px;color:var(--muted);">読み込み中...</div>
+      </div>
+
       <button class="save-btn" onclick="saveProfile()">基本情報を保存</button>
     </div>
 
@@ -3578,6 +3584,104 @@ async function deleteCoupon(id,code){
 /* ===== カード式クーポン発行機能 v3 ここまで ===== */
 
 
+</script>
+<script>
+/* ===== LINE連携セクション(coach.html プロフィール内) =====
+ * coach_onboarding_step6.html の動作版をそのまま流用。
+ * generate-link-code(user_type:'coach', user_id=coaches.id)で発行 →
+ * coaches.line_user_id を5秒ポーリングして連携完了を検知。
+ * 既存の決済・予約・通知・スケジュールのロジックには一切触れない。
+ */
+(function(){
+  var lkAuthId=null, lkCoachId=null, lkCode=null, lkCountdownTimer=null, lkPollingTimer=null;
+  function el(id){return document.getElementById(id);}
+
+  function lkRenderLinked(){
+    lkStopTimers();
+    var c=el('line-link-content'); if(!c)return;
+    c.innerHTML='<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;background:#e8f9ef;border:1px solid #06C755;border-radius:10px;color:#067a38;font-weight:700;font-size:13px;">✅ LINE連携済み</div>';
+  }
+  function lkRenderError(msg){
+    var c=el('line-link-content'); if(!c)return;
+    c.innerHTML='<div style="color:#d9534f;font-size:11px;margin-bottom:8px;">⚠️ '+msg+'</div>'+
+      '<button type="button" onclick="lkIssue()" style="background:#06C755;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">🔄 再試行する</button>';
+  }
+  function lkRenderIssueButton(){
+    var c=el('line-link-content'); if(!c)return;
+    c.innerHTML='<button type="button" onclick="lkIssue()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#06C755;color:#fff;border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">📱 連携コードを発行する</button>';
+  }
+  function lkDisplayCode(code,expiresAt){
+    var c=el('line-link-content'); if(!c)return;
+    c.innerHTML=
+      '<div style="background:#06351f;border:1.5px solid #06C755;border-radius:12px;padding:14px;text-align:center;margin-bottom:10px;">'+
+        '<div style="font-size:10px;color:#9ee6bd;letter-spacing:2px;margin-bottom:6px;">📱 あなたの連携コード</div>'+
+        '<div style="font-size:36px;font-weight:900;color:#fff;letter-spacing:8px;font-family:monospace;">'+code+'</div>'+
+        '<div style="font-size:11px;color:#65CEA5;margin-top:6px;" id="lk-countdown">⏰ 残り時間を計算中...</div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:10px;">① 下のボタンで MyCoach公式LINE を開く<br>② 友だち追加(初回のみ)<br>③ トークに上の6桁コードを送信</div>'+
+      '<a href="https://lin.ee/VkQyw4n" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;background:#06C755;color:#fff;border-radius:10px;padding:12px;font-size:14px;font-weight:700;text-decoration:none;margin-bottom:8px;">MyCoach公式LINEを開く</a>'+
+      '<button type="button" onclick="lkIssue()" style="width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:9px;font-size:11px;font-family:inherit;cursor:pointer;">🔄 コードを再発行する</button>'+
+      '<div style="text-align:center;color:var(--muted);font-size:11px;padding:10px 0 0;">連携を待っています...</div>';
+    lkStartCountdown(expiresAt);
+  }
+  function lkStartCountdown(expiresAt){
+    if(lkCountdownTimer)clearInterval(lkCountdownTimer);
+    var update=function(){
+      var diff=expiresAt-Date.now(); var e=el('lk-countdown'); if(!e)return;
+      if(diff<=0){e.textContent='⏰ 有効期限が切れました';clearInterval(lkCountdownTimer);lkCountdownTimer=null;lkStopPolling();return;}
+      var t=Math.floor(diff/1000),m=Math.floor(t/60),s=t%60;
+      e.textContent='⏰ 残り '+m+':'+(s<10?'0'+s:s);
+    };
+    update(); lkCountdownTimer=setInterval(update,1000);
+  }
+  function lkStartPolling(){
+    lkStopPolling();
+    lkPollingTimer=setInterval(async function(){
+      if(!lkAuthId){lkStopPolling();return;}
+      try{
+        var r=await sb.from('coaches').select('line_user_id').eq('user_id',lkAuthId).maybeSingle();
+        if(r.data&&r.data.line_user_id){lkRenderLinked();}
+      }catch(e){console.warn('LINE連携ポーリングエラー',e);}
+    },5000);
+  }
+  function lkStopPolling(){if(lkPollingTimer){clearInterval(lkPollingTimer);lkPollingTimer=null;}}
+  function lkStopTimers(){if(lkCountdownTimer){clearInterval(lkCountdownTimer);lkCountdownTimer=null;}lkStopPolling();}
+
+  window.lkIssue=async function(){
+    lkStopTimers();
+    if(!lkCoachId){lkRenderError('コーチ情報が取得できません');return;}
+    var c=el('line-link-content'); if(c)c.innerHTML='<div style="color:var(--muted);font-size:12px;padding:10px 0;">連携コードを発行中...</div>';
+    try{
+      var resp=await fetch('/.netlify/functions/generate-link-code',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user_type:'coach',user_id:lkCoachId})
+      });
+      var json=await resp.json();
+      if(!resp.ok||!json.success){
+        if(json.already_linked){lkRenderLinked();return;}
+        lkRenderError(json.error||'コードの発行に失敗しました');return;
+      }
+      lkCode=json.code;
+      lkDisplayCode(json.code,new Date(json.expires_at).getTime());
+      lkStartPolling();
+    }catch(e){console.error('LINE連携 発行エラー',e);lkRenderError('通信エラーが発生しました');}
+  };
+
+  async function lkInit(){
+    try{
+      var res=await sb.auth.getSession();
+      if(!res.data.session)return;
+      lkAuthId=res.data.session.user.id;
+      var r=await sb.from('coaches').select('id,line_user_id').eq('user_id',lkAuthId).maybeSingle();
+      if(!r.data){lkRenderError('コーチ情報が未登録です。先に基本情報を保存してください。');return;}
+      lkCoachId=r.data.id;
+      if(r.data.line_user_id){lkRenderLinked();}else{lkRenderIssueButton();}
+    }catch(e){console.error('LINE連携 初期化エラー',e);lkRenderError('読み込みに失敗しました');}
+  }
+
+  window.addEventListener('beforeunload',lkStopTimers);
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',lkInit);}else{lkInit();}
+})();
 </script>
 </body>
 </html>
