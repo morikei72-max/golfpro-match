@@ -137,7 +137,7 @@ async function routeAfterAuth(session){
 }
 (async()=>{const {data:{session}}=await sb.auth.getSession();await routeAfterAuth(session);})();
 async function doLogin(){
-  const email=document.getElementById('email').value;
+  const email=document.getElementById('email').value.trim().toLowerCase();
   const pass=document.getElementById('pass').value;
   const err=document.getElementById('err');
   const remember=document.getElementById('remember').checked;

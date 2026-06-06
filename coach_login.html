@@ -73,7 +73,7 @@ async function routeAfterAuth(session){
 })();
 
 async function doLogin(){
-  const email=document.getElementById('email').value;
+  const email=document.getElementById('email').value.trim().toLowerCase();
   const pass=document.getElementById('pass').value;
   const err=document.getElementById('err');
   err.style.display='none';
