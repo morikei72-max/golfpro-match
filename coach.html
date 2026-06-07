@@ -2779,10 +2779,22 @@ function submitReply(btn){
 function replyWithLine(){window.open('https://line.me/R/','_blank');}
 
 /* ===== ファイルアップロード ===== */
-function uploadPhoto(input){
+async function uploadPhoto(input){
   const file=input.files[0];if(!file)return;
-  const reader=new FileReader();reader.onload=e=>{document.getElementById('profile-img').src=e.target.result;};
-  reader.readAsDataURL(file);showMsg('写真をアップロードしました!','success');
+  try{
+    const ext=file.name.split('.').pop().toLowerCase();
+    const fileName=`coach_photos/${currentAuthId}_${Date.now()}.${ext}`;
+    const {error:uploadError}=await sb.storage.from('images').upload(fileName,file,{cacheControl:'3600',upsert:true});
+    if(uploadError){showMsg('アップロード失敗:'+uploadError.message,'error');input.value='';return;}
+    const url=sb.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+    const {error:dbError}=await sb.from('coaches').update({photo_url:url,updated_at:new Date().toISOString()}).eq('user_id',currentAuthId);
+    if(dbError){showMsg('保存に失敗しました:'+dbError.message,'error');input.value='';return;}
+    document.getElementById('profile-img').src=url;
+    showMsg('写真を変更しました','success');
+  }catch(e){
+    showMsg('写真の変更に失敗しました:'+(e.message||e),'error');
+    input.value='';
+  }
 }
 
 /* ===== 身分証アップロード ===== */
