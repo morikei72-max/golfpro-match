@@ -95,6 +95,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .month-day.other-month .md-num{color:#ddd;}
 .avail-badge{font-size:9px;color:var(--g);margin-top:1px;}
 .month-day.selected .avail-badge{color:#fff;}
+.lesson-row{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.lesson-row:active{background:var(--gl);}
+.lesson-row.selected{background:var(--gl);border-color:var(--g);}
+.lesson-row-time{font-size:15px;font-weight:700;color:var(--gd);}
+.lesson-row-coach{font-size:14px;color:#333;}
+.lesson-row-none{text-align:center;color:#999;padding:20px;font-size:13px;}
+.slot-title{font-size:13px;font-weight:700;color:var(--gd);margin-bottom:8px;}
 .coach-info-bar{background:var(--gl);border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:var(--gd);}
 .btn-to-request{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;-webkit-tap-highlight-color:transparent;}
 .coach-card{display:flex;gap:10px;padding:12px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:#fff;transition:all .15s;-webkit-tap-highlight-color:transparent;align-items:flex-start;}.coach-card:hover{border-color:var(--g);background:var(--gl);}
@@ -998,7 +1005,7 @@ async function selectEntryCoach(coachId){
       currentType=pickedType;
       selectedDate=null;selectedTime=null;
       if(calBox)calBox.style.display='block';
-      if(pickedType==='indoor'||pickedType==='custom'){renderWeekCal();}else{renderMonthCal();}
+      if(pickedType==='custom'){renderWeekCal();}else{renderMonthCal();}
     }else{
       if(calBox)calBox.style.display='none';
     }
@@ -1570,7 +1577,7 @@ function selType(card,type){
   document.getElementById('cal-box').scrollIntoView({behavior:'smooth',block:'start'});
   var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
   document.getElementById('cal-type-label').textContent=labels[type]||type;
-  if(type==='indoor'||type==='custom'){renderWeekCal();}else{renderMonthCal();}
+  if(type==='custom'){renderWeekCal();}else{renderMonthCal();}
 }
 
 function toggleRoundGroup(){
@@ -1590,10 +1597,11 @@ async function fetchAvailDates(){
     var todayStr=fmt(new Date());
     /* アクティブなコーチのIDのみを取得 */
     var{data:activeCoaches}=await sb.from('coaches')
-      .select('id')
+      .select('id,name,photo_url')
       .eq('is_approved',true)
       .eq('coach_status','active');
     var activeCoachIds=(activeCoaches||[]).map(function(c){return c.id;});
+    var __acm={};(activeCoaches||[]).forEach(function(c){__acm[c.id]=c;});window._availCoachMap=__acm;
     if(activeCoachIds.length===0){
       renderWeekCal();
       renderMonthCal();
@@ -1860,7 +1868,14 @@ function renderMonthCal(){
     if(ds===selectedDate) cls+=' selected';
     html+='<div class="'+cls+'" onclick="selectMonthDay(\''+ds+'\')">';
     html+='<div class="md-num">'+day+'</div>';
-    if(avail[ds]) html+='<div class="avail-badge">●</div>';
+    if(avail[ds]){
+      if(currentType==='indoor'){
+        var __cnt=(entryMode==='coach'&&entrySelectedCoachId)?1:((availCache[ds]&&availCache[ds].indoor&&availCache[ds].indoor.coaches)?availCache[ds].indoor.coaches.length:0);
+        html+='<div class="avail-badge">'+__cnt+'名</div>';
+      }else{
+        html+='<div class="avail-badge">●</div>';
+      }
+    }
     html+='</div>';
   }
   var total=startDow+lastDay.getDate();
@@ -1882,6 +1897,7 @@ function selectMonthDay(ds){
   if(entryMode!=='coach'){selectedCoachId=null;selectedCoachData=null;}
   selectedPlan=null;
   renderMonthCal();
+  if(currentType==='indoor'){showIndoorLessonList(ds);return;}
   showCoachInfo();
   /* ★ コーチ情報位置へ自動スクロール */
   setTimeout(function(){
@@ -1893,6 +1909,65 @@ function selectMonthDay(ds){
     var info=document.getElementById('coach-info-area');
     if(info) info.scrollIntoView({behavior:'smooth',block:'start'});
   },150);
+}
+
+/* ★ インドア:選択日の「時刻〜 コーチ名」一覧を表示 */
+function showIndoorLessonList(ds){
+  var area=document.getElementById('slot-area');
+  if(area) area.style.display='block';
+  var parts=ds.split('-');
+  document.getElementById('slot-title').textContent='📅 '+parseInt(parts[1])+'月'+parseInt(parts[2])+'日 受けられるレッスン';
+  var tc=(availCache[ds]&&availCache[ds].indoor&&availCache[ds].indoor.timeCoaches)?availCache[ds].indoor.timeCoaches:{};
+  var cm=window._availCoachMap||{};
+  var rows=[];
+  Object.keys(tc).sort().forEach(function(t){
+    tc[t].slice().forEach(function(cid){
+      if(entryMode==='coach'&&entrySelectedCoachId&&cid!==entrySelectedCoachId) return;
+      var nm=(cm[cid]&&cm[cid].name)?cm[cid].name:'コーチ';
+      rows.push({time:t,coachId:cid,name:nm});
+    });
+  });
+  var html='';
+  if(rows.length===0){
+    html='<div class="lesson-row-none">この日に受けられるレッスンはありません。</div>';
+  }else{
+    rows.forEach(function(r){
+      html+='<div class="lesson-row" data-key="'+r.time+'|'+r.coachId+'" onclick="pickIndoorSlot(\''+ds+'\',\''+r.time+'\',\''+r.coachId+'\')">';
+      html+='<span class="lesson-row-time">'+r.time+'〜</span>';
+      html+='<span class="lesson-row-coach">'+r.name+'</span>';
+      html+='</div>';
+    });
+  }
+  document.getElementById('slot-list').innerHTML=html;
+  document.getElementById('coach-info-area').style.display='none';
+  var cs=document.getElementById('coach-select-area');if(cs)cs.style.display='none';
+  var cp=document.getElementById('coach-plans-area');if(cp)cp.style.display='none';
+  document.getElementById('btn-to-request').style.display='none';
+  setTimeout(function(){var a=document.getElementById('slot-area');if(a)a.scrollIntoView({behavior:'smooth',block:'start'});},80);
+}
+
+/* ★ インドア:時刻+コーチを確定し、料金プラン選択へ */
+async function pickIndoorSlot(ds,time,coachId){
+  selectedDate=ds;
+  selectedTime=time;
+  selectedCoachId=coachId;
+  selectedPlan=null;
+  var cm=window._availCoachMap||{};
+  try{
+    var{data:cd}=await sb.from('coaches').select('id,name,photo_url,license,tags,bio,min_lesson').eq('id',coachId).single();
+    selectedCoachData=cd||cm[coachId]||{id:coachId};
+  }catch(e){selectedCoachData=cm[coachId]||{id:coachId};}
+  document.querySelectorAll('#slot-list .lesson-row').forEach(function(el){
+    el.classList.toggle('selected',el.getAttribute('data-key')===(time+'|'+coachId));
+  });
+  var area=document.getElementById('coach-info-area');
+  if(area) area.style.display='block';
+  var typeNames={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'};
+  var nm=(selectedCoachData&&selectedCoachData.name)?selectedCoachData.name:'コーチ';
+  document.getElementById('coach-info-text').textContent='選択中:'+ds.replace(/-/g,'/')+' '+time+'〜 / '+nm+' 【'+typeNames[currentType]+'】';
+  var cs2=document.getElementById('coach-select-area');if(cs2)cs2.style.display='none';
+  await loadCoachPlans(coachId);
+  setTimeout(function(){var t=document.getElementById('coach-plans-area');if(t&&t.style.display!=='none')t.scrollIntoView({behavior:'smooth',block:'start'});},150);
 }
 
 var selectedCoachId=null;
@@ -2247,7 +2322,7 @@ function goToRequest(){
 }
 
 function calPrev(){
-  if(currentType==='indoor'||currentType==='custom'){
+  if(currentType==='custom'){
     if(!weekStart) weekStart=getMonday(new Date());
     weekStart.setDate(weekStart.getDate()-7);
     renderWeekCal();
@@ -2260,7 +2335,7 @@ function calPrev(){
 }
 
 function calNext(){
-  if(currentType==='indoor'||currentType==='custom'){
+  if(currentType==='custom'){
     if(!weekStart) weekStart=getMonday(new Date());
     weekStart.setDate(weekStart.getDate()+7);
     renderWeekCal();
