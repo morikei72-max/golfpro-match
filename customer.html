@@ -1054,14 +1054,15 @@ sb.auth.getSession().then(async function(res){
   var session=res.data.session;
   if(!session){console.warn('セッションなし'); return;}
   currentUserId=session.user.id;
-  var name=session.user.user_metadata&&session.user.user_metadata.name?session.user.user_metadata.name:session.user.email;
-  document.getElementById('user-name').textContent=name+'さん';
+  var name=(session.user.user_metadata&&session.user.user_metadata.name)?session.user.user_metadata.name:'';
+  document.getElementById('user-name').textContent=name?name+'さん':'';
   localStorage.setItem('gc_login_time',Date.now().toString());
   fetchAvailDates();
   detectEntryMode();
   var{data}=await sb.from('customers').select('id,store_key,member_number,member_type,is_approved,name,furigana,email,phone,golf_history,home_course,handicap,birth_date,line_user_id').eq('user_id',currentUserId).single();
   if(data){
     window._customerRowId=data.id;
+    if(data.name) document.getElementById('user-name').textContent=data.name+'さん';
     isMemberApproved=!!data.is_approved;
     if(data.is_approved){
       var typeLabels={create:'Create会員',silver:'シルバー会員',gold:'ゴールド会員',weekday:'平日デイ会員',night:'ナイト会員'};
