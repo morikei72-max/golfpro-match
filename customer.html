@@ -352,6 +352,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
           </div>
           <div class="indoor-bottom"><div class="indoor-bottom-text">時間と料金はこちら</div></div>
         </div>
+        <div class="type-card type-group" id="card-round-group" onclick="toggleRoundGroup()">
+          <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/round.png');">
+            <div class="photo-content">
+              <div class="photo-title">ラウンド系</div>
+              <div class="photo-sub">ラウンド・同伴・コンペ・独自プラン</div>
+            </div>
+          </div>
+          <div class="indoor-bottom"><div class="indoor-bottom-text" id="round-group-toggle">▼ タップして種類を選ぶ</div></div>
+        </div>
+        <div id="round-group-items" style="display:none;">
         <div class="type-card" id="card-round" onclick="selType(this,'round')">
           <div class="photo-bg" style="background-image:url('https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/round.png');">
             <div class="photo-content">
@@ -387,6 +397,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
             </div>
           </div>
           <div class="custom-bottom"><div class="custom-dot"></div><div class="custom-text">アプローチ特化・スイング診断など</div></div>
+        </div>
         </div>
       </div>
     </div>
@@ -968,15 +979,14 @@ async function selectEntryCoach(coachId){
   document.getElementById('lesson-type-label').textContent='このコーチが提供するレッスン内容';
   await filterLessonTypesByCoach(coachId);
   setTimeout(function(){
-    var firstCard=document.querySelector('.type-card:not(.hidden-type)');
-    if(firstCard){
+    var indoorCard=document.getElementById('card-indoor');
+    if(indoorCard && !indoorCard.classList.contains('hidden-type')){
       document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('on');});
-      firstCard.classList.add('on');
-      var typeName=firstCard.id.replace('card-','');
-      currentType=typeName;
-      if(typeName==='indoor'||typeName==='custom'){renderWeekCal();}else{renderMonthCal();}
-      document.getElementById('selected-coach-banner').scrollIntoView({behavior:'smooth',block:'start'});
+      indoorCard.classList.add('on');
+      currentType='indoor';
+      renderWeekCal();
     }
+    document.getElementById('selected-coach-banner').scrollIntoView({behavior:'smooth',block:'start'});
   },100);
 }
 
@@ -999,6 +1009,9 @@ async function filterLessonTypesByCoach(coachId){
     if(plans&&plans.length>0) hasCustom=true;
   }catch(e){console.warn('filter custom_plans err',e);}
   if(hasIndoor) document.getElementById('card-indoor').classList.remove('hidden-type');
+  if(hasRound||hasAccompany||hasComp||hasCustom){var grp=document.getElementById('card-round-group');if(grp)grp.classList.remove('hidden-type');}
+  var rgi=document.getElementById('round-group-items');if(rgi)rgi.style.display='none';
+  var rgt=document.getElementById('round-group-toggle');if(rgt)rgt.textContent='▼ タップして種類を選ぶ';
   if(hasRound) document.getElementById('card-round').classList.remove('hidden-type');
   if(hasAccompany) document.getElementById('card-accompany').classList.remove('hidden-type');
   if(hasComp) document.getElementById('card-comp').classList.remove('hidden-type');
@@ -1027,6 +1040,8 @@ function resetEntryCoach(){
   document.getElementById('coach-select-area').style.display='none';
   document.getElementById('coach-plans-area').style.display='none';
   document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('hidden-type');});
+  var rgi2=document.getElementById('round-group-items');if(rgi2)rgi2.style.display='none';
+  var rgt2=document.getElementById('round-group-toggle');if(rgt2)rgt2.textContent='▼ タップして種類を選ぶ';
   document.getElementById('lesson-type-label').textContent='依頼の種類を選ぶ';
   loadAllCoaches();
   window.scrollTo({top:0,behavior:'smooth'});
@@ -1539,6 +1554,14 @@ function selType(card,type){
   var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
   document.getElementById('cal-type-label').textContent=labels[type]||type;
   if(type==='indoor'||type==='custom'){renderWeekCal();}else{renderMonthCal();}
+}
+
+function toggleRoundGroup(){
+  var items=document.getElementById('round-group-items');
+  var toggle=document.getElementById('round-group-toggle');
+  if(!items) return;
+  if(items.style.display==='none'){items.style.display='block';if(toggle)toggle.textContent='▲ 閉じる';}
+  else{items.style.display='none';if(toggle)toggle.textContent='▼ タップして種類を選ぶ';}
 }
 
 var availCache={};
