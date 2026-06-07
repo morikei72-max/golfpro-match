@@ -210,8 +210,15 @@ const STORE_NAME='Golf Create 戸津池店';
 ============================ */
 async function doLogout(){
   if(!confirm('ログアウトしますか?'))return;
-  await sb.auth.signOut();
-  location.replace('store_login.html');
+  try{
+    await sb.auth.signOut({scope:'local'});
+  }catch(e){
+  }finally{
+    [localStorage,sessionStorage].forEach(function(store){
+      Object.keys(store).filter(function(k){return k.indexOf('gc')===0;}).forEach(function(k){store.removeItem(k);});
+    });
+    location.replace('store_login.html');
+  }
 }
 
 /* ============================

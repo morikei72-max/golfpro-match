@@ -3314,8 +3314,15 @@ function showMsg(text,type){
 
 /* ===== ログアウト ===== */
 async function doLogout(){
-  await sb.auth.signOut();localStorage.removeItem('gc_user_type');
-  window.location.replace(BASE+'coach_login.html');
+  try{
+    await sb.auth.signOut({scope:'local'});
+  }catch(e){
+  }finally{
+    [localStorage,sessionStorage].forEach(function(store){
+      Object.keys(store).filter(function(k){return k.indexOf('gc')===0;}).forEach(function(k){store.removeItem(k);});
+    });
+    window.location.replace(BASE+'coach_login.html');
+  }
 }
 /* ===== カード式クーポン発行機能 v3 (2026/5/24) ===== */
 let cpnCustomersCache=[];
