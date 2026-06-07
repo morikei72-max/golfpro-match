@@ -29,6 +29,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:#1a1a1a;color:#000;min-hei
 .edit-box label{font-size:12px;color:#a8f0d0;font-weight:600;flex-shrink:0;}
 .edit-box input{flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(101,206,165,0.3);color:#fff;font-family:inherit;font-size:13px;padding:8px 12px;border-radius:8px;outline:none;}
 .edit-box input:focus{border-color:#65CEA5;}
+.picker-box{max-width:780px;margin:0 auto 14px;background:rgba(255,255,255,0.05);border:1px dashed rgba(101,206,165,0.3);border-radius:12px;padding:12px 14px;color:#fff;}
+.picker-box .picker-lab{font-size:12px;color:#a8f0d0;font-weight:600;margin-bottom:8px;}
+.picker-box .picker-row{display:flex;gap:8px;flex-wrap:wrap;}
+.picker-btn{font-family:inherit;font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid rgba(101,206,165,0.4);background:rgba(0,0,0,0.3);color:#65CEA5;}
+.picker-btn.active{background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;border-color:#65CEA5;}
+.picker-btn.issued{opacity:0.55;}
+.picker-btn .tag{font-size:10px;margin-left:6px;color:#FFD27A;}
 
 /* 領収書本体(A4縦) */
 #receipt-paper{
@@ -180,6 +187,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:#1a1a1a;color:#000;min-hei
     <input type="text" id="recipient-input" oninput="updateRecipient()" placeholder="お客様名">
   </div>
 
+  <!-- 参加者ピッカー(ラウンド時のみ) -->
+  <div class="picker-box" id="participant-picker" style="display:none;"></div>
+
   <!-- 領収書本体 -->
   <div id="receipt-paper">
     <div class="r-head">
@@ -241,6 +251,11 @@ const bookingId=new URLSearchParams(location.search).get('booking_id');
 let bookingData=null;
 let existingReceipt=null;
 let recipientName='';
+let numPeople=1;
+let participantNames=[];
+let isRoundReceipt=false;
+let currentP=0;
+let issuedMap={};
 
 (async()=>{
   if(!bookingId){
@@ -250,7 +265,7 @@ let recipientName='';
   
   /* 予約データ取得 */
   const{data,error}=await sb.from('bookings')
-    .select('id,customer_name,customer_id,coach_name,store_key,lesson_type,minutes,booking_date,booking_time,total_price,status,created_at')
+    .select('id,customer_name,customer_id,coach_name,store_key,lesson_type,minutes,booking_date,booking_time,total_price,status,created_at,num_people,participant_names')
     .eq('id',bookingId)
     .maybeSingle();
   
@@ -266,13 +281,25 @@ let recipientName='';
     return;
   }
   
-  /* 既存の領収書を取得 */
-  const{data:rec}=await sb.from('receipts').select('*').eq('booking_id',bookingId).maybeSingle();
-  if(rec){
-    existingReceipt=rec;
-    recipientName=rec.recipient_name;
+  /* ラウンド(複数参加者)判定 */
+  numPeople=parseInt(data.num_people)||1;
+  participantNames=Array.isArray(data.participant_names)?data.participant_names:[];
+  isRoundReceipt=(numPeople>=2 && participantNames.length>=numPeople);
+  
+  /* 既存の領収書を全件取得(参加者番号ごと) */
+  const{data:recList}=await sb.from('receipts').select('*').eq('booking_id',bookingId);
+  issuedMap={};
+  (recList||[]).forEach(r=>{ issuedMap[r.participant_index||0]=r; });
+  
+  if(isRoundReceipt){
+    currentP=0;
+    for(let i=0;i<numPeople;i++){ if(!issuedMap[i]){ currentP=i; break; } }
+    existingReceipt=issuedMap[currentP]||null;
+    recipientName=existingReceipt?existingReceipt.recipient_name:(participantNames[currentP]||'お客様');
+    renderParticipantPicker();
   }else{
-    recipientName=data.customer_name||'お客様';
+    existingReceipt=issuedMap[0]||null;
+    recipientName=existingReceipt?existingReceipt.recipient_name:(data.customer_name||'お客様');
   }
   
   /* 描画 */
@@ -280,14 +307,7 @@ let recipientName='';
   
   document.getElementById('loading').style.display='none';
   document.getElementById('main-content').style.display='block';
-  
-  if(existingReceipt){
-    document.getElementById('status-meta').textContent='発行済 (No.'+existingReceipt.receipt_no+')';
-    document.getElementById('status-meta').style.color='#65CEA5';
-  }else{
-    document.getElementById('status-meta').textContent='未発行';
-    document.getElementById('status-meta').style.color='#FFD27A';
-  }
+  updateStatusMeta();
 })();
 
 function showError(title,msg){
@@ -299,12 +319,13 @@ function showError(title,msg){
 
 function renderReceipt(){
   const b=bookingData;
-  const amount=parseInt(b.total_price)||0;
+  const total=parseInt(b.total_price)||0;
+  const amount=isRoundReceipt?Math.round(total/numPeople):total;
   const taxAmt=Math.round(amount*10/110);
   const exclTax=amount-taxAmt;
   
   /* 領収書No */
-  const no=existingReceipt?existingReceipt.receipt_no:generateReceiptNo();
+  const no=existingReceipt?existingReceipt.receipt_no:generateReceiptNo(isRoundReceipt?currentP:0);
   
   /* 日付 */
   const issueDate=existingReceipt?new Date(existingReceipt.issued_at):new Date();
@@ -340,11 +361,54 @@ function updateRecipient(){
   document.getElementById('r-recipient').textContent=recipientName;
 }
 
-function generateReceiptNo(){
+function renderParticipantPicker(){
+  const box=document.getElementById('participant-picker');
+  if(!isRoundReceipt){ box.style.display='none'; return; }
+  let html='<div class="picker-lab">参加者を選んで1人ずつ発行('+numPeople+'名)</div><div class="picker-row">';
+  for(let i=0;i<numPeople;i++){
+    const nm=participantNames[i]||('参加者'+(i+1));
+    const issued=!!issuedMap[i];
+    html+='<button class="picker-btn'+(i===currentP?' active':'')+(issued?' issued':'')+'" onclick="selectParticipant('+i+')">'+escapeHtml(nm)+(issued?'<span class="tag">発行済</span>':'')+'</button>';
+  }
+  html+='</div>';
+  box.innerHTML=html;
+  box.style.display='block';
+}
+
+function selectParticipant(i){
+  currentP=i;
+  existingReceipt=issuedMap[i]||null;
+  recipientName=existingReceipt?existingReceipt.recipient_name:(participantNames[i]||'お客様');
+  document.getElementById('recipient-input').value=recipientName;
+  renderParticipantPicker();
+  renderReceipt();
+  updateStatusMeta();
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function updateStatusMeta(){
+  const el=document.getElementById('status-meta');
+  if(existingReceipt){
+    el.textContent='発行済 (No.'+existingReceipt.receipt_no+')';
+    el.style.color='#65CEA5';
+    document.getElementById('recipient-input').disabled=true;
+    document.getElementById('edit-box').style.opacity='0.5';
+  }else{
+    el.textContent='未発行';
+    el.style.color='#FFD27A';
+    document.getElementById('recipient-input').disabled=false;
+    document.getElementById('edit-box').style.opacity='1';
+  }
+}
+
+function generateReceiptNo(pIndex){
   const d=new Date();
   const ymd=d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
   const rand=Math.floor(Math.random()*9000)+1000;
-  return ymd+'-'+rand;
+  return ymd+'-'+rand+(isRoundReceipt?('-'+(pIndex||0)):'');
 }
 
 function formatDateJa(d){
@@ -365,7 +429,8 @@ async function downloadPdf(){
   if(!existingReceipt){
     const receiptNo=document.getElementById('r-no').textContent.replace('No. ','');
     const b=bookingData;
-    const amount=parseInt(b.total_price)||0;
+    const total=parseInt(b.total_price)||0;
+    const amount=isRoundReceipt?Math.round(total/numPeople):total;
     const taxAmt=Math.round(amount*10/110);
     const exclTax=amount-taxAmt;
     
@@ -383,7 +448,9 @@ async function downloadPdf(){
       booking_time:b.booking_time,
       coach_name:b.coach_name,
       lesson_type:b.lesson_type,
-      issued_by:'customer'
+      issued_by:'customer',
+      participant_name:isRoundReceipt?(participantNames[currentP]||recipientName):recipientName,
+      participant_index:isRoundReceipt?currentP:0
     }).select().maybeSingle();
     
     if(error){
@@ -391,10 +458,9 @@ async function downloadPdf(){
       return;
     }
     existingReceipt=data;
-    document.getElementById('status-meta').textContent='発行済 (No.'+data.receipt_no+')';
-    document.getElementById('status-meta').style.color='#65CEA5';
-    document.getElementById('recipient-input').disabled=true;
-    document.getElementById('edit-box').style.opacity='0.5';
+    issuedMap[currentP]=data;
+    if(isRoundReceipt)renderParticipantPicker();
+    updateStatusMeta();
   }
   
   /* PDF生成 */
