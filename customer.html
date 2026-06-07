@@ -1869,8 +1869,8 @@ function renderMonthCal(){
     html+='<div class="'+cls+'" onclick="selectMonthDay(\''+ds+'\')">';
     html+='<div class="md-num">'+day+'</div>';
     if(avail[ds]){
-      if(currentType==='indoor'){
-        var __cnt=(entryMode==='coach'&&entrySelectedCoachId)?1:((availCache[ds]&&availCache[ds].indoor&&availCache[ds].indoor.coaches)?availCache[ds].indoor.coaches.length:0);
+      if(currentType==='indoor'&&!(entryMode==='coach'&&entrySelectedCoachId)){
+        var __cnt=(availCache[ds]&&availCache[ds].indoor&&availCache[ds].indoor.coaches)?availCache[ds].indoor.coaches.length:0;
         html+='<div class="avail-badge">'+__cnt+'名</div>';
       }else{
         html+='<div class="avail-badge">●</div>';
