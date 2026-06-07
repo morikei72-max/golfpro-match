@@ -8,9 +8,10 @@
 <title>MyCoach — お客様ログイン</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-:root{--green-deep:#051E18;--green-base:#064D3B;--green-mid:#0A6B52;--green-bright:#65CEA5;--gold:#C9A961;--gold-light:#E8D9A8;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);}
+:root{--green-deep:#051E18;--green-base:#064D3B;--green-mid:#0A6B52;--green-bright:#65CEA5;--gold:#C9A961;--gold-light:#E8D9A8;--white:#FFFFFF;--text-sub:rgba(255,255,255,0.78);--text-faint:rgba(255,255,255,0.5);--line:#06C755;}
 html,body{font-family:'Noto Sans JP',sans-serif;min-height:100vh;color:var(--white);background:var(--green-deep);}
 body{display:flex;align-items:center;justify-content:center;padding:20px;position:relative;overflow-x:hidden;}
 .bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(101,206,165,0.18),transparent 60%),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(201,169,97,0.1),transparent 60%),linear-gradient(180deg,#051E18 0%,#064D3B 50%,#03130E 100%);}
@@ -24,30 +25,21 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 .brand-line{width:2px;height:24px;background:linear-gradient(180deg,var(--gold),var(--green-bright));border-radius:1px;}
 .brand-text{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;letter-spacing:1px;background:linear-gradient(135deg,var(--white) 30%,var(--green-bright) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
 .brand-tagline{display:inline-block;font-size:8px;letter-spacing:4px;color:var(--gold);background:rgba(201,169,97,0.1);border:1px solid rgba(201,169,97,0.3);padding:3px 10px;border-radius:10px;text-transform:uppercase;}
-.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:28px 22px;position:relative;}
+.glass-card{width:100%;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-radius:24px;padding:32px 24px;position:relative;}
 .glass-card::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1px;background:linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.05) 50%,rgba(201,169,97,0.2));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;}
-.section-title{font-size:20px;font-weight:600;color:var(--white);margin-bottom:6px;text-align:center;}
+.section-title{font-size:22px;font-weight:600;color:var(--white);margin-bottom:8px;text-align:center;}
 .section-title .accent{color:var(--green-bright);font-family:'Cormorant Garamond',serif;font-weight:600;}
-.section-sub{font-size:11px;color:var(--text-sub);text-align:center;margin-bottom:22px;letter-spacing:0.5px;}
-.field{position:relative;margin-bottom:14px;}
-.field-label{font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:6px;text-transform:uppercase;font-weight:600;}
-.field-input{width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px 16px 14px 44px;color:var(--white);font-size:14px;font-family:inherit;outline:none;transition:all 0.3s;}
-.field-input:focus{border-color:var(--green-bright);box-shadow:0 0 0 3px rgba(101,206,165,0.15);}
-.field-input::placeholder{color:rgba(255,255,255,0.35);}
-.field-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;fill:none;stroke:var(--gold);stroke-width:2;margin-top:11px;pointer-events:none;}
-.options-row{display:flex;justify-content:space-between;align-items:center;margin:14px 0 20px;font-size:11px;}
-.remember{display:flex;align-items:center;gap:6px;color:var(--text-sub);cursor:pointer;user-select:none;}
-.remember input{accent-color:var(--green-bright);cursor:pointer;}
-.forgot{color:var(--gold);text-decoration:none;cursor:pointer;}
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--green-bright),var(--green-mid));color:var(--white);border:none;border-radius:14px;padding:16px;font-size:14px;font-weight:700;letter-spacing:2px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px rgba(101,206,165,0.3),inset 0 1px 0 rgba(255,255,255,0.2);text-transform:uppercase;}
-.btn-primary svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;}
-.btn-outline{width:100%;background:transparent;color:var(--gold);border:1px solid var(--gold);border-radius:14px;padding:14px;font-size:12px;font-weight:600;letter-spacing:3px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-transform:uppercase;}
-.btn-outline svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;}
-.divider{display:flex;align-items:center;gap:12px;margin:18px 0;}
-.divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);}
-.divider-text{font-size:10px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;}
-.err{color:#ff8a8a;font-size:12px;margin-bottom:12px;display:none;text-align:center;padding:10px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;}
-.footer{text-align:center;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;margin-top:20px;text-transform:uppercase;}
+.section-sub{font-size:13px;color:var(--text-sub);text-align:center;margin-bottom:28px;letter-spacing:0.5px;line-height:1.7;}
+.btn-line{width:100%;background:var(--line);color:var(--white);border:none;border-radius:14px;padding:18px;font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 24px rgba(6,199,85,0.35),inset 0 1px 0 rgba(255,255,255,0.2);}
+.btn-line svg{width:22px;height:22px;}
+.line-note{font-size:12px;color:var(--text-sub);text-align:center;margin-top:16px;line-height:1.7;}
+.err{color:#ff8a8a;font-size:13px;margin-bottom:16px;display:none;text-align:center;padding:12px;background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.3);border-radius:10px;line-height:1.6;}
+.loading{text-align:center;padding:20px 0;}
+.spinner{width:48px;height:48px;border:4px solid rgba(101,206,165,0.2);border-top-color:var(--green-bright);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 18px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:14px;color:var(--text-sub);letter-spacing:1px;}
+.hidden{display:none;}
+.footer{text-align:center;font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:2px;margin-top:24px;text-transform:uppercase;}
 .footer-dot{display:inline-block;width:3px;height:3px;border-radius:50%;background:var(--gold);margin:0 6px;vertical-align:middle;}
 </style>
 </head>
@@ -70,46 +62,28 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
   </div>
 
   <div class="glass-card">
-    <div class="section-title">Welcome <span class="accent">Back</span></div>
-    <div class="section-sub">アカウントにサインインしてください</div>
 
-    <div id="err" class="err"></div>
-
-    <div class="field">
-      <div class="field-label">Email</div>
-      <svg class="field-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-      <input class="field-input" type="email" id="email" placeholder="your@email.com">
+    <!-- 処理中 -->
+    <div id="loading-view" class="loading">
+      <div class="spinner"></div>
+      <div class="loading-text">準備しています...</div>
     </div>
 
-    <div class="field">
-      <div class="field-label">Password</div>
-      <svg class="field-icon" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><circle cx="12" cy="16" r="1"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      <input class="field-input" type="password" id="pass" placeholder="••••••••">
+    <!-- ログイン -->
+    <div id="login-view" class="hidden">
+      <div class="section-title">ようこそ <span class="accent">MyCoach</span> へ</div>
+      <div class="section-sub">LINEではじめましょう<br>ボタンを押すだけで完了します</div>
+
+      <div id="err" class="err"></div>
+
+      <button class="btn-line" onclick="startLineLogin()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.69 2 10.23c0 4.07 3.56 7.48 8.37 8.12.33.07.77.22.88.5.1.26.07.66.03.92l-.14.85c-.04.26-.2.99.87.54 1.07-.45 5.77-3.4 7.87-5.82C21.41 13.74 22 12.05 22 10.23 22 5.69 17.52 2 12 2z"/></svg>
+        LINEで始める
+      </button>
+
+      <div class="line-note">初めての方も登録済みの方も、このボタンだけでご利用いただけます。</div>
     </div>
 
-    <div class="options-row">
-      <label class="remember">
-        <input type="checkbox" id="remember" checked>
-        <span>記憶する</span>
-      </label>
-      <a class="forgot" href="#" onclick="return false;">パスワード忘れ?</a>
-    </div>
-
-    <button class="btn-primary" onclick="doLogin()">
-      サインイン
-      <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </button>
-
-    <div class="divider">
-      <div class="divider-line"></div>
-      <span class="divider-text">or</span>
-      <div class="divider-line"></div>
-    </div>
-
-    <button class="btn-outline" onclick="goRegister()">
-      新規会員登録
-      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    </button>
   </div>
 
   <div class="footer">Golf Create 戸津池<span class="footer-dot"></span>会員様専用</div>
@@ -118,45 +92,116 @@ body{display:flex;align-items:center;justify-content:center;padding:20px;positio
 
 <script>
 const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw',{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const LIFF_ID='2010206965-HfioOoUZ';
+
+/* ログイン後の遷移先を決める(従来の仕組みをそのまま流用)
+   名前あり かつ 会員認証済 → コーチ探し(search_hub)
+   それ以外は従来どおりの分岐。LINEログインで作られたお客様は
+   name=LINE表示名・is_approved=true のため、必ず search_hub へ進む。 */
 async function routeAfterAuth(session){
-  if(!session) return;
+  if(!session) return false;
   const {data:cust}=await sb.from('customers').select('id,name,is_approved,line_user_id').eq('user_id',session.user.id).maybeSingle();
-  /* 【2026/5/28 修正】コーチ探しへ進む条件を「名前あり かつ 会員認証済」に変更。
-     LINE連携(line_user_id)は通知用の任意機能であり、必須条件から外す。
-     これによりLINE連携の有無やセッションの一時的な切れに関わらず、
-     登録を終えたお客様は確実に search_hub へ進める。 */
   if(cust && cust.name && cust.is_approved){
     location.replace('search_hub.html');
   }else if(cust && cust.is_approved){
-    /* 会員認証済だがプロフィール未入力 → プロフィール入力から再開 */
     location.replace('onboarding_step5.html');
   }else{
-    /* 会員認証がまだ → 会員確認から */
     location.replace('onboarding_step2.html');
   }
+  return true;
 }
-(async()=>{const {data:{session}}=await sb.auth.getSession();await routeAfterAuth(session);})();
-async function doLogin(){
-  const email=document.getElementById('email').value.trim().toLowerCase();
-  const pass=document.getElementById('pass').value;
+
+function showLogin(){
+  document.getElementById('loading-view').classList.add('hidden');
+  document.getElementById('login-view').classList.remove('hidden');
+}
+function showLoading(text){
+  document.getElementById('login-view').classList.add('hidden');
+  const lv=document.getElementById('loading-view');
+  lv.classList.remove('hidden');
+  lv.querySelector('.loading-text').textContent=text||'準備しています...';
+}
+function showError(msg){
+  showLogin();
   const err=document.getElementById('err');
-  const remember=document.getElementById('remember').checked;
-  err.style.display='none';
-  const {error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error){err.textContent='メールアドレスまたはパスワードが正しくありません';err.style.display='block';return;}
-  if(!remember){
-    const {data:{session}}=await sb.auth.getSession();
-    if(session){
-      sessionStorage.setItem('gc',localStorage.getItem('gc'));
-      localStorage.removeItem('gc');
+  err.textContent=msg;
+  err.style.display='block';
+}
+
+/* LINEログインから戻ってきた後・またはボタン押下後に実行する本処理 */
+async function doLineLogin(){
+  showLoading('ログイン中...');
+  try{
+    const accessToken=liff.getAccessToken();
+    if(!accessToken){ showError('LINE情報を取得できませんでした。もう一度お試しください'); return; }
+
+    const res=await fetch('/.netlify/functions/customer-line-login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ access_token: accessToken })
+    });
+    const result=await res.json();
+
+    if(!res.ok || !result.success){
+      showError(result.error||'ログインに失敗しました。もう一度お試しください');
+      return;
     }
+
+    /* 発行されたトークンでログイン状態を確立(メールもパスワードも不要) */
+    const {error}=await sb.auth.verifyOtp({ token_hash: result.token_hash, type:'email' });
+    if(error){
+      console.error('[verifyOtp]',error);
+      showError('ログインに失敗しました。もう一度お試しください');
+      return;
+    }
+
+    const {data:{session}}=await sb.auth.getSession();
+    const routed=await routeAfterAuth(session);
+    if(!routed){ showError('ログインに失敗しました。もう一度お試しください'); }
+
+  }catch(e){
+    console.error('[doLineLogin]',e);
+    showError('ログインに失敗しました。もう一度お試しください');
   }
-  const {data:{session:newSession}}=await sb.auth.getSession();
-  await routeAfterAuth(newSession);
 }
-function goRegister(){
-  location.href='onboarding_step1.html';
+
+/* 「LINEで始める」ボタン押下 */
+async function startLineLogin(){
+  showLoading('LINEに接続しています...');
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    if(!liff.isLoggedIn()){
+      /* LINEのログイン画面へ。完了後この画面に戻る */
+      liff.login({ redirectUri: location.href });
+      return;
+    }
+    await doLineLogin();
+  }catch(e){
+    console.error('[startLineLogin]',e);
+    showError('LINEに接続できませんでした。もう一度お試しください');
+  }
 }
+
+/* ページ読み込み時 */
+(async()=>{
+  try{
+    /* 既にログイン済みなら自動でホームへ */
+    const {data:{session}}=await sb.auth.getSession();
+    if(session){ await routeAfterAuth(session); return; }
+
+    /* LIFFを初期化。LINEログインから戻ってきた直後なら自動で続行 */
+    await liff.init({ liffId: LIFF_ID });
+    if(liff.isLoggedIn()){
+      await doLineLogin();
+      return;
+    }
+  }catch(e){
+    console.error('[init]',e);
+  }
+  /* 上記いずれでもなければログインボタンを表示 */
+  showLogin();
+})();
 </script>
 </body>
 </html>
