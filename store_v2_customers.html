@@ -77,6 +77,23 @@ body::before{
 .empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
 .skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
 @keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* 予約履歴 */
+.bk-sec{margin-top:14px;padding-top:12px;border-top:1px solid var(--line-strong);}
+.bk-sec-title{font-size:12px;font-weight:700;color:var(--main);margin-bottom:10px;}
+.bk-loading{font-size:11px;color:var(--muted);padding:6px 0;}
+.bk-row{padding:9px 0;border-bottom:1px solid rgba(101,206,165,0.08);}
+.bk-row:last-child{border-bottom:none;}
+.bk-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+.bk-date{font-size:12px;font-weight:700;color:#fff;}
+.bk-price{font-size:12px;font-weight:700;color:var(--main);white-space:nowrap;}
+.bk-row-bot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:3px;}
+.bk-sub{font-size:10px;color:var(--muted);}
+.bk-status{font-size:9px;padding:2px 8px;border-radius:100px;font-weight:700;white-space:nowrap;}
+.bk-st-ok{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
+.bk-st-wait{background:rgba(255,210,122,0.12);color:var(--yellow);border:1px solid rgba(255,210,122,0.3);}
+.bk-st-ng{background:rgba(255,138,138,0.12);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
+.bk-more{font-size:10px;color:var(--muted);text-align:center;padding:8px 0 2px;}
 </style>
 </head>
 <body>
@@ -213,9 +230,37 @@ function renderCard(c,i){
       </div>
       <div class="cust-detail">
         ${rows.join('')}
+        <div class="bk-sec">
+          <div class="bk-sec-title">予約履歴</div>
+          <div id="bk-${i}" class="bk-body" data-loaded="0">
+            <div class="bk-loading">タップして展開すると読み込みます…</div>
+          </div>
+        </div>
       </div>
     </div>
   `;
+}
+
+/* レッスン種類(日本語) */
+const LESSON_MAP={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
+function lessonLabel(t){return LESSON_MAP[t]||t||'レッスン';}
+
+/* 状態(日本語＋色クラス) */
+function statusInfo(s){
+  switch(s){
+    case'confirmed':return{label:'予約確定',cls:'bk-st-ok'};
+    case'completed':return{label:'完了',cls:'bk-st-ok'};
+    case'approved':return{label:'承認済み',cls:'bk-st-ok'};
+    case'approved_pending_payment':
+    case'pending_payment':return{label:'決済待ち',cls:'bk-st-wait'};
+    case'pending':
+    case'pending_approval':return{label:'承認待ち',cls:'bk-st-wait'};
+    case'cancelled':
+    case'canceled':return{label:'キャンセル',cls:'bk-st-ng'};
+    case'rejected':return{label:'却下',cls:'bk-st-ng'};
+    case'no_show':return{label:'無断キャンセル',cls:'bk-st-ng'};
+    default:return{label:s||'不明',cls:'bk-st-wait'};
+  }
 }
 
 function detailRow(k,v){
@@ -224,7 +269,73 @@ function detailRow(k,v){
 
 function toggleCard(i){
   const el=document.getElementById('cust-'+i);
-  if(el)el.classList.toggle('open');
+  if(!el)return;
+  el.classList.toggle('open');
+  /* 開いた時に予約履歴を1回だけ取得 */
+  if(el.classList.contains('open'))loadBookings(i);
+}
+
+async function loadBookings(i){
+  const body=document.getElementById('bk-'+i);
+  if(!body||body.dataset.loaded==='1')return;
+  body.dataset.loaded='1';
+  body.innerHTML='<div class="bk-loading">予約履歴を読み込み中…</div>';
+
+  const c=allCustomers[i];
+  if(!c||!c.id){
+    body.innerHTML='<div class="bk-loading">予約履歴はありません</div>';
+    return;
+  }
+
+  const{data,error}=await sb.from('bookings')
+    .select('id,coach_id,coach_name,lesson_type,booking_date,booking_time,total_price,status')
+    .eq('customer_id',c.id)
+    .order('booking_date',{ascending:false})
+    .order('booking_time',{ascending:false});
+
+  if(error){
+    body.dataset.loaded='0';
+    body.innerHTML='<div class="bk-loading">読込エラー: '+escapeHtml(error.message)+'</div>';
+    return;
+  }
+
+  const bookings=data||[];
+  if(bookings.length===0){
+    body.innerHTML='<div class="bk-loading">予約履歴はありません</div>';
+    return;
+  }
+
+  /* コーチ名をまとめて1回で取得 */
+  const coachMap={};
+  const ids=[...new Set(bookings.map(b=>b.coach_id).filter(Boolean))];
+  if(ids.length){
+    const{data:coaches}=await sb.from('coaches').select('id,name').in('id',ids);
+    (coaches||[]).forEach(co=>{coachMap[co.id]=co.name;});
+  }
+
+  const total=bookings.length;
+  const shown=bookings.slice(0,20);
+  let html=shown.map(b=>{
+    const st=statusInfo(b.status);
+    const coach=coachMap[b.coach_id]||b.coach_name||'コーチ未設定';
+    const date=formatDateJP(b.booking_date)||(b.booking_date||'');
+    const time=b.booking_time?String(b.booking_time).slice(0,5):'';
+    const price=(parseInt(b.total_price)||0).toLocaleString();
+    return`
+      <div class="bk-row">
+        <div class="bk-row-top">
+          <span class="bk-date">${escapeHtml(date)}${time?' '+escapeHtml(time):''}</span>
+          <span class="bk-price">¥${price}</span>
+        </div>
+        <div class="bk-row-bot">
+          <span class="bk-sub">${escapeHtml(lessonLabel(b.lesson_type))} · ${escapeHtml(coach)}</span>
+          <span class="bk-status ${st.cls}">${escapeHtml(st.label)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+  if(total>20)html+='<div class="bk-more">ほか '+(total-20)+' 件</div>';
+  body.innerHTML=html;
 }
 
 function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
