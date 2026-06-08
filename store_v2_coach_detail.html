@@ -254,7 +254,7 @@ let bkgTab='recent';
 
 async function loadAll(){
   const{data:coach,error}=await sb.from('coaches')
-    .select('id,name,photo_url,is_approved,is_rejected,id_card_status,id_card_url,id_card_uploaded_at,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,bio,min_lesson,created_at,store_key,coach_status,email')
+    .select('id,name,photo_url,is_approved,is_rejected,id_card_status,id_card_url,id_card_uploaded_at,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,license,tags,bio,min_lesson,created_at,store_key,coach_status,email,line_user_id')
     .eq('id',coachId)
     .maybeSingle();
   if(error||!coach){
@@ -587,6 +587,11 @@ function renderProfile(){
     pills.push('<span class="pill pill-warn">Stripe未完了</span>');
   }else{
     pills.push('<span class="pill pill-active">Stripe完了</span>');
+  }
+  if(coachData.line_user_id&&String(coachData.line_user_id).trim()){
+    pills.push('<span class="pill pill-active">LINE連携済み</span>');
+  }else{
+    pills.push('<span class="pill pill-warn">LINE未連携</span>');
   }
   document.getElementById('p-pills').innerHTML=pills.join('');
 }
