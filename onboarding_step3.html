@@ -492,19 +492,22 @@ async function verifyMember(){
     }
 
     /* customers テーブルに会員情報を書き込み(認証完了)
-       【コミット11 2026-05-20】NOT NULL制約対応:email, name を必須として追加
+       【コミット11 2026-05-20】NOT NULL制約対応:email を必須として追加
        - email: MyCoach ログイン用メール(認証済の auth.users メール)
-       - name: 空文字で初期化(step5 でユーザー本人が更新) */
-    var upsertResult=await sb.from('customers').upsert({
+       - name: 固定の空文字で上書きしない(LINE表示名などの既存nameを潰さないため)。
+               members照合で会員氏名が取れた場合のみ name に入れて補完する。 */
+    var custPayload={
       user_id:currentUserId,
       store_key:'tozuike',
       member_number:data.member_number,
       member_type:data.member_type,
       email:currentUserEmail,
-      name:'',
       is_approved:true,
       updated_at:new Date().toISOString()
-    },{onConflict:'user_id'});
+    };
+    var memberName=(data.name||'').trim();
+    if(memberName) custPayload.name=memberName;
+    var upsertResult=await sb.from('customers').upsert(custPayload,{onConflict:'user_id'});
 
     if(upsertResult.error){
       console.error('customers upsert エラー',upsertResult.error);
