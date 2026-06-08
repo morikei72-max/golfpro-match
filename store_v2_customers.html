@@ -121,10 +121,18 @@ let allCustomers=[];
 })();
 
 async function loadCustomers(){
-  const{data,error}=await sb.from('customers')
+  /* created_at 列が無い環境でも壊れないよう、order付きを試し失敗したらorder無しで再取得 */
+  let{data,error}=await sb.from('customers')
     .select('*')
     .eq('store_key',STORE_KEY)
     .order('created_at',{ascending:false});
+
+  if(error){
+    const fb=await sb.from('customers')
+      .select('*')
+      .eq('store_key',STORE_KEY);
+    data=fb.data;error=fb.error;
+  }
 
   if(error){
     document.getElementById('cust-list').innerHTML='<div class="empty">読込エラー: '+escapeHtml(error.message)+'</div>';
@@ -184,13 +192,13 @@ function renderCard(c,i){
   /* 詳細行 */
   const rows=[];
   rows.push(detailRow('氏名',escapeHtml(name)));
-  if(c.name_kana)rows.push(detailRow('フリガナ',escapeHtml(c.name_kana)));
+  if(c.furigana)rows.push(detailRow('フリガナ',escapeHtml(c.furigana)));
   rows.push(detailRow('会員番号',c.member_number?escapeHtml(c.member_number):'—'));
   rows.push(detailRow('電話番号',c.phone?escapeHtml(c.phone):'—'));
   rows.push(detailRow('メールアドレス',emailDisp));
   rows.push(detailRow('LINE連携',linked?'<span class="pill pill-line">連携済み</span>':'<span class="pill pill-noline">未連携</span>'));
-  if(c.created_at)rows.push(detailRow('登録年月日',formatDateJP(c.created_at)||'—'));
-  if('golf_experience' in c && c.golf_experience)rows.push(detailRow('ゴルフ歴',escapeHtml(c.golf_experience)));
+  rows.push(detailRow('登録年月日',c.created_at?(formatDateJP(c.created_at)||'—'):'—'));
+  if('golf_history' in c && c.golf_history)rows.push(detailRow('ゴルフ歴',escapeHtml(c.golf_history)));
   if('is_approved' in c)rows.push(detailRow('承認状態',c.is_approved?'承認済み':'未承認'));
 
   return`
@@ -199,7 +207,7 @@ function renderCard(c,i){
         <div class="cust-icon">${escapeHtml(initial)}</div>
         <div class="cust-info">
           <div class="cust-name">${escapeHtml(name)} ${linePill}</div>
-          <div class="cust-meta">${c.name_kana?escapeHtml(c.name_kana)+' · ':''}会員番号 ${c.member_number?escapeHtml(c.member_number):'—'}</div>
+          <div class="cust-meta">${c.furigana?escapeHtml(c.furigana)+' · ':''}会員番号 ${c.member_number?escapeHtml(c.member_number):'—'}</div>
         </div>
         <div class="cust-arrow">›</div>
       </div>
