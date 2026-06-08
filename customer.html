@@ -656,26 +656,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
       <div class="form-group"><label>ご要望・コメント</label>
         <textarea id="req-comment" placeholder="例:スイングの基礎から教えていただきたいです。"></textarea>
       </div>
-      <!-- ===== クーポンコード入力欄 (2026/5/24 CP3 追加) ===== -->
+      <!-- ===== 自動割引バナー (2026/5/24 CP3 追加) ===== -->
       <div id="auto-discount-banner" style="display:none;background:linear-gradient(135deg,#1b7a3e,#27ae60);color:#fff;border-radius:12px;padding:14px 16px;margin-bottom:14px;text-align:center;box-shadow:0 4px 12px rgba(39,174,96,0.3);"></div>
-      <div class="form-group" id="coupon-input-section" style="background:#fffbe6;border:1px solid #f0c040;border-radius:10px;padding:12px;margin-bottom:14px;">
-        <label style="display:block;font-size:12px;font-weight:700;color:#7a5c00;margin-bottom:6px;">🎟 クーポンコード(お持ちの方)</label>
-        <div style="display:flex;gap:6px;">
-          <input type="text" id="coupon-code-input" maxlength="20" placeholder="例:NENE10" style="flex:1;padding:8px 10px;border:1px solid #f0c040;border-radius:6px;font-size:14px;text-transform:uppercase;">
-          <button type="button" id="coupon-apply-btn" onclick="applyCouponCode()" style="padding:8px 16px;background:var(--g);color:white;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px;">適用</button>
-        </div>
-        <div id="coupon-result-message" style="margin-top:8px;font-size:12px;line-height:1.5;"></div>
-        <div id="coupon-price-display" style="display:none;margin-top:10px;padding:10px;background:white;border-radius:6px;border:1px solid #f0c040;">
-          <div style="font-size:11px;color:#7a5c00;margin-bottom:4px;">適用後のお支払い金額</div>
-          <div style="display:flex;align-items:baseline;gap:10px;">
-            <span id="coupon-original-price" style="font-size:13px;color:#888;text-decoration:line-through;"></span>
-            <span style="font-size:14px;color:var(--g);font-weight:700;">→</span>
-            <span id="coupon-final-price" style="font-size:20px;color:var(--red);font-weight:700;"></span>
-            <span id="coupon-discount-label" style="font-size:11px;background:var(--red);color:white;padding:2px 6px;border-radius:4px;font-weight:600;"></span>
-          </div>
-        </div>
-      </div>
-      <!-- ===== クーポンコード入力欄 ここまで ===== -->
     </div>
     <div style="background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:0.5px solid var(--border);">
       <div style="font-size:13px;font-weight:500;margin-bottom:10px;">利用規約・同意事項</div>
