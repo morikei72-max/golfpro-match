@@ -2698,8 +2698,10 @@ async function saveMyProfile(){
   var session=res.data.session;
   if(!session) return;
   var uid=session.user.id;
+  var nameVal=document.getElementById('mp-name').value.trim();
+  if(!nameVal){alert('お名前を入力してください');document.getElementById('mp-name').focus();return;}
   var payload={
-    user_id:uid,name:document.getElementById('mp-name').value,
+    user_id:uid,name:nameVal,
     furigana:document.getElementById('mp-furigana').value,
     email:document.getElementById('mp-email').value,
     phone:document.getElementById('mp-phone').value,
