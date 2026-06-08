@@ -512,6 +512,29 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
   </div>
 </div>
 
+<div class="modal-overlay" id="ui-confirm-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--gd)">ご確認</div>
+    <div class="modal-sub" id="ui-confirm-text" style="white-space:pre-line"></div>
+    <div class="cancel-actions">
+      <button class="btn-cancel-back" onclick="_uiConfirmDone(false)">キャンセル</button>
+      <button class="btn-cancel-submit" style="background:var(--g)" onclick="_uiConfirmDone(true)">はい</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ui-reason-modal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--gd)">却下理由の入力</div>
+    <div class="modal-sub">却下理由を入力してください(3文字以上)。お客様へLINEで通知されます。</div>
+    <textarea id="ui-reason-input" class="cancel-other-input" style="height:90px;display:block;resize:none" placeholder="例:当日に外せない急用が入ったため"></textarea>
+    <div class="cancel-actions" style="margin-top:14px">
+      <button class="btn-cancel-back" onclick="_uiReasonDone(false)">戻る</button>
+      <button class="btn-cancel-submit" onclick="_uiReasonDone(true)">この理由で却下する</button>
+    </div>
+  </div>
+</div>
+
 <header class="header">
   <div class="header-left">
     <div class="header-logo">My<span>Coach</span></div>
@@ -2692,11 +2715,36 @@ function buildMonthGrid(){
 function moveMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);buildMonthGrid();}
 
 /* ===== 予約操作(実API連動・2026/5/23 v2) ===== */
+let _uiConfirmResolve=null;
+function uiConfirm(msg){
+  return new Promise(function(res){
+    _uiConfirmResolve=res;
+    document.getElementById('ui-confirm-text').textContent=msg;
+    document.getElementById('ui-confirm-modal').classList.add('open');
+  });
+}
+function _uiConfirmDone(v){
+  document.getElementById('ui-confirm-modal').classList.remove('open');
+  if(_uiConfirmResolve){var r=_uiConfirmResolve;_uiConfirmResolve=null;r(v);}
+}
+let _uiReasonResolve=null;
+function uiReason(){
+  return new Promise(function(res){
+    _uiReasonResolve=res;
+    document.getElementById('ui-reason-input').value='';
+    document.getElementById('ui-reason-modal').classList.add('open');
+  });
+}
+function _uiReasonDone(ok){
+  var v=document.getElementById('ui-reason-input').value;
+  document.getElementById('ui-reason-modal').classList.remove('open');
+  if(_uiReasonResolve){var r=_uiReasonResolve;_uiReasonResolve=null;r(ok?v:null);}
+}
 async function approveBooking(btn){
   const item=btn.closest('.booking-item');
   const bookingId=item?.dataset?.bookingId;
   if(!bookingId){showMsg('予約IDが取得できませんでした','error');return;}
-  if(!confirm('この予約を承認しますか?\nお客様に決済案内をLINEで送信します。'))return;
+  if(!(await uiConfirm('この予約を承認しますか?\nお客様に決済案内をLINEで送信します。')))return;
   btn.disabled=true;btn.textContent='処理中...';
   try{
     const res=await fetch('/.netlify/functions/coach-approve-booking',{
@@ -2721,10 +2769,10 @@ async function declineBooking(btn){
   const item=btn.closest('.booking-item');
   const bookingId=item?.dataset?.bookingId;
   if(!bookingId){showMsg('予約IDが取得できませんでした','error');return;}
-  const reason=prompt('却下理由を入力してください(3文字以上)\nお客様へLINE通知されます。','');
+  const reason=await uiReason();
   if(reason===null)return;
   if(!reason||reason.trim().length<3){showMsg('却下理由は3文字以上で入力してください','error');return;}
-  if(!confirm('この予約を却下しますか?\n却下後は取り消せません。'))return;
+  if(!(await uiConfirm('この予約を却下しますか?\n却下後は取り消せません。')))return;
   btn.disabled=true;btn.textContent='処理中...';
   try{
     const res=await fetch('/.netlify/functions/coach-reject-booking',{
