@@ -542,6 +542,13 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
       </div>
     </div>
 
+    <!-- ⚠️ 設定未完了アラート(Stripe未完了 または LINE未連携 のときのみ表示) -->
+    <div class="home-setup-alert" id="home-setup-alert" style="display:none;background:#fff8e1;border:1px solid #FFD27A;border-radius:14px;padding:14px;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:700;color:#856404;margin-bottom:8px;">⚠️ お客様の予約を受けるには設定が必要です</div>
+      <div id="home-setup-items" style="font-size:12px;color:#856404;line-height:1.9;margin-bottom:10px;"></div>
+      <div onclick="document.querySelectorAll('.tab-btn')[1].click();" style="display:inline-block;background:#1D9E75;color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;">設定画面へ →</div>
+    </div>
+
     <!-- 承認待ちアラート(承認待ちがある時のみ表示) -->
     <div class="home-pending-alert" id="home-pending-alert" style="display:none;">
       <div class="home-pending-head">
@@ -1564,7 +1571,7 @@ async function loadStoresFromDB(){
 
   await loadStoresFromDB();
 
-  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,store_key,coach_status,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted,id_card_url,id_card_status').eq('user_id',user.id).maybeSingle();
+  const {data:coachRow,error:coachErr}=await sb.from('coaches').select('id,name,store_key,coach_status,stripe_account_id,stripe_charges_enabled,stripe_payouts_enabled,stripe_details_submitted,id_card_url,id_card_status,line_user_id').eq('user_id',user.id).maybeSingle();
   if(coachErr){console.error('coach取得エラー',coachErr);alert('❌ コーチ情報の取得に失敗しました: '+coachErr.message);return;}
   if(!coachRow){alert('❌ このアカウントにはコーチ情報が登録されていません。\n先にプロフィール画面で基本情報を保存してください。');}
   currentCoachId=coachRow?coachRow.id:null;
@@ -1582,6 +1589,7 @@ async function loadStoresFromDB(){
   idCardStatus=coachRow?.id_card_status||'none';
   idCardUrl=coachRow?.id_card_url||null;
   updateStripeStatusUI(coachRow);
+  updateSetupAlertUI(coachRow);
   updateScheduleLockUI();
   updateIdCardUI();
   loadCoupons();loadAutoDiscounts();
@@ -1601,6 +1609,19 @@ async function loadStoresFromDB(){
 })();
 
 /* ===== Stripe登録状況UI更新 ===== */
+function updateSetupAlertUI(coachRow){
+  const box=document.getElementById('home-setup-alert');
+  const itemsEl=document.getElementById('home-setup-items');
+  if(!box||!itemsEl)return;
+  const stripeOK=!!(coachRow&&coachRow.stripe_charges_enabled&&coachRow.stripe_payouts_enabled);
+  const lineOK=!!(coachRow&&coachRow.line_user_id&&String(coachRow.line_user_id).trim());
+  const items=[];
+  if(!stripeOK)items.push('❌ Stripe決済設定(レッスン料の受取に必須)');
+  if(!lineOK)items.push('❌ LINE連携(予約・承認通知に必須)');
+  if(items.length===0){box.style.display='none';return;}
+  itemsEl.innerHTML=items.join('<br>');
+  box.style.display='block';
+}
 function updateStripeStatusUI(coachRow){
   const badge=document.getElementById('stripe-status-badge');
   const text=document.getElementById('stripe-status-text');
