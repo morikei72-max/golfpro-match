@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>MyCoach 本部 - お客様</title>
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --main:#65CEA5;
+  --main-dark:#3aa57c;
+  --main-light:#A8F0D0;
+  --bg:#000;
+  --line:rgba(101,206,165,0.15);
+  --line-strong:rgba(101,206,165,0.3);
+  --muted:#7a9a8a;
+  --red:#ff8a8a;
+  --yellow:#FFD27A;
+}
+body{font-family:'Inter','Noto Sans JP',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 20% 0%,rgba(101,206,165,0.15) 0%,transparent 60%),
+    radial-gradient(ellipse 400px 300px at 80% 100%,rgba(101,206,165,0.08) 0%,transparent 60%);
+}
+
+.wrap{position:relative;z-index:1;padding:18px 18px 40px;max-width:480px;margin:0 auto;}
+
+/* ヘッダー */
+.head{display:flex;align-items:center;gap:12px;padding:8px 4px 18px;}
+.back-btn{width:38px;height:38px;background:rgba(101,206,165,0.06);border:1px solid var(--line-strong);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--main);text-decoration:none;font-size:18px;font-weight:600;}
+.back-btn:active{background:rgba(101,206,165,0.15);}
+.page-title{flex:1;}
+.page-title h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.02em;}
+.page-title .sub{font-size:11px;color:var(--muted);margin-top:3px;line-height:1.4;}
+
+/* 人数表示 */
+.count-box{background:rgba(255,255,255,0.03);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;display:flex;align-items:baseline;gap:8px;}
+.count-box .lab{font-size:11px;color:var(--muted);font-weight:600;}
+.count-box .num{font-size:28px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em;}
+.count-box .num .u{font-size:13px;color:var(--muted);margin-left:2px;}
+
+/* パネル */
+.panel{background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;}
+.panel-title{font-size:14px;font-weight:700;color:#fff;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;}
+.panel-title .meta{font-size:11px;color:var(--main);font-weight:600;}
+
+/* お客様カード */
+.cust-card{padding:13px 0;border-bottom:1px solid var(--line);}
+.cust-card:last-child{border-bottom:none;}
+.cust-head{display:flex;align-items:center;gap:12px;cursor:pointer;}
+.cust-head:active{background:rgba(101,206,165,0.04);}
+.cust-icon{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0;border:1px solid var(--line-strong);}
+.cust-info{flex:1;min-width:0;}
+.cust-name{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.cust-meta{font-size:10px;color:var(--muted);margin-top:3px;}
+.cust-arrow{color:var(--muted);font-size:14px;transition:transform .2s;}
+.cust-card.open .cust-arrow{transform:rotate(90deg);}
+
+/* 詳細 */
+.cust-detail{display:none;margin-top:12px;padding:14px;background:rgba(101,206,165,0.04);border:1px solid var(--line);border-radius:12px;}
+.cust-card.open .cust-detail{display:block;}
+.detail-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(101,206,165,0.08);font-size:12px;}
+.detail-row:last-child{border-bottom:none;}
+.detail-row .k{color:var(--muted);font-weight:600;flex-shrink:0;}
+.detail-row .v{color:#fff;text-align:right;word-break:break-all;}
+
+.pill{font-size:9px;padding:2px 7px;border-radius:100px;font-weight:700;white-space:nowrap;}
+.pill-line{background:rgba(101,206,165,0.15);color:var(--main);border:1px solid var(--line-strong);}
+.pill-noline{background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--line);}
+
+.empty{text-align:center;padding:24px 14px;color:var(--muted);font-size:12px;}
+.skeleton{background:linear-gradient(90deg,rgba(101,206,165,0.05),rgba(101,206,165,0.15),rgba(101,206,165,0.05));background-size:200% 100%;animation:sk 1.5s infinite;border-radius:6px;color:transparent;display:inline-block;min-width:60px;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <a href="store_v2_home.html" class="back-btn">←</a>
+    <div class="page-title">
+      <h1>お客様一覧</h1>
+      <div class="sub">※hacomono会員一覧とは別の、MyCoachに登録したお客様の一覧です</div>
+    </div>
+  </div>
+
+  <!-- 登録人数 -->
+  <div class="count-box">
+    <span class="lab">登録人数</span>
+    <span class="num" id="cust-count"><span class="skeleton">0</span><span class="u">名</span></span>
+  </div>
+
+  <!-- お客様一覧 -->
+  <div class="panel">
+    <div class="panel-title"><span>お客様一覧</span><span class="meta" id="list-count">読込中</span></div>
+    <div id="cust-list">
+      <div class="empty">お客様情報を読み込み中...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SB_URL='https://gojrdnufmueuvkroevut.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdvanJkbnVmbXVldXZrcm9ldnV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyNzQwNDEsImV4cCI6MjA5MDg1MDA0MX0.NQFy92gZpymKj88C0KJk4Z6ztwMu2AwgDrLCaBrHRYw';
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'gc',storage:localStorage,autoRefreshToken:true}});
+
+const STORE_KEY='tozuike';
+let allCustomers=[];
+
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){location.replace('store_login.html');return;}
+  await loadCustomers();
+})();
+
+async function loadCustomers(){
+  const{data,error}=await sb.from('customers')
+    .select('*')
+    .eq('store_key',STORE_KEY)
+    .order('created_at',{ascending:false});
+
+  if(error){
+    document.getElementById('cust-list').innerHTML='<div class="empty">読込エラー: '+escapeHtml(error.message)+'</div>';
+    document.getElementById('cust-count').innerHTML='0<span class="u">名</span>';
+    document.getElementById('list-count').textContent='エラー';
+    return;
+  }
+  allCustomers=data||[];
+  render();
+}
+
+function render(){
+  document.getElementById('cust-count').innerHTML=allCustomers.length+'<span class="u">名</span>';
+  document.getElementById('list-count').textContent=allCustomers.length+'名';
+
+  if(allCustomers.length===0){
+    document.getElementById('cust-list').innerHTML='<div class="empty">登録されたお客様がいません</div>';
+    return;
+  }
+
+  document.getElementById('cust-list').innerHTML=allCustomers.map((c,i)=>renderCard(c,i)).join('');
+}
+
+function isLineEmail(email){
+  return !!email&&/@line\.mycoach\.app$/i.test(email.trim());
+}
+
+function lineLinked(c){
+  return !!(c.line_user_id&&String(c.line_user_id).trim());
+}
+
+function formatDateJP(s){
+  if(!s)return '';
+  const m=String(s).match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if(!m)return '';
+  return `${m[1]}年${m[2].padStart(2,'0')}月${m[3].padStart(2,'0')}日`;
+}
+
+function renderCard(c,i){
+  const name=c.name||'(名前未設定)';
+  const initial=name.charAt(0);
+  const linked=lineLinked(c);
+  const linePill=linked
+    ?'<span class="pill pill-line">LINE連携済み</span>'
+    :'<span class="pill pill-noline">未連携</span>';
+
+  /* メール表示(擬似メールはマスク) */
+  let emailDisp;
+  if(!c.email){
+    emailDisp='—';
+  }else if(isLineEmail(c.email)){
+    emailDisp='LINE登録（メール無し）';
+  }else{
+    emailDisp=escapeHtml(c.email);
+  }
+
+  /* 詳細行 */
+  const rows=[];
+  rows.push(detailRow('氏名',escapeHtml(name)));
+  if(c.name_kana)rows.push(detailRow('フリガナ',escapeHtml(c.name_kana)));
+  rows.push(detailRow('会員番号',c.member_number?escapeHtml(c.member_number):'—'));
+  rows.push(detailRow('電話番号',c.phone?escapeHtml(c.phone):'—'));
+  rows.push(detailRow('メールアドレス',emailDisp));
+  rows.push(detailRow('LINE連携',linked?'<span class="pill pill-line">連携済み</span>':'<span class="pill pill-noline">未連携</span>'));
+  if(c.created_at)rows.push(detailRow('登録年月日',formatDateJP(c.created_at)||'—'));
+  if('golf_experience' in c && c.golf_experience)rows.push(detailRow('ゴルフ歴',escapeHtml(c.golf_experience)));
+  if('is_approved' in c)rows.push(detailRow('承認状態',c.is_approved?'承認済み':'未承認'));
+
+  return`
+    <div class="cust-card" id="cust-${i}">
+      <div class="cust-head" onclick="toggleCard(${i})">
+        <div class="cust-icon">${escapeHtml(initial)}</div>
+        <div class="cust-info">
+          <div class="cust-name">${escapeHtml(name)} ${linePill}</div>
+          <div class="cust-meta">${c.name_kana?escapeHtml(c.name_kana)+' · ':''}会員番号 ${c.member_number?escapeHtml(c.member_number):'—'}</div>
+        </div>
+        <div class="cust-arrow">›</div>
+      </div>
+      <div class="cust-detail">
+        ${rows.join('')}
+      </div>
+    </div>
+  `;
+}
+
+function detailRow(k,v){
+  return`<div class="detail-row"><span class="k">${k}</span><span class="v">${v}</span></div>`;
+}
+
+function toggleCard(i){
+  const el=document.getElementById('cust-'+i);
+  if(el)el.classList.toggle('open');
+}
+
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+</script>
+</body>
+</html>

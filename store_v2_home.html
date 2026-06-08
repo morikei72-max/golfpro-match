@@ -157,6 +157,16 @@ body::before{
       </div>
     </a>
 
+    <a href="store_v2_customers.html" class="app">
+      <div class="icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      </div>
+      <div class="meta">
+        <div class="lbl">お客様</div>
+        <div class="val"><strong id="a-cust">--</strong> 名</div>
+      </div>
+    </a>
+
     <a href="store_v2_payouts.html" class="app">
       <div class="icon-wrap">
         <svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
@@ -287,6 +297,11 @@ async function loadDashboard(){
       .eq('store_key',STORE_KEY)
       .eq('is_active',true);
 
+    /* お客様(MyCoach登録) */
+    const {count:customerCount}=await sb.from('customers')
+      .select('*',{count:'exact',head:true})
+      .eq('store_key',STORE_KEY);
+
     /* 打席(localStorage)*/
     const seats=JSON.parse(localStorage.getItem('gc_seats_'+STORE_KEY)||'[]');
     const totalSeats=seats.length||4;
@@ -317,6 +332,7 @@ async function loadDashboard(){
     document.getElementById('a-bkg').textContent=todayCount;
     document.getElementById('a-cch').textContent=activeCoach;
     document.getElementById('a-mbr').textContent=(memberCount||0);
+    document.getElementById('a-cust').textContent=(customerCount||0);
     const occEl=document.getElementById('a-occ');
     if(occEl)occEl.textContent=busy+'/'+totalSeats;
 
