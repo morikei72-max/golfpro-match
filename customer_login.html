@@ -95,6 +95,22 @@ const sb=supabase.createClient('https://gojrdnufmueuvkroevut.supabase.co','eyJhb
 
 const LIFF_ID='2010206965-HfioOoUZ';
 
+/* tab パラメータを取得する。LINEからLIFF URL(?tab=bookings)で開いた場合、
+   liff.init() 前は ?tab= が liff.state にエンコードされて届くため、
+   直接読めない時は liff.state の中身を展開して tab を取り出す */
+function getTabParam(){
+  var sp=new URLSearchParams(location.search);
+  var t=sp.get('tab');
+  if(t) return t;
+  var state=sp.get('liff.state');
+  if(state){
+    var dec=decodeURIComponent(state);
+    var q=dec.indexOf('?')>=0 ? dec.substring(dec.indexOf('?')+1) : dec;
+    return new URLSearchParams(q).get('tab');
+  }
+  return null;
+}
+
 /* ログイン後の遷移先を決める(従来の仕組みをそのまま流用)
    名前あり かつ 会員認証済 → コーチ探し(search_hub)
    それ以外は従来どおりの分岐。LINEログインで作られたお客様は
@@ -103,7 +119,7 @@ async function routeAfterAuth(session){
   if(!session) return false;
   const {data:cust}=await sb.from('customers').select('id,name,is_approved,line_user_id').eq('user_id',session.user.id).maybeSingle();
   if(cust && cust.name && cust.is_approved){
-    var _tab=new URLSearchParams(location.search).get('tab');
+    var _tab=getTabParam();
     if(_tab==='mypage'||_tab==='bookings'){ location.replace('customer.html?tab='+_tab); }
     else { location.replace('search_hub.html'); }
   }else if(cust && cust.is_approved){
