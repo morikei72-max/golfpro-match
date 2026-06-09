@@ -1482,8 +1482,7 @@ function showBookingDetail(idx){
   var lessonLabel={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'}[b.lesson_type]||b.lesson_type||'レッスン';
   var buttonsHTML='';
   if(rawStatus==='confirmed'){
-    buttonsHTML='<button class="mdl-btn mdl-btn-line" onclick="window.open(\'https://line.me/R/\',\'_blank\')">💬 コーチに問い合わせ(LINE)</button>'+
-'<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal(\''+b.id+'\','+(parseInt(b.total_price)||0)+')">予約をキャンセル</button>'+
+    buttonsHTML='<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal(\''+b.id+'\','+(parseInt(b.total_price)||0)+')">予約をキャンセル</button>'+
       '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:72h以上前96.4%/72-24h前46.4%/24h以内16.4%/無断0%</div>';
   }
   if(rawStatus==='completed'){
