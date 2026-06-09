@@ -788,6 +788,11 @@ function detectEntryMode(){
   }else{
     entryMode='lesson';
   }
+  var tabParam=urlParams.get('tab');
+  var _tabMap={mypage:'snb-mypage',bookings:'snb-bookings'};
+  if(_tabMap[tabParam]){
+    setTimeout(function(){var mb=document.getElementById(_tabMap[tabParam]); if(mb){ mb.click(); }},400);
+  }
 }
 
 /* ★★★ 修正1:お客様画面でブロック中・非表示中のコーチを除外 ★★★ */
@@ -1369,9 +1374,12 @@ function renderBookingCard(b,idx){
   else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
   else if(rawStatus==='completed') status='completed';
   else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
+  var _today=new Date(); _today.setHours(0,0,0,0);
+  var lessonPassed=(b.booking_date && new Date(b.booking_date+'T00:00:00') < _today);
+  if(rawStatus==='confirmed' && lessonPassed){ status='completed'; }
   var statusLabel={pending:'⏳ 承認待ち',approved:'✅ 承認済み',completed:'✓ 完了',cancelled:'🚫 キャンセル'}[status]||'⏳ 承認待ち';
   if(rawStatus==='approved_pending_payment') statusLabel='💳 決済待ち';
-  if(rawStatus==='confirmed') statusLabel='✅ 予約確定';
+  if(rawStatus==='confirmed' && !lessonPassed) statusLabel='✅ 予約確定';
   if(rawStatus==='rejected') statusLabel='🚫 却下';
   var msgMap={
     pending:'<div class="bk-msg pending">⏳ コーチの承認をお待ちしています。LINEに通知が届きます。</div>',
@@ -1386,7 +1394,7 @@ function renderBookingCard(b,idx){
   var ago=calcAgoFromISO(b.created_at);
   var price=parseInt(b.total_price)||0;
   var receiptBtn='';
-  if(rawStatus==='completed'){
+  if(status==='completed'){
     var receiptInfo=(window._receiptMap||{})[b.id];
     if(receiptInfo){
       receiptBtn='<a class="receipt-btn issued" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener" onclick="event.stopPropagation();">📄 領収書 (発行済 No.'+receiptInfo.receipt_no+')</a>';
@@ -1461,6 +1469,9 @@ function showBookingDetail(idx){
   else if(rawStatus==='approved'||rawStatus==='approved_pending_payment'||rawStatus==='confirmed') status='approved';
   else if(rawStatus==='completed') status='completed';
   else if(rawStatus==='cancelled'||rawStatus==='rejected') status='cancelled';
+  var _today=new Date(); _today.setHours(0,0,0,0);
+  var lessonPassed=(b.booking_date && new Date(b.booking_date+'T00:00:00') < _today);
+  if(rawStatus==='confirmed' && lessonPassed){ status='completed'; }
   var statusInfo={
     pending:{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'},
     approved:{icon:'✅',title:'承認済み',sub:'レッスン当日お待ちしています'},
@@ -1468,7 +1479,7 @@ function showBookingDetail(idx){
     cancelled:{icon:'🚫',title:'キャンセル',sub:''}
   }[status]||{icon:'⏳',title:'承認待ち',sub:'コーチの返答をお待ちください'};
   if(rawStatus==='approved_pending_payment'){statusInfo={icon:'💳',title:'決済待ち',sub:'LINEに届いた決済リンクからお支払いください'};}
-  if(rawStatus==='confirmed'){statusInfo={icon:'✅',title:'予約確定',sub:'レッスン当日お待ちしています'};}
+  if(rawStatus==='confirmed' && !lessonPassed){statusInfo={icon:'✅',title:'予約確定',sub:'レッスン当日お待ちしています'};}
   if(rawStatus==='rejected'){statusInfo={icon:'🚫',title:'却下',sub:'別のコーチ・日程でお試しください'};}
   var countdownHTML='';
   if(status==='pending'||status==='approved'){
@@ -1481,11 +1492,11 @@ function showBookingDetail(idx){
   var timeStr=formatBookingTime(b.booking_time)||'-';
   var lessonLabel={indoor:'インドアゴルフレッスン',round:'ラウンドレッスン',accompany:'同伴ラウンド',comp:'コンペ参加',custom:'コーチ独自プラン'}[b.lesson_type]||b.lesson_type||'レッスン';
   var buttonsHTML='';
-  if(rawStatus==='confirmed'){
+  if(rawStatus==='confirmed' && !lessonPassed){
     buttonsHTML='<button class="mdl-btn mdl-btn-cancel" onclick="openCancelRequestModal(\''+b.id+'\','+(parseInt(b.total_price)||0)+')">予約をキャンセル</button>'+
       '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:72h以上前96.4%/72-24h前46.4%/24h以内16.4%/無断0%</div>';
   }
-  if(rawStatus==='completed'){
+  if(status==='completed'){
     var receiptInfo=(window._receiptMap||{})[b.id];
     if(receiptInfo){
       buttonsHTML+='<a class="mdl-btn" style="display:block;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-top:6px;border:1px solid #65CEA5;box-shadow:0 0 16px rgba(101,206,165,0.2);" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener">📄 領収書 (発行済 No.'+receiptInfo.receipt_no+')</a>';
