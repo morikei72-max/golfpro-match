@@ -452,6 +452,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
     </div>
   </div>
 
+  <div class="modal-overlay" id="review-required-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title" style="color:var(--gd);">⭐ レッスンの評価をお願いします</div>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:13px;color:#333;line-height:1.8;margin-bottom:16px;">
+          前回のレッスンの評価がまだお済みではありません。<br>
+          評価はコーチのやる気・向上心につながります。ぜひご協力ください。<br>
+          <span style="color:#666;font-size:12px;">評価のあと、続けてご予約に進めます。</span>
+        </div>
+        <button onclick="goToReviewFromModal()" style="display:block;width:100%;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;border:1px solid #65CEA5;text-align:center;padding:14px;border-radius:10px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer;">評価する</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="booking-detail-modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -2036,7 +2052,47 @@ function renderCoachList(coaches){
   coaches.forEach(function(c){window._coachCache[c.id]=c;});
 }
 
+/* ★ 評価ソフト必須化:期限内の未評価レッスン件数を取得 */
+async function getPendingReviewCount(){
+  if(!currentUserId) return 0;
+  try{
+    var{data:customerRow}=await sb.from('customers').select('id').eq('user_id',currentUserId).maybeSingle();
+    if(!customerRow) return 0;
+    var todayStr=getJSTDateStr(0);
+    var{data:rows}=await sb.from('bookings')
+      .select('id,booking_date,status,review_status,review_deadline')
+      .eq('customer_id',customerRow.id)
+      .lte('booking_date',todayStr)
+      .in('status',['confirmed','approved','completed']);
+    rows=rows||[];
+    var now=new Date();
+    var count=0;
+    for(var i=0;i<rows.length;i++){
+      var b=rows[i];
+      if(b.review_status==='submitted'||b.review_status==='expired') continue;
+      var deadline;
+      if(b.review_deadline){ deadline=new Date(b.review_deadline); }
+      else{ var bd=new Date(b.booking_date+'T23:59:59+09:00'); bd.setDate(bd.getDate()+7); deadline=bd; }
+      if(now>deadline) continue;
+      count++;
+    }
+    return count;
+  }catch(e){ console.warn('getPendingReviewCount (non-fatal):',e); return 0; }
+}
+/* ★ モーダルから評価画面(レビュータブ)へ遷移 */
+function goToReviewFromModal(){
+  document.getElementById('review-required-modal').classList.remove('open');
+  var rv=document.getElementById('snb-review');
+  if(rv) rv.click();
+}
+
 async function selectCoach(coachId){
+  /* ★ 評価ソフト必須化:期限内の未評価があれば評価を促し予約を止める */
+  var pendingReview=await getPendingReviewCount();
+  if(pendingReview>0){
+    document.getElementById('review-required-modal').classList.add('open');
+    return;
+  }
   selectedCoachId=coachId;
   selectedCoachData=window._coachCache?window._coachCache[coachId]:null;
   selectedPlan=null;
