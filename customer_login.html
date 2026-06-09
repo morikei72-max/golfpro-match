@@ -103,7 +103,9 @@ async function routeAfterAuth(session){
   if(!session) return false;
   const {data:cust}=await sb.from('customers').select('id,name,is_approved,line_user_id').eq('user_id',session.user.id).maybeSingle();
   if(cust && cust.name && cust.is_approved){
-    location.replace('search_hub.html');
+    var _tab=new URLSearchParams(location.search).get('tab');
+    if(_tab==='mypage'||_tab==='bookings'){ location.replace('customer.html?tab='+_tab); }
+    else { location.replace('search_hub.html'); }
   }else if(cust && cust.is_approved){
     location.replace('onboarding_step5.html');
   }else{
