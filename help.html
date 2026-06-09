@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyCoach — 使い方・サポート</title>
+<style>
+:root{
+  --dark:#064D3B; --dark2:#03130E; --green:#1D9E75; --gold:#C9A961;
+  --off:#F6F2E9; --ink:#20302B; --muted:#6F7D77; --line:#E4ECE7; --white:#fff;
+  --cream:#FBF7EE; --red:#B4534B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  color:var(--ink); background:var(--off); line-height:1.7;
+  -webkit-font-smoothing:antialiased; padding-bottom:84px;
+}
+.wrap{max-width:600px;margin:0 auto;background:var(--white);}
+.serif{font-family:Georgia,"Times New Roman",serif;}
+
+.hero{position:relative;background:linear-gradient(160deg,#03130E 0%,#064D3B 55%,#03130E 100%);
+  color:var(--white);padding:46px 26px 40px;overflow:hidden;}
+.hero::after{content:"";position:absolute;top:-120px;right:-120px;width:320px;height:320px;
+  background:radial-gradient(circle,rgba(101,206,165,.35),transparent 70%);}
+.hero .eyebrow{font-size:11px;letter-spacing:.32em;color:var(--gold);font-weight:700;}
+.hero h1{font-size:42px;font-weight:700;margin:6px 0 2px;letter-spacing:.02em;}
+.hero h1 span{color:var(--green);}
+.hero .rule{width:54px;height:2px;background:var(--gold);margin:14px 0 12px;}
+.hero .sub{font-size:18px;font-weight:700;}
+.hero .note{font-size:13px;color:#CFE2D8;margin-top:6px;}
+
+.sec{padding:34px 26px;border-bottom:1px solid var(--line);}
+.sec h2{font-size:22px;color:var(--dark);letter-spacing:.02em;margin-bottom:18px;}
+.sec h2 .lead{display:block;font-size:11px;letter-spacing:.28em;color:var(--gold);font-weight:700;margin-bottom:4px;}
+
+.notice{background:var(--cream);border-top:3px solid var(--gold);padding:30px 26px;}
+.notice .nh{font-size:12px;letter-spacing:.2em;color:var(--gold);font-weight:700;margin-bottom:4px;}
+.notice h2{font-size:21px;color:var(--dark);margin-bottom:16px;}
+.point{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px;}
+.point .dot{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--green);color:#fff;
+  font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px;}
+.point p{font-size:14px;}
+.point b{color:var(--dark);}
+
+.mis{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);
+  border-radius:10px;padding:15px 16px;margin-top:14px;}
+.mis .wrong{font-size:13px;color:var(--muted);margin-bottom:8px;}
+.mis .wrong b{color:var(--red);font-weight:700;}
+.mis .right{font-size:14px;color:var(--ink);font-weight:700;}
+.mis .right b{color:var(--green);}
+
+.step{display:flex;gap:16px;position:relative;padding-bottom:22px;}
+.step:last-child{padding-bottom:0;}
+.step:not(:last-child)::before{content:"";position:absolute;left:21px;top:46px;bottom:0;width:2px;background:var(--line);}
+.step .num{flex:0 0 44px;width:44px;height:44px;border-radius:50%;background:var(--green);color:#fff;
+  font-family:Georgia,serif;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:1;}
+.step .body h3{font-size:16px;color:var(--dark);margin:7px 0 3px;}
+.step .body p{font-size:13.5px;color:var(--muted);}
+
+.formula{background:linear-gradient(135deg,#064D3B,#03130E);color:#fff;border-radius:16px;padding:22px 20px;text-align:center;}
+.formula .f-row{font-size:15px;font-weight:700;line-height:2;}
+.formula .plus{color:var(--gold);margin:0 6px;}
+.formula .result{color:#65CEA5;}
+.formula .cc{font-size:12px;color:var(--gold);margin-top:10px;}
+
+.feat{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px dashed var(--line);}
+.feat:last-child{border-bottom:none;}
+.feat .ic{flex:0 0 40px;width:40px;height:40px;border:1.5px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.feat .ic svg{width:20px;height:20px;stroke:var(--green);fill:none;stroke-width:1.8;}
+.feat h3{font-size:15px;color:var(--dark);}
+.feat p{font-size:13px;color:var(--muted);}
+
+.ctable{width:100%;border-collapse:collapse;font-size:13px;margin-top:4px;}
+.ctable th,.ctable td{border:1px solid var(--line);padding:9px 10px;text-align:left;vertical-align:middle;}
+.ctable th{background:var(--dark);color:#fff;font-weight:700;}
+.ctable td.rate{font-weight:700;color:var(--green);white-space:nowrap;}
+.ctable td.zero{color:var(--red);}
+.cnote{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.8;}
+.terms-link{display:inline-block;margin-top:14px;font-size:13.5px;font-weight:700;color:var(--dark);
+  border-bottom:2px solid var(--gold);text-decoration:none;padding-bottom:2px;}
+
+.faq{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+.faq summary{list-style:none;cursor:pointer;padding:15px 46px 15px 16px;position:relative;font-size:14.5px;font-weight:700;color:var(--dark);background:#fff;}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary::after{content:"+";position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:22px;color:var(--gold);font-weight:400;}
+.faq[open] summary::after{content:"–";}
+.faq .ans{padding:0 16px 16px;font-size:13.5px;color:var(--muted);line-height:1.85;}
+
+.contact{background:var(--off);border-radius:14px;padding:20px;text-align:center;}
+.contact h3{font-size:16px;color:var(--dark);margin-bottom:6px;}
+.contact p{font-size:13px;color:var(--muted);}
+
+.cta-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:12px 16px;max-width:600px;margin:0 auto;backdrop-filter:blur(6px);}
+.cta-btn{display:block;width:100%;background:var(--green);color:#fff;text-align:center;text-decoration:none;font-size:16px;font-weight:700;padding:15px;border-radius:12px;letter-spacing:.04em;}
+
+.foot{padding:22px 26px 30px;text-align:center;font-size:11px;color:var(--muted);}
+.foot a{color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="eyebrow">GUIDE &amp; SUPPORT</div>
+    <h1 class="serif">My<span>Coach</span></h1>
+    <div class="rule"></div>
+    <div class="sub">使い方・サポート</div>
+    <div class="note">GOLF Create 戸津池店 会員様専用サービス</div>
+  </header>
+
+  <section class="notice">
+    <div class="nh">IMPORTANT</div>
+    <h2>ご利用前に、お読みください</h2>
+
+    <div class="point"><div class="dot">!</div>
+      <p><b>会員様専用サービスです。</b>MyCoach は、GOLF Create 戸津池店の会員様がご利用いただけるサービスです。</p></div>
+    <div class="point"><div class="dot">!</div>
+      <p><b>コーチのご予約には、GOLF Create の打席予約が必ず必要です。</b>打席のご予約と、MyCoach でのコーチのご予約がそろって、はじめてレッスンが成立します。</p></div>
+
+    <div class="mis">
+      <div class="wrong"><b>✕ いつもの打席予約から、コーチも予約できる</b>と思われがちですが…</div>
+      <div class="right"><b>○ コーチのご予約は、この MyCoach（LINE）で行います。</b>いつもの打席予約システムからは、コーチのご予約はできません。打席予約とは別に、MyCoach でコーチを予約してください。</div>
+    </div>
+
+    <div class="mis">
+      <div class="wrong"><b>✕ 打席予約システムに登録したカードで、コーチ代も支払われる</b>と思われがちですが…</div>
+      <div class="right"><b>○ お支払いには、MyCoach への新たなクレジットカード登録が必要です。</b>打席予約システムに登録されたカード情報は、MyCoach では使われません。MyCoach 上で、改めてカードのご登録をお願いします。</div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="lead">HOW TO START</span>はじめ方は、3ステップ</h2>
+    <div class="step"><div class="num">1</div>
+      <div class="body"><h3>QRコードを読み取る</h3>
+      <p>スマホのカメラ、またはLINEでQRコードを読み取ります。</p></div></div>
+    <div class="step"><div class="num">2</div>
+      <div class="body"><h3>LINEでログイン</h3>
+      <p>登録は約1分。パスワードは不要です。アプリのダウンロードもいりません。</p></div></div>
+    <div class="step"><div class="num">3</div>
+      <div class="body"><h3>コーチを選んで予約</h3>
+      <p>空き枠から、好きな時間を選んで予約します。</p></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="lead">HOW IT WORKS</span>レッスン成立の仕組み</h2>
+    <div class="formula">
+      <div class="f-row">打席のご予約（GOLF Create）<span class="plus">＋</span></div>
+      <div class="f-row">MyCoach でコーチを予約</div>
+      <div class="f-row"><span class="plus">＝</span><span class="result">レッスンが成立</span></div>
+      <div class="cc">※ ご予約には、クレジットカードの登録が必要です。</div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="lead">FEATURES</span>MyCoach でできること</h2>
+    <div class="feat">
+      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      <div><h3>好きなコーチを選べる</h3><p>プロフィールや口コミ評価を見て、自分に合うコーチを指名できます。</p></div></div>
+    <div class="feat">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></div>
+      <div><h3>インドアもラウンドも予約</h3><p>レッスンの種類や目的に合わせて、好きな時間に予約できます。</p></div></div>
+    <div class="feat">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+      <div><h3>予約も支払いも完結</h3><p>LINE上で予約と決済が完了。当日の現金のやり取りは不要です。</p></div></div>
+    <div class="feat">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.2l1-5.8L3.5 9.2l5.9-.9z"/></svg></div>
+      <div><h3>評価で選べる</h3><p>お客様の評価が、コーチ選びの参考になります。</p></div></div>
+  </section>
+
+  <section class="sec">
+    <h2><span class="lead">CANCELLATION</span>キャンセル・変更について</h2>
+    <p style="font-size:13.5px;color:var(--muted);margin-bottom:14px;">
+      お客様都合のキャンセルは、レッスン開始までの時間に応じて返金率が変わります。</p>
+    <table class="ctable">
+      <tr><th>キャンセルの時期</th><th>返金率</th></tr>
+      <tr><td>レッスン開始 72時間（3日）以上前</td><td class="rate">96.4%</td></tr>
+      <tr><td>レッスン開始 72時間〜24時間前</td><td class="rate">46.4%</td></tr>
+      <tr><td>24時間以内・当日（事前連絡あり）</td><td class="rate">16.4%</td></tr>
+      <tr><td>当日の無断キャンセル（ノーショー）</td><td class="rate zero">返金なし</td></tr>
+    </table>
+    <div class="cnote">
+      ※ 上記は決済手数料（3.6%）を差し引いた返金率です。<br>
+      ※ 実際の返金額は、キャンセル申請画面でご確認いただけます。<br>
+      ※ 変更・キャンセルのご相談は、このLINE、またはGOLF Create 戸津池店へ。
+    </div>
+    <a class="terms-link" href="terms.html">利用規約を見る →</a>
+  </section>
+
+  <section class="sec">
+    <h2><span class="lead">FAQ</span>よくある質問</h2>
+
+    <details class="faq"><summary>このサービスは誰でも使えますか？</summary>
+      <div class="ans">GOLF Create 戸津池店の会員様専用のサービスです。</div></details>
+
+    <details class="faq"><summary>アプリのインストールは必要ですか？</summary>
+      <div class="ans">不要です。お手持ちのLINEから、そのままご利用いただけます。App StoreやGoogle Playでの検索は必要ありません。</div></details>
+
+    <details class="faq"><summary>打席予約システムから、コーチも予約できますか？</summary>
+      <div class="ans">いいえ。コーチのご予約は、この MyCoach（LINE）で行います。いつもの打席予約システムからはコーチのご予約はできません。打席のご予約は GOLF Create で、コーチのご予約は MyCoach で、それぞれ必要です。</div></details>
+
+    <details class="faq"><summary>支払いは、打席予約に登録したカードで行われますか？</summary>
+      <div class="ans">いいえ。MyCoach でのお支払いには、MyCoach に改めてクレジットカードのご登録が必要です。打席予約システムに登録されたカードは使われません。</div></details>
+
+    <details class="faq"><summary>料金はどこで分かりますか？</summary>
+      <div class="ans">料金は各コーチのページに表示されます。ご予約のお手続きの中でも金額をご確認いただけます。</div></details>
+
+    <details class="faq"><summary>コーチはどう選べばいいですか？</summary>
+      <div class="ans">各コーチのプロフィール・実績・口コミ評価を見て、ご自身に合うコーチをお選びください。気になるコーチはお気に入りに登録できます。</div></details>
+
+    <details class="faq"><summary>予約の確認・キャンセルはどこから？</summary>
+      <div class="ans">ご予約の確認は、マイページの「予約一覧」からご覧いただけます。キャンセル・変更は予約一覧からお手続きいただくか、このLINE・GOLF Create 戸津池店へご相談ください。返金率は上記「キャンセル・変更について」をご確認ください。</div></details>
+
+    <details class="faq"><summary>ログインできないときは？</summary>
+      <div class="ans">LINEでもう一度ログインをお試しください。解決しない場合は、このLINEにメッセージをお送りください。順番にご対応いたします。</div></details>
+  </section>
+
+  <section class="sec">
+    <div class="contact">
+      <h3>お困りのときは</h3>
+      <p>このLINEにメッセージをお送りください。<br>GOLF Create 戸津池店 がご対応いたします。</p>
+    </div>
+  </section>
+
+  <div class="foot">
+    <a href="terms.html">利用規約</a><br><br>
+    GOLF Create 戸津池店 ・ MyCoach ・ 株式会社ケイエスケー
+  </div>
+</div>
+
+<div class="cta-bar">
+  <a class="cta-btn" href="customer_login.html">コーチを予約する</a>
+</div>
+</body>
+</html>
