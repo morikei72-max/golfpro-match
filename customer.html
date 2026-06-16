@@ -970,23 +970,30 @@ async function selectEntryCoach(coachId){
   setTimeout(function(){
     document.querySelectorAll('.type-card').forEach(function(c){c.classList.remove('on');});
     var order=[['card-indoor','indoor'],['card-round','round'],['card-accompany','accompany'],['card-comp','comp'],['card-custom','custom']];
-    var pickedEl=null,pickedType=null;
+    var availTypes=[];
     for(var i=0;i<order.length;i++){
       var el=document.getElementById(order[i][0]);
-      if(el && !el.classList.contains('hidden-type')){pickedEl=el;pickedType=order[i][1];break;}
+      if(el && !el.classList.contains('hidden-type')){availTypes.push({el:el,type:order[i][1]});}
     }
     var calBox=document.getElementById('cal-box');
-    if(pickedEl){
-      if(pickedType!=='indoor'){
+    var ltlEl=document.getElementById('lesson-type-label');
+    if(availTypes.length===1){
+      var only=availTypes[0];
+      if(only.type!=='indoor'){
         var rgi=document.getElementById('round-group-items');if(rgi)rgi.style.display='block';
         var rgt=document.getElementById('round-group-toggle');if(rgt)rgt.textContent='▲ 閉じる';
         var grp=document.getElementById('card-round-group');if(grp)grp.classList.add('on');
       }
-      pickedEl.classList.add('on');
-      currentType=pickedType;
+      only.el.classList.add('on');
+      currentType=only.type;
       selectedDate=null;selectedTime=null;
       if(calBox)calBox.style.display='block';
-      if(pickedType==='custom'){renderWeekCal();}else{renderMonthCal();}
+      if(only.type==='custom'){renderWeekCal();}else{renderMonthCal();}
+    }else if(availTypes.length>1){
+      currentType=null;
+      selectedDate=null;selectedTime=null;
+      if(calBox)calBox.style.display='none';
+      if(ltlEl)ltlEl.textContent='受けたいレッスン種別をお選びください';
     }else{
       if(calBox)calBox.style.display='none';
     }
@@ -1552,7 +1559,8 @@ function selType(card,type){
   if(coachSelArea) coachSelArea.style.display='none';
   var plansArea=document.getElementById('coach-plans-area');
   if(plansArea) plansArea.style.display='none';
-  document.getElementById('cal-box').scrollIntoView({behavior:'smooth',block:'start'});
+  var _cb=document.getElementById('cal-box');if(_cb)_cb.style.display='block';
+  if(_cb)_cb.scrollIntoView({behavior:'smooth',block:'start'});
   var labels={indoor:'インドア',round:'ラウンド',accompany:'同伴',comp:'コンペ',custom:'独自プラン'};
   document.getElementById('cal-type-label').textContent=labels[type]||type;
   if(type==='custom'){renderWeekCal();}else{renderMonthCal();}
