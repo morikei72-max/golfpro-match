@@ -289,7 +289,7 @@ async function loadAllData(){
     .eq('store_key',STORE_KEY)
     .gte('booking_date',start)
     .lte('booking_date',end)
-    .in('status',['confirmed','approved']);
+    .in('status',['confirmed','approved','completed']);
 
   const valid=bkgs||[];
   const total=valid.reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
@@ -343,7 +343,7 @@ async function loadYoY(){
     .eq('store_key',STORE_KEY)
     .gte('booking_date',lyStart)
     .lte('booking_date',lyEnd)
-    .in('status',['confirmed','approved']);
+    .in('status',['confirmed','approved','completed']);
   const lyTotal=(data||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
 
   const thisMonthStart=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
@@ -353,7 +353,7 @@ async function loadYoY(){
     .eq('store_key',STORE_KEY)
     .gte('booking_date',thisMonthStart)
     .lte('booking_date',thisMonthEnd)
-    .in('status',['confirmed','approved']);
+    .in('status',['confirmed','approved','completed']);
   const tmTotal=(tm||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
 
   if(lyTotal===0){
@@ -389,7 +389,7 @@ async function loadMonthlyChart(){
       .eq('store_key',STORE_KEY)
       .gte('booking_date',start)
       .lte('booking_date',end)
-      .in('status',['confirmed','approved']);
+      .in('status',['confirmed','approved','completed']);
     const total=(data||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
     monthData.push({label:mo.m+'月',value:total});
   }
