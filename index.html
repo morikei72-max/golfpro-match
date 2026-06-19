@@ -103,6 +103,15 @@ section{background:#fff;}
 .feat-icon{width:52px;height:52px;border-radius:14px;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:18px;}
 .feat-title{font-size:15px;font-weight:700;color:var(--gd);margin-bottom:8px;}
 .feat-desc{font-size:13px;color:var(--muted);line-height:1.8;}
+.flow-steps{max-width:680px;margin:48px auto 0;display:flex;flex-direction:column;}
+.flow-step{display:flex;gap:20px;padding-bottom:30px;position:relative;}
+.flow-step:not(:last-child)::before{content:"";position:absolute;left:23px;top:50px;bottom:0;width:2px;background:var(--gl);}
+.flow-num{flex-shrink:0;width:48px;height:48px;border-radius:50%;background:var(--g);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:20px;font-weight:900;z-index:1;}
+.flow-body{padding-top:6px;}
+.flow-title{font-size:16px;font-weight:700;color:var(--gd);margin-bottom:6px;}
+.flow-text{font-size:13px;color:var(--muted);line-height:1.8;}
+.flow-note{max-width:680px;margin:8px auto 0;padding:14px 18px;background:#f7faf8;border-left:3px solid var(--g);border-radius:0 8px 8px 0;font-size:13px;color:var(--gd);line-height:1.85;}
+.flow-note strong{color:var(--g);font-weight:700;}
 
 /* ===== コーチ ===== */
 .coaches-sec{background:var(--dark);}
@@ -271,7 +280,6 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
         <div class="svc-img" id="si1"><div class="svc-name">インドアゴルフ<br>レッスン</div></div>
         <div class="svc-body">
           <div class="svc-desc">シミュレーターを使った室内レッスン。天候に関係なく、基礎からしっかり学べます。5〜120分の時間制。</div>
-          <div class="svc-price">¥5,000〜（50分）</div>
         </div>
       </div>
       <div class="svc-card">
@@ -303,26 +311,55 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
 <section style="background:#fff;" id="features">
   <div class="section-inner">
     <div class="reveal">
-      <div class="sec-label">Why MyCoach</div>
-      <h2 class="sec-title">選ばれる理由</h2>
+      <div class="sec-label">How it works</div>
+      <h2 class="sec-title">ご利用の流れ</h2>
+      <p class="sec-sub">予約からレッスンまで、スマホでかんたん。</p>
     </div>
-    <div class="features-grid reveal">
-      <div class="feat">
-        <div class="feat-icon">📅</div>
-        <div class="feat-title">スケジュールが一目でわかる</div>
-        <div class="feat-desc">コーチの空き時間をカレンダーで確認。気に入ったコーチの都合の良い時間を選んでそのまま予約できます。</div>
+    <div class="flow-steps reveal">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">コーチを選ぶ</div>
+          <div class="flow-text">プロフィールや実績を見て、お好みのコーチを選びます。</div>
+        </div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">⭐</div>
-        <div class="feat-title">レビューで安心して選べる</div>
-        <div class="feat-desc">受講者のリアルな評価とコメントを参考にコーチを選択。レッスン後のレビュー投稿で常に品質を維持。</div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">日時を確定して予約</div>
+          <div class="flow-text">コーチの空き時間から、ご希望の日時を選んで予約を申し込みます。</div>
+        </div>
       </div>
-      <div class="feat">
-        <div class="feat-icon">📱</div>
-        <div class="feat-title">スマホで完結する手軽さ</div>
-        <div class="feat-desc">コーチ検索から予約まですべてスマホで完結。24時間いつでも予約でき、確認もすぐに届きます。</div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">LINEに承認の連絡が届く</div>
+          <div class="flow-text">コーチが予約を承認すると、LINEにお知らせが届きます。</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">決済する</div>
+          <div class="flow-text">承認後、そのままスマホでお支払い（オンライン決済）を行います。</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">打席を確保</div>
+          <div class="flow-text">決済が完了したら、Golf Create 戸津池店で打席を確保します。</div>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <div class="flow-body">
+          <div class="flow-title">レッスンを受ける</div>
+          <div class="flow-text">当日、コーチのレッスンを受けてゴルフを上達させましょう。</div>
+        </div>
       </div>
     </div>
+    <div class="flow-note">※ レッスン料金や回数チケットの有無・内容は<strong>コーチによって異なります</strong>。詳しくは各コーチのページをご確認ください。</div>
   </div>
 </section>
 
