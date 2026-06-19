@@ -256,8 +256,8 @@ async function loadDashboard(){
       .select('total_price,status,coach_id,booking_time')
       .eq('store_key',STORE_KEY)
       .eq('booking_date',today)
-      .in('status',['confirmed','approved_pending_payment','pending_approval','pending','approved']);
-    const validToday=(todayBkg||[]).filter(b=>['confirmed','approved'].includes(b.status));
+      .in('status',['confirmed','approved_pending_payment','pending_approval','pending','approved','completed']);
+    const validToday=(todayBkg||[]).filter(b=>['confirmed','approved','completed'].includes(b.status));
     const todaySales=validToday.reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
 
     /* 昨日の売上(前日比) */
@@ -265,7 +265,7 @@ async function loadDashboard(){
       .select('total_price,status')
       .eq('store_key',STORE_KEY)
       .eq('booking_date',yest)
-      .in('status',['confirmed','approved']);
+      .in('status',['confirmed','approved','completed']);
     const yestSales=(yestBkg||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
     const deltaPct=yestSales>0?((todaySales-yestSales)/yestSales*100).toFixed(1):0;
 
@@ -274,7 +274,7 @@ async function loadDashboard(){
       .select('total_price,status')
       .eq('store_key',STORE_KEY)
       .gte('booking_date',monthStart)
-      .in('status',['confirmed','approved']);
+      .in('status',['confirmed','approved','completed']);
     const monthSales=(monthBkg||[]).reduce((s,b)=>s+(parseInt(b.total_price)||0),0);
 
     /* 本部取り分(16.4%)*/
