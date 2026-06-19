@@ -112,6 +112,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:#f0f4f2;min-height:100vh;}
 .coach-card-name{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:3px;}
 .coach-card-license{font-size:11px;color:#555;margin-bottom:2px;line-height:1.4;}
 .coach-card-tags{font-size:11px;color:var(--g);margin-bottom:4px;}
+.coach-card-coupon{display:inline-block;background:#e53935;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;margin:2px 0 5px;line-height:1.3;}
 .coach-card-bio{font-size:11px;color:#777;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 /* ★ コーチカード評価表示(Phase 2) */
 .coach-card-rating{display:inline-flex;align-items:center;gap:4px;background:#FAEEDA;color:#7a5c00;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;margin-top:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
@@ -845,6 +846,17 @@ async function loadAllCoaches(){
       console.warn('ratings fetch (non-fatal):',e);
     }
     window._coachRatingsMap=ratingsMap;
+    // ★ クーポン一括取得(auto_apply かつ有効なクーポンを持つコーチを訴求)
+    var couponMap={};
+    try{
+      var{data:cpnRows}=await sb.from('coupons').select('coach_id,code,label,discount_type,discount_value').eq('auto_apply',true).eq('is_active',true).in('coach_id',coachIds);
+      if(cpnRows){
+        cpnRows.forEach(function(cp){
+          if(!couponMap[cp.coach_id]) couponMap[cp.coach_id]=cp;
+        });
+      }
+    }catch(e){console.warn('coupon map (non-fatal):',e);}
+    window._coachCouponMap=couponMap;
     var html='';
     data.forEach(function(c){
       var photoHtml=c.photo_url?'<img src="'+c.photo_url+'" alt="'+(c.name||'')+'">':(c.name?c.name.charAt(0):'?');
@@ -858,6 +870,11 @@ async function loadAllCoaches(){
       html+='<div class="coach-card-name">'+name+' <button class="cfav'+((window._favSet&&window._favSet[c.id])?' on':'')+'" onclick="event.stopPropagation();toggleFav(\''+c.id+'\',this)">'+((window._favSet&&window._favSet[c.id])?'♥':'♡')+'</button></div>';
       if(license) html+='<div class="coach-card-license">📜 '+license+'</div>';
       if(tags) html+='<div class="coach-card-tags">🏌 '+tags+'</div>';
+      var _cpn=couponMap[c.id];
+      if(_cpn){
+        var _clbl=_cpn.label?_cpn.label:((_cpn.discount_type==='percent')?(_cpn.discount_value+'%OFF'):('¥'+parseInt(_cpn.discount_value).toLocaleString()+'OFF'));
+        html+='<div class="coach-card-coupon">🏷 '+escapeHtml(_clbl)+' クーポンあり</div>';
+      }
       if(bio) html+='<div class="coach-card-bio">'+bio+'</div>';
       html+='</div>';
       // ★ Phase 2:カード右側にコンパクトレーダーチャート(120×110px)
