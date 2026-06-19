@@ -1510,6 +1510,11 @@ function showBookingDetail(idx){
       '<div class="mdl-cancel-note">⚠️ キャンセルポリシー:72h以上前96.4%/72-24h前46.4%/24h以内16.4%/無断0%</div>';
   }
   if(status==='completed'){
+    if(b.review_status==='submitted'){
+      buttonsHTML+='<div class="mdl-btn" style="display:block;background:#eef5f1;color:#1D9E75;text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-top:6px;border:1px solid #cde8dc;">✅ コーチ評価済み・ありがとうございます</div>';
+    }else{
+      buttonsHTML+='<a class="mdl-btn" style="display:block;background:linear-gradient(135deg,#BA7517,#E0A03A);color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-top:6px;border:1px solid #f5c84a;box-shadow:0 0 16px rgba(224,160,58,0.35);" href="customer-rating.html?booking_id='+b.id+'">⭐ コーチを評価する</a>';
+    }
     var receiptInfo=(window._receiptMap||{})[b.id];
     if(receiptInfo){
       buttonsHTML+='<a class="mdl-btn" style="display:block;background:linear-gradient(135deg,#064D3B,#0a6c52);color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:700;margin-top:6px;border:1px solid #65CEA5;box-shadow:0 0 16px rgba(101,206,165,0.2);" href="receipt.html?booking_id='+b.id+'" target="_blank" rel="noopener">📄 領収書 (発行済 No.'+receiptInfo.receipt_no+')</a>';

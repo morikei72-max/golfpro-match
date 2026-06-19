@@ -134,7 +134,7 @@ async function init(){
   }
 
   // 確定済予約のみ評価可能
-  if(booking.status!=='confirmed'){
+  if(booking.status!=='confirmed' && booking.status!=='completed'){
     main.innerHTML='<div class="card"><div class="completed-card"><div class="completed-emoji">⚠️</div><div class="completed-title">評価できない予約です</div><div class="completed-text">確定済みのレッスンのみ評価いただけます。</div></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;"><a href="https://soft-speculoos-5ef188.netlify.app/customer.html" style="display:block;width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#064D3B,#1D9E75);color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">🏠 MyCoach ホームに戻る</a><a href="https://line.me/R/oaMessage/@mycoach_jp" style="display:block;width:100%;padding:14px;border-radius:12px;background:#00B900;color:#fff;font-size:14px;font-weight:700;text-align:center;text-decoration:none;letter-spacing:0.05em;">💬 LINEに戻る</a></div></div>';
     return;
   }
