@@ -113,14 +113,16 @@ section{background:#fff;}
 .coaches-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px;}
 .coach-card{border-radius:16px;overflow:hidden;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);transition:transform .25s,border-color .25s;}
 .coach-card:hover{transform:translateY(-4px);border-color:rgba(29,158,117,0.4);}
-.coach-img{height:200px;background:#1a3328;position:relative;overflow:hidden;}
-.coach-img img{width:100%;height:200px;object-fit:cover;}
+.coach-img{height:380px;background:#1a3328;position:relative;overflow:hidden;}
+.coach-img img{width:100%;height:380px;object-fit:cover;object-position:top center;}
 .coach-body{padding:18px 20px;}
 .coach-name{font-size:17px;font-weight:700;color:#fff;margin-bottom:3px;}
 .coach-area{font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:10px;}
 .coach-bio{font-size:12px;color:rgba(255,255,255,0.55);line-height:1.8;}
 .coach-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
 .coach-tag{font-size:10px;background:rgba(29,158,117,0.15);color:var(--accent);padding:3px 10px;border-radius:12px;}
+.coach-achievement{font-size:11px;color:rgba(255,255,255,0.5);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);}
+.coach-achievement .ach-label{display:inline-block;font-size:10px;color:var(--accent);font-weight:700;margin-right:6px;letter-spacing:0.04em;}
 .coach-add{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;}
 .coach-add-icon{font-size:32px;color:rgba(255,255,255,0.15);margin-bottom:12px;}
 .coach-add-title{font-size:14px;font-weight:700;color:rgba(255,255,255,0.4);margin-bottom:6px;}
@@ -335,15 +337,40 @@ footer{background:#040e08;color:rgba(255,255,255,0.35);padding:56px 6% 32px;}
       <p class="sec-sub">Golf Create 戸津池店 の認定コーチがあなたのゴルフをサポートします。</p>
     </div>
     <div class="coaches-grid reveal">
-      <div class="coach-card coach-add">
-        <div class="coach-add-icon">+</div>
-        <div class="coach-add-title">コーチ募集中</div>
-        <div class="coach-add-sub">Golf Create 戸津池店で<br>コーチとして活躍しませんか？</div>
+      <div class="coach-card">
+        <div class="coach-img">
+          <img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/coach_photos/496da598-5b8e-4aca-b777-9f8817171904_1780891405215.jpeg" alt="遊佐音々コーチ" loading="lazy">
+        </div>
+        <div class="coach-body">
+          <div class="coach-name">遊佐音々</div>
+          <div class="coach-area">📍 Golf Create 戸津池店</div>
+          <div class="coach-bio">楽しく分かりやすいレッスンを心がけています。<br>初心者の方からスコアアップを目指す方まで、一人ひとりに合わせて丁寧にサポートします！<br>一緒にゴルフを楽しみながら上達していきましょう♪</div>
+          <div class="coach-achievement"><span class="ach-label">実績</span>2016年大阪府高等学校ゴルフ選手権　優勝</div>
+          <div class="coach-tags"><span class="coach-tag">ラウンドレッスン</span><span class="coach-tag">ドライバー</span><span class="coach-tag">USGTF レベル3</span></div>
+        </div>
       </div>
-      <div class="coach-card coach-add">
-        <div class="coach-add-icon">+</div>
-        <div class="coach-add-title">コーチ募集中</div>
-        <div class="coach-add-sub">Golf Create 戸津池店で<br>コーチとして活躍しませんか？</div>
+      <div class="coach-card">
+        <div class="coach-img">
+          <img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/coach_photos/a314ac9f-b429-493d-8565-6aaf24272483_1780889509503.jpeg" alt="溝口　雛コーチ" loading="lazy">
+        </div>
+        <div class="coach-body">
+          <div class="coach-name">溝口　雛</div>
+          <div class="coach-area">📍 Golf Create 戸津池店</div>
+          <div class="coach-bio">初めまして！<br>トッププロゴルファーを目指しています。溝口雛と申します。<br>趣味はゴルフ観戦、バレーボール観戦、ショッピングです！<br>私自身たくさんレッスンを受けてきて、私の持ってる引き出しで、目標に合わせた指導をします！<br>ラウンドレッスンも受け付けておりますのでよろしくお願いいたします！</div>
+          <div class="coach-achievement"><span class="ach-label">実績</span>ベストスコア67<br>関西学生会長杯 2位（73.68 141ストローク）<br>フジクラスピーダーチャレンジ2023 決勝大会 2位（70）</div>
+        </div>
+      </div>
+      <div class="coach-card">
+        <div class="coach-img">
+          <img src="https://gojrdnufmueuvkroevut.supabase.co/storage/v1/object/public/images/coach_photos/c95fd1d2-38b5-49ea-a9af-09bc8e274f73_1780795700769.jpeg" alt="大谷　菜々子コーチ" loading="lazy">
+        </div>
+        <div class="coach-body">
+          <div class="coach-name">大谷　菜々子</div>
+          <div class="coach-area">📍 Golf Create 戸津池店</div>
+          <div class="coach-bio">初めまして！<br>ゴルフ歴15年の大谷菜々子です。<br>現在プロテスト挑戦中です。<br>初心者から上級者まで一人ひとりに合わせたレッスンを行っています。<br>体の使い方や効率的なスイング作りをお伝えします！</div>
+          <div class="coach-achievement"><span class="ach-label">実績</span>TPI認定プロフェッショナル<br>ベストスコア65<br>令和５年度関西学生女子会長杯予選　優勝<br>令和5年度関西学生女子会長杯決勝　2位T<br>文部科学大臣杯争奪日本女子学生ゴルフ王座決定戦　1位通過<br>第4回京バアムカップ　3位</div>
+          <div class="coach-tags"><span class="coach-tag">Titleist Performance Institute</span></div>
+        </div>
       </div>
     </div>
   </div>
