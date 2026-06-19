@@ -1244,7 +1244,8 @@ async function showPaymentConfirmModal(bookingId){
     '<button class="pay-btn-main" id="pay-btn-main" onclick="proceedToStripePayment(\''+bookingId+'\')">'+
       '💳 お支払いに進む'+
     '</button>'+
-    '<button onclick="closePaymentConfirmModal()" style="width:100%;padding:13px;margin-top:10px;background:#f0f0f0;color:#666;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">← 戻る</button>';
+    '<button onclick="closePaymentConfirmModal()" style="width:100%;padding:13px;margin-top:10px;background:#f0f0f0;color:#666;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">← 戻る</button>'+
+    '<button onclick="closePaymentConfirmModal();openCancelRequestModal(\''+bookingId+'\','+amount+')" style="width:100%;padding:12px;margin-top:8px;background:#fff;color:#c0392b;border:1px solid #e0b0b0;border-radius:10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">この予約をキャンセルする</button>';
     body.innerHTML=html;
   }catch(e){
     console.error('showPaymentConfirmModal error',e);
@@ -3051,19 +3052,27 @@ function openCancelRequestModal(bookingId,totalPrice){
     }
   }
   var refundCalc=calculateRefundForCancel(booking,cancelRequestTotalPrice);
-  cancelRequestPolicy=refundCalc.policy;
-  cancelRequestRefundAmount=refundCalc.refundAmount;
-  cancelRequestCancelFee=refundCalc.cancelFee;
+  var _isUnpaid=(booking && booking.status==='approved_pending_payment');
+  cancelRequestPolicy=_isUnpaid?'unpaid_cancel':refundCalc.policy;
+  cancelRequestRefundAmount=_isUnpaid?0:refundCalc.refundAmount;
+  cancelRequestCancelFee=_isUnpaid?0:refundCalc.cancelFee;
   var policyLabelEl=document.getElementById('cancel-policy-applied');
-  if(policyLabelEl){
-    if(refundCalc.policy==='full_refund') policyLabelEl.textContent='✅ 適用ポリシー:72時間以上前(96.4%返金)';
-    else if(refundCalc.policy==='half_refund') policyLabelEl.textContent='⚠️ 適用ポリシー:72〜24時間前(46.4%返金)';
-    else policyLabelEl.textContent='🚫 適用ポリシー:24時間以内・当日(16.4%返金)';
-    policyLabelEl.style.color=refundCalc.policy==='sameday_refund'?'#B71C1C':refundCalc.policy==='half_refund'?'#E65100':'#2E7D32';
+  if(_isUnpaid){
+    if(policyLabelEl){policyLabelEl.textContent='💳 未払いのためキャンセル無料(料金は発生しません)';policyLabelEl.style.color='#2E7D32';}
+    document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString()+'(未決済)';
+    document.getElementById('cancel-fee-display').textContent='¥0';
+    document.getElementById('cancel-refund-display').textContent='¥0';
+  }else{
+    if(policyLabelEl){
+      if(refundCalc.policy==='full_refund') policyLabelEl.textContent='✅ 適用ポリシー:72時間以上前(96.4%返金)';
+      else if(refundCalc.policy==='half_refund') policyLabelEl.textContent='⚠️ 適用ポリシー:72〜24時間前(46.4%返金)';
+      else policyLabelEl.textContent='🚫 適用ポリシー:24時間以内・当日(16.4%返金)';
+      policyLabelEl.style.color=refundCalc.policy==='sameday_refund'?'#B71C1C':refundCalc.policy==='half_refund'?'#E65100':'#2E7D32';
+    }
+    document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString();
+    document.getElementById('cancel-fee-display').textContent='¥'+refundCalc.cancelFee.toLocaleString();
+    document.getElementById('cancel-refund-display').textContent='¥'+refundCalc.refundAmount.toLocaleString();
   }
-  document.getElementById('cancel-total-display').textContent='¥'+cancelRequestTotalPrice.toLocaleString();
-  document.getElementById('cancel-fee-display').textContent='¥'+refundCalc.cancelFee.toLocaleString();
-  document.getElementById('cancel-refund-display').textContent='¥'+refundCalc.refundAmount.toLocaleString();
   document.getElementById('cancel-reason-category').value='';
   document.getElementById('cancel-reason-text').value='';
   document.getElementById('cancel-agree-chk').checked=false;
@@ -3119,7 +3128,7 @@ async function submitCancelRequest(){
   if(!agreeChk){alert('キャンセルポリシーに同意してください');return;}
   if(!category){alert('キャンセル理由を選択してください');return;}
   if(!reasonText){alert('キャンセル理由の詳細を入力してください');return;}
-  var policyText=cancelRequestPolicy==='full_refund'?'96.4%返金(72時間以上前)':cancelRequestPolicy==='half_refund'?'46.4%返金(72〜24時間前)':'16.4%返金(24時間以内・当日)';
+  var policyText=cancelRequestPolicy==='unpaid_cancel'?'未払いのためキャンセル料・返金なし':cancelRequestPolicy==='full_refund'?'96.4%返金(72時間以上前)':cancelRequestPolicy==='half_refund'?'46.4%返金(72〜24時間前)':'16.4%返金(24時間以内・当日)';
   var confirmMsg='【最終確認】\n\n本当にこのご予約をキャンセルしますか?\n\n'+
     '■ 適用ポリシー:\n'+policyText+'\n\n'+
     '■ 返金内容:\n'+

@@ -233,7 +233,13 @@ exports.handler = async (event) => {
 
     // 返金額計算
     const refundCalc = calculateRefund(booking.booking_date, booking.booking_time, totalPrice);
-    const { policy, refundAmount, cancelFee, hoursUntilLesson } = refundCalc;
+    let { policy, refundAmount, cancelFee, hoursUntilLesson } = refundCalc;
+    // ★ 未払い(決済前=approved_pending_payment)はキャンセル料・返金なし
+    if (booking.status === 'approved_pending_payment') {
+      policy = 'unpaid_cancel';
+      refundAmount = 0;
+      cancelFee = 0;
+    }
 
     console.log('[cancel-request] refund calc:', {
       bookingId: booking_id,
@@ -301,7 +307,8 @@ exports.handler = async (event) => {
     // bookings 更新
     // ============================================
     const cancelTimestamp = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
-    const policyLabel = policy === 'full_refund' ? '96.4%返金(72時間以上前)'
+    const policyLabel = policy === 'unpaid_cancel' ? '未払いのためキャンセル料・返金なし'
+                      : policy === 'full_refund' ? '96.4%返金(72時間以上前)'
                       : policy === 'half_refund' ? '46.4%返金(72〜24時間前)'
                       : '16.4%返金(24時間以内・当日)';
     const cancelNote = `【キャンセル完了】\n申請日時:${cancelTimestamp}\nカテゴリ:${reason_category}\n詳細:${reason_text.trim()}\n適用ポリシー:${policyLabel}\n決済額:¥${totalPrice.toLocaleString()}\nキャンセル料:¥${cancelFee.toLocaleString()}\n返金額:¥${refundAmount.toLocaleString()}` +
@@ -428,7 +435,8 @@ function buildCustomerCancelCompleteFlex({
   customerName, coachName, lessonType, minutesStr,
   dateStr, timeStr, storeName, totalPrice, cancelFee, refundAmount, policy,
 }) {
-  const policyText = policy === 'full_refund' ? '72時間以上前のキャンセル(96.4%返金)'
+  const policyText = policy === 'unpaid_cancel' ? '未払いのためキャンセル料・返金はありません'
+                    : policy === 'full_refund' ? '72時間以上前のキャンセル(96.4%返金)'
                     : policy === 'half_refund' ? '72〜24時間前のキャンセル(46.4%返金)'
                     : '24時間以内のキャンセル(16.4%返金)';
 
@@ -482,7 +490,7 @@ function buildCustomerCancelCompleteFlex({
         { type: 'separator', margin: 'lg' },
         {
           type: 'text',
-          text: '返金は数日以内にご利用のクレジットカードへ反映されます',
+          text: policy === 'unpaid_cancel' ? 'まだお支払い前のため、返金は発生しません' : '返金は数日以内にご利用のクレジットカードへ反映されます',
           size: 'xs', color: '#555555', wrap: true, margin: 'md', align: 'center',
         },
       ],
@@ -570,7 +578,8 @@ function buildAdminCancelNoticeFlex({
   dateStr, timeStr, storeName, totalPrice, cancelFee, refundAmount,
   reason_category, reason_text, policy, refundId,
 }) {
-  const policyLabel = policy === 'full_refund' ? '96.4%返金(72時間以上前)'
+  const policyLabel = policy === 'unpaid_cancel' ? '未払いのためキャンセル料・返金なし'
+                    : policy === 'full_refund' ? '96.4%返金(72時間以上前)'
                     : policy === 'half_refund' ? '46.4%返金(72〜24時間前)'
                     : '16.4%返金(24時間以内・当日)';
 
