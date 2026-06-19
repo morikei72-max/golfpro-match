@@ -820,10 +820,15 @@ body{font-family:'Noto Sans JP',sans-serif;color:var(--text);}
               <label><input type="checkbox" class="ad-cond" value="week"> 今週</label>
               <label><input type="checkbox" class="ad-cond" value="date"> この日</label>
               <label><input type="checkbox" class="ad-cond" value="modulo"> N回ごと</label>
+              <label><input type="checkbox" class="ad-cond" value="visit"> 来店回数で指定</label>
             </div>
             <div style="display:flex;gap:8px;margin-top:8px;">
               <div style="flex:1;"><label class="cpn-label">「この日」の日付</label><input type="date" id="ad-date" class="cpn-input"></div>
               <div style="flex:1;"><label class="cpn-label">「N回ごと」のN</label><input type="number" id="ad-modulo" min="2" max="99" placeholder="5" class="cpn-input"></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <div style="flex:1;"><label class="cpn-label">「来店回数」○回目から</label><input type="number" id="ad-visit-from" min="1" max="999" placeholder="3" class="cpn-input"></div>
+              <div style="flex:1;"><label class="cpn-label">○回目まで(空=以降ずっと)</label><input type="number" id="ad-visit-to" min="1" max="999" placeholder="3" class="cpn-input"></div>
             </div></div>
           <div><label class="cpn-label">対象ジャンル(未選択=全種別)</label>
             <div class="cpn-checkbox-row">
@@ -3557,6 +3562,16 @@ async function saveAutoDiscount(){
     period_type:null, target_dates:null, usage_limit_per_user:null
   };
   if(conds.includes('first')){row.required_visit_min=0;row.required_visit_max=0;}
+  if(conds.includes('visit')){
+    const vf=parseInt(document.getElementById('ad-visit-from').value,10);
+    const vt=parseInt(document.getElementById('ad-visit-to').value,10);
+    if(!vf||vf<1){alert('❌ 「○回目から」を1以上で入力してください');return;}
+    row.required_visit_min=vf-1;
+    if(vt){
+      if(vt<vf){alert('❌ 「○回目まで」は「○回目から」以上にしてください');return;}
+      row.required_visit_max=vt-1;
+    }else{ row.required_visit_max=null; }
+  }
   if(conds.includes('modulo')){
     const n=parseInt(document.getElementById('ad-modulo').value,10);
     if(!n||n<2){alert('❌ N回ごとのNは2以上で入力してください');return;}
@@ -3577,6 +3592,7 @@ async function saveAutoDiscount(){
     document.getElementById('ad-sample').value='';document.getElementById('ad-takehome').textContent='金額を入力すると手取り額を表示します';
     document.querySelectorAll('.ad-cond:checked,.ad-lt:checked').forEach(e=>e.checked=false);
     document.getElementById('ad-date').value='';document.getElementById('ad-modulo').value='';
+    document.getElementById('ad-visit-from').value='';document.getElementById('ad-visit-to').value='';
     await loadAutoDiscounts();
   }catch(e){alert('❌ エラー: '+e.message);}
 }
@@ -3593,6 +3609,11 @@ async function loadAutoDiscounts(){
       const val=d.discount_type==='percent'?(d.discount_value+'%OFF'):('¥'+d.discount_value.toLocaleString()+'OFF');
       const cond=[];
       if(d.required_visit_min===0&&d.required_visit_max===0)cond.push('初回のみ');
+      else if(d.required_visit_min!=null||d.required_visit_max!=null){
+        const _vf=(d.required_visit_min!=null)?((d.required_visit_min+1)+'回目'):'';
+        const _vt=(d.required_visit_max!=null)?((d.required_visit_max+1)+'回目'):'以降';
+        cond.push(_vf?(_vf+'〜'+_vt):('〜'+_vt));
+      }
       if(d.required_visit_modulo)cond.push(d.required_visit_modulo+'回ごと');
       if(d.period_type==='this_week')cond.push('今週');
       if(d.period_type==='this_month')cond.push('今月');
