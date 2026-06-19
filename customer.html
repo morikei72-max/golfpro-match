@@ -1243,7 +1243,8 @@ async function showPaymentConfirmModal(bookingId){
     '</div>'+
     '<button class="pay-btn-main" id="pay-btn-main" onclick="proceedToStripePayment(\''+bookingId+'\')">'+
       '💳 お支払いに進む'+
-    '</button>';
+    '</button>'+
+    '<button onclick="closePaymentConfirmModal()" style="width:100%;padding:13px;margin-top:10px;background:#f0f0f0;color:#666;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">← 戻る</button>';
     body.innerHTML=html;
   }catch(e){
     console.error('showPaymentConfirmModal error',e);
