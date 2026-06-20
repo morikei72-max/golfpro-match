@@ -153,6 +153,46 @@ body{font-family:'Noto Sans JP',sans-serif;background:#1a1a1a;color:#000;min-hei
 .error h3{color:#c44;margin-bottom:12px;}
 .error p{color:#555;font-size:13px;line-height:1.6;}
 .error a{display:inline-block;margin-top:14px;color:#064D3B;text-decoration:none;font-weight:700;}
+
+/* === 正式領収書デザイン(刷新) === */
+#receipt-paper{background:#fff !important;border:1.5px solid #1a1a1a !important;border-radius:0 !important;padding:34px 40px 28px !important;max-width:680px;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,0.12);}
+#receipt-paper::before{display:none !important;}
+.rcp-head{display:flex;justify-content:space-between;align-items:flex-start;}
+.rcp-svc{display:flex;align-items:center;gap:11px;}
+.rcp-logo{width:50px;height:50px;}
+.rcp-nm{font-size:20px;font-weight:800;letter-spacing:.5px;color:#064D3B;line-height:1.1;}
+.rcp-sub{font-size:11.5px;color:#555;margin-top:3px;}
+.rcp-meta{text-align:right;font-size:12px;line-height:1.9;color:#222;}
+.rcp-meta .rcp-no{font-weight:700;}
+.rcp-title{text-align:center;font-size:29px;font-weight:900;letter-spacing:.45em;text-indent:.45em;color:#1a1a1a;margin:14px 0 0;border-top:1.5px solid #1a1a1a;padding-top:16px;}
+.rcp-rcp-line{margin-top:22px;}
+.rcp-rcp{font-size:23px;font-weight:700;border-bottom:1.5px solid #1a1a1a;display:inline-block;min-width:60%;padding:0 8px 7px;}
+.rcp-rcp .sama{font-size:15px;font-weight:400;margin-left:12px;}
+.rcp-lead{text-align:center;font-size:13px;color:#333;margin-top:20px;letter-spacing:1px;}
+.rcp-amount{margin:12px auto 0;width:82%;border-top:2px solid #1a1a1a;border-bottom:2px solid #1a1a1a;display:flex;align-items:center;justify-content:center;padding:13px 0;}
+.rcp-amount .rcp-g{font-size:22px;font-weight:700;margin-right:18px;letter-spacing:6px;}
+.rcp-amount .rcp-v{font-size:37px;font-weight:900;color:#1a1a1a;}
+.rcp-amount .rcp-v .y{font-size:24px;margin-right:6px;}
+.rcp-amount .rcp-v .dash{font-size:24px;}
+.rcp-amount .rcp-tax{font-size:12px;color:#555;margin-left:16px;align-self:flex-end;padding-bottom:6px;}
+.rcp-tadashi{display:flex;align-items:baseline;margin-top:16px;border-bottom:1px solid #1a1a1a;padding:0 6px 10px;}
+.rcp-tadashi .l{font-size:15px;font-weight:700;letter-spacing:8px;width:90px;flex-shrink:0;}
+.rcp-tadashi .v{font-size:14px;}
+.rcp-cols{display:flex;gap:24px;margin-top:18px;}
+.rcp-col{flex:1;}
+.rcp-col h4{font-size:11px;letter-spacing:2px;color:#555;border-bottom:1px solid #888;padding-bottom:5px;font-weight:700;margin:0;}
+.rcp-col table{width:100%;border-collapse:collapse;font-size:13px;}
+.rcp-bd td{padding:7px 6px;border-bottom:1px solid #e6e6e6;}
+.rcp-bd td.r{text-align:right;}
+.rcp-bd tr.total td{border-top:1.5px solid #1a1a1a;border-bottom:none;font-weight:700;font-size:15px;padding-top:8px;}
+.rcp-dt td{padding:7px 6px;border-bottom:1px solid #efefef;}
+.rcp-dt td.k{color:#666;width:92px;}
+.rcp-issuer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:22px;padding-top:16px;border-top:1.5px solid #1a1a1a;}
+.rcp-issuer .lab{font-size:11px;letter-spacing:4px;color:#888;margin-bottom:7px;}
+.rcp-issuer .company{font-size:19px;font-weight:800;color:#1a1a1a;}
+.rcp-issuer .invoice{font-size:12.5px;color:#333;margin-top:5px;}
+.rcp-issuer .address{font-size:12px;color:#555;margin-top:2px;}
+.rcp-notes{margin-top:14px;font-size:10.5px;color:#777;line-height:1.8;}
 </style>
 </head>
 <body>
@@ -192,40 +232,62 @@ body{font-family:'Noto Sans JP',sans-serif;background:#1a1a1a;color:#000;min-hei
 
   <!-- 領収書本体 -->
   <div id="receipt-paper">
-    <div class="r-head">
-      <div class="r-logo"><span class="my">My</span><span class="coach">Coach</span></div>
-      <div class="r-title">領 収 書</div>
-      <div class="r-no" id="r-no">No. ----</div>
-    </div>
-
-    <div class="r-meta">
-      <div class="r-recipient">
-        <span id="r-recipient">--</span><span class="sama">様</span>
+    <div class="rcp-head">
+      <div class="rcp-svc">
+        <img class="rcp-logo" src="data:image/png;base64,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" alt="MyCoach">
+        <div>
+          <div class="rcp-nm">MyCoach</div>
+          <div class="rcp-sub">GOLF Create 戸津池店 ゴルフレッスン</div>
+        </div>
       </div>
-      <div class="r-date" id="r-date">--</div>
+      <div class="rcp-meta">
+        <div class="rcp-no" id="r-no">No. ----</div>
+        <div id="r-date">--</div>
+      </div>
     </div>
 
-    <div class="r-amount-box">
-      <div class="r-amount-yen"><span class="y">¥</span><span id="r-amount">0</span><span style="font-size:24px;margin-left:4px;">-</span></div>
-      <div class="r-amount-tax" id="r-amount-tax">税込</div>
+    <div class="rcp-title">領 収 書</div>
+
+    <div class="rcp-rcp-line">
+      <span class="rcp-rcp"><span id="r-recipient">--</span><span class="sama">様</span></span>
     </div>
 
-    <div class="r-desc">
-      <div class="lab">但 し</div>
-      <div class="val" id="r-desc">ゴルフレッスン代として</div>
+    <div class="rcp-lead">下記の金額を正に領収いたしました</div>
+    <div class="rcp-amount">
+      <span class="rcp-g">金</span>
+      <span class="rcp-v"><span class="y">¥</span><span id="r-amount">0</span><span class="dash">-</span></span>
+      <span class="rcp-tax" id="r-amount-tax">税込</span>
     </div>
 
-    <div class="r-detail">
-      <div class="r-detail-row"><div class="l">レッスン日</div><div class="v" id="r-lesson-date">--</div></div>
-      <div class="r-detail-row"><div class="l">時間</div><div class="v" id="r-lesson-time">--</div></div>
-      <div class="r-detail-row"><div class="l">担当コーチ</div><div class="v" id="r-coach">--</div></div>
-      <div class="r-detail-row"><div class="l">レッスン種別</div><div class="v" id="r-lesson-type">--</div></div>
-      <div class="r-detail-row"><div class="l">取引番号</div><div class="v" id="r-booking-id">--</div></div>
-      <div class="r-detail-row"><div class="l">店舗</div><div class="v">Golf Create 戸津池店</div></div>
+    <div class="rcp-tadashi">
+      <div class="l">但 し</div>
+      <div class="v" id="r-desc">ゴルフレッスン代として</div>
     </div>
 
-    <div class="r-issuer">
-      <div class="r-issuer-info">
+    <div class="rcp-cols">
+      <div class="rcp-col">
+        <h4>内訳(消費税)</h4>
+        <table class="rcp-bd">
+          <tr><td>小計(税抜)</td><td class="r" id="r-subtotal">¥0</td></tr>
+          <tr><td>消費税(10%)</td><td class="r" id="r-tax">¥0</td></tr>
+          <tr class="total"><td>合計(税込)</td><td class="r">¥<span id="r-total">0</span></td></tr>
+        </table>
+      </div>
+      <div class="rcp-col">
+        <h4>取引明細</h4>
+        <table class="rcp-dt">
+          <tr><td class="k">レッスン日</td><td id="r-lesson-date">--</td></tr>
+          <tr><td class="k">時間</td><td id="r-lesson-time">--</td></tr>
+          <tr><td class="k">担当コーチ</td><td id="r-coach">--</td></tr>
+          <tr><td class="k">レッスン種別</td><td id="r-lesson-type">--</td></tr>
+          <tr><td class="k">施設</td><td>GOLF Create 戸津池店</td></tr>
+          <tr><td class="k">取引番号</td><td id="r-booking-id">--</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="rcp-issuer">
+      <div>
         <div class="lab">発 行 者</div>
         <div class="company">株式会社ケイエスケー</div>
         <div class="invoice">登録番号 T1130001070904</div>
@@ -236,8 +298,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:#1a1a1a;color:#000;min-hei
       </div>
     </div>
 
-    <div class="r-foot">
-      MyCoach by 株式会社ケイエスケー · この領収書は電子発行されました
+    <div class="rcp-notes">
+      ※ 本領収書は電子的に発行しております。電子発行のため収入印紙の貼付は不要です。<br>
+      ※ 本書は適格請求書(インボイス)の記載要件を満たしています。
+    </div>
+    <div class="r-foot">MyCoach by 株式会社ケイエスケー · この領収書は電子発行されました
     </div>
   </div>
 </div>
@@ -345,7 +410,10 @@ function renderReceipt(){
   document.getElementById('r-recipient').textContent=recipientName;
   document.getElementById('r-date').textContent=issueDateStr;
   document.getElementById('r-amount').textContent=amount.toLocaleString();
-  document.getElementById('r-amount-tax').textContent='(消費税10% ¥'+taxAmt.toLocaleString()+'を含む 内税)';
+  document.getElementById('r-amount-tax').textContent='(税込)';
+  document.getElementById('r-subtotal').textContent='¥'+exclTax.toLocaleString();
+  document.getElementById('r-tax').textContent='¥'+taxAmt.toLocaleString();
+  document.getElementById('r-total').textContent=amount.toLocaleString();
   document.getElementById('r-desc').textContent='ゴルフレッスン代として('+formatLessonType(b.lesson_type)+')';
   document.getElementById('r-lesson-date').textContent=lessonDateStr;
   document.getElementById('r-lesson-time').textContent=lessonTimeStr+' から '+(b.minutes||60)+'分';
