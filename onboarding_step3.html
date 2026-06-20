@@ -406,6 +406,7 @@ const sb=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
   auth:{persistSession:true,storageKey:'gc',storage:window.localStorage,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
+var nextParam=new URLSearchParams(location.search).get('next');
 var currentUserId=null;
 var currentUserEmail=null;
 
@@ -522,7 +523,7 @@ async function verifyMember(){
     btn.innerHTML='<span class="spinner"></span>次へ進みます...';
 
     setTimeout(function(){
-      window.location.href='onboarding_step4.html';
+      window.location.href=(nextParam==='hub'?'search_hub.html':'onboarding_step4.html');
     },1200);
 
   }catch(e){
