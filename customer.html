@@ -1676,10 +1676,8 @@ async function fetchAvailDates(){
         else if(lt==='round'||lt==='accompany'||lt==='comp'||lt==='custom'){
           /* ★ このコーチがこの日に既に他のレッスンを予約済みなら全種別から除外 */
           if(bookedMap[ds]&&bookedMap[ds].dayFull[coachId]&&bookedMap[ds].dayFull[coachId]['_any_']) return;
-          ['round','accompany','comp','custom'].forEach(function(kind){
-            if(!availCache[ds][kind]) availCache[ds][kind]={times:[],coaches:[]};
-            if(availCache[ds][kind].coaches.indexOf(coachId)<0) availCache[ds][kind].coaches.push(coachId);
-          });
+          if(!availCache[ds][lt]) availCache[ds][lt]={times:[],coaches:[]};
+          if(availCache[ds][lt].coaches.indexOf(coachId)<0) availCache[ds][lt].coaches.push(coachId);
         }
       });
       /* インドアの times 配列(coachesが1名以上残った時間枠のみ)を構築 */
