@@ -1,10 +1,17 @@
 // netlify/functions/release-coach-payout.js
 // MyCoach コーチへの送金実行関数(エスクロー方式)
 // 【2026/5/23 v2】コーチ完了ボタン不要・レッスン日+7日経過で自動送金
+// 【2026/6/28 v3】故障A修正:
+//   auto_complete_past_bookings(DB側cron)がレッスン翌日に status を
+//   'confirmed' → 'completed' に変えるため、送金期日(レッスン日+7日)には
+//   既に 'completed' になっており、status='confirmed' 限定では永久に拾えず
+//   送金が止まっていた。送金対象に 'completed' も含める。
+//   ※ payout_status='pending' + payout_eligible_at<=now(NULLは除外) +
+//      payout_amount>0 の3重ガードは維持。未決済・返金・キャンセルは拾わない。
 //
 // 動作:
 //   bookings テーブルから以下を満たすレコードを抽出:
-//     - status = 'confirmed'(決済確定済かつキャンセルされていない)
+//     - status in ('confirmed','completed')(決済確定済かつキャンセル/返金でない)
 //     - payout_status = 'pending'(未送金)
 //     - payout_eligible_at <= now()(レッスン日+7日経過)
 //   ↓
@@ -15,7 +22,7 @@
 //   bookings.payout_released_at = now() に記録
 //
 // 呼び出し方法:
-//   ① Netlify Scheduled Functions(日次cron)から自動呼び出し
+//   ① Netlify Scheduled Functions(日次cron JST 2:00)から自動呼び出し
 //   ② Netlify Functions URL に GET/POSTでアクセスして手動実行
 //
 // 環境変数:
@@ -52,7 +59,7 @@ exports.handler = async (event) => {
     const { data: targets, error: selectErr } = await supabase
       .from('bookings')
       .select('id, coach_id, total_price, payout_amount, payout_eligible_at, booking_date, booking_time, lesson_type, customer_name, coach_name')
-      .eq('status', 'confirmed')
+      .in('status', ['confirmed', 'completed'])
       .eq('payout_status', 'pending')
       .lte('payout_eligible_at', nowIso);
 
