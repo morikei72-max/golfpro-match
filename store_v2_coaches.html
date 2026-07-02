@@ -82,6 +82,11 @@ body::before{
 .pill-blocked{background:rgba(255,138,138,0.2);color:var(--red);border:1px solid var(--red);}
 .pill-rejected{background:rgba(255,138,138,0.15);color:var(--red);border:1px solid rgba(255,138,138,0.3);}
 
+/* 緊急停止ボタン */
+.stop-btn{flex-shrink:0;font-family:inherit;font-size:10px;font-weight:800;padding:7px 10px;border-radius:9px;cursor:pointer;border:1px solid var(--red);background:rgba(255,138,138,0.12);color:var(--red);line-height:1;white-space:nowrap;}
+.stop-btn.is-resume{border-color:var(--main);background:rgba(101,206,165,0.12);color:var(--main);}
+.stop-btn:active{opacity:.6;}
+
 /* タブ */
 .tabs{display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.025);border:1px solid var(--line);border-radius:12px;padding:4px;}
 .tab{flex:1;background:none;border:none;color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:9px 4px;border-radius:9px;cursor:pointer;transition:all .2s;}
@@ -280,6 +285,8 @@ function renderList(){
       starDisplay='<span class="coach-star coach-star-zero">★ 0.0</span>';
     }
     const safeName=escapeHtml(c.name||'(名前未設定)');
+    const canStop=c.is_approved&&!c.is_rejected;
+    const stopBtn=canStop?`<span class="stop-btn ${status==='blocked'?'is-resume':'is-stop'}" onclick="toggleEmergencyStop(event,'${c.id}')">${status==='blocked'?'▶ 再開':'⛔ 停止'}</span>`:'';
     return`
       <div class="coach-row" data-id="${c.id}" data-name="${safeName}">
         <div class="archive-action" onclick="archiveCoach('${c.id}',this)">
@@ -296,6 +303,7 @@ function renderList(){
               <span>キャンセル <strong>${c._cxlRate||0}%</strong></span>
             </div>
           </div>
+          ${stopBtn}
           <div class="coach-arrow">→</div>
         </a>
       </div>
@@ -356,6 +364,24 @@ async function archiveCoach(id,el){
     return;
   }
   allCoaches=allCoaches.filter(c=>c.id!==id);
+  renderList();
+}
+
+async function toggleEmergencyStop(e,id){
+  e.preventDefault();e.stopPropagation();
+  const c=allCoaches.find(x=>x.id===id);if(!c)return;
+  const cur=c.coach_status||'active';
+  const toBlock=cur!=='blocked';
+  const name=c.name||'このコーチ';
+  const msg=toBlock
+    ? name+'様を緊急停止します。\n\n・お客様の予約画面から即座に非表示になります\n・新規予約は入らなくなります\n・確定済みの今後の予約は別途キャンセル対応が必要です\n\n停止してよろしいですか?'
+    : name+'様の停止を解除して再開します。\nお客様の予約画面に再表示されます。よろしいですか?';
+  if(!confirm(msg))return;
+  const{error}=await sb.from('coaches')
+    .update({coach_status:toBlock?'blocked':'active'})
+    .eq('id',id);
+  if(error){alert('更新に失敗しました: '+error.message);return;}
+  c.coach_status=toBlock?'blocked':'active';
   renderList();
 }
 
